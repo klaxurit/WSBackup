@@ -1,0 +1,120 @@
+@use "./utils/variables" as *;
+
+.btn {
+  &__main {
+    background: $beryl-pure;
+    color: $onyx-blacker-bis;
+
+    &:focus-visible {
+      border: 1px solid $beryl-pure;
+      background: $beryl-080;
+      box-shadow: 0px 0px 0px 4px rgba(255, 208, 86, 0.2);
+    }
+
+    &:hover {
+      border: none;
+      box-shadow: none;
+      background: $beryl-080;
+    }
+
+    &:active {
+      border: none;
+      box-shadow: none;
+      background: $beryl-064;
+    }
+
+    &--spinner {
+      color: $onyx-blacker-bis;
+      background: $beryl-064;
+    }
+  }
+
+  &__accent {
+    background: $beryl-008;
+    color: $beryl-pure;
+
+    &:focus-visible {
+      border: 1px solid $beryl-pure;
+      background: $beryl-010;
+      box-shadow: 0px 0px 0px 4px rgba(255, 208, 86, 0.2);
+    }
+
+    &:hover {
+      border: none;
+      box-shadow: none;
+      background: $beryl-010;
+    }
+
+    &:active {
+      box-shadow: none;
+      background: $beryl-012;
+    }
+
+    &--spinner {
+      background: $beryl-012;
+      color: $beryl-pure;
+    }
+  }
+
+  &__shade {
+    color: var(--Neutral-Onyx-light, #b1b0ad);
+    background: var(--White-Glass-White-004, rgba(255, 255, 255, 0.04));
+
+    &:focus-visible {
+      border-radius: var(--S, 18px);
+      border: 1px solid var(--Neutral-Onyx-light, #b1b0ad);
+      background: var(--White-Glass-White-006, rgba(255, 255, 255, 0.06));
+      box-shadow: 0px 0px 0px 4px rgba(255, 208, 86, 0.2);
+    }
+
+    &:hover {
+      border: none;
+      box-shadow: none;
+      background: var(--White-Glass-White-006, rgba(255, 255, 255, 0.06));
+    }
+
+    &:active {
+      box-shadow: none;
+      background: var(--White-Glass-White-008, rgba(255, 255, 255, 0.08));
+    }
+
+    &--spinner {
+      background: var(--White-Glass-White-008, rgba(255, 255, 255, 0.08));
+      color: #b1b0ad;
+    }
+  }
+
+  &__disabled {
+    pointer-events: none;
+    color: $onyx-medium;
+    background-color: $onyx-darker;
+  }
+
+  &--large,
+  &--small {
+    font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+    outline: none;
+    border: none;
+    display: flex;
+    justify-content: center;
+    font-weight: 500;
+    border-radius: 18px;
+    cursor: pointer;
+    align-items: center;
+  }
+
+  &--large {
+    font-size: 18px;
+    padding: 20px 24px 18px 24px;
+    letter-spacing: 0.36px;
+    line-height: 140%;
+    height: 56px;
+  }
+
+  &--small {
+    font-size: 16px;
+    padding: 10px 14px 10px 14px;
+    letter-spacing: 0.32px;
+    height: 40px;
+  }
+}

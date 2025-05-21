@@ -1,0 +1,92 @@
+@use "./utils/variables" as *;
+
+.networkSelector {
+  display: flex;
+  height: 36px;
+  padding: 6px 10px 6px px;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  outline: none;
+  border: none;
+  display: inline-flex;
+  border-radius: var(--FULL, 1000px);
+  background: $white-004;
+  z-index: 999;
+  cursor: pointer;
+
+  img {
+    width: 24px;
+    height: 24px;
+    border-radius: 1000px;
+    overflow: hidden;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  p {
+    font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.043px;
+    color: var(--Neutral-White, #fff);
+    display: flex;
+    padding-top: 2px;
+    align-items: center;
+    gap: 2px;
+    margin: 0;
+  }
+
+  .From__SVG {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: $white-008;
+  }
+
+  &:focus-visible {
+    border-radius: var(--FULL, 1000px);
+    border: 1px solid $beryl-pure;
+    background: $white-008;
+    box-shadow: 0px 0px 0px 4px rgba(255, 208, 86, 0.2);
+  }
+
+  &:active {
+    background: $white-012;
+  }
+
+  &__DefaultImage1 img {
+    filter: hue-rotate(0deg);
+  }
+
+  &__DefaultImage2 img {
+    filter: hue-rotate(30deg);
+  }
+
+  &__DefaultImage3 img {
+    filter: hue-rotate(60deg);
+  }
+
+  &__DefaultImage4 img {
+    filter: hue-rotate(90deg);
+  }
+
+  &__DefaultImage5 img {
+    filter: hue-rotate(120deg);
+  }
+
+  &__DefaultImage6 img {
+    filter: hue-rotate(150deg);
+  }
+
+  &.disabled {
+    pointer-events: none;
+  }
+}

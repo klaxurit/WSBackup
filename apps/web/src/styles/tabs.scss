@@ -1,0 +1,78 @@
+.FormTab {
+  display: flex;
+  gap: 8px;
+  font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  position: relative;
+
+  &__ExploreTabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 0 0;
+    padding-left: 6px;
+    padding-right: 16px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    height: 32px;
+    width: 88px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 999999px;
+    z-index: 0;
+    transition: transform 0.2s ease-in-out;
+    transform: translateX(0);
+  }
+}
+
+.Tab {
+  cursor: pointer;
+  color: var(--Neutral-Onyx-pure, #8a8984);
+  text-align: center;
+  font-family: "TT Hoves", system-ui, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  letter-spacing: -0.038px;
+  display: flex;
+  height: 32px;
+  width: 88px;
+  padding: 1px 6px 0px 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s ease-in-out;
+}
+
+.disabled {
+  cursor: pointer;
+}
+
+.selected {
+  color: var(--Neutral-White, #fff);
+}
+
+.Tab::before {
+  display: none;
+}
+
+.FormTab[data-selected="0"]::before {
+  transform: translateX(0);
+}
+
+.FormTab[data-selected="1"]::before {
+  transform: translateX(96px);
+}
+
+.FormTab[data-selected="2"]::before {
+  transform: translateX(192px);
+}
+
+.FormTab[data-selected="3"]::before {
+  transform: translateX(288px);
+}

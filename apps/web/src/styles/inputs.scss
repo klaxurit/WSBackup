@@ -1,0 +1,320 @@
+@use "./utils/variables" as *;
+
+.Inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  width: 100%;
+  z-index: 0;
+
+  .From {
+    display: flex;
+    height: 128px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px 16px 16px 16px;
+    border-radius: 24px;
+    border: 1px solid $white-002;
+    background: $white-004;
+    z-index: 0;
+
+    &__Label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--Neutral-Onyx-pure, #8a8984);
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 140%;
+      letter-spacing: -0.029px;
+    }
+
+    button {
+      display: flex;
+      height: 36px;
+      padding: 6px 10px 6px 10px;
+      align-items: center;
+      gap: 4px;
+      color: var(--Neutral-Onyx-blacker-bis, #12110e);
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 18px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 140%;
+      letter-spacing: -0.043px;
+    }
+
+    &:hover {
+      border: 1px solid $white-004;
+    }
+
+    &:focus-within {
+      border: 1px solid $white-008;
+    }
+
+    &__AmountsAndChain {
+      display: flex;
+      align-items: flex-start;
+      align-self: stretch;
+    }
+
+    &__Details {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      align-self: stretch;
+    }
+
+    &__Amounts {
+      display: flex;
+      height: 40px;
+      align-items: center;
+      flex: 1 0 0;
+    }
+
+    &__LogosAndBalance {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .tooltip {
+        transform: translate(35%, -45px);
+        text-align: center;
+      }
+    }
+
+    &__MyBalance {
+      color: $onyx-pure-bis;
+      text-align: right;
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    &__Balance {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+    }
+
+    &__Amount {
+      color: var(--Neutral-Onyx-pure, #8a8984);
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 140%;
+      letter-spacing: -0.029px;
+    }
+
+    &__Max {
+      margin: 0;
+      color: $beryl-pure;
+      text-align: right;
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 140%;
+      cursor: pointer;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 2px;
+      flex: 1 0 0;
+
+      &.disabled {
+        color: $onyx-medium;
+        pointer-events: none;
+      }
+    }
+
+    &__Input {
+      background: none;
+      border: none;
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 120%;
+      letter-spacing: -0.096px;
+      width: 100%;
+      font-family: "TT Hoves", system-ui, sans-serif;
+      color: $white-040;
+      caret-color: $beryl-pure;
+      -moz-appearance: textfield;
+      appearance: textfield;
+      outline: none;
+
+      &:not(:placeholder-shown) {
+        color: var(--neutral-white, #fff);
+      }
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      &::placeholder {
+        color: var(--neutral-onyx-pure, #868391);
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &__Convertion {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      align-self: stretch;
+      color: var(--Neutral-Onyx-pure, #8a8984);
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 140%;
+      letter-spacing: -0.029px;
+      margin: 0;
+    }
+
+    &__Logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    &__disabled {
+      pointer-events: none;
+    }
+  }
+
+  .From--focus::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    z-index: -1;
+  }
+
+  .To {
+    display: flex;
+    position: relative;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 16px 16px 16px;
+    border-radius: 24px;
+    border: 1px solid $white-002;
+    background: $white-004;
+    z-index: 0;
+    height: 128px;
+
+    &:hover {
+      border: 1px solid $white-004;
+    }
+
+    &:focus-within {
+      border: 1px solid $white-008;
+    }
+
+    &__InputWrapper {
+      display: flex;
+      flex: 1;
+    }
+
+    &__Input {
+      background: none;
+      border: none;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 32px;
+      width: auto;
+      resize: none;
+      padding: 0;
+      margin: 0;
+      font-family: "TT Hoves", system-ui, sans-serif;
+      color: var(--neutral-onyx-pure, #868391);
+
+      &:not(:placeholder-shown) {
+        color: var(--neutral-white, #fff);
+      }
+
+      ::placeholder {
+        color: var(--neutral-onyx-pure, #868391);
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &__Type {
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 32px;
+      font-family: "TT Hoves", system-ui, sans-serif;
+      color: var(--neutral-onyx-pure, #868391);
+      margin: 0;
+    }
+
+    &__Logos {
+      display: flex;
+      align-items: center;
+    }
+
+    &--focus {
+      border-color: #7950f2;
+    }
+
+    &--success {
+      border-color: #00ffa3;
+    }
+
+    &--error {
+      border-color: #ff5c52;
+    }
+
+    button {
+      display: flex;
+      height: 36px;
+      padding: 6px 10px 6px 10px;
+      align-items: center;
+      gap: 4px;
+      color: var(--Neutral-Onyx-blacker-bis, #12110e);
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 18px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 140%;
+      letter-spacing: -0.043px;
+    }
+  }
+
+  .To--focus::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    z-index: -1;
+  }
+}

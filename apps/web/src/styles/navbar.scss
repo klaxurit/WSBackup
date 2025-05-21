@@ -1,0 +1,39 @@
+.Navbar {
+  width: 100%;
+  backdrop-filter: blur(10px);
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+
+  &.transparent {
+    background-color: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+  }
+
+  &__Content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__Menu {
+    display: flex;
+    align-items: center;
+  }
+
+  &__ConnectButton {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.ConnectButtonPlaceholder {
+  width: 120px;
+  height: 40px;
+}

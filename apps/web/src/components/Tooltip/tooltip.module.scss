@@ -1,0 +1,75 @@
+@import "../../../styles/utils/variables";
+
+.tooltip {
+  color: $onyx-light;
+  font-family: "TT Hoves", system-ui, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: -0.029px;
+  position: absolute;
+  transform: translate(146%);
+  padding: 8px 10px;
+  border-radius: var(--4XS, 10px);
+  border: 1px solid $white-002;
+  background: $onyx-black;
+
+  a {
+    text-decoration: none;
+    color: $beryl-pure;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 19.5px;
+    left: -7px;
+    background-image: url("/cursor.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 8px;
+    height: 12.045px;
+    transform: rotate(0deg);
+  }
+
+  &__MaxSlippage {
+    transform: translate(142%);
+
+    &::after {
+      bottom: 43.5px;
+    }
+  }
+
+  &__Fee {
+    transform: translate(142%);
+
+    &::after {
+      bottom: 36.5px;
+    }
+  }
+
+  &__OrderRoutingTooltip {
+    transform: translate(130%);
+    bottom: -33px;
+
+    &::after {
+      bottom: 35.5px;
+    }
+  }
+
+  &__NetworkCost {
+    transform: translate(141%);
+    bottom: -48px;
+
+    &::after {
+      bottom: 50.5px;
+    }
+  }
+}

@@ -1,0 +1,56 @@
+@use "./utils/variables" as *;
+
+.iconLink {
+  padding: 4px;
+  margin: 0;
+  border-radius: var(--5XS, 8px);
+  background: $white-004;
+  border: none;
+  outline: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  &:focus-visible {
+    border-radius: var(--5XS, 8px);
+    border: 1px solid $beryl-pure;
+    background: $white-006;
+    box-shadow: 0px 0px 0px 4px rgba(255, 208, 86, 0.20);
+    svg {
+      path {
+        stroke: $onyx-light;
+      }
+    }
+  }
+  &:hover {
+    svg {
+      path {
+        stroke: $onyx-light;
+      }
+    }
+    background: $white-006;
+  }
+  &:active {
+    svg {
+      path {
+        stroke: $onyx-lighter;
+      }
+    }
+    background: $white-008;
+  }
+  &--disabled {
+    background: var(--Neutral-Onyx-darker, #2D2C2A);
+    svg {
+      path {
+        stroke: $onyx-medium;
+
+      }
+    }
+  }
+  svg {
+    width: 16px;
+    height: 16px;
+    path {
+      stroke: $onyx-pure;
+    }
+  }
+}

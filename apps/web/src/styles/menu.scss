@@ -1,0 +1,29 @@
+@use "./utils/variables" as *;
+
+.Menu {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  &__Logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  &__Links {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+
+    svg {
+      padding: 3px 3px 3px 3px;
+    }
+  }
+}
