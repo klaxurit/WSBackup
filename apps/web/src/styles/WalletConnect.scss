@@ -1,0 +1,42 @@
+.wallet-connect {
+  background-color: var(--onyx-blacker-bis);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+  color: var(--white);
+
+  .wallet-info {
+    margin-bottom: 16px;
+
+    .wallet-address {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .label {
+        color: var(--white);
+        opacity: 0.7;
+      }
+
+      .value {
+        color: var(--beryl-pure);
+        font-family: 'Space Mono', monospace;
+      }
+    }
+  }
+
+  .disconnect-button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--onyx-black);
+    color: var(--white);
+    border: 1px solid var(--onyx-pure);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--onyx-pure);
+    }
+  }
+}

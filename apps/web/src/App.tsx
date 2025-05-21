@@ -2,11 +2,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './styles/layout/default.scss'
 import Navbar from './components/Navbar/Navbar'
 import SwapForm from './components/SwapForm/SwapForm'
+import { WalletConnect } from './components/WalletConnect/WalletConnect'
 import { useState } from 'react'
 
 function App() {
   const [activeTab, setActiveTab] = useState('swap')
-  const [isConnected, setIsConnected] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const handleTabChange = (tab: string) => {
@@ -28,9 +28,9 @@ function App() {
                 <SwapForm
                   activeTab={activeTab}
                   handleTabChange={handleTabChange}
-                  isConnected={isConnected}
                   toggleSidebar={toggleSidebar}
                 />
+                {isSidebarOpen && <WalletConnect />}
               </div>
             } />
             <Route path="/explore" element={<div>Explore Page</div>} />

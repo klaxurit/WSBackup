@@ -1,60 +1,72 @@
-import React from 'react';
+import { useCallback } from 'react';
+import { useAppSelector } from '../../store/hooks';
+import { useWallet } from '../../hooks/useWallet';
 import '../../styles/buttons.scss';
 
 interface ConnectButtonProps {
-  text?: string;
-  size?: 'small' | 'large';
-  type?: 'shade' | 'main' | 'accent' | 'disabled';
-  onClick: () => void;
+  size?: 'large' | 'small';
+  onClick?: () => void;
   dominantColor?: string;
   secondaryColor?: string;
-  isConnected?: boolean;
   tokenSelected?: boolean;
   amountEntered?: boolean;
   customClassName?: string;
 }
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
-  text,
   size = 'large',
-  type = 'shade',
   onClick,
   dominantColor,
   secondaryColor,
-  isConnected = false,
   tokenSelected = false,
   amountEntered = false,
   customClassName = '',
 }) => {
+  const { isConnected } = useAppSelector((state) => state.wallet);
+  const { connect } = useWallet();
+
+  const handleConnect = useCallback(async () => {
+    try {
+      await connect('injected');
+      if (onClick) onClick();
+    } catch (err) {
+      console.error('Erreur de connexion:', err);
+    }
+  }, [connect, onClick]);
+
   const getButtonState = () => {
     if (!isConnected) {
       return {
-        text: text || 'Connect Wallet',
-        type: type,
-        disabled: false
+        text: 'Connect Wallet',
+        type: 'shade',
+        disabled: false,
+        onClick: handleConnect
       };
     } else if (!tokenSelected) {
       return {
-        text: 'Select Meme',
+        text: 'Select token',
         type: 'disabled',
-        disabled: true
+        disabled: true,
+        onClick: undefined
       };
     } else if (!amountEntered) {
       return {
         text: 'Enter Amount',
         type: 'disabled',
-        disabled: true
+        disabled: true,
+        onClick: undefined
       };
     } else {
       return {
         text: 'Swap',
         type: 'main',
-        disabled: false
+        disabled: false,
+        onClick: onClick
       };
     }
   };
 
-  const { text: buttonText, type: buttonType, disabled } = getButtonState();
+  const { text: buttonText, type: buttonType, disabled, onClick: buttonClick } = getButtonState();
 
   const className = `btn btn--${size} btn__${buttonType} ${customClassName}`.trim();
 
@@ -65,7 +77,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   return (
     <button
       className={className}
-      onClick={onClick}
+      onClick={buttonClick}
       disabled={disabled}
       style={style}
     >

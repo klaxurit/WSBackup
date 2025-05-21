@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useCallback } from "react";
+import { useAppSelector } from "../../store/hooks";
 import "../../styles/swapForm.scss";
 import "../../styles/inputs.scss";
 import "../../styles/iconLink.scss";
@@ -20,7 +21,6 @@ import { useBackgroundImage } from "../../hooks/useBackgroundImage";
 interface FormProps {
   activeTab: string;
   handleTabChange: (newTab: string) => void;
-  isConnected: boolean;
   toggleSidebar: () => void;
   dominantColor?: string;
   secondaryColor?: string;
@@ -33,7 +33,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
   ({
     activeTab,
     handleTabChange,
-    isConnected,
     toggleSidebar,
     dominantColor,
     secondaryColor,
@@ -50,6 +49,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     // const status = useAppSelector((s) => s.swapForm.status)
     // const { data: huahuaToken } = useToken("uhuahua");
 
+    const { isConnected } = useAppSelector((state) => state.wallet);
     const { toggleBackground, currentBackground } = useBackgroundImage();
     const status = "idle";
 
@@ -164,10 +164,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
           <div className="Form__ConnectBtnWrapper">
             <ConnectButton
               size="large"
-              onClick={() => console.log("clicked")}
-              isConnected={isConnected}
-              // tokenSelected={!!tokenIn && !!tokenOut}
-              // amountEntered={!!amountIn}
+              onClick={toggleSidebar}
+              tokenSelected={false}
+              amountEntered={false}
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
             />
