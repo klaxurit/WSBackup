@@ -11,19 +11,14 @@
   width: 100%;
   height: 100%;
 
-  @media (max-height: 785px) {
-    top: 47px;
-  }
-
   .Modal,
   .Drawer {
-    .Content {
+    &__Content {
       display: flex;
       height: auto;
       padding: 16px 12px 16px 12px;
       flex-direction: column;
       align-items: flex-start;
-      gap: 8px;
       align-self: stretch;
       overflow-y: scroll;
       overflow-x: hidden;
@@ -42,6 +37,11 @@
           border-radius: var(--6XS, 6px);
         }
       }
+    }
+    &__Item {
+      display: flex;
+      align-items: center;
+      width: 100%;
     }
   }
 
@@ -72,8 +72,18 @@
     border-radius: var(--XL, 28px);
     border: 1px solid var(--Neutral-Onyx-darker-ters, #1d1c1a);
     background: var(--Neutral-Onyx-blacker-bis, #12110e);
-    top: 168px;
+    top: 90px;
     box-sizing: border-box;
+
+    &__HeaderClose {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+    }
 
     @media (max-height: 785px) {
       height: auto;
@@ -89,7 +99,7 @@
 
     &__Header {
       display: flex;
-      padding: 16px 12px;
+      padding: 16px 12px 8px 12px;
       justify-content: center;
       align-items: center;
       gap: 12px;

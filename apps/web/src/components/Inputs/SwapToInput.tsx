@@ -1,10 +1,9 @@
 "use client";
-import { useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import "../../styles/inputs.scss";
 import "../../styles/buttons.scss";
 import NetworkSelector from "../Buttons/NetworkSelector";
 // import { Token } from "../Table/types";
-import React from "react";
 // import { SwapData } from "@/types/swap";
 // import { useAppSelector } from "@/lib/hooks";
 
@@ -16,6 +15,11 @@ interface ToInputProps {
   secondaryColor?: string;
   onToggleNetworkList?: (isOpen: boolean) => void;
   isHomePage?: boolean;
+  balance?: string;
+  loading?: boolean;
+  isOverBalance?: boolean;
+  inputValue?: string;
+  onInputChange?: (value: string) => void;
 }
 
 export const SwapToInput: React.FC<ToInputProps> = React.memo(
@@ -27,13 +31,18 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     dominantColor,
     secondaryColor,
     isHomePage,
+    balance = "0",
+    loading = false,
+    isOverBalance = false,
+    inputValue = "",
+    onInputChange,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
     // TODO: À implémenter avec Redux
     // const amountIn = useAppSelector((s) => s.swapForm.amountIn)
     const amountIn = 0; // Valeur par défaut pour l'affichage
 
-    const inputValue = useMemo(() => {
+    const inputValueMemo = useMemo(() => {
       if (!steps || steps.totalRatio === 0 || !amountIn) return 0;
       return steps.totalRatio * amountIn;
     }, [steps, amountIn]);
@@ -44,14 +53,14 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
           <p>Sell</p>
         </div>
         <div className="From__AmountsAndChain">
-          <div className="From__Amounts">
+          <div className="From__Amounts" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <input
               ref={textareaRef}
               className="From__Input"
               value={inputValue}
               type="number"
               placeholder="0"
-              disabled={true}
+              onChange={e => onInputChange && onInputChange(e.target.value)}
             />
           </div>
           <div className="From__LogosAndBalance">

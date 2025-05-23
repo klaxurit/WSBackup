@@ -5,7 +5,7 @@ import { berachain } from 'viem/chains';
 // Configuration du client viem pour Berachain mainnet
 const publicClient = createPublicClient({
   chain: berachain,
-  transport: http('https://rpc.berachain.com/')
+  transport: http('https://api.henlo-winnie.dev/v1/mainnet/29d1c692-5145-4ae5-8bef-42f00f5f4671')
 });
 
 export const useBeraname = (address?: string) => {

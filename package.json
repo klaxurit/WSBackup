@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "@tanstack/react-query": "^5.76.1",
+    "@web3modal/wagmi": "^5.1.11",
     "viem": "^2.30.0",
     "wagmi": "^2.15.4"
   }

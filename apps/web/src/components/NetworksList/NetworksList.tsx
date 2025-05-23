@@ -2,49 +2,53 @@ import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import "../../styles/networksList.scss";
 import { SearchBar } from "../SearchBar/SearchBar";
+import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
+import { useAppSelector } from '../../store/hooks';
+import { NetworkItem } from './NetworkItem';
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 // Types simplifiés pour l'affichage
 interface Token {
-  denom: string;
   name: string;
+  symbol: string;
+  address: string | null;
   logo?: string;
+  decimals: number;
 }
 
 interface NetworksListProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (token: Token) => void;
-  selectedToken?: Token | null;
+  onSelect: (token: BerachainToken) => void;
+  selectedToken?: BerachainToken | null;
+  tokens: BerachainToken[];
+  balances: { [symbol: string]: string };
+  loading: boolean;
 }
-
-// Données de test
-const MOCK_TOKENS: Token[] = [
-  { denom: "token1", name: "Token 1", logo: "/tokens/token1.png" },
-  { denom: "token2", name: "Token 2", logo: "/tokens/token2.png" },
-  { denom: "token3", name: "Token 3", logo: "/tokens/token3.png" },
-  { denom: "token4", name: "Token 4", logo: "/tokens/token4.png" },
-  { denom: "token5", name: "Token 5", logo: "/tokens/token5.png" },
-];
 
 export const NetworksList = ({
   isOpen,
   onClose,
   onSelect,
   selectedToken,
+  tokens,
+  balances,
+  loading,
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
 
-  const handleTokenSelect = (token: Token) => {
+  const handleTokenSelect = (token: BerachainToken) => {
     onSelect(token);
     onClose();
   };
 
   const filteredTokens = useMemo(() => {
-    if (searchValue === "") return MOCK_TOKENS;
-    return MOCK_TOKENS.filter((token) =>
-      token.name.toLowerCase().includes(searchValue.toLowerCase())
+    if (searchValue === "") return tokens;
+    return tokens.filter((token) =>
+      token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(searchValue.toLowerCase())
     );
-  }, [searchValue]);
+  }, [searchValue, tokens]);
 
   if (!isOpen) return null;
 
@@ -53,13 +57,17 @@ export const NetworksList = ({
       <div className="Modal">
         <div className="Modal__Header">
           <div className="Modal__HeaderContent">
-            <span onClick={onClose}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" onClick={onClose}>
-                <path d="M12.9998 7.99862H3.66908M3.66908 7.99862H3.6665M3.66908 7.99862L8.33438 3.33331L3.66908 8.00134L8.33438 12.6666" stroke="white" strokeWidth="1.6" />
+            <span className="Modal__HeaderTitle">Select a token</span>
+            <button
+              className="Modal__HeaderClose"
+              onClick={onClose}
+              tabIndex={0}
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke-width="8" style={{ width: '24px', height: '24px', color: 'rgba(255, 255, 255, 0.65)' }}>
+                <path d="M12.5303 4.53033C12.8232 4.23744 12.8232 3.76256 12.5303 3.46967C12.2374 3.17678 11.7626 3.17678 11.4697 3.46967L12.5303 4.53033ZM3.46967 11.4697C3.17678 11.7626 3.17678 12.2374 3.46967 12.5303C3.76256 12.8232 4.23744 12.8232 4.53033 12.5303L3.46967 11.4697ZM4.53033 3.46967C4.23744 3.17678 3.76256 3.17678 3.46967 3.46967C3.17678 3.76256 3.17678 4.23744 3.46967 4.53033L4.53033 3.46967ZM11.4697 12.5303C11.7626 12.8232 12.2374 12.8232 12.5303 12.5303C12.8232 12.2374 12.8232 11.7626 12.5303 11.4697L11.4697 12.5303ZM11.4697 3.46967L3.46967 11.4697L4.53033 12.5303L12.5303 4.53033L11.4697 3.46967ZM3.46967 4.53033L11.4697 12.5303L12.5303 11.4697L4.53033 3.46967L3.46967 4.53033Z" fill="currentColor"></path>
               </svg>
-            </span>
-            <p className="Modal__HeaderTitle">Select meme</p>
-            <span className="Modal__HeaderBlankIcon"></span>
+            </button>
           </div>
         </div>
         <SearchBar
@@ -69,14 +77,14 @@ export const NetworksList = ({
         />
         <div className="Modal__Content">
           {filteredTokens.map((token) => (
-            <div
-              key={token.denom}
-              className={`Modal__Item ${selectedToken?.denom === token.denom ? "selected" : ""}`}
-              onClick={() => handleTokenSelect(token)}
-            >
-              <img src={token.logo || "/default-token.png"} alt={token.name} className="Modal__ItemImage" />
-              <span className="Modal__ItemName">{token.name}</span>
-            </div>
+            <NetworkItem
+              key={token.symbol}
+              token={token}
+              isSelected={selectedToken?.symbol === token.symbol}
+              onSelect={handleTokenSelect.bind(null, token)}
+              balance={balances[token.symbol]}
+              loading={loading}
+            />
           ))}
         </div>
       </div>

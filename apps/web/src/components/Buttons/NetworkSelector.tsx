@@ -1,17 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { NetworksList } from "../NetworksList/NetworksList";
 import "../../styles/networkSelector.scss";
+import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
+import { useTokenBalances } from '../../hooks/useTokenBalances';
+import { useAppSelector } from '../../store/hooks';
+import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 // Types simplifiés pour l'affichage
 interface Token {
-  denom: string;
   name: string;
-  logo?: string;
+  symbol: string;
+  address: string;
+  decimals: number;
+  logoURI: string;
+  logoSymbol?: string;
 }
 
 interface NetworkSelectorProps {
-  preSelected?: Token | null;
-  onSelect?: (token: Token) => void;
+  preSelected?: BerachainToken | null;
+  onSelect?: (token: BerachainToken) => void;
   customClassName?: string;
   showSvg?: boolean;
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -35,7 +43,10 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   isHomePage,
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<Token | null>(preSelected || null);
+  const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
+  const address = useAppSelector((state) => state.wallet.address);
+  const tokens = useBerachainTokenList();
+  const { balances, loading } = useTokenBalances(tokens, address);
 
   useEffect(() => {
     if (preSelected) {
@@ -43,22 +54,15 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
     }
   }, [preSelected]);
 
-  const handleNetworksListToggle = () => {
+  const handleNetworksListToggle = useCallback(() => {
     const newState = !isNetworksListOpen;
     setIsNetworksListOpen(newState);
     if (onToggleNetworkList) {
       onToggleNetworkList(newState);
     }
-  };
+  }, [isNetworksListOpen, onToggleNetworkList]);
 
-  const getDisplayName = (token: Token) => {
-    if (!token || !token.denom) return 'Unknown';
-    const sdenom = token.denom.split("/");
-    const name = token.name && !token.name.startsWith('factory/') ? token.name : sdenom[sdenom.length - 1];
-    return truncateText(name, 10);
-  };
-
-  const handleTokenSelect = (token: Token) => {
+  const handleTokenSelect = useCallback((token: BerachainToken) => {
     setTimeout(() => {
       setSelectedToken(token);
       setIsNetworksListOpen(false);
@@ -69,6 +73,11 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
         onToggleNetworkList(false);
       }
     }, 0);
+  }, [onSelect, onToggleNetworkList]);
+
+  const getDisplayName = (token: Token) => {
+    if (!token || !token.symbol) return 'Unknown';
+    return token.symbol;
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -115,7 +124,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
         <>
           <span className="Form__PoolBtnContent">
             <img
-              src={selectedToken.logo || DEFAULT_IMAGE}
+              src={selectedToken.logoURI}
               alt={selectedToken.name}
               style={{ width: '24px', height: '24px' }}
             />
@@ -128,7 +137,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
       ) : (
         <>
           <img
-            src={selectedToken.logo || DEFAULT_IMAGE}
+            src={selectedToken.logoURI}
             alt={selectedToken.name}
             style={{ width: '16px', height: '16px' }}
           />
@@ -164,6 +173,9 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
           onClose={handleNetworksListToggle}
           onSelect={handleTokenSelect}
           selectedToken={selectedToken || preSelected}
+          tokens={tokens}
+          balances={balances}
+          loading={loading}
         />
       )}
     </>
