@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useRef, useState, useMemo } from "react";
+import { useCallback, useRef, useState, useMemo, useEffect } from "react";
 import "../../styles/inputs.scss";
 import NetworkSelector from "../Buttons/NetworkSelector";
 import React from "react";
@@ -20,6 +20,7 @@ interface FromInputProps {
   onAmountChange?: (amount: string) => void;
   onTokenSelect?: (token: BerachainToken) => void;
   defaultValue?: number;
+  value?: string;
 }
 
 function formatAmount(amount: string | number): string {
@@ -58,17 +59,21 @@ export const FromInput: React.FC<FromInputProps> = React.memo(
     onAmountChange,
     onTokenSelect,
     defaultValue,
+    value,
   }) => {
     const address = useAppSelector((state) => state.wallet.address);
     const tokens = useBerachainTokenList();
     const [currentToken, setCurrentToken] = useState<BerachainToken | null>(preSelectedToken || null);
-    const [inputValue, setInputValue] = useState<string>(`${defaultValue || ""}`);
+    const inputValue = value ?? "";
     const tokenArray = useMemo(() => currentToken ? [currentToken] : [], [currentToken]);
     const { balances, loading } = useTokenBalances(tokenArray, address) as { balances: Record<string, string>, loading: boolean };
 
+    useEffect(() => {
+      setCurrentToken(preSelectedToken || null);
+    }, [preSelectedToken]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setInputValue(value);
       onAmountChange && onAmountChange(value);
     };
 
@@ -80,7 +85,6 @@ export const FromInput: React.FC<FromInputProps> = React.memo(
     const setMax = useCallback(() => {
       if (!currentToken) return;
       const max = getMaxWithFee(balances[currentToken.symbol] || "0", currentToken.symbol);
-      setInputValue(max);
       onAmountChange && onAmountChange(max);
     }, [onAmountChange, balances, currentToken]);
 

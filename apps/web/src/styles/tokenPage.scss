@@ -1,0 +1,474 @@
+@import "./styles/utils/variables";
+
+.Token {
+  display: flex;
+  padding: 0 124px 80px 124px;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  p,
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    padding: 0;
+  }
+
+  // LEFT SIDE
+  &__Left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    flex-shrink: 0;
+    max-width: 764px;
+  }
+
+  &__Right {
+    display: flex;
+    padding: 40px 0px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    flex-shrink: 0;
+    max-width: 400px;
+  }
+
+  &__ChartContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-self: stretch;
+  }
+
+  &__Breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__BreadcrumbsLink {
+    display: flex;
+    height: 28px;
+    padding: 1px 2px 0px 2px;
+    align-items: center;
+    gap: 4px;
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    text-align: center;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.038px;
+    border-radius: var(--6XS, 6px);
+
+    &__3 {
+      color: var(--Neutral-White, #fff);
+      text-align: center;
+      font-family: "TT Hoves", system-ui, sans-serif;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 140%;
+      letter-spacing: -0.038px;
+    }
+  }
+
+  &__BreadcrumbsChevron {
+    width: 14px;
+    height: 14px;
+  }
+
+  &__ChartHead {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    align-self: stretch;
+  }
+
+  &__ChartHeadTop {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    align-self: stretch;
+  }
+
+  &__SectionHead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    align-self: stretch;
+  }
+
+  &__SectionHeadTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 0 0;
+  }
+
+  &__SectionHeadSocials {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  &__SectionHeadSocial {
+    cursor: pointer;
+    display: flex;
+    width: 24px;
+    height: 28px;
+    padding: 2px 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--FULL, 1000px);
+    background: var(--White-Glass-White-004, rgba(255, 255, 255, 0.04));
+
+    svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__TitleSVG {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1000px;
+  }
+
+  &__TitleLabels {
+    display: flex;
+    padding-top: 2px;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+
+  &__SubtitleLabel {
+    display: flex;
+    padding-top: 3px;
+    align-items: center;
+    gap: 10px;
+    align-self: stretch;
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    font-family: "Roc Grotesk Regular";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.048px;
+  }
+
+  &__LabelValue {
+    color: var(--Neutral-White, #fff);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 120%;
+    letter-spacing: -0.058px;
+  }
+
+  &__LabelTicker {
+    display: flex;
+    padding-top: 3px;
+    align-items: center;
+    gap: 10px;
+    align-self: stretch;
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    font-family: "Roc Grotesk Regular";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.048px;
+  }
+
+  &__TitleSocialLinks {}
+
+  &__TokenChart {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    // gap: -48px;
+    align-self: stretch;
+  }
+
+  &__TokenSectionHead {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: stretch;
+    margin-bottom: -48px;
+  }
+
+  &__TokenPrice {
+    align-self: stretch;
+    color: var(--Neutral-White, #fff);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 120%;
+    letter-spacing: -0.096px;
+  }
+
+  &__TokenVariation {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  &__TokenVariationValue {
+    display: flex;
+    padding-top: 2px;
+    align-items: center;
+    gap: 2px;
+    align-self: stretch;
+    color: var(--Success-Amazonite-pure, #00ffa3);
+    font-family: "TT Hoves", system-ui, sans-serif;   
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.038px;
+  }
+
+  &__ChartAndLegends {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    align-self: stretch;
+  }
+
+  &__ChartAndHours {
+    display: flex;
+    height: 340px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1 0 0;
+  }
+
+  &__LineChart {
+    flex: 1 0 0;
+    align-self: stretch;
+    height: 315px;
+  }
+
+  &__HoursLegends {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    align-self: stretch;
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    text-align: center;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+  }
+
+  &__Hour {
+    width: 54px;
+  }
+
+  &__PriceLegends {
+    display: flex;
+    width: 80px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 28px;
+    align-self: stretch;
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+  }
+
+  &__ChipTabs {
+    display: flex;
+    padding: 4px;
+    align-items: flex-start;
+    gap: 8px;
+    border-radius: var(--FULL, 1000px);
+    border: 1px solid var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
+    background: var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
+    margin-top: -8px;
+  }
+
+  &__ChipTab {
+    display: flex;
+    height: 28px;
+    padding: 4px 11px 2px 11px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--FULL, 1000px);
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    text-align: center;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.038px;
+
+    // .active {
+    //   color: #0051fe;
+    //   background: rgba(0, 81, 254, 0.12);
+    // }
+    &.active {
+      color: var(--chip-active-color, #0051fe);
+      background: var(--chip-active-background, rgba(0, 81, 254, 0.12));
+    }
+  }
+
+  &__DetailSection {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    align-self: stretch;
+  }
+
+  &__DetailSectionTitle {
+    color: var(--Neutral-White, #fff);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 120%;
+    letter-spacing: -0.058px;
+  }
+
+  &__StatsCarousel {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    align-self: stretch;
+  }
+
+  &__StatCard {
+    display: flex;
+    width: 160px;
+    height: 60px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &__StatCardTitle {
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.038px;
+    align-self: stretch;
+  }
+
+  &__StatCardLabel {
+    align-self: stretch;
+    color: var(--Neutral-White, #fff);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 120%;
+    letter-spacing: -0.077px;
+  }
+
+  // RIGHT SIDE
+  &__SwapFormWrapper {
+    margin-top: -80px;
+  }
+
+  &__RightDS {
+    display: flex;
+    padding: 0px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    align-self: stretch;
+  }
+
+  &__RightDSTitle {
+    align-self: stretch;
+    color: var(--Neutral-White, #fff);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 120%;
+    letter-spacing: -0.058px;
+  }
+
+  &__RightDSDesc {
+    align-self: stretch;
+    color: var(--Neutral-White, #fff);
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.038px;
+  }
+
+  &__ChipTab {
+    display: flex;
+    height: 28px;
+    padding: 4px 11px 2px 11px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--FULL, 1000px);
+    color: var(--Neutral-Onyx-pure, #8a8984);
+    text-align: center;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.038px;
+    cursor: pointer;
+
+    &.activeYellow {
+      color: #0051fe;
+      background: rgba(0, 81, 254, 0.12);
+    }
+
+    &:focus-within {
+      display: inline-flex;
+      height: var(--M, 28px);
+      padding: 4px 11px 2px 11px;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      border-radius: var(--FULL, 1000px);
+      color: var(--chip-active-color, #0051fe);
+      background: var(--chip-active-background, rgba(0, 81, 254, 0.12));
+    }
+  }
+}
