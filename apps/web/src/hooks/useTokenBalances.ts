@@ -34,7 +34,13 @@ const ERC20_ABI = [
   },
 ];
 
-export function useTokenBalances(tokens, address) {
+interface Token {
+  address?: string;
+  symbol: string;
+  decimals?: number;
+}
+
+export function useTokenBalances(tokens: Token[], address: `0x${string}`) {
   const [balances, setBalances] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -54,36 +60,36 @@ export function useTokenBalances(tokens, address) {
         try {
           if (!token.address) {
             // BERA natif
-            const balance = await client.getBalance({ address });
+            const balance = await client.getBalance({ address: address as `0x${string}` });
             return { symbol: token.symbol, balance: formatEther(balance), loading: false };
           } else {
             // ERC20
             let decimals = token.decimals;
             if (decimals === undefined || decimals === null) {
               try {
-                decimals = await client.readContract({
-                  address: token.address,
+                decimals = Number(await client.readContract({
+                  address: token.address as `0x${string}`,
                   abi: ERC20_ABI,
                   functionName: 'decimals',
-                });
+                }));
               } catch {
                 decimals = 18; // fallback
               }
             }
             const rawBalance = await client.readContract({
-              address: token.address,
+              address: token.address as `0x${string}`,
               abi: ERC20_ABI,
               functionName: 'balanceOf',
               args: [address],
             });
-            return { symbol: token.symbol, balance: formatUnits(rawBalance, decimals), loading: false };
+            return { symbol: token.symbol, balance: formatUnits(rawBalance as bigint, decimals as number), loading: false };
           }
         } catch (e) {
           return { symbol: token.symbol, balance: '0', loading: false };
         }
       }));
       if (!cancelled) {
-        const balancesObj = {};
+        const balancesObj: { [symbol: string]: string } = {};
         results.forEach(({ symbol, balance }) => {
           balancesObj[symbol] = balance;
         });

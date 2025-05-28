@@ -10,8 +10,6 @@ export interface BerachainToken {
   logoSymbol?: string;
 }
 
-const BERACHAIN_DEFAULT_SYMBOLS = ['BERA', 'wBERA', 'HONEY', 'BGT'];
-
 const getImageName = (token: { symbol: string; logoSymbol?: string }) => {
   if (token.logoSymbol) return token.logoSymbol;
   return token.symbol.toLowerCase();

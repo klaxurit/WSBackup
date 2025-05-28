@@ -16,7 +16,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
 }) => {
   const { isConnected, address, balance } = useAppSelector((state) => state.wallet);
   const { connect, disconnect } = useWallet();
-  const beraname = useBeraname(address || undefined);
+  const { beraname, isLoading, error } = useBeraname(address || undefined);
   const formatAddress = (addr: string) => {
     if (!addr) return '';
     const start = addr.substring(0, 6);
@@ -38,17 +38,11 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
     if (onClick) onClick();
   }, [disconnect, onClick]);
 
-  const className = `btn btn--small btn__shade ${customClassName}`.trim();
-
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <button
-        className={className}
+        className={`Navbar__ConnectButton btn btn--small btn__shade ${customClassName}`.trim()}
         onClick={isConnected ? handleDisconnect : handleConnect}
-        style={{
-          color: 'white',
-          border: 'none',
-        }}
       >
         {isConnected && address ? (
           beraname ? `${beraname}` : `⛓️ ${formatAddress(address)}`
@@ -56,20 +50,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
       </button>
       {isConnected && (
         <button
-          className="btn btn--small btn__disabled"
-          style={{
-            color: '#FFD056',
-            background: 'rgba(255,255,255,0.08)',
-            border: 'none',
-            cursor: 'default',
-            minWidth: 90,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            fontWeight: 600,
-            fontSize: 14
-          }}
+          className="Navbar__BalanceButton btn btn--small btn__disabled"
           disabled
         >
           {balance === undefined || balance === null || balance === '' ? (

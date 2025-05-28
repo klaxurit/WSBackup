@@ -42,5 +42,5 @@ export const useBeraname = (address?: string) => {
     }
   }, [address, resolveBeraname]);
 
-  return beraname;
+  return { beraname, isLoading, error };
 };

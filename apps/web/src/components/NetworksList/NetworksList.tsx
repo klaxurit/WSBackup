@@ -1,20 +1,9 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import "../../styles/networksList.scss";
 import { SearchBar } from "../SearchBar/SearchBar";
-import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
-import { useAppSelector } from '../../store/hooks';
 import { NetworkItem } from './NetworkItem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-
-// Types simplifiés pour l'affichage
-interface Token {
-  name: string;
-  symbol: string;
-  address: string | null;
-  logo?: string;
-  decimals: number;
-}
 
 interface NetworksListProps {
   isOpen: boolean;

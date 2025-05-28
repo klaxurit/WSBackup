@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../../styles/components/swapDetails.scss";
 import { HuahuaNetworkYellow } from "../SVGs/LogoSVGs";
 import { Tooltip } from "../Tooltip/Tooltip";
 import "../../styles/components/tooltip.scss";
-// import { SwapData } from "@/types/swap";
-// import { useAppSelector } from "@/lib/hooks";
 
 export const SwapDetails = ({ swapData }: { swapData: any }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullyOpen, setIsFullyOpen] = useState(false);
   const [currentTooltip, setCurrentTooltip] = useState<string | null>(null);
   const [hoveringTooltip, setHoveringTooltip] = useState(false);
-  // TODO: À implémenter avec Redux
-  // const tokenIn = useAppSelector((s) => s.swapForm.tokenIn);
-  // const tokenOut = useAppSelector((s) => s.swapForm.tokenOut);
-  const tokenIn = { symbol: "TOKEN1" }; // Valeur par défaut pour l'affichage
-  const tokenOut = { symbol: "TOKEN2" }; // Valeur par défaut pour l'affichage
+  const tokenIn = { symbol: "TOKEN1" };
+  const tokenOut = { symbol: "TOKEN2" };
 
   const toggleDetails = () => {
     setIsOpen(!isOpen);

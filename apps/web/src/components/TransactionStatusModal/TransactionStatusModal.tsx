@@ -118,7 +118,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
             <span className="TransactionModal__infoLabel">{swapInfo.networkLabel}</span>
             <span className="TransactionModal__infoContent">{swapInfo.networkValue}</span>
           </div>
-          <div className={`TransactionModal__detailsAnim${isDetailsOpen ? ' open' : ''}`}>
+          <div className={`TransactionModal__detailsAnim${isDetailsOpen ? ' TransactionModal__detailsAnim--open' : ''}`}>
             {shouldRenderDetails && (
               <div className="TransactionModal__details">
                 <div className="TransactionModal__infoRow">

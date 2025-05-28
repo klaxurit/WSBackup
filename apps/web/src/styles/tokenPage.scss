@@ -1,474 +1,588 @@
-@import "./styles/utils/variables";
-
 .Token {
-  display: flex;
-  padding: 0 124px 80px 124px;
-  justify-content: space-between;
-  align-items: flex-start;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
 
-  p,
-  h1,
-  h2,
-  h3,
-  h4 {
-    margin: 0;
-    padding: 0;
-  }
-
-  // LEFT SIDE
-  &__Left {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
-    flex-shrink: 0;
-    max-width: 764px;
-  }
-
-  &__Right {
-    display: flex;
-    padding: 40px 0px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
-    flex-shrink: 0;
-    max-width: 400px;
-  }
-
-  &__ChartContainer {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    align-self: stretch;
+  @media (max-width: 600px) {
+    padding: 8px;
+    min-width: 0;
   }
 
   &__Breadcrumbs {
     display: flex;
     align-items: center;
-    gap: 2px;
-  }
-
-  &__BreadcrumbsLink {
-    display: flex;
-    height: 28px;
-    padding: 1px 2px 0px 2px;
-    align-items: center;
-    gap: 4px;
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    text-align: center;
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 140%;
-    letter-spacing: -0.038px;
-    border-radius: var(--6XS, 6px);
-
-    &__3 {
-      color: var(--Neutral-White, #fff);
-      text-align: center;
-      font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 16px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 140%;
-      letter-spacing: -0.038px;
-    }
-  }
-
-  &__BreadcrumbsChevron {
-    width: 14px;
-    height: 14px;
-  }
-
-  &__ChartHead {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
-    align-self: stretch;
-  }
-
-  &__ChartHeadTop {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-    align-self: stretch;
-  }
-
-  &__SectionHead {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    align-self: stretch;
-  }
-
-  &__SectionHeadTitle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1 0 0;
-  }
-
-  &__SectionHeadSocials {
-    display: flex;
-    align-items: flex-start;
+    margin-bottom: 24px;
     gap: 8px;
-  }
+    color: #8A8984;
+    font-size: 14px;
 
-  &__SectionHeadSocial {
-    cursor: pointer;
-    display: flex;
-    width: 24px;
-    height: 28px;
-    padding: 2px 8px;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border-radius: var(--FULL, 1000px);
-    background: var(--White-Glass-White-004, rgba(255, 255, 255, 0.04));
+    &Link {
+      color: #8A8984;
+      text-decoration: none;
+      cursor: pointer;
 
-    svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
+      &:hover {
+        color: #fff;
+      }
+
+      &__3 {
+        color: #fff;
+      }
     }
-  }
 
-  &__TitleSVG {
-    display: flex;
-    width: 36px;
-    height: 36px;
-    justify-content: center;
-    align-items: center;
-    border-radius: 1000px;
-  }
-
-  &__TitleLabels {
-    display: flex;
-    padding-top: 2px;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-  }
-
-  &__SubtitleLabel {
-    display: flex;
-    padding-top: 3px;
-    align-items: center;
-    gap: 10px;
-    align-self: stretch;
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    font-family: "Roc Grotesk Regular";
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%;
-    letter-spacing: -0.048px;
-  }
-
-  &__LabelValue {
-    color: var(--Neutral-White, #fff);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 120%;
-    letter-spacing: -0.058px;
-  }
-
-  &__LabelTicker {
-    display: flex;
-    padding-top: 3px;
-    align-items: center;
-    gap: 10px;
-    align-self: stretch;
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    font-family: "Roc Grotesk Regular";
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%;
-    letter-spacing: -0.048px;
-  }
-
-  &__TitleSocialLinks {}
-
-  &__TokenChart {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    // gap: -48px;
-    align-self: stretch;
-  }
-
-  &__TokenSectionHead {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    align-self: stretch;
-    margin-bottom: -48px;
-  }
-
-  &__TokenPrice {
-    align-self: stretch;
-    color: var(--Neutral-White, #fff);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 40px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 120%;
-    letter-spacing: -0.096px;
-  }
-
-  &__TokenVariation {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-
-    svg {
+    &Chevron {
       width: 14px;
       height: 14px;
     }
   }
 
-  &__TokenVariationValue {
+  &__Content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 600px) {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+  }
+
+  &__Left {
+    border-radius: 16px;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding: 0;
+    }
+  }
+
+  &__Right {
     display: flex;
-    padding-top: 2px;
-    align-items: center;
-    gap: 2px;
-    align-self: stretch;
-    color: var(--Success-Amazonite-pure, #00ffa3);
-    font-family: "TT Hoves", system-ui, sans-serif;   
+    flex-direction: column;
+    gap: 24px;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding: 0;
+    }
+  }
+
+  &__ChartHead {
+    margin-bottom: 12px;
+
+    &Top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+  }
+
+  &__SectionHead {
+    width: 100%;
+
+    &Title {
+      margin: 0;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 600;
+    }
+  }
+
+  &__TitleLabels {
+    margin: 0;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  &__SubtitleLabel {
+    color: #8A8984;
     font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%;
-    letter-spacing: -0.038px;
+    margin-left: 8px;
   }
 
-  &__ChartAndLegends {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    align-self: stretch;
+  &__TokenChart {
+    text-align: right;
   }
 
-  &__ChartAndHours {
+  &__TokenSectionHead {
     display: flex;
-    height: 340px;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
     gap: 8px;
-    flex: 1 0 0;
   }
 
-  &__LineChart {
-    flex: 1 0 0;
-    align-self: stretch;
-    height: 315px;
-  }
-
-  &__HoursLegends {
+  &__SectionHeadTitle {
     display: flex;
-    align-items: flex-start;
-    gap: 28px;
-    align-self: stretch;
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    text-align: center;
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%;
-    letter-spacing: -0.029px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: 40px;
+    min-height: 40px;
+    width: 100%;
+
+    @media (max-width: 600px) {
+      font-size: 18px;
+    }
   }
 
-  &__Hour {
-    width: 54px;
-  }
-
-  &__PriceLegends {
+  &__SectionHeadTitleLeft {
     display: flex;
-    width: 80px;
-    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+  }
+
+  &__Logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #eee;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: flex-start;
-    gap: 28px;
-    align-self: stretch;
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%;
-    letter-spacing: -0.029px;
+    font-weight: 700;
+
+    @media (max-width: 600px) {
+      width: 28px;
+      height: 28px;
+      font-size: 15px;
+    }
   }
 
-  &__ChipTabs {
+  &__Logo--placeholder {
+    color: #888;
+    font-size: 18px;
+  }
+
+  &__Name {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 40px;
+    height: 40px;
     display: flex;
-    padding: 4px;
-    align-items: flex-start;
-    gap: 8px;
-    border-radius: var(--FULL, 1000px);
-    border: 1px solid var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
-    background: var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
-    margin-top: -8px;
+    align-items: center;
+    color: #fff;
   }
 
+  &__Ticker {
+    color: #aaa;
+    font-weight: 600;
+    font-size: 16px;
+    margin-left: 4px;
+    line-height: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__SectionHeadTitleRight {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 40px;
+  }
+
+  &__IconLink {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    transition: opacity 0.15s;
+    opacity: 0.8;
+  }
+
+  &__IconLink:hover {
+    opacity: 1;
+
+    svg {
+      path {
+        fill: rgb(227, 146, 41);
+      }
+    }
+  }
+
+  &__TokenPrice {
+    margin: 0;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+    font-family: "TT Hoves", system-ui, sans-serif;
+  }
+
+  &__TokenVariation {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #00FFA3;
+    font-size: 14px;
+    margin-top: 4px;
+
+    &Value {
+      margin: 0;
+      font-family: "TT Hoves", system-ui, sans-serif;
+    }
+  }
+
+  &__ChipTabs,
   &__ChipTab {
-    display: flex;
-    height: 28px;
-    padding: 4px 11px 2px 11px;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border-radius: var(--FULL, 1000px);
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    text-align: center;
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 140%;
-    letter-spacing: -0.038px;
+    display: none !important;
+  }
 
-    // .active {
-    //   color: #0051fe;
-    //   background: rgba(0, 81, 254, 0.12);
-    // }
-    &.active {
-      color: var(--chip-active-color, #0051fe);
-      background: var(--chip-active-background, rgba(0, 81, 254, 0.12));
+  &__Chart {
+    position: relative;
+    height: 400px;
+    border-radius: 16px;
+
+    @media (max-width: 768px) {
+      height: 300px;
+    }
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  &__PriceOverlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    background: rgba(18, 17, 14, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  &__ChartControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    @media (max-width: 600px) {
+      padding-left: 12px;
+      padding-right: 12px;
+      margin-top: 50px;
+      margin-bottom: 16px;
     }
   }
 
   &__DetailSection {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-    align-self: stretch;
-  }
+    &Title {
+      color: #fff;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
 
-  &__DetailSectionTitle {
-    color: var(--Neutral-White, #fff);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 120%;
-    letter-spacing: -0.058px;
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
   }
 
   &__StatsCarousel {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 600px) {
+      gap: 10px;
+    }
   }
 
   &__StatCard {
+    border-radius: 12px;
+    padding: 16px;
+
+    &Title {
+      color: #8A8984;
+      font-size: 14px;
+      margin: 0 0 8px 0;
+    }
+
+    &Label {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__SwapForm {
+    border-radius: 16px;
+    padding-top: 24px;
+
+    .Form {
+      padding: 0;
+      height: auto;
+    }
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  &__Transactions {
+    border-radius: 16px;
+    overflow-x: auto;
+
+    &Title {
+      color: #fff;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  }
+
+  &__TransactionsTable {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        color: #8A8984;
+        font-size: 14px;
+      }
+
+      th {
+        border-bottom: 1px solid #2A2A2A;
+      }
+
+      td {
+        border-bottom: 1px solid #2A2A2A;
+
+        &.buy {
+          color: #00FFA3;
+        }
+
+        &.sell {
+          color: #FF4D4D;
+        }
+      }
+    }
+  }
+
+  &__SwitchTabs {
+    position: relative;
     display: flex;
-    width: 160px;
-    height: 60px;
-    flex-direction: column;
-    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 2px;
+    width: max-content;
+    gap: 4px;
+    margin: 0;
+    min-width: unset;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      justify-content: flex-start;
+    }
   }
 
-  &__StatCardTitle {
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 140%;
-    letter-spacing: -0.038px;
-    align-self: stretch;
-  }
-
-  &__StatCardLabel {
-    align-self: stretch;
-    color: var(--Neutral-White, #fff);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 120%;
-    letter-spacing: -0.077px;
-  }
-
-  // RIGHT SIDE
-  &__SwapFormWrapper {
-    margin-top: -80px;
-  }
-
-  &__RightDS {
-    display: flex;
-    padding: 0px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-    align-self: stretch;
-  }
-
-  &__RightDSTitle {
-    align-self: stretch;
-    color: var(--Neutral-White, #fff);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 120%;
-    letter-spacing: -0.058px;
-  }
-
-  &__RightDSDesc {
-    align-self: stretch;
-    color: var(--Neutral-White, #fff);
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%;
-    letter-spacing: -0.038px;
-  }
-
-  &__ChipTab {
-    display: flex;
+  &__SwitchTab {
+    position: relative;
+    z-index: 2;
+    border: none;
+    outline: none;
+    background: none;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 999px;
+    width: 38px;
     height: 28px;
-    padding: 4px 11px 2px 11px;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border-radius: var(--FULL, 1000px);
-    color: var(--Neutral-Onyx-pure, #8a8984);
-    text-align: center;
-    font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 140%;
-    letter-spacing: -0.038px;
     cursor: pointer;
+    transition: color 0.15s;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    &.activeYellow {
-      color: #0051fe;
-      background: rgba(0, 81, 254, 0.12);
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      font-size: 12px;
     }
+  }
 
-    &:focus-within {
-      display: inline-flex;
-      height: var(--M, 28px);
-      padding: 4px 11px 2px 11px;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
-      border-radius: var(--FULL, 1000px);
-      color: var(--chip-active-color, #0051fe);
-      background: var(--chip-active-background, rgba(0, 81, 254, 0.12));
-    }
+  &__SwitchTab.active {
+    color: #222;
+    font-weight: 700;
+  }
+
+  &__SwitchSlider {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    transition: left 0.22s cubic-bezier(.4, 1, .4, 1);
+    z-index: 1;
+    box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.06);
+    width: 34px;
+  }
+}
+
+// === Section Informations Token ===
+.Token__InfoSection {
+  padding: 20px 20px 16px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    padding: 12px 0 8px 0;
+    border-radius: 10px;
+  }
+}
+
+.Token__InfoSectionTitle {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.Token__InfoLinks {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+.Token__InfoLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 7px 10px 7px 10px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+  opacity: 0.85;
+  box-shadow: 0 1px 2px 0 rgba(80, 80, 80, 0.04);
+  width: max-content;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    justify-content: flex-start;
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+}
+
+.Token__InfoLink:hover {
+  background: rgba(227, 146, 41, 0.13);
+  color: #e39229;
+  opacity: 1;
+
+  svg path {
+    fill: #e39229;
+  }
+}
+
+.Token__InfoDescription {
+  color: #e0e0e0;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-line;
+  word-break: break-word;
+  position: relative;
+
+  @media (max-width: 600px) {
+    font-size: 14px;
+  }
+}
+
+.Token__InfoShowMore {
+  background: none;
+  border: none;
+  color: #e39229;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  padding: 0;
+  transition: color 0.15s;
+  opacity: 0.85;
+}
+
+.Token__InfoShowMore:hover {
+  color: #fff;
+  opacity: 1;
+}
+
+.Token__Chart,
+.Token__DetailSection,
+.Token__InfoSection,
+.Token__Transactions {
+  @media (max-width: 600px) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    border-radius: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }

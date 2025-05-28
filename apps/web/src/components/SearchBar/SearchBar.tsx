@@ -16,23 +16,8 @@ export const SearchBar = ({
   mode = 'default',
   activeTab,
 }: SearchBarProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showPlaceholder, setShowPlaceholder] = useState(mode !== 'compact');
-
   const cleanSearchBar = () => setSearchValue("");
-
-  const handleIconClick = () => {
-    if (mode === 'compact' && !isExpanded) {
-      setIsExpanded(true);
-      setTimeout(() => {
-        if (mode === 'compact') {
-          setShowPlaceholder(true);
-        }
-      }, 300);
-      inputRef.current?.focus();
-    }
-  };
 
   const arraySearchPlaceholderText = (() => {
     switch (activeTab) {
@@ -47,13 +32,7 @@ export const SearchBar = ({
     }
   })();
 
-  useEffect(() => {
-    if (!isExpanded) {
-      setShowPlaceholder(mode !== 'compact');
-    }
-  }, [isExpanded, mode]);
-
-  const className = `SearchBar ${mode === 'compact' && !isExpanded ? 'SearchBar__compact' : ''} ${mode === 'compact' && isExpanded ? 'expanded' : ''}`;
+  const className = `SearchBar ${mode === 'compact' ? 'SearchBar__compact' : ''}`;
   const placeholderText = "Search tokens";
 
   return (
@@ -62,7 +41,7 @@ export const SearchBar = ({
         <svg className="SearchBar__iconSearch" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M13.3333 13.3333L16.6666 16.6666M15 9.16665C15 12.3883 12.3883 15 9.16665 15C5.94499 15 3.33331 12.3883 3.33331 9.16665C3.33331 5.94499 5.94499 3.33331 9.16665 3.33331C12.3883 3.33331 15 5.94499 15 9.16665Z" stroke="currentColor" strokeWidth="1.6" />
         </svg>
-        {(isExpanded || mode !== 'compact') && showPlaceholder ? (
+        {showPlaceholder ? (
           <input
             type="text"
             className="SearchBar__input"

@@ -30,6 +30,22 @@
   &__ConnectButton {
     display: flex;
     align-items: center;
+    color: white;
+    border: none;
+  }
+
+  &__BalanceButton {
+    color: #FFA012 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: none;
+    cursor: default;
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 14px;
   }
 }
 

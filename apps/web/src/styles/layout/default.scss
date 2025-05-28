@@ -154,12 +154,6 @@ body {
   padding: 20px;
 }
 
-// Responsive breakpoints
-@media (max-width: 1200px) {
-  .app-main {
-    padding: $spacing-base;
-  }
-}
 
 @media (max-width: 768px) {
   body {

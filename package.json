@@ -26,6 +26,7 @@
     "@types/d3": "^7.4.3",
     "@web3modal/wagmi": "^5.1.11",
     "d3": "^7.9.0",
+    "lightweight-charts": "^5.0.7",
     "viem": "^2.30.0",
     "wagmi": "^2.15.4"
   }

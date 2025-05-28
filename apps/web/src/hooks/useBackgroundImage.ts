@@ -90,6 +90,7 @@ export const useBackgroundImage = () => {
     isLoading,
     changeBackground,
     resetBackground,
-    toggleBackground
+    toggleBackground,
+    availableBackgrounds
   };
 }; 
