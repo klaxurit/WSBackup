@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import '../../styles/transactionStatusModal.scss';
 
-export type TransactionStep = {
-  label: string;
-  description?: string;
-  icon: React.ReactNode;
-  helpLink?: string;
-  status: 'pending' | 'success' | 'error' | 'idle';
-};
-
 interface TokenInfo {
   symbol: string;
   name: string;
@@ -18,7 +10,6 @@ interface TokenInfo {
 interface TransactionStatusModalProps {
   open: boolean;
   onClose: () => void;
-  steps: TransactionStep[];
   inputToken: TokenInfo;
   outputToken: TokenInfo;
   inputAmount: string;
@@ -29,7 +20,6 @@ interface TransactionStatusModalProps {
 export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   open,
   onClose,
-  steps,
   inputToken,
   outputToken,
   inputAmount,

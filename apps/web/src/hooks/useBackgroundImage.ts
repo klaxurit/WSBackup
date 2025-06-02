@@ -10,6 +10,7 @@ export const useBackgroundImage = () => {
   const [currentBackground, setCurrentBackground] = useState<BackgroundImage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [availableBackgrounds, setAvailableBackgrounds] = useState<BackgroundImage[]>([]);
+  const [preloadCount, setPreloadCount] = useState(0);
 
   // Charger les backgrounds au montage du composant
   useEffect(() => {
@@ -27,33 +28,6 @@ export const useBackgroundImage = () => {
     loadBackgrounds();
   }, []);
 
-  const changeBackground = useCallback((newBackground: BackgroundImage) => {
-    setIsLoading(true);
-    try {
-      // Créer l'overlay s'il n'existe pas
-      let overlay = document.querySelector('.background-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'background-overlay';
-        document.body.appendChild(overlay);
-      }
-
-      // Appliquer le nouveau background
-      document.body.style.backgroundImage = `url(${newBackground.url})`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundRepeat = 'no-repeat';
-      document.body.style.transition = 'background-image 0.5s ease-in-out';
-      document.body.classList.add('has-background');
-
-      setCurrentBackground(newBackground);
-    } catch (error) {
-      console.error('Erreur lors du changement de background:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const resetBackground = useCallback(() => {
     document.body.style.backgroundImage = 'none';
     document.body.classList.remove('has-background');
@@ -66,6 +40,46 @@ export const useBackgroundImage = () => {
 
     setCurrentBackground(null);
   }, []);
+
+  const changeBackground = useCallback((newBackground: BackgroundImage) => {
+    if (preloadCount >= 4) {
+      // Optionnel : afficher un message ou notifier l'utilisateur
+      console.warn('Limite de préchargement atteinte');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Créer l'overlay s'il n'existe pas
+      let overlay = document.querySelector('.background-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'background-overlay';
+        document.body.appendChild(overlay);
+      }
+
+      // Précharger l'image avant de l'appliquer
+      const img = new window.Image();
+      img.src = newBackground.url;
+      img.onload = () => {
+        document.body.style.backgroundImage = `url(${newBackground.url})`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.transition = 'background-image 0.5s ease-in-out';
+        document.body.classList.add('has-background');
+        setCurrentBackground(newBackground);
+        setIsLoading(false);
+        setPreloadCount(count => count + 1); // Incrémente le compteur
+      };
+      img.onerror = (error) => {
+        console.error('Erreur lors du chargement de l\'image de fond:', error);
+        setIsLoading(false);
+      };
+    } catch (error) {
+      console.error('Erreur lors du changement de background:', error);
+      setIsLoading(false);
+    }
+  }, [preloadCount, resetBackground]);
 
   const toggleBackground = useCallback(() => {
     if (currentBackground) {

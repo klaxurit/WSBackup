@@ -36,7 +36,7 @@
     button {
       display: flex;
       height: 36px;
-      padding: 6px 10px 6px 10px;
+      padding: 2px 10px 2px 12px;
       align-items: center;
       gap: 4px;
       color: var(--Neutral-Onyx-blacker-bis, #12110e);
@@ -46,6 +46,9 @@
       font-weight: 500;
       line-height: 140%;
       letter-spacing: -0.043px;
+      &.has-token {
+        padding: 2px 10px 2px 2px;
+      }
     }
 
     &:hover {
@@ -293,7 +296,7 @@
     button {
       display: flex;
       height: 36px;
-      padding: 6px 10px 6px 10px;
+      padding: 2px 10px 2px 12px;
       align-items: center;
       gap: 4px;
       color: var(--Neutral-Onyx-blacker-bis, #12110e);
@@ -303,6 +306,9 @@
       font-weight: 500;
       line-height: 140%;
       letter-spacing: -0.043px;
+      &.has-token {
+        padding: 2px 10px 2px 2px;
+      }
     }
   }
 

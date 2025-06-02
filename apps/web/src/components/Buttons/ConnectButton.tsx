@@ -28,11 +28,10 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const handleConnect = useCallback(async () => {
     try {
       await connect('injected');
-      if (onClick) onClick();
     } catch (err) {
       console.error('Erreur de connexion:', err);
     }
-  }, [connect, onClick]);
+  }, [connect]);
 
   const getButtonState = () => {
     if (!isConnected) {

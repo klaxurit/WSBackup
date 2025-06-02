@@ -41,6 +41,8 @@ export const NetworksList = ({
 
   if (!isOpen) return null;
 
+  const modalRoot = typeof window !== 'undefined' ? document.getElementById('modal-root') : null;
+
   return ReactDOM.createPortal(
     <div className="NetworksList" onClick={onClose}>
       <div className="Modal">
@@ -67,7 +69,7 @@ export const NetworksList = ({
         <div className="Modal__Content">
           {filteredTokens.map((token) => (
             <NetworkItem
-              key={token.symbol}
+              key={token.address || token.symbol}
               token={token}
               isSelected={selectedToken?.symbol === token.symbol}
               onSelect={handleTokenSelect.bind(null, token)}
@@ -78,6 +80,6 @@ export const NetworksList = ({
         </div>
       </div>
     </div>,
-    document.body
+    modalRoot || document.body
   );
 };

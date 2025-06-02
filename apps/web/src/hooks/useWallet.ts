@@ -36,9 +36,17 @@ export const useWallet = () => {
       const connector = connectorId === 'injected' ? injected() : walletConnect({
         projectId: '3fcc6bba6f1de962d911bb5b5c3dba68'
       });
-
-      await connect({ connector });
-      // Ne pas dispatcher ici - le useEffect s'en chargera automatiquement
+      connect(
+        { connector },
+        {
+          onSuccess: () => {
+            // Redux sera synchronisé automatiquement par le useEffect
+          },
+          onError: (error) => {
+            dispatch(setError(error instanceof Error ? error.message : 'Erreur de connexion'));
+          }
+        }
+      );
     } catch (err) {
       dispatch(setError(err instanceof Error ? err.message : 'Erreur de connexion'));
     }
@@ -47,7 +55,6 @@ export const useWallet = () => {
   const disconnectWallet = useCallback(() => {
     try {
       wagmiDisconnect();
-      // Ne pas dispatcher ici - le useEffect s'en chargera automatiquement
     } catch (err) {
       dispatch(setError(err instanceof Error ? err.message : 'Erreur de déconnexion'));
     }
