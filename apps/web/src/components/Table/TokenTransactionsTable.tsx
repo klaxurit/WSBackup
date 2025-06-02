@@ -20,7 +20,6 @@ interface TokenTransactionsTableProps {
 const shortenAddress = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
 
 const getExplorerLink = (chainId: number, address: string) => {
-  // Pour Berachain, adapter si besoin
   return `https://beratrail.io/address/${address}`;
 };
 

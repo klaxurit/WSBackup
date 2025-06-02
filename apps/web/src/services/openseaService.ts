@@ -12,12 +12,10 @@ interface OpenSeaResponse {
   next: string | null;
 }
 
-// Cache pour stocker les NFTs
 let nftsCache: OpenSeaNFT[] = [];
 
 export const fetchNFTBackgrounds = async (limit: number = 50): Promise<{ url: string; name: string }[]> => {
   try {
-    // Récupérer les NFTs
     const nftsResponse = await fetch(
       `https://api.opensea.io/api/v2/collection/${COLLECTION_SLUG}/nfts?limit=${limit}`,
       {
@@ -34,13 +32,10 @@ export const fetchNFTBackgrounds = async (limit: number = 50): Promise<{ url: st
 
     const nftsData: OpenSeaResponse = await nftsResponse.json();
 
-    // Filtrer les NFTs qui ont une image valide
     const validNFTs = nftsData.nfts.filter(nft => nft.image_url);
 
-    // Mettre à jour le cache
     nftsCache = validNFTs;
 
-    // Retourner les backgrounds
     return validNFTs.map(nft => ({
       url: nft.image_url,
       name: `NFT #${nft.identifier}`

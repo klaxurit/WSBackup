@@ -18,7 +18,6 @@ const ExplorePage: React.FC = () => {
   const [search, setSearch] = useState('');
   const tokens = useBerachainTokenList();
 
-  // Colonnes tokens
   const tokenColumns: TableColumn[] = [
     { label: '#', key: 'index', render: (_row, i) => i + 1 },
     { label: '', key: 'logoURI', render: (row) => <img src={row.logoURI} alt={row.symbol} style={{ width: 28, height: 28, borderRadius: 8 }} /> },
@@ -32,12 +31,10 @@ const ExplorePage: React.FC = () => {
     { label: '1D Chart', key: 'chart', render: () => '-' },
   ];
 
-  // Filtrage tokens
   const filteredTokens = search
     ? tokens.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
     : tokens;
 
-  // Mock pools et transactions (à remplacer par vraies données)
   const poolColumns: TableColumn[] = [
     { label: '#', key: 'index', render: (_row, i) => i + 1 },
     { label: 'Pool', key: 'pool' },

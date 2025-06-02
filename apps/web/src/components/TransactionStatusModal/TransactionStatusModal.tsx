@@ -28,7 +28,6 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 }) => {
   if (!open) return null;
 
-  // Dummy values for demo, to be replaced by backend/API later
   const swapInfo = {
     feeLabel: 'Fee (0.25%)',
     feeValue: '$0.64',

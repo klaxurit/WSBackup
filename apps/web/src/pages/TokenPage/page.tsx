@@ -5,17 +5,14 @@ import '../../styles/tokenPage.scss';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import ChartCandle from '../../components/Charts/ChartCandle';
 import type { UTCTimestamp, CandlestickData } from 'lightweight-charts';
-import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
 import type { Transaction } from '../../components/Table/TokenTransactionsTable';
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
 import Table from '../../components/Table/Table';
 import type { TableColumn } from '../../components/Table/Table';
 
-// Define interval types
 const INTERVAL_KEYS = ['hour', 'day', 'week', 'month', 'year'] as const;
 type IntervalKey = typeof INTERVAL_KEYS[number];
 
-// Mocked data (to be replaced by an API or local JSON import if needed)
 const MOCK_CHART_DATA: Record<IntervalKey, { time: number; open: number; high: number; low: number; close: number }[]> = {
   hour: [
     { time: 1659640859, open: 1608.5, high: 1610, low: 1607, close: 1608.5 },
@@ -76,7 +73,6 @@ const TokenPage: React.FC = () => {
   const { tokenId } = useParams<{ tokenId: string }>();
   const [activeChartTab, setActiveChartTab] = useState<IntervalKey>('day');
 
-  // Create a mock token based on tokenId
   const mockToken: BerachainToken & { website?: string; twitter?: string } = {
     name: tokenId || 'Token',
     symbol: tokenId?.toUpperCase() || 'TOKEN',
@@ -87,7 +83,6 @@ const TokenPage: React.FC = () => {
     twitter: '',
   };
 
-  // Prepare chart data according to the selected interval
   const chartPrices: CandlestickData<UTCTimestamp>[] = useMemo(() => {
     return (MOCK_CHART_DATA[activeChartTab] || []).map((candle) => ({
       ...candle,
@@ -95,7 +90,6 @@ const TokenPage: React.FC = () => {
     }));
   }, [activeChartTab]);
 
-  // Calculate current price and change
   const lastCandle = chartPrices[chartPrices.length - 1];
   const firstCandle = chartPrices[0];
   const currentPrice = lastCandle?.close ?? 0;
@@ -103,15 +97,11 @@ const TokenPage: React.FC = () => {
   const priceChangeFormatted = priceChange.toFixed(2);
   const priceChangeColor = priceChange > 0 ? '#26a69a' : '#ef5350';
   const lastDate = lastCandle ? new Date((lastCandle.time as number) * 1000).toLocaleString() : '';
-
-  // Mock data for the transactions table
   const mockTransactions: Transaction[] = [
     { type: 'Sell', amount: '1,324.34', token: 'USDC', value: '$1,324.62', address: '0x8D3C374d', time: '7m' },
     { type: 'Buy', amount: '194.97', token: 'BNB', value: '$195.00', address: '0xC8E423a1', time: '7m' },
-    // Add more mock transactions here
   ];
 
-  // Colonnes pour le tableau de transactions (en anglais)
   const transactionColumns: TableColumn[] = [
     { label: 'Time', key: 'time' },
     {
