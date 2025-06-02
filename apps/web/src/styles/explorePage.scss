@@ -1,0 +1,217 @@
+.ExplorePage {
+  padding: 16px 8px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+
+  @media (min-width: 600px) {
+    padding: 32px 24px;
+    gap: 32px;
+
+    h1 {
+      font-size: 2.5rem;
+    }
+  }
+}
+
+.ExplorePage__Search {
+  position: relative;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 40px;
+}
+
+.ExplorePage__SearchIconWrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.ExplorePage__SearchIcon {
+  color: var(--neutral3, #aaa);
+  background: var(--surface1, #181818);
+  border: 1.5px solid var(--surface3, #232323);
+  border-radius: 12px;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
+  width: 28px;
+  height: 28px;
+  transition: color 0.15s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ExplorePage__SearchInput {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--neutral2, #e0e0e0);
+  background: var(--surface1, #181818);
+  border-radius: 12px;
+  border: 1px solid var(--surface3, #232323);
+  outline: none;
+  padding: 8px 16px 8px 44px;
+  min-width: 0;
+  width: 0;
+  max-width: 220px;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s, border-color 0.15s, right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 40px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ExplorePage__SearchInput:focus,
+.ExplorePage__SearchInput.open {
+  width: 200px;
+  min-width: 120px;
+  opacity: 1;
+  pointer-events: auto;
+  background: var(--surface1, #181818);
+  border-color: var(--accent1, #e39229);
+  right: 0;
+}
+
+.ExplorePage__SearchInput::placeholder {
+  color: var(--neutral3, #888);
+  opacity: 1;
+}
+
+.ExplorePage__SearchActivator {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 4;
+}
+
+@media (max-width: 600px) {
+  .ExplorePage__SearchInput {
+    width: 0;
+    max-width: 120px;
+  }
+
+  .ExplorePage__SearchInput:focus,
+  .ExplorePage__SearchInput.open {
+    width: 100px;
+    min-width: 60px;
+    right: 0;
+  }
+}
+
+.ExplorePage__SearchBar {
+  display: flex;
+  align-items: center;
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid var(--surface3, #232323);
+  background: var(--surface1, #181818);
+  height: 40px;
+  width: 44px;
+  padding: 0 12px 0 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.ExplorePage__SearchBar.expanded {
+  width: 220px;
+  border-color: var(--accent1, #e39229);
+  box-shadow: 0px 0px 0px 4px rgba(227, 146, 41, 0.08);
+}
+
+.ExplorePage__SearchBar__iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.ExplorePage__SearchBar__iconSearch {
+  width: 20px;
+  height: 20px;
+  color: var(--neutral3, #aaa);
+  background: var(--surface1, #181818);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ExplorePage__SearchBar__input {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--neutral2, #e0e0e0);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 8px 8px 8px 44px;
+  width: 100%;
+  min-width: 0;
+  opacity: 1;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  height: 40px;
+  z-index: 2;
+}
+
+.ExplorePage__SearchBar__input::placeholder {
+  color: var(--neutral3, #888);
+  opacity: 1;
+}
+
+.ExplorePage__SearchBar__activator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 4;
+}
+
+@media (max-width: 600px) {
+  .ExplorePage__SearchBar {
+    width: 44px;
+  }
+
+  .ExplorePage__SearchBar.expanded {
+    width: 120px;
+  }
+}

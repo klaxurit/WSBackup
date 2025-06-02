@@ -18,7 +18,11 @@ const Navbar = () => {
         <div className="Navbar__Menu">
           <Menu onMenuClick={toggleSidebar} />
         </div>
-        <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} />
+        <SearchBar
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          mode="expanded"
+        />
         <div className="Navbar__ConnectButton">
           <NavbarConnectButton onClick={toggleSidebar} />
         </div>

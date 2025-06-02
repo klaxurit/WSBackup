@@ -8,6 +8,8 @@ import type { UTCTimestamp, CandlestickData } from 'lightweight-charts';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
 import type { Transaction } from '../../components/Table/TokenTransactionsTable';
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
+import Table from '../../components/Table/Table';
+import type { TableColumn } from '../../components/Table/Table';
 
 // Define interval types
 const INTERVAL_KEYS = ['hour', 'day', 'week', 'month', 'year'] as const;
@@ -107,6 +109,32 @@ const TokenPage: React.FC = () => {
     { type: 'Sell', amount: '1,324.34', token: 'USDC', value: '$1,324.62', address: '0x8D3C374d', time: '7m' },
     { type: 'Buy', amount: '194.97', token: 'BNB', value: '$195.00', address: '0xC8E423a1', time: '7m' },
     // Add more mock transactions here
+  ];
+
+  // Colonnes pour le tableau de transactions (en anglais)
+  const transactionColumns: TableColumn[] = [
+    { label: 'Time', key: 'time' },
+    {
+      label: 'Type', key: 'type', render: (row) => (
+        <span className={`TokenTxTable__Type TokenTxTable__Type--${row.type.toLowerCase()}`}>{row.type}</span>
+      )
+    },
+    { label: 'USD', key: 'value' },
+    { label: 'Token Amount', key: 'amount' },
+    { label: 'Token', key: 'token' },
+    {
+      label: 'Wallet', key: 'address', render: (row) => (
+        <a
+          href={`https://beratrail.io/address/${row.address}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="TokenTxTable__Address"
+          title={row.address}
+        >
+          {row.address.slice(0, 6) + '...' + row.address.slice(-4)}
+        </a>
+      )
+    },
   ];
 
   return (
@@ -212,7 +240,14 @@ const TokenPage: React.FC = () => {
 
           {/* Transactions Table (Uniswap style) */}
           <div className="Token__Transactions">
-            <TokenTransactionsTable transactions={mockTransactions} referenceToken={mockToken} chainId={1} />
+            <Table
+              columns={transactionColumns}
+              data={mockTransactions}
+              tableClassName="TokenTxTable"
+              wrapperClassName="TokenTxTable__Wrapper"
+              scrollClassName="TokenTxTable__Scroll"
+              getRowClassName={(row) => `TokenTxTable__Row TokenTxTable__Row--${row.type.toLowerCase()}`}
+            />
           </div>
         </div>
 

@@ -1,0 +1,13 @@
+.TokenSearchFilters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+
+  @media (min-width: 600px) {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+}

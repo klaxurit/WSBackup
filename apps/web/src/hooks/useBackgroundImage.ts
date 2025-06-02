@@ -43,24 +43,23 @@ export const useBackgroundImage = () => {
 
   const changeBackground = useCallback((newBackground: BackgroundImage) => {
     if (preloadCount >= 4) {
-      // Optionnel : afficher un message ou notifier l'utilisateur
       console.warn('Limite de préchargement atteinte');
       return;
     }
     setIsLoading(true);
     try {
-      // Créer l'overlay s'il n'existe pas
-      let overlay = document.querySelector('.background-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'background-overlay';
-        document.body.appendChild(overlay);
-      }
-
       // Précharger l'image avant de l'appliquer
       const img = new window.Image();
       img.src = newBackground.url;
       img.onload = () => {
+        // Créer l'overlay seulement après le chargement de l'image
+        let overlay = document.querySelector('.background-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'background-overlay';
+          document.body.appendChild(overlay);
+        }
+
         document.body.style.backgroundImage = `url(${newBackground.url})`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
@@ -69,7 +68,7 @@ export const useBackgroundImage = () => {
         document.body.classList.add('has-background');
         setCurrentBackground(newBackground);
         setIsLoading(false);
-        setPreloadCount(count => count + 1); // Incrémente le compteur
+        setPreloadCount(count => count + 1);
       };
       img.onerror = (error) => {
         console.error('Erreur lors du chargement de l\'image de fond:', error);

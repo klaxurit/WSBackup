@@ -1,76 +1,31 @@
 @use "./utils/variables" as *;
 
 .SearchBar {
-  cursor: pointer;
   display: flex;
-  width: 280px;
-  height: 40px;
   align-items: center;
-  justify-content: space-between;
-  border-radius: 40px;
-  border: 1px solid $white-006;
-  padding: 6px 12px;
-  background-color: transparent;
   position: relative;
-  overflow: hidden;
+  border-radius: 40px;
+  border: 1px solid var(--surface3, #232323);
+  background: var(--surface1, #181818);
+  height: 40px;
+  width: auto;
+  padding: 0 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  cursor: pointer;
+  z-index: 2;
 
   &:hover {
-    border: 1px solid $white-008;
+    border-color: var(--surface4, #2a2a2a);
   }
 
   &:focus-within {
-    border: 1px solid $beryl-medium;
-    box-shadow: 0px 0px 0px 4px rgba(255, 208, 86, 0.2);
+    border-color: var(--accent1, #e39229);
+    box-shadow: 0px 0px 0px 4px rgba(227, 146, 41, 0.08);
   }
 
-  &__Content {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__RightContent {
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
-  }
-
-  &__iconSearch {
-    width: 20px;
-    height: 20px;
-    color: $white-040;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  &__input {
-    font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
-    font-weight: 400;
-    color: white;
-    outline: none;
-    border: none;
-    background: none;
-    caret-color: $beryl-pure;
-    font-size: 18px;
-    flex: 1;
-    min-width: 0;
-    width: 100%;
-    padding-bottom: 2px;
-
-    &::placeholder {
-      color: $white-040;
-      font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
-      font-size: 16px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: 140%;
-      letter-spacing: -0.038px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  &.expanded {
+    width: 220px;
   }
 
   &__iconSlash {
@@ -90,36 +45,102 @@
     flex-shrink: 0;
     padding-bottom: 2px;
   }
+}
 
-  &__icon {
-    display: flex;
-    align-items: center;
+.SearchBar__Content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  height: 100%;
+}
+
+.SearchBar__iconSearch {
+  width: 20px;
+  height: 20px;
+  color: var(--neutral3, #aaa);
+  flex-shrink: 0;
+}
+
+.SearchBar__input {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--neutral2, #e0e0e0);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::placeholder {
+    color: var(--neutral3, #888);
+    opacity: 1;
+  }
+}
+
+.SearchBar__RightContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+
+.SearchBar__icon {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  background: var(--surface3, #232323);
+  color: var(--neutral3, #aaa);
+  cursor: pointer;
+}
+
+.SearchBar__compact {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .SearchBar__Content {
+    width: 100%;
+    height: 100%;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    padding: 2px;
-    border-radius: 6px;
-    background: $white-004;
-    color: $onyx-medium;
-    cursor: pointer;
-    flex-shrink: 0;
+    align-items: center;
   }
 
-  &.expanded {
-    width: 200px;
+  .SearchBar__iconSearch {
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .SearchBar {
+    width: auto;
   }
 
-  &__compact {
-    width: 40px;
-    padding: 6px;
+  .SearchBar.expanded {
+    width: 120px;
   }
 }
 
 // Ajoutez à vos styles existants
 .SearchBar__compact {
   display: flex;
-  height: 6px;
-  width: 18px;
+  height: 40px;
+  width: 44px;
   padding: 16px 10px;
   justify-content: center;
   align-items: center;
