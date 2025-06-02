@@ -55,7 +55,7 @@
   color: #aaa;
   font-weight: 700;
   font-size: 14px;
-  padding: 12px 8px;
+  padding: 1rem;
   z-index: 2;
   text-align: left;
   border-bottom: 1px solid #232323;
@@ -101,7 +101,7 @@
 }
 
 .Table td {
-  padding: 10px 8px;
+  padding: 1rem;
   border-bottom: 1px solid #232323;
   vertical-align: middle;
 }
@@ -128,4 +128,24 @@
   border: 1.5px solid #232323;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.Table__TypeBadge {
+  border-radius: 6px;
+  padding: 2px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  display: inline-block;
+  color: #fff;
+}
+
+.Table__TypeBadge--buy {
+  background: rgba(22, 199, 132, 0.15);
+  color: #16c784;
+}
+
+.Table__TypeBadge--sell {
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff4d4d;
 }
