@@ -5,6 +5,8 @@ import Table from '../../components/Table/Table';
 import type { TableColumn } from '../../components/Table/Table';
 import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
+import MiniChart from '../../components/Charts/MiniChart';
+import type { MiniChartPoint } from '../../components/Charts/MiniChart';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
@@ -18,17 +20,44 @@ const ExplorePage: React.FC = () => {
   const [search, setSearch] = useState('');
   const tokens = useBerachainTokenList();
 
+  // Génère des fausses données pour le mini chart
+  function generateFakeChartData(points = 24): MiniChartPoint[] {
+    let last = 100 + Math.random() * 20;
+    return Array.from({ length: points }, (_, i) => {
+      last += (Math.random() - 0.5) * 2;
+      return { x: i, y: last };
+    });
+  }
+
+  // Génère une fausse valeur de prix
+  function fakePrice() {
+    return (Math.random() * 10 + 0.1).toFixed(2) + ' $';
+  }
+  // Génère une fausse variation en pourcentage
+  function fakePercent() {
+    const n = +(Math.random() * 8 - 4).toFixed(2);
+    return (n > 0 ? '+' : '') + n.toFixed(2) + ' %';
+  }
+  // Génère une fausse FDV
+  function fakeFDV() {
+    return (Math.random() * 1_000_000_000).toLocaleString() + ' $';
+  }
+  // Génère un faux volume
+  function fakeVolume() {
+    return (Math.random() * 10_000_000).toLocaleString() + ' $';
+  }
+
   const tokenColumns: TableColumn[] = [
     { label: '#', key: 'index', render: (_row, i) => i + 1 },
     { label: '', key: 'logoURI', render: (row) => <img src={row.logoURI} alt={row.symbol} style={{ width: 28, height: 28, borderRadius: 8 }} /> },
     { label: 'Token Name', key: 'name', render: (row) => <span style={{ fontWeight: 600 }}>{row.name}</span> },
     { label: 'Symbol', key: 'symbol' },
-    { label: 'Price', key: 'price', render: () => '-' },
-    { label: '1h', key: 'change1h', render: () => '-' },
-    { label: '1d', key: 'change1d', render: () => '-' },
-    { label: 'FDV', key: 'fdv', render: () => '-' },
-    { label: 'Volume', key: 'volume', render: () => '-' },
-    { label: '1D Chart', key: 'chart', render: () => '-' },
+    { label: 'Price', key: 'price', render: () => fakePrice() },
+    { label: '1h', key: 'change1h', render: () => fakePercent() },
+    { label: '1d', key: 'change1d', render: () => fakePercent() },
+    { label: 'FDV', key: 'fdv', render: () => fakeFDV() },
+    { label: 'Volume', key: 'volume', render: () => fakeVolume() },
+    { label: '1D Chart', key: 'chart', render: () => <MiniChart data={generateFakeChartData()} /> },
   ];
 
   const filteredTokens = search

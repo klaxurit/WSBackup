@@ -3,8 +3,6 @@
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.04);
-  padding: 0 0 12px 0;
-  overflow: hidden;
 }
 
 .Table__Filters {
@@ -124,4 +122,10 @@
   .Table__Filters {
     padding: 12px 8px 6px 8px;
   }
+}
+
+.Table--bordered {
+  border: 1.5px solid #232323;
+  border-radius: 12px;
+  overflow: hidden;
 }

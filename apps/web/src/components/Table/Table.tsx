@@ -32,7 +32,7 @@ export function Table<T = any>({
   return (
     <div className={`${wrapperClassName} ${className}`.trim()}>
       <div className={scrollClassName}>
-        <table className={tableClassName}>
+        <table className={`${tableClassName} Table--bordered`}>
           <thead>
             <tr>
               {columns.map((col) => (
