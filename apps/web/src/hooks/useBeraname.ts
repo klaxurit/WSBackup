@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { getAddress, createPublicClient, http } from 'viem';
 import { berachain } from 'viem/chains';
 
-// Configuration du client viem pour Berachain mainnet
+const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
+
 const publicClient = createPublicClient({
   chain: berachain,
-  transport: http('https://api.henlo-winnie.dev/v1/mainnet/29d1c692-5145-4ae5-8bef-42f00f5f4671')
+  transport: http(berachainApiUrl)
 });
 
 export const useBeraname = (address?: string) => {

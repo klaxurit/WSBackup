@@ -8,11 +8,13 @@ declare module 'wagmi' {
   }
 }
 
+const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
+
 export const config = createConfig({
   chains: [mainnet, sepolia, berachain],
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
-    [berachain.id]: http('https://api.henlo-winnie.dev/v1/mainnet/29d1c692-5145-4ae5-8bef-42f00f5f4671'),
+    [berachain.id]: http(berachainApiUrl),
   },
 }); 

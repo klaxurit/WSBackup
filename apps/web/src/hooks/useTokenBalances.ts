@@ -52,7 +52,8 @@ export function useTokenBalances(tokens: Token[], address: `0x${string}`) {
     }
     let cancelled = false;
     setLoading(true);
-    const client = createPublicClient({ chain: berachain, transport: http('https://api.henlo-winnie.dev/v1/mainnet/29d1c692-5145-4ae5-8bef-42f00f5f4671') });
+    const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
+    const client = createPublicClient({ chain: berachain, transport: http(berachainApiUrl) });
 
     async function fetchBalances() {
       const results = await Promise.all(tokens.map(async (token) => {
