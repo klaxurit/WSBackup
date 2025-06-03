@@ -1,15 +1,9 @@
-"use client";
-import React, { useMemo, useRef } from "react";
-import "../../styles/inputs.scss";
-import "../../styles/buttons.scss";
+import React, { useRef } from "react";
 import NetworkSelector from "../Buttons/NetworkSelector";
-// import { Token } from "../Table/types";
-// import { SwapData } from "@/types/swap";
-// import { useAppSelector } from "@/lib/hooks";
 
 interface ToInputProps {
-  steps: any; // TODO: Remplacer par le type SwapData
-  preSelected?: any; // TODO: Remplacer par le type Token
+  steps: any;
+  preSelected?: any;
   onSelect?: (token: any) => void;
   dominantColor?: string;
   secondaryColor?: string;
@@ -31,21 +25,10 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     dominantColor,
     secondaryColor,
     isHomePage,
-    balance = "0",
-    loading = false,
-    isOverBalance = false,
     inputValue = "",
     onInputChange,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
-    // TODO: À implémenter avec Redux
-    // const amountIn = useAppSelector((s) => s.swapForm.amountIn)
-    const amountIn = 0; // Valeur par défaut pour l'affichage
-
-    const inputValueMemo = useMemo(() => {
-      if (!steps || steps.totalRatio === 0 || !amountIn) return 0;
-      return steps.totalRatio * amountIn;
-    }, [steps, amountIn]);
 
     return (
       <div className={`Inputs__To To`}>

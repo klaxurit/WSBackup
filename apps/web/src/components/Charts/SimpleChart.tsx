@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import './simpleChart.scss';
 
 interface SimpleChartProps {
   data: { date: string; value: number }[];

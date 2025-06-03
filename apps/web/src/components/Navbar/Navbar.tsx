@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import "../../styles/navbar.scss";
+import { useState } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { Menu } from "./Menu";
 import { NavbarConnectButton } from "../Buttons/NavbarConnectButton";

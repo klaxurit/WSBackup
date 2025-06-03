@@ -1,0 +1,104 @@
+@use "../../utils" as *;
+
+.networkSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $onyx-blacker;
+  border-radius: 9999px;
+  border: 1px solid $onyx-medium;
+  box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 10px;
+  padding: 0 18px 0 8px;
+  min-height: 38px;
+  min-width: 0;
+  cursor: pointer;
+  transition: border 0.15s, box-shadow 0.15s, background 0.15s;
+  position: relative;
+  gap: 10px;
+
+  &:hover,
+  &:focus-visible {
+    box-shadow: rgba(227, 146, 41, 0.2) 0px 0px 10px;
+    background: $onyx-black;
+    outline: none;
+  }
+
+  &__logoWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    position: relative;
+
+    img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      border-radius: 50%;
+      z-index: 1;
+    }
+  }
+
+  &__symbol {
+    font-weight: 600;
+    font-size: 16px;
+    color: $white;
+    letter-spacing: 0.02em;
+  }
+
+  &__chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+    color: $white-064;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      transform: rotate(270deg);
+    }
+
+    &.open {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__DefaultImage1 img {
+    filter: hue-rotate(0deg);
+  }
+
+  &__DefaultImage2 img {
+    filter: hue-rotate(30deg);
+  }
+
+  &__DefaultImage3 img {
+    filter: hue-rotate(60deg);
+  }
+
+  &__DefaultImage4 img {
+    filter: hue-rotate(90deg);
+  }
+
+  &__DefaultImage5 img {
+    filter: hue-rotate(120deg);
+  }
+
+  &__DefaultImage6 img {
+    filter: hue-rotate(150deg);
+  }
+
+  &.disabled {
+    pointer-events: none;
+  }
+
+  button {
+    padding: 2px 10px;
+
+    &.has-token {
+      padding: 2px 10px 2px 2px;
+    }
+  }
+}

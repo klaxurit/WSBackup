@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import ReactDOM from "react-dom";
-import "../../styles/networksList.scss";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { NetworkItem } from './NetworkItem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { useWallet } from '../../hooks/useWallet';
-import '../../styles/walletConnect.scss';
 
 export const WalletConnect: React.FC = () => {
   const { address, isConnected } = useAppSelector((state) => state.wallet);

@@ -1,11 +1,9 @@
-import styles from './loader.module.scss';
-
 export const Loader = ({ className = "" }) => {
-  const combinedClassName = `${styles.Loader} ${className.split(' ').map(cn => styles[cn] || cn).join(' ')}`;
+  const combinedClassName = `${'Loader'} ${className.split(' ').map(cn => cn).join(' ')}`;
 
   return (
     <div className={combinedClassName}>
-      <svg className={styles.circular} viewBox="25 25 50 50">
+      <svg className={'circular'} viewBox="25 25 50 50">
         <circle
           opacity="0.2"
           cx="50"
@@ -16,7 +14,7 @@ export const Loader = ({ className = "" }) => {
           strokeLinecap="round"
         />
         <circle
-          className={styles.path}
+          className={'path'}
           cx="50"
           cy="50"
           r="20"

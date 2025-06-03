@@ -1,5 +1,4 @@
 import { Swap } from "../SVGs/ProductSVGs";
-import '../../styles/divider.scss';
 
 interface DividerProps {
   dominantColor?: string;

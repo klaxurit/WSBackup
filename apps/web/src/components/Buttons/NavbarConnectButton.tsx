@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { useWallet } from '../../hooks/useWallet';
 import { useBeraname } from '../../hooks/useBeraname';
-import '../../styles/buttons.scss';
 import { Loader } from '../Loader/Loader';
 
 interface NavbarConnectButtonProps {

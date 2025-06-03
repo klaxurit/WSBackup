@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import SwapForm from '../../components/SwapForm/SwapForm';
-import '../../styles/tokenPage.scss';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import ChartCandle from '../../components/Charts/ChartCandle';
 import type { UTCTimestamp, CandlestickData } from 'lightweight-charts';

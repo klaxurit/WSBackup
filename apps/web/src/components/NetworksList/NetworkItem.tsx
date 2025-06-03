@@ -1,5 +1,4 @@
 import React from 'react';
-import '../../styles/networkItem.scss'
 import { Loader } from '../Loader/Loader';
 
 interface NetworkItemProps {

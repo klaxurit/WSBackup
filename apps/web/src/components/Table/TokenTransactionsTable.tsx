@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import '../../styles/table.scss';
 
 // Types
 export interface Transaction {

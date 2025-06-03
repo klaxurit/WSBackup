@@ -1,5 +1,4 @@
 import React from 'react';
-import '../../styles/tokenTransactionsTable.scss';
 
 export interface TableColumn<T = any> {
   label: string;

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import '../../styles/transactionStatusModal.scss';
 
 interface TokenInfo {
   symbol: string;

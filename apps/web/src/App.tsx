@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import './styles/layout/default.scss'
+import './styles/main.scss'
 import Navbar from './components/Navbar/Navbar'
 import SwapForm from './components/SwapForm/SwapForm'
 import { WalletConnect } from './components/WalletConnect/WalletConnect'

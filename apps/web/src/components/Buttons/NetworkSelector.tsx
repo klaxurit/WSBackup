@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { NetworksList } from "../NetworksList/NetworksList";
-import "../../styles/networkSelector.scss";
 import { useTokenBalances } from '../../hooks/useTokenBalances';
 import { useAppSelector } from '../../store/hooks';
 import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';

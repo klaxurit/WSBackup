@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect } from "react";
-import "../../styles/searchBar.scss";
 
 type SearchBarProps = {
   searchValue: string;

@@ -1,8 +1,4 @@
 import React, { useMemo, useCallback, useState } from "react";
-import "../../styles/swapForm.scss";
-import "../../styles/inputs.scss";
-import "../../styles/iconLink.scss";
-import "../../styles/backgroundOverlay.scss";
 import { FromInput } from "../Inputs/FromInput";
 import { ConnectButton } from "../../components/Buttons/ConnectButton";
 import { Divider } from "../Inputs/Divider";

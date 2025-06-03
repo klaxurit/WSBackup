@@ -1,0 +1,80 @@
+@use 'sass:color';
+@mixin breakpoint($point) {
+  @if $point ==desktop {
+    @media (min-width: 1200px) {
+      @content;
+    }
+  }
+
+  @else if $point ==laptop {
+    @media (min-width: 992px) {
+      @content;
+    }
+  }
+
+  @else if $point ==tablet {
+    @media (min-width: 768px) {
+      @content;
+    }
+  }
+
+  @else if $point ==mobile {
+    @media (max-width: 767px) {
+      @content;
+    }
+  }
+}
+
+// Flexbox center
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Glass effect
+@mixin glass-effect($bg-opacity: 0.1, $blur: 10px) {
+  background: rgba(255, 255, 255, $bg-opacity);
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+// Button states
+@mixin button-states($color) {
+  &:hover {
+    background: color.adjust($lightness: 10%);
+  }
+
+  &:active {
+    background: darken($color, 5%);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba($color, 0.2);
+  }
+}
+
+// Truncate text
+@mixin truncate($lines: 1) {
+  @if $lines ==1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Transition
+@mixin transition($properties...) {
+  transition-property: $properties;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}

@@ -1,0 +1,75 @@
+@use "../../utils" as *;
+
+.Modal__Item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.Modal__ItemLogo {
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Modal__ItemImage {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.Modal__ItemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.Modal__ItemName {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.Modal__ItemDetails {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Modal__ItemSymbol {
+  color: #8a8984;
+  font-size: 14px;
+}
+
+.Modal__ItemAddress {
+  color: #bdbdbd;
+  font-size: 13px;
+  font-family: monospace;
+  margin-left: 4px;
+}
+
+.Modal__ItemBalanceContainer {
+  min-width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 32px;
+}
+
+.Modal__ItemPrice {
+  font-size: 14px;
+  color: #bdbdbd;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.Modal__ItemBalance {
+  font-size: 15px;
+  color: #FFD056;
+  font-weight: 600;
+}

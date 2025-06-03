@@ -1,11 +1,9 @@
 "use client";
-import { useCallback, useRef, useState, useMemo, useEffect } from "react";
-import "../../styles/inputs.scss";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import NetworkSelector from "../Buttons/NetworkSelector";
 import React from "react";
 import { useAppSelector } from '../../store/hooks';
 import { useTokenBalances } from '../../hooks/useTokenBalances';
-import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface FromInputProps {
@@ -58,15 +56,13 @@ export const FromInput: React.FC<FromInputProps> = React.memo(
     preSelectedToken,
     onAmountChange,
     onTokenSelect,
-    defaultValue,
     value,
   }) => {
     const address = useAppSelector((state) => state.wallet.address);
-    const tokens = useBerachainTokenList();
     const [currentToken, setCurrentToken] = useState<BerachainToken | null>(preSelectedToken || null);
     const inputValue = value ?? "";
     const tokenArray = useMemo(() => currentToken ? [currentToken] : [], [currentToken]);
-    const { balances, loading } = useTokenBalances(tokenArray, address) as { balances: Record<string, string>, loading: boolean };
+    const { balances, loading } = useTokenBalances(tokenArray, address as `0x${string}`) as { balances: Record<string, string>, loading: boolean };
 
     useEffect(() => {
       setCurrentToken(preSelectedToken || null);

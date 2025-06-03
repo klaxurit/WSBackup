@@ -1,0 +1,180 @@
+@use "../utils" as *;
+
+// Layout variables
+$header-height: 80px;
+$container-max-width: 1200px;
+$spacing-base: 1rem;
+$spacing-large: 2rem;
+
+// Font faces
+@font-face {
+  font-family: "TT Hoves", system-ui, sans-serif;
+  src: url("/fonts/TTHoves-Regular.woff2") format("woff2"),
+    url("/fonts/TTHoves-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TT Hoves", system-ui, sans-serif;
+  src: url("/fonts/TTHoves-Medium.woff2") format("woff2"),
+    url("/fonts/TTHoves-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TT Hoves", system-ui, sans-serif;
+  src: url("/fonts/TTHoves-Bold.woff2") format("woff2"),
+    url("/fonts/TTHoves-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+// Base styles
+:root {
+  font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Reset
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Base layout
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #12110e;
+  background-image: url("/background.svg");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  font-size: 16px;
+  font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+  color: $white;
+
+  // Typography
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    line-height: 120%;
+    font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    color: $white;
+  }
+
+  p {
+    line-height: 160%;
+    margin: 0;
+  }
+
+  a {
+    text-decoration: none;
+    color: $white;
+    font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 22.4px;
+    letter-spacing: 0.28px;
+  }
+
+  button {
+    outline: none !important;
+  }
+
+  // Heading sizes
+  h1 {
+    letter-spacing: 0.96px;
+    font-size: 48px;
+  }
+
+  h2 {
+    font-size: 40px;
+    letter-spacing: 0.8px;
+  }
+
+  h3 {
+    font-size: 32px;
+    letter-spacing: 0.64px;
+  }
+
+  h4 {
+    font-size: 28px;
+    letter-spacing: 0.56px;
+  }
+
+  h5 {
+    font-size: 24px;
+    letter-spacing: 0.48px;
+  }
+}
+
+// Main layout structure
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  padding-top: 80px;
+  position: relative;
+}
+
+.swap-page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+
+@media (max-width: 768px) {
+  body {
+    h1 {
+      font-size: 36px;
+    }
+
+    h2 {
+      font-size: 32px;
+    }
+
+    h3 {
+      font-size: 28px;
+    }
+
+    h4 {
+      font-size: 24px;
+    }
+
+    h5 {
+      font-size: 20px;
+    }
+  }
+}

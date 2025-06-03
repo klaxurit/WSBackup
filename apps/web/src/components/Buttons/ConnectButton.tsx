@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { useWallet } from '../../hooks/useWallet';
-import '../../styles/buttons.scss';
 
 interface ConnectButtonProps {
   size?: 'large' | 'small';

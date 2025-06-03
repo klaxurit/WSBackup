@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from './tooltip.module.scss';
 
 interface TooltipProps {
   content: React.ReactNode;
@@ -15,7 +14,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   onMouseLeave,
 }) => (
   <div
-    className={`${styles.tooltip} ${className}`}
+    className={`${'tooltip'} ${className}`}
     onMouseEnter={onMouseEnter}
     onMouseLeave={onMouseLeave}
   >

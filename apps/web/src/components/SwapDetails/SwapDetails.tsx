@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import "../../styles/components/swapDetails.scss";
 import { HuahuaNetworkYellow } from "../SVGs/LogoSVGs";
 import { Tooltip } from "../Tooltip/Tooltip";
-import "../../styles/components/tooltip.scss";
 
 export const SwapDetails = ({ swapData }: { swapData: any }) => {
   const [isOpen, setIsOpen] = useState(false);

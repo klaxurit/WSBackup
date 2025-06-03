@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import '../../styles/explorePage.scss';
-import '../../styles/table.scss';
 import Table from '../../components/Table/Table';
 import type { TableColumn } from '../../components/Table/Table';
 import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';
@@ -161,19 +159,59 @@ const ExplorePage: React.FC = () => {
   });
 
   const txColumns: TableColumn[] = [
-    { label: 'Time', key: 'time' },
     {
-      label: 'Type', key: 'type', render: (row) => (
-        <span className={`Table__TypeBadge Table__TypeBadge--${row.type?.toLowerCase?.()}`}>{row.type}</span>
-      )
+      label: 'Time',
+      key: 'time',
+      render: (row) => {
+        // Affiche le temps écoulé depuis la transaction (ex: '5 min ago')
+        const now = new Date();
+        const txTime = new Date(row.time);
+        const diffMs = now.getTime() - txTime.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return `${diffMin} min ago`;
+        const diffH = Math.floor(diffMin / 60);
+        return `${diffH}h ago`;
+      },
+    },
+    {
+      label: 'Type',
+      key: 'type',
+      render: (row) => (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          Swap
+          <img src={getTokenLogo(row.token1)} alt={row.token1} style={{ width: 18, height: 18, borderRadius: 6, margin: '0 2px' }} />
+          {row.token1} for
+          <img src={getTokenLogo(row.token2)} alt={row.token2} style={{ width: 18, height: 18, borderRadius: 6, margin: '0 2px' }} />
+          {row.token2}
+        </span>
+      ),
     },
     { label: 'USD', key: 'usd' },
-    { label: 'Token Amount 1', key: 'amount1' },
-    { label: 'Token 1', key: 'token1' },
-    { label: 'Token Amount 2', key: 'amount2' },
-    { label: 'Token 2', key: 'token2' },
     {
-      label: 'Wallet', key: 'wallet', render: (row) => (
+      label: 'Token amount (sent)',
+      key: 'amount1',
+      render: (row) => (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {row.amount1}
+          <img src={getTokenLogo(row.token1)} alt={row.token1} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />
+        </span>
+      ),
+    },
+    {
+      label: 'Token amount (received)',
+      key: 'amount2',
+      render: (row) => (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {row.amount2}
+          <img src={getTokenLogo(row.token2)} alt={row.token2} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />
+        </span>
+      ),
+    },
+    {
+      label: 'Wallet',
+      key: 'wallet',
+      render: (row) => (
         <a
           href={`https://beratrail.io/address/${row.wallet}`}
           target="_blank"
@@ -183,7 +221,7 @@ const ExplorePage: React.FC = () => {
         >
           {row.wallet?.slice(0, 6) + '...' + row.wallet?.slice(-4)}
         </a>
-      )
+      ),
     },
   ];
 
@@ -210,7 +248,7 @@ const ExplorePage: React.FC = () => {
   function fakeTxTime() {
     const now = new Date();
     now.setMinutes(now.getMinutes() - Math.floor(Math.random() * 120));
-    return now.toLocaleTimeString();
+    return now.toISOString();
   }
   const txData = Array.from({ length: 12 }, () => ({
     time: fakeTxTime(),
@@ -221,7 +259,7 @@ const ExplorePage: React.FC = () => {
     amount2: fakeTxAmount(),
     token2: fakeTxToken(),
     wallet: fakeTxAddress(),
-  }));
+  })).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   return (
     <div className="ExplorePage">

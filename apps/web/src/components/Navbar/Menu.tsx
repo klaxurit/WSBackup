@@ -1,7 +1,4 @@
-'use client'
 import { useLocation } from 'react-router-dom'
-import "../../styles/menu.scss"
-import "../../styles/link.scss"
 import { WinnieFavicon } from "../SVGs/LogoSVGs"
 import { Link } from "react-router-dom"
 import { DotsHorizontal } from "../SVGs/ProductSVGs"
