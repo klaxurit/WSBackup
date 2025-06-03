@@ -8,41 +8,6 @@ import {
 } from 'lightweight-charts';
 import { RoundedCandleSeries } from './RoundedCandleSeries';
 
-// --- Rounded Candle Plugin (extrait du dossier ressources, adapté ici) ---
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-  ctx.fill();
-}
-
-function drawRoundedCandles(ctx: CanvasRenderingContext2D, bars: any[], options: any, radius: number) {
-  bars.forEach(bar => {
-    ctx.fillStyle = bar.isUp ? options.upColor : options.downColor;
-    roundRect(
-      ctx,
-      bar.x - bar.width / 2,
-      Math.min(bar.openY, bar.closeY),
-      bar.width,
-      Math.abs(bar.closeY - bar.openY) || 1,
-      radius
-    );
-    // Wick
-    ctx.fillStyle = bar.isUp ? options.wickUpColor : options.wickDownColor;
-    ctx.fillRect(bar.x, bar.highY, 1, bar.lowY - bar.highY);
-  });
-}
-
-// --- Fin plugin ---
-
 export interface ChartCandleProps {
   data: CandlestickData<UTCTimestamp>[];
   height?: number;
@@ -103,7 +68,6 @@ export const ChartCandle: React.FC<ChartCandleProps> = ({
     });
     chartRef.current = chart;
 
-    // Ajout de la Custom Series bougies arrondies
     const roundedSeries = new RoundedCandleSeries();
     const customSeries = chart.addCustomSeries(roundedSeries, {
       upColor,
@@ -116,7 +80,6 @@ export const ChartCandle: React.FC<ChartCandleProps> = ({
     customSeries.setData(data);
     seriesRef.current = customSeries;
 
-    // Redimensionnement responsive
     function handleResize() {
       chart.resize(chartContainerRef.current!.clientWidth, height);
     }

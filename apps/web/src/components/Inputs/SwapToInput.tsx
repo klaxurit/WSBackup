@@ -18,7 +18,6 @@ interface ToInputProps {
 
 export const SwapToInput: React.FC<ToInputProps> = React.memo(
   ({
-    steps,
     preSelected,
     onSelect,
     onToggleNetworkList,

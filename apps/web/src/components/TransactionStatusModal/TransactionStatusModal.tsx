@@ -13,7 +13,6 @@ interface TransactionStatusModalProps {
   outputToken: TokenInfo;
   inputAmount: string;
   outputAmount: string;
-  currentStep: number;
 }
 
 export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
@@ -23,7 +22,6 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   outputToken,
   inputAmount,
   outputAmount,
-  currentStep,
 }) => {
   if (!open) return null;
 

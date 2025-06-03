@@ -117,7 +117,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
           outputToken={toToken || { symbol: '', name: '', logoURI: '' }}
           inputAmount={fromAmount}
           outputAmount={toAmount}
-          currentStep={1}
         />
       </div>
     );

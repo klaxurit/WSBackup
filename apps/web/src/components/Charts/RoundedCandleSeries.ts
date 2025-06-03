@@ -11,9 +11,7 @@ import {
   customSeriesDefaultOptions,
   type CustomSeriesWhitespaceData,
 } from 'lightweight-charts';
-import type { IRange } from 'lightweight-charts';
 
-// --- Utilitaire pour dessiner un rectangle arrondi ---
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -40,7 +38,6 @@ function positionsBox(y1: number, y2: number, pixelRatio: number) {
   return { position, length };
 }
 
-// --- Options par défaut ---
 export interface RoundedCandleSeriesOptions extends CustomSeriesOptions {
   upColor: string;
   downColor: string;
@@ -57,7 +54,6 @@ const defaultOptions: RoundedCandleSeriesOptions = {
   radius: (bs) => (bs < 4 ? 0 : bs / 3),
 };
 
-// --- Renderer interne ---
 class RoundedCandleSeriesRenderer<TData extends CandlestickData<UTCTimestamp>> implements ICustomSeriesPaneRenderer {
   _data: PaneRendererCustomData<Time, TData> | null = null;
   _options: RoundedCandleSeriesOptions | null = null;
@@ -100,9 +96,8 @@ class RoundedCandleSeriesRenderer<TData extends CandlestickData<UTCTimestamp>> i
       ctx.fillStyle = bar.isUp ? this._options.upColor : this._options.downColor;
       const verticalPositions = positionsBox(bar.openY, bar.closeY, verticalPixelRatio);
       const linePositions = positionsLine(bar.x, horizontalPixelRatio, candleBodyWidth);
-      // Détermination de la hauteur et de l'arrondi effectif
-      const height = Math.max(verticalPositions.length, 1); // taille minimale 1px
-      const effectiveRadius = height <= 2 ? 0 : radius; // pas d'arrondi si trop petit
+      const height = Math.max(verticalPositions.length, 1);
+      const effectiveRadius = height <= 2 ? 0 : radius;
       roundRect(
         ctx,
         linePositions.position,
@@ -115,7 +110,6 @@ class RoundedCandleSeriesRenderer<TData extends CandlestickData<UTCTimestamp>> i
   }
 }
 
-// --- Série custom ---
 export class RoundedCandleSeries<TData extends CandlestickData<UTCTimestamp>> implements ICustomSeriesPaneView<Time, TData, RoundedCandleSeriesOptions> {
   _renderer: RoundedCandleSeriesRenderer<TData>;
   constructor() {

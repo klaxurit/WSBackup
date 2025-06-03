@@ -144,9 +144,7 @@ const TokenPage: React.FC = () => {
                 <div
                   className="Token__SectionHeadTitle"
                 >
-                  {/* Left: logo, name, ticker */}
                   <div className="Token__SectionHeadTitleLeft">
-                    {/* Token logo */}
                     {mockToken.logoURI ? (
                       <img src={mockToken.logoURI} alt={mockToken.symbol} className="Token__Logo" />
                     ) : (

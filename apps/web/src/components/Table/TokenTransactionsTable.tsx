@@ -18,14 +18,14 @@ interface TokenTransactionsTableProps {
 
 const shortenAddress = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
 
-const getExplorerLink = (chainId: number, address: string) => {
+const getExplorerLink = (address: string) => {
   return `https://beratrail.io/address/${address}`;
 };
 
 const FILTERS = ['All', 'Buy', 'Sell'] as const;
 type FilterType = typeof FILTERS[number];
 
-export const TokenTransactionsTable: React.FC<TokenTransactionsTableProps> = ({ transactions, referenceToken, chainId }) => {
+export const TokenTransactionsTable: React.FC<TokenTransactionsTableProps> = ({ transactions, referenceToken }) => {
   const [filter, setFilter] = useState<FilterType>('All');
 
   const filteredTxs = useMemo(() =>
@@ -73,7 +73,7 @@ export const TokenTransactionsTable: React.FC<TokenTransactionsTableProps> = ({ 
                 <td>{tx.value}</td>
                 <td>
                   <a
-                    href={getExplorerLink(chainId, tx.address)}
+                    href={getExplorerLink(tx.address)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="TokenTxTable__Address"

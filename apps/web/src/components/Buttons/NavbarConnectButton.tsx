@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { useWallet } from '../../hooks/useWallet';
 import { useBeraname } from '../../hooks/useBeraname';
@@ -15,7 +15,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
 }) => {
   const { isConnected, address, balance } = useAppSelector((state) => state.wallet);
   const { connect, disconnect } = useWallet();
-  const { beraname, isLoading, error } = useBeraname(address || undefined);
+  const { beraname } = useBeraname(address || undefined);
   const formatAddress = (addr: string) => {
     if (!addr) return '';
     const start = addr.substring(0, 6);

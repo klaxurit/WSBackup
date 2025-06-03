@@ -14,11 +14,9 @@ const TABS = [
 
 const ExplorePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tokens');
-  const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState('');
   const tokens = useBerachainTokenList();
 
-  // Génère des fausses données pour le mini chart
   function generateFakeChartData(points = 24): MiniChartPoint[] {
     let last = 100 + Math.random() * 20;
     return Array.from({ length: points }, (_, i) => {
@@ -27,20 +25,16 @@ const ExplorePage: React.FC = () => {
     });
   }
 
-  // Génère une fausse valeur de prix
   function fakePrice() {
     return (Math.random() * 10 + 0.1).toFixed(2) + ' $';
   }
-  // Génère une fausse variation en pourcentage
   function fakePercent() {
     const n = +(Math.random() * 8 - 4).toFixed(2);
     return (n > 0 ? '+' : '') + n.toFixed(2) + ' %';
   }
-  // Génère une fausse FDV
   function fakeFDV() {
     return (Math.random() * 1_000_000_000).toLocaleString() + ' $';
   }
-  // Génère un faux volume
   function fakeVolume() {
     return (Math.random() * 10_000_000).toLocaleString() + ' $';
   }
@@ -74,7 +68,6 @@ const ExplorePage: React.FC = () => {
     ? tokens.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
     : tokens;
 
-  // Liste de logos pour les tokens connus
   const tokenLogos: Record<string, string> = {
     USDC: 'https://assets.trustwalletapp.com/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
     WETH: 'https://assets.trustwalletapp.com/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png',
@@ -112,7 +105,6 @@ const ExplorePage: React.FC = () => {
     { label: 'Vol. 1d/TVL', key: 'vol1dTvl' },
   ];
 
-  // FAKE DATA POUR LE TABLEAU POOLS
   function fakePoolName() {
     const pools = ['USDC/WETH', 'DAI/USDT', 'WBTC/ETH', 'UNI/USDC', 'LINK/ETH'];
     return pools[Math.floor(Math.random() * pools.length)];
@@ -163,7 +155,6 @@ const ExplorePage: React.FC = () => {
       label: 'Time',
       key: 'time',
       render: (row) => {
-        // Affiche le temps écoulé depuis la transaction (ex: '5 min ago')
         const now = new Date();
         const txTime = new Date(row.time);
         const diffMs = now.getTime() - txTime.getTime();
@@ -225,7 +216,6 @@ const ExplorePage: React.FC = () => {
     },
   ];
 
-  // FAKE DATA POUR LE TABLEAU TRANSACTIONS
   function fakeTxType() {
     return Math.random() > 0.5 ? 'Buy' : 'Sell';
   }
@@ -281,8 +271,7 @@ const ExplorePage: React.FC = () => {
           setSearchValue={setSearch}
           mode="compact"
         />
-      </div>
-      {/* Tableau selon le tab actif */}
+      </div>  
       {activeTab === 'tokens' && (
         <Table
           columns={tokenColumns}

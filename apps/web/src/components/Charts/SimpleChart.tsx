@@ -3,15 +3,14 @@ import * as d3 from 'd3';
 
 interface SimpleChartProps {
   data: { date: string; value: number }[];
-  onPriceChange?: (price: number) => void;
 }
 
 type ChartType = 'line' | 'candle';
 
-const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
+const SimpleChart: React.FC<SimpleChartProps> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [chartType, setChartType] = useState<ChartType>('line');
+  const [chartType] = useState<ChartType>('line');
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -84,13 +83,11 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
         .y1(d => y(d.value))
         .curve(d3.curveMonotoneX);
 
-      // Ajouter l'aire
       svg.append('path')
         .datum(data)
         .attr('fill', 'rgba(0, 81, 254, 0.1)')
         .attr('d', area);
 
-      // Ajouter la ligne
       svg.append('path')
         .datum(data)
         .attr('fill', 'none')
@@ -98,7 +95,6 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
         .attr('stroke-width', Math.max(2, containerWidth * 0.002))
         .attr('d', line);
     } else {
-      // Créer les bougies
       const candleWidth = Math.max(2, width / data.length * 0.8);
 
       svg.selectAll('rect')
@@ -113,7 +109,6 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
         .attr('rx', Math.max(1, candleWidth * 0.1));
     }
 
-    // Ajouter l'axe X
     const xAxis = d3.axisBottom(x)
       .ticks(Math.min(6, Math.floor(width / 100)))
       .tickFormat(d3.timeFormat('%b %d') as any)
@@ -132,7 +127,6 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
       .attr('text-anchor', 'middle')
       .attr('transform', `translate(-15, ${margin.bottom - 20})`);
 
-    // Ajouter l'axe Y à droite
     const yAxis = d3.axisRight(y)
       .ticks(Math.min(6, Math.floor(height / 50)))
       .tickFormat(d => d3.format('$.2f')(d as number))
@@ -151,7 +145,6 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
       .attr('text-anchor', 'start')
       .attr('transform', `translate(${margin.right - 60}, -10)`);
 
-    // Ajouter une grille horizontale avec des points
     const gridLines = svg.append('g')
       .attr('class', 'grid-lines');
 
@@ -166,33 +159,6 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, onPriceChange }) => {
       .attr('stroke', 'rgba(255, 255, 255, 0.2)')
       .attr('stroke-width', 1.5)
       .attr('stroke-dasharray', '1,25');
-
-    // Ajouter les points interactifs
-    const pointRadius = Math.max(3, containerWidth * 0.005);
-    const points = svg.selectAll('.point')
-      .data(data)
-      .enter()
-      .append('circle')
-      .attr('class', 'point')
-      .attr('cx', d => x(new Date(d.date)))
-      .attr('cy', d => y(d.value))
-      .attr('r', pointRadius)
-      .attr('fill', '#0051FE')
-      .style('opacity', 0)
-      .on('mouseover', function (event, d) {
-        d3.select(this)
-          .style('opacity', 1)
-          .attr('r', pointRadius * 1.5);
-
-        if (onPriceChange) {
-          onPriceChange(d.value);
-        }
-      })
-      .on('mouseout', function () {
-        d3.select(this)
-          .style('opacity', 0)
-          .attr('r', pointRadius);
-      });
   };
 
   return (
