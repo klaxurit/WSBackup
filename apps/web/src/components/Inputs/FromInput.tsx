@@ -1,10 +1,10 @@
 "use client";
-import { useCallback, useState, useMemo, useEffect } from "react";
+import { useMemo, useRef } from "react";
 import NetworkSelector from "../Buttons/NetworkSelector";
 import React from "react";
-import { useAppSelector } from '../../store/hooks';
-import { useTokenBalances } from '../../hooks/useTokenBalances';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import { useAccount, useBalance } from "wagmi";
+import { formatEther, parseEther } from "viem";
 
 interface FromInputProps {
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -14,158 +14,118 @@ interface FromInputProps {
   secondaryColor?: string;
   minimized?: boolean;
   isHomePage?: boolean;
-  preSelectedToken?: BerachainToken;
-  onAmountChange?: (amount: string) => void;
-  onTokenSelect?: (token: BerachainToken) => void;
+  selectedToken: BerachainToken | null;
+  onAmountChange: (amount: bigint) => void;
+  onTokenSelect: (token: BerachainToken) => void;
   defaultValue?: number;
-  value?: string;
+  value: bigint;
 }
 
-function formatAmount(amount: string | number): string {
-  const num = Number(amount);
-  if (isNaN(num)) return '0.000';
-  return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
-}
-
-function formatAmountTruncate(amount: string | number): string {
-  const num = Number(amount);
-  if (isNaN(num)) return '0.000';
-  const truncated = Math.trunc(num * 1000) / 1000;
-  return truncated.toFixed(3).replace(',', '.');
-}
-
-function getMaxWithFee(balance: string | number, symbol?: string): string {
-  const num = Number(balance);
-  if (isNaN(num)) return '0.000';
-  if (num < 0.001) return formatAmount(num);
-  if (symbol === 'BERA') {
-    const max = num * 0.999;
-    return formatAmount(max);
-  }
-  return formatAmount(num);
-}
-
-export const FromInput: React.FC<FromInputProps> = React.memo(
-  ({
+export const FromInput: React.FC<FromInputProps> = (
+  {
     onToggleNetworkList,
     disabled,
     minimized,
     dominantColor,
     secondaryColor,
     isHomePage,
-    preSelectedToken,
+    selectedToken,
     onAmountChange,
     onTokenSelect,
     value,
   }) => {
-    const address = useAppSelector((state) => state.wallet.address);
-    const [currentToken, setCurrentToken] = useState<BerachainToken | null>(preSelectedToken || null);
-    const inputValue = value ?? "";
-    const tokenArray = useMemo(() => currentToken ? [currentToken] : [], [currentToken]);
-    const { balances, loading } = useTokenBalances(tokenArray, address as `0x${string}`) as { balances: Record<string, string>, loading: boolean };
+  const { address } = useAccount()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const { data: balance, isLoading: loading } = useBalance({
+    address,
+    token: selectedToken?.address as `0x${string}`
+  })
 
-    useEffect(() => {
-      setCurrentToken(preSelectedToken || null);
-    }, [preSelectedToken]);
+  const isOverBalance = useMemo(() => (value > (balance?.value || 0n)), [value, balance])
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      onAmountChange && onAmountChange(value);
-    };
+  const setMax = () => {
+    if (inputRef.current) {
+      inputRef.current.value = formatEther(balance?.value || 0n)
+      onAmountChange(balance?.value || 0n)
+    }
+  }
 
-    const handleTokenSelect = useCallback((token: BerachainToken) => {
-      onTokenSelect && onTokenSelect(token);
-      setCurrentToken(token);
-    }, [onTokenSelect]);
-
-    const setMax = useCallback(() => {
-      if (!currentToken) return;
-      const max = getMaxWithFee(balances[currentToken.symbol] || "0", currentToken.symbol);
-      onAmountChange && onAmountChange(max);
-    }, [onAmountChange, balances, currentToken]);
-
-    const balance = currentToken ? balances[currentToken.symbol] : undefined;
-    const isOverBalance = balance !== undefined && inputValue && parseFloat(inputValue) > parseFloat(balance);
-
-    return (
-      <div
-        className={`Inputs__From From From--${isOverBalance ? "error" : "idle"}`}
-      >
-        <div className="From__Label">
-          <p>Buy</p>
+  return (
+    <div
+      className={`Inputs__From From From--${isOverBalance ? "error" : "idle"}`}
+    >
+      <div className="From__Label">
+        <p>Buy</p>
+      </div>
+      <div className="From__AmountsAndChain">
+        <div className="From__Amounts" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <input
+            ref={inputRef}
+            className="From__Input"
+            type="text"
+            inputMode="decimal"
+            placeholder="0"
+            onChange={(e) => onAmountChange(parseEther(e.target.value))}
+            min={0}
+            style={{ color: isOverBalance ? '#FF7456' : undefined }}
+          />
         </div>
-        <div className="From__AmountsAndChain">
-          <div className="From__Amounts" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <input
-              className="From__Input"
-              type="text"
-              inputMode="decimal"
-              placeholder="0"
-              value={inputValue}
-              onFocus={() => { }}
-              onBlur={() => { }}
-              onChange={handleInputChange}
-              min={0}
-              style={{ color: isOverBalance ? '#FF7456' : undefined }}
+        <div className="From__LogosAndBalance">
+          <div
+            className={`From__Logos ${disabled ? "From__disabled" : ""}`}
+          >
+            <NetworkSelector
+              preSelected={selectedToken}
+              onToggleNetworkList={onToggleNetworkList}
+              minimized={minimized}
+              dominantColor={dominantColor}
+              secondaryColor={secondaryColor}
+              isHomePage={isHomePage}
+              onSelect={onTokenSelect}
             />
-          </div>
-          <div className="From__LogosAndBalance">
-            <div
-              className={`From__Logos ${disabled ? "From__disabled" : ""}`}
-            >
-              <NetworkSelector
-                preSelected={currentToken || undefined}
-                onToggleNetworkList={onToggleNetworkList}
-                minimized={minimized}
-                dominantColor={dominantColor}
-                secondaryColor={secondaryColor}
-                isHomePage={isHomePage}
-                onSelect={handleTokenSelect}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="From__Details">
-          <p className="From__Convertion">0 $US</p>
-          <div className="From__Balance" style={{ display: 'flex', alignItems: 'baseline' }}>
-            {currentToken && (
-              <>
-                <button
-                  type="button"
-                  className="From__Max"
-                  style={{
-                    color: '#8a8984',
-                    background: 'none',
-                    border: 'none',
-                    borderRadius: 8,
-                    marginLeft: 8,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    padding: '2px 4px',
-                    cursor: 'pointer',
-                    height: 14,
-                    display: 'flex',
-                    alignItems: 'center',
-                    boxShadow: '0 1px 4px 0 rgba(0,0,0,0.04)',
-                    transition: 'color 0.15s',
-                  }}
-                  onMouseOver={e => (e.currentTarget.style.color = '#fff')}
-                  onMouseOut={e => (e.currentTarget.style.color = '#8a8984')}
-                  onClick={setMax}
-                  tabIndex={-1}
-                >
-                  Max
-                </button>
-                <p className="From__Amount" style={{ margin: 0, fontWeight: 500, color: isOverBalance ? '#FF7456' : undefined }}>
-                  {loading ? "..." : formatAmountTruncate(balance || '0')}
-                </p>
-              </>
-            )}
           </div>
         </div>
       </div>
-    );
-  },
-);
+      <div className="From__Details">
+        <p className="From__Convertion">0 $US</p>
+        <div className="From__Balance" style={{ display: 'flex', alignItems: 'baseline' }}>
+          {selectedToken && (
+            <>
+              <button
+                type="button"
+                className="From__Max"
+                style={{
+                  color: '#8a8984',
+                  background: 'none',
+                  border: 'none',
+                  borderRadius: 8,
+                  marginLeft: 8,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  padding: '2px 4px',
+                  cursor: 'pointer',
+                  height: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 1px 4px 0 rgba(0,0,0,0.04)',
+                  transition: 'color 0.15s',
+                }}
+                onMouseOver={e => (e.currentTarget.style.color = '#fff')}
+                onMouseOut={e => (e.currentTarget.style.color = '#8a8984')}
+                onClick={setMax}
+                tabIndex={-1}
+              >
+                Max
+              </button>
+              <p className="From__Amount" style={{ margin: 0, fontWeight: 500, color: isOverBalance ? '#FF7456' : undefined }}>
+                {loading ? "..." : formatEther(balance?.value || 0n)}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 FromInput.displayName = "FromInput";

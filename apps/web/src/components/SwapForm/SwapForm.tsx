@@ -8,6 +8,7 @@ import { SwapToInput } from "../Inputs/SwapToInput";
 import { useBackgroundImage } from "../../hooks/useBackgroundImage";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
+import { useTest } from "../../hooks/useTest";
 
 interface FormProps {
   activeTab: string;
@@ -30,6 +31,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
   }) => {
     const { toggleBackground } = useBackgroundImage();
     const status = "idle";
+    const { mint } = useTest()
 
     const isHide = useMemo(() => {
       return ['inProgress', 'error', 'success'].includes(status)
@@ -41,7 +43,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     );
     const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
-    const [fromAmount, setFromAmount] = useState<string>("");
+    const [fromAmount, setFromAmount] = useState<bigint>(0n);
     const [toAmount, setToAmount] = useState<string>("");
     const [showModal, setShowModal] = useState(false);
     const handleOpenModal = () => {
@@ -57,6 +59,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setFromAmount("");
       setToAmount("");
     };
+
+
 
     return (
       <div
@@ -75,7 +79,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
           </div>
           <div className="Inputs">
             <FromInput
-              preSelectedToken={fromToken || undefined}
+              selectedToken={fromToken}
               onTokenSelect={setFromToken}
               onAmountChange={setFromAmount}
               value={fromAmount}
@@ -110,6 +114,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
             />
           </div>
         </div>
+        <button onClick={() => mint('0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1')}>mint mBera</button>
+        <button onClick={() => mint('0x41936CA1174EE86B24c05a07653Df4Be68A0ED02')}>mint mHoney</button>
         <TransactionStatusModal
           open={showModal}
           onClose={handleCloseModal}
