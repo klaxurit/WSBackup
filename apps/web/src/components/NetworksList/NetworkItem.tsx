@@ -1,5 +1,7 @@
 import React from 'react';
 import { Loader } from '../Loader/Loader';
+import { formatEther } from 'viem';
+import { useAccount, useBalance } from 'wagmi';
 
 interface NetworkItemProps {
   token: {
@@ -25,6 +27,13 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
   balance,
   loading,
 }) => {
+
+  const { address } = useAccount()
+  const { data: balance2, isLoading } = useBalance({
+    address,
+    token: (token.address as `0x${string}`)
+  })
+
   return (
     <div
       className={`Modal__Item${isSelected ? ' selected' : ''}`}
@@ -52,7 +61,8 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
       <div className="Modal__ItemBalanceContainer">
         <span className="Modal__ItemPrice">$0.00</span>
         <span className="Modal__ItemBalance">
-          {loading ? <Loader /> : (balance !== undefined ? `${parseFloat(balance).toFixed(4)}` : '--')}
+          {/* {loading ? <Loader /> : (balance !== undefined ? `${parseFloat(balance).toFixed(4)}` : '--')} */}
+          {isLoading ? <Loader /> : (balance2 ? `${parseInt(formatEther(balance2.value)).toFixed(4)}` : '--')}
         </span>
       </div>
     </div>
