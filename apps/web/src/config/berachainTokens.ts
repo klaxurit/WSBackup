@@ -43,5 +43,29 @@ export const BERACHAIN_TOKENS = [
     address: '0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590',
     decimals: 18,
   },
+  {
+    name: 'Mock Bera',
+    symbol: 'mBera',
+    address: '0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1',
+    decimals: 18,
+  },
+  {
+    name: 'Mock Honey',
+    symbol: 'mHoney',
+    address: '0x41936CA1174EE86B24c05a07653Df4Be68A0ED02',
+    decimals: 18,
+  },
+  {
+    name: 'Mock USDC',
+    symbol: 'mUSDC',
+    address: '0xEB587A20C3fF1aa2B6DA888483eb1ffb7009c020',
+    decimals: 18,
+  },
+  {
+    name: 'Mock Honey 2',
+    symbol: 'mHoney2',
+    address: '0x92F7c1aa2BFDC2Fc09D3a596cEAfF9D55dd04aa7',
+    decimals: 18,
+  }
   // Ajoute ici d'autres tokens connus de Berachain avec leur adresse, décimales...
 ]; 

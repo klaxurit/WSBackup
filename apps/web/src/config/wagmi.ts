@@ -1,6 +1,6 @@
 import { createConfig, http } from 'wagmi';
-import { mainnet, sepolia } from 'wagmi/chains';
-import { berachain } from 'viem/chains';
+// import { mainnet, sepolia } from 'wagmi/chains';
+import { berachain, berachainBepolia } from 'viem/chains';
 
 declare module 'wagmi' {
   interface Register {
@@ -8,13 +8,11 @@ declare module 'wagmi' {
   }
 }
 
-const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
+// const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
 
 export const config = createConfig({
-  chains: [mainnet, sepolia, berachain],
+  chains: [berachainBepolia],
   transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-    [berachain.id]: http(berachainApiUrl),
+    [berachainBepolia.id]: http(),
   },
 }); 

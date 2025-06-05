@@ -4,7 +4,7 @@ import { setWalletConnected, setWalletDisconnected, setError, setBalance } from 
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected, walletConnect } from 'wagmi/connectors';
 import { createPublicClient, http, formatEther } from 'viem';
-import { berachain } from 'viem/chains';
+import { berachain, berachainBepolia } from 'viem/chains';
 
 export const useWallet = () => {
   const dispatch = useAppDispatch();
@@ -37,7 +37,7 @@ export const useWallet = () => {
         projectId: '3fcc6bba6f1de962d911bb5b5c3dba68'
       });
       connect(
-        { connector },
+        { connector, chainId: berachainBepolia.id },
         {
           onSuccess: () => {
             // Redux sera synchronisé automatiquement par le useEffect
