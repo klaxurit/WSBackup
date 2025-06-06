@@ -44,7 +44,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
-    const [toAmount, setToAmount] = useState<string>("");
+    const [toAmount, setToAmount] = useState<bigint>(0n);
     const [showModal, setShowModal] = useState(false);
     const handleOpenModal = () => {
       setShowModal(true);
@@ -56,8 +56,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleSwitchTokens = () => {
       setFromToken(toToken);
       setToToken(fromToken);
-      setFromAmount("");
-      setToAmount("");
+      setFromAmount(0n);
+      setToAmount(0n);
     };
 
 
@@ -94,7 +94,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
             />
             <SwapToInput
               steps={{ totalRatio: 0, steps: [] }}
-              preSelected={toToken || undefined}
+              preSelected={toToken}
               onSelect={setToToken}
               inputValue={toAmount}
               onInputChange={setToAmount}

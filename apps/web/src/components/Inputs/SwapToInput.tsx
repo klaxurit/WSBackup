@@ -1,10 +1,12 @@
 import React, { useRef } from "react";
 import NetworkSelector from "../Buttons/NetworkSelector";
+import type { BerachainToken } from "../../hooks/useBerachainTokenList";
+import { formatEther, parseEther } from "viem";
 
 interface ToInputProps {
   steps: any;
-  preSelected?: any;
-  onSelect?: (token: any) => void;
+  preSelected: BerachainToken | null;
+  onSelect: (token: BerachainToken) => void;
   dominantColor?: string;
   secondaryColor?: string;
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -12,8 +14,8 @@ interface ToInputProps {
   balance?: string;
   loading?: boolean;
   isOverBalance?: boolean;
-  inputValue?: string;
-  onInputChange?: (value: string) => void;
+  inputValue: bigint;
+  onInputChange: (value: bigint) => void;
 }
 
 export const SwapToInput: React.FC<ToInputProps> = React.memo(
@@ -24,7 +26,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     dominantColor,
     secondaryColor,
     isHomePage,
-    inputValue = "",
+    inputValue,
     onInputChange,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
@@ -39,10 +41,10 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
             <input
               ref={textareaRef}
               className="From__Input"
-              value={inputValue}
+              value={formatEther(inputValue)}
               type="number"
               placeholder="0"
-              onChange={e => onInputChange && onInputChange(e.target.value)}
+              onChange={e => onInputChange(parseEther(e.target.value))}
             />
           </div>
           <div className="From__LogosAndBalance">
