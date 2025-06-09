@@ -9,6 +9,9 @@ import { useBackgroundImage } from "../../hooks/useBackgroundImage";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { useTest } from "../../hooks/useTest";
+import { useSwap } from "../../hooks/useSwap";
+import { useAccount } from "wagmi";
+import { zeroAddress } from "viem";
 
 interface FormProps {
   activeTab: string;
@@ -30,22 +33,22 @@ const SwapForm: React.FC<FormProps> = React.memo(
     isHomePage,
   }) => {
     const { toggleBackground } = useBackgroundImage();
-    const status = "idle";
     const { mint } = useTest()
+    const { isConnected } = useAccount()
 
-    const isHide = useMemo(() => {
-      return ['inProgress', 'error', 'success'].includes(status)
-    }, [status])
-
-    const onTabChange = useCallback(
-      (newTab: string) => handleTabChange(newTab),
-      [handleTabChange],
-    );
     const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
     const [toAmount, setToAmount] = useState<bigint>(0n);
     const [showModal, setShowModal] = useState(false);
+
+    const onTabChange = useCallback(
+      (newTab: string) => handleTabChange(newTab),
+      [handleTabChange],
+    );
+
+    const isHide = false
+
     const handleOpenModal = () => {
       setShowModal(true);
     };
@@ -60,7 +63,22 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setToAmount(0n);
     };
 
+    const swap = useSwap({
+      tokenIn: fromToken?.address || zeroAddress,
+      tokenOut: toToken?.address || zeroAddress,
+      amountIn: fromAmount,
+      slippageTolerance: 0.5,
+      deadline: 20,
+    })
 
+    const btnText = useMemo(() => {
+      if (swap.status === "ready") return "Swap"
+      if (swap.status === "idle" && (!fromToken || !toToken)) return "select Token"
+      if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
+
+      return swap.status
+    }, [swap.status, fromToken, toToken])
+    console.log(swap)
 
     return (
       <div
@@ -104,14 +122,20 @@ const SwapForm: React.FC<FormProps> = React.memo(
             />
           </div>
           <div className="Form__ConnectBtnWrapper">
-            <ConnectButton
-              size="large"
-              onClick={handleOpenModal}
-              tokenSelected={!!fromToken && !!toToken}
-              amountEntered={!!fromAmount}
-              dominantColor={dominantColor}
-              secondaryColor={secondaryColor}
-            />
+            {!isConnected ? (
+              <ConnectButton
+                size="large"
+                dominantColor={dominantColor}
+                secondaryColor={secondaryColor}
+              />
+            ) : (
+              <button
+                className={`btn btn--large btn__main`}
+                onClick={handleOpenModal}
+                disabled={false}>
+                {btnText}
+              </button>
+            )}
           </div>
         </div>
         <button onClick={() => mint('0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1')}>mint mBera</button>
@@ -123,8 +147,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
           outputToken={toToken || { symbol: '', name: '', logoURI: '' }}
           inputAmount={fromAmount}
           outputAmount={toAmount}
+          swap={swap}
         />
-      </div>
+      </div >
     );
   },
 );

@@ -40,4 +40,4 @@ export const QuoterV2ABI = [
 
     stateMutability: 'nonpayable',
   },
-]
+] as const

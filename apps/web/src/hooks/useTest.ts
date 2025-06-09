@@ -1,5 +1,5 @@
 import { useAccount, useWriteContract } from "wagmi"
-import { parseEther } from "viem"
+import { parseEther, type Address } from "viem"
 import { useCallback } from "react"
 import { MockERC20ABI } from "../config/abis/mockERC20"
 import { berachainBepolia } from "viem/chains"
@@ -8,7 +8,7 @@ export const useTest = () => {
   const { writeContract } = useWriteContract()
   const { address } = useAccount()
 
-  const mint = useCallback((tokenAddress: string) => {
+  const mint = useCallback((tokenAddress: Address) => {
     if (!address) return
 
     console.log("ici", address)

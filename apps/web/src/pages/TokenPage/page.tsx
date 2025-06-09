@@ -8,6 +8,7 @@ import type { Transaction } from '../../components/Table/TokenTransactionsTable'
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
 import Table from '../../components/Table/Table';
 import type { TableColumn } from '../../components/Table/Table';
+import { zeroAddress } from 'viem';
 
 const INTERVAL_KEYS = ['hour', 'day', 'week', 'month', 'year'] as const;
 type IntervalKey = typeof INTERVAL_KEYS[number];
@@ -75,7 +76,7 @@ const TokenPage: React.FC = () => {
   const mockToken: BerachainToken & { website?: string; twitter?: string } = {
     name: tokenId || 'Token',
     symbol: tokenId?.toUpperCase() || 'TOKEN',
-    address: '',
+    address: zeroAddress,
     logoURI: '',
     decimals: 18,
     website: '',

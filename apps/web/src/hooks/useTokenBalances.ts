@@ -57,7 +57,7 @@ export function useTokenBalances(tokens: Token[], address: `0x${string}`) {
 
     async function fetchBalances() {
       const results = await Promise.all(tokens.map(async (token) => {
-        console.log('Token reçu pour balance:', token);
+        // console.log('Token reçu pour balance:', token);
         try {
           if (!token.address) {
             // BERA natif

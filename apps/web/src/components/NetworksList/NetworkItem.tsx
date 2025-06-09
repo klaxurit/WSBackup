@@ -24,8 +24,6 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
   token,
   isSelected,
   onSelect,
-  balance,
-  loading,
 }) => {
 
   const { address } = useAccount()

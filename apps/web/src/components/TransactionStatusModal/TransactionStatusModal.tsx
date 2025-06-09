@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import type { useSwap } from '../../hooks/useSwap';
+import { formatEther } from 'viem';
 
 interface TokenInfo {
   symbol: string;
@@ -11,8 +13,9 @@ interface TransactionStatusModalProps {
   onClose: () => void;
   inputToken: TokenInfo;
   outputToken: TokenInfo;
-  inputAmount: string;
-  outputAmount: string;
+  inputAmount: bigint;
+  outputAmount: bigint;
+  swap: ReturnType<typeof useSwap>
 }
 
 export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
@@ -21,9 +24,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   inputToken,
   outputToken,
   inputAmount,
-  outputAmount,
+  swap
 }) => {
-  if (!open) return null;
 
   const swapInfo = {
     feeLabel: 'Fee (0.25%)',
@@ -43,7 +45,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [shouldRenderDetails, setShouldRenderDetails] = useState(false);
-  const [buttonState, setButtonState] = useState<'ready' | 'loading' | 'success' | 'error'>('ready');
+
+  const { quote } = swap
 
   React.useEffect(() => {
     if (isDetailsOpen) {
@@ -54,11 +57,21 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     }
   }, [isDetailsOpen, shouldRenderDetails]);
 
+  const btnText = useMemo(() => {
+    if (swap.status === "ready" && !swap.needsApproval) return "Swap"
+    if (swap.status === "ready" && swap.needsApproval) return "Approve"
+
+    return swap.status
+  }, [swap.status, swap.needsApproval])
+
+  if (!open) return null;
+
   const handleToggleDetails = () => setIsDetailsOpen((v) => !v);
-  const handleSwap = () => {
-    setButtonState('loading');
-    setTimeout(() => setButtonState('success'), 1800);
+  const handleSwap = async () => {
+    // setButtonState('loading');
+    await swap.swap()
   };
+
 
   return (
     <div className="TransactionModal__overlay">
@@ -72,7 +85,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapblock">
           <div className="TransactionModal__tokenRow">
             <div className="TransactionModal__tokenInfo">
-              <span className="TransactionModal__tokenAmount">{inputAmount} {inputToken.symbol}</span>
+              <span className="TransactionModal__tokenAmount">{formatEther(inputAmount)} {inputToken.symbol}</span>
               <span className="TransactionModal__tokenPrice">$9.23</span> {/* TODO: rendre dynamique */}
             </div>
             <img src={inputToken.logoURI} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />
@@ -82,7 +95,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapblock">
           <div className="TransactionModal__tokenRow">
             <div className="TransactionModal__tokenInfo">
-              <span className="TransactionModal__tokenAmount">{outputAmount} {outputToken.symbol}</span>
+              <span className="TransactionModal__tokenAmount">{quote?.amountOutFormatted} {outputToken.symbol}</span>
               <span className="TransactionModal__tokenPrice">$9.12</span> {/* TODO: rendre dynamique */}
             </div>
             <img src={outputToken.logoURI} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />
@@ -98,11 +111,11 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapinfo">
           <div className="TransactionModal__infoRow">
             <span className="TransactionModal__infoLabel">{swapInfo.feeLabel}</span>
-            <span className="TransactionModal__infoContent">{swapInfo.feeValue}</span>
+            <span className="TransactionModal__infoContent">{quote?.gasEstimate}</span>
           </div>
           <div className="TransactionModal__infoRow">
             <span className="TransactionModal__infoLabel">{swapInfo.networkLabel}</span>
-            <span className="TransactionModal__infoContent">{swapInfo.networkValue}</span>
+            <span className="TransactionModal__infoContent">{quote?.gasEstimate}wei</span>
           </div>
           <div className={`TransactionModal__detailsAnim${isDetailsOpen ? ' TransactionModal__detailsAnim--open' : ''}`}>
             {shouldRenderDetails && (
@@ -121,18 +134,17 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </div>
                 <div className="TransactionModal__infoRow">
                   <span className="TransactionModal__infoLabel">{swapInfo.priceImpactLabel}</span>
-                  <span className="TransactionModal__infoContent">{swapInfo.priceImpactValue}</span>
+                  <span className="TransactionModal__infoContent">{quote?.priceImpact ? 100 - quote.priceImpact : "0"}</span>
                 </div>
               </div>
             )}
           </div>
         </div>
         <button
-          className={`TransactionModal__swapBtn TransactionModal__swapBtn--${buttonState}`}
+          className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready`}
           onClick={handleSwap}
-          disabled={buttonState !== 'ready'}
         >
-          {buttonState === 'loading' ? 'Swapping...' : buttonState === 'success' ? 'Success!' : 'Swap'}
+          {btnText}
         </button>
       </div>
     </div>

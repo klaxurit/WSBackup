@@ -1,5 +1,4 @@
 import { createConfig, http } from 'wagmi';
-// import { mainnet, sepolia } from 'wagmi/chains';
 import { berachain, berachainBepolia } from 'viem/chains';
 
 declare module 'wagmi' {
@@ -9,10 +8,15 @@ declare module 'wagmi' {
 }
 
 // const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
+//
+const currentChain = import.meta.env.NODE_ENV === "production"
+  ? berachain
+  : berachainBepolia
 
 export const config = createConfig({
-  chains: [berachainBepolia],
+  chains: [currentChain],
   transports: {
-    [berachainBepolia.id]: http(),
+    [berachain.id]: http(),
+    [berachainBepolia.id]: http()
   },
 }); 

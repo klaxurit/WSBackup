@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useAppSelector } from '../../store/hooks';
 import { useWallet } from '../../hooks/useWallet';
 
 interface ConnectButtonProps {
@@ -14,14 +13,10 @@ interface ConnectButtonProps {
 
 export const ConnectButton: React.FC<ConnectButtonProps> = ({
   size = 'large',
-  onClick,
   dominantColor,
   secondaryColor,
-  tokenSelected = false,
-  amountEntered = false,
   customClassName = '',
 }) => {
-  const { isConnected } = useAppSelector((state) => state.wallet);
   const { connect } = useWallet();
 
   const handleConnect = useCallback(async () => {
@@ -32,41 +27,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     }
   }, [connect]);
 
-  const getButtonState = () => {
-    if (!isConnected) {
-      return {
-        text: 'Connect Wallet',
-        type: 'shade',
-        disabled: false,
-        onClick: handleConnect
-      };
-    } else if (!tokenSelected) {
-      return {
-        text: 'Select token',
-        type: 'disabled',
-        disabled: true,
-        onClick: undefined
-      };
-    } else if (!amountEntered) {
-      return {
-        text: 'Enter Amount',
-        type: 'disabled',
-        disabled: true,
-        onClick: undefined
-      };
-    } else {
-      return {
-        text: 'Swap',
-        type: 'main',
-        disabled: false,
-        onClick: onClick
-      };
-    }
-  };
-
-  const { text: buttonText, type: buttonType, disabled, onClick: buttonClick } = getButtonState();
-
-  const className = `btn btn--${size} btn__${buttonType} ${customClassName}`.trim();
+  const className = `btn btn--${size} btn__shade ${customClassName}`.trim();
 
   const style: React.CSSProperties = {};
   if (dominantColor) style.color = dominantColor;
@@ -75,11 +36,11 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   return (
     <button
       className={className}
-      onClick={buttonClick}
-      disabled={disabled}
+      onClick={handleConnect}
+      disabled={false}
       style={style}
     >
-      {buttonText}
+      Connect Wallet
     </button>
   );
 };

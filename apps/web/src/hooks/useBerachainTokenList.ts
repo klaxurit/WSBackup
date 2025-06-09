@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BERACHAIN_TOKENS } from '../config/berachainTokens';
 import { useWatchContractEvent } from 'wagmi';
 import { v3CoreFactoryContract } from '../config/abis/v3CoreFactoryContractABI';
 import { berachainBepolia } from 'viem/chains';
+import type { Address } from 'viem';
 
 export interface BerachainToken {
   name: string;
   symbol: string;
-  address: string; // toujours string, '' pour natif
+  address: Address; // toujours string, '' pour natif
   logoURI: string;
   decimals: number;
   logoSymbol?: string;
@@ -41,6 +42,7 @@ export function useBerachainTokenList(): BerachainToken[] {
       const l = BERACHAIN_TOKENS.map((token) => {
         return {
           ...token,
+          address: (token.address as Address),
           logoURI: getLogoUrl(token),
         };
       })
@@ -52,8 +54,4 @@ export function useBerachainTokenList(): BerachainToken[] {
 
 
   return tokenList
-  return useMemo(
-    () =>
-      []
-  );
 } 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { erc20Abi, formatUnits, zeroAddress, type Address, type Hex } from "viem"
-import { useAccount, usePublicClient, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { useAccount, usePublicClient, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI"
 import { PoolABI } from "../config/abis/poolABI"
 import { QuoterV2ABI } from "../config/abis/QuoterV2"
@@ -84,6 +84,7 @@ export const useSwap = (params: SwapParams) => {
 
   const getTokenInfo = useCallback(async (tokenAddress: Address): Promise<TokenInfo> => {
     if (tokenCache.has(tokenAddress)) {
+      console.log("TokenInfo (cache):", tokenCache.get(tokenAddress))
       return tokenCache.get(tokenAddress)!
     }
 
@@ -108,6 +109,7 @@ export const useSwap = (params: SwapParams) => {
       }
 
       setTokenCache(prev => new Map(prev).set(tokenAddress, info))
+      console.log("TokenInfo:", info)
       return info
     } catch (error) {
       console.error('Failed to get token info', error)
@@ -128,6 +130,7 @@ export const useSwap = (params: SwapParams) => {
         args: [tokenA, tokenB, fee]
       })
 
+      console.log('checkPoolExists', tokenA, tokenB, poolAddress)
       return poolAddress === zeroAddress ? null : (poolAddress as Address)
     } catch {
       return null
@@ -159,12 +162,14 @@ export const useSwap = (params: SwapParams) => {
         }),
       ])
 
+      console.log("PoolInfo", token0, token1, liquidity, slot0Result)
+
       return {
         token0: (token0 as Address),
         token1: (token1 as Address),
         fee: 3000,
         liquidity: liquidity as bigint,
-        sqrtPriceX96: (slot0Result[0] as any)
+        sqrtPriceX96: (slot0Result as any)[0]
       }
     } catch {
       return null
@@ -241,6 +246,8 @@ export const useSwap = (params: SwapParams) => {
       }
     }
 
+    console.log("FindRoutes", routes)
+
     return routes
   }, [checkPoolExists])
 
@@ -257,7 +264,7 @@ export const useSwap = (params: SwapParams) => {
           abi: QuoterV2ABI,
           functionName: 'quoteExactInputSingle',
           args: [{
-            tokenin: tokens[0],
+            tokenIn: tokens[0],
             tokenOut: tokens[1],
             amountIn: amountInWei,
             fee: fees[0],
@@ -265,6 +272,7 @@ export const useSwap = (params: SwapParams) => {
           }]
         })
 
+        console.log("QuoteRoute (SH)", result[0], result[3])
         return {
           quote: result[0],
           gasEstimate: result[3]
@@ -275,10 +283,11 @@ export const useSwap = (params: SwapParams) => {
         const result = await publicClient.readContract({
           address: CONTRACTS.quoterV2,
           abi: QuoterV2ABI,
-          functionName: "quoteExactinput",
+          functionName: "quoteExactInput",
           args: [path, amountInWei]
         })
 
+        console.log("QuoteRoute (MH)", result[0], result[3])
         return {
           quote: result[0],
           gasEstimate: result[3]
@@ -291,7 +300,7 @@ export const useSwap = (params: SwapParams) => {
   }, [publicClient])
 
   const loadRoutes = useCallback(async () => {
-    if (!tokenIn || !tokenOut || !amountIn || amountIn === 0n) return
+    if (!tokenIn || !tokenOut || tokenIn === zeroAddress || tokenOut === zeroAddress || !amountIn || amountIn === 0n) return
 
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
 
@@ -357,6 +366,7 @@ export const useSwap = (params: SwapParams) => {
         throw new Error('No valid quotes found')
       }
 
+      console.log("loadRoutes", validRoutes)
       setState({
         status: "ready",
         routes: validRoutes,
@@ -379,21 +389,31 @@ export const useSwap = (params: SwapParams) => {
   }, [loadRoutes])
 
   // Token approval
-  const { data: allowance } = useReadContract({
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: tokenIn,
     abi: erc20Abi,
     functionName: 'allowance',
     args: address ? [address, CONTRACTS.swapRouter02] : undefined,
-    enabled: !!address && !!tokenIn && state.status === "ready"
+    query: {
+      enabled: !!address && !!tokenIn && state.status === "ready"
+    }
   })
 
-  const needsApproval = !!state.selectedRoute && !!allowance && allowance < amountIn
+  const needsApproval = !!state.selectedRoute && allowance !== undefined && allowance < amountIn
+  console.log("needsApproval", needsApproval)
 
   const {
     writeContract: approve,
     data: approveTx,
-    isPending: isApproving
-  } = useWriteContract()
+    isPending: isApproving,
+  } = useWriteContract(
+    {
+      mutation: {
+        onSuccess: () => {
+          refetchAllowance()
+        }
+      }
+    })
 
   const { isLoading: isApprovingTxPending } = useWaitForTransactionReceipt({
     hash: approveTx
@@ -413,9 +433,10 @@ export const useSwap = (params: SwapParams) => {
       if (state.selectedRoute.path.length === 2) {
         return [{
           tokenIn: state.selectedRoute.path[0].address,
-          tokenOut: state.selectedRoute.path[2].address,
+          tokenOut: state.selectedRoute.path[1].address,
           fee: state.selectedRoute.fees[0],
-          deadline: BigInt(deadlineTS),
+          recipient: recipient || address,
+          // deadline: BigInt(deadlineTS),
           amountIn,
           amountOutMinimum,
           sqrtPriceLimitX96: 0n
@@ -434,7 +455,9 @@ export const useSwap = (params: SwapParams) => {
         }]
       }
     })(),
-    enabled: !!state.selectedRoute && !!address && !needsApproval && state.status === "ready"
+    query: {
+      enabled: !!state.selectedRoute && !!address && !needsApproval && state.status === "ready"
+    }
   })
 
   const {
@@ -454,7 +477,7 @@ export const useSwap = (params: SwapParams) => {
     } else if (isSwapping || isSwapTxPending) {
       setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
     } else if (isSwapSuccess) {
-      setState(prev => ({ ...prev, status: 'success', txHash: swapTs }))
+      setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
     }
   }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx])
 
