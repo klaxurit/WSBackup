@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Loader } from '../Loader/Loader';
 import { formatEther } from 'viem';
 import { useAccount, useBalance } from 'wagmi';
@@ -18,7 +18,37 @@ interface NetworkItemProps {
   loading?: boolean;
 }
 
-const DEFAULT_IMAGE = '/default-token.png';
+const FallbackImg = ({ content }: { content: string }) => {
+  return (
+    <svg
+      width={32}
+      height={32}
+      viewBox="0 0 100 100"
+      className="rounded-full"
+    >
+      <circle
+        cx="50"
+
+        cy="50"
+        r="50"
+        fill="#000000"
+      />
+      <text
+
+        x="50"
+        y="50"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill="white"
+        fontSize="28"
+        fontWeight="bold"
+        fontFamily="Arial, sans-serif"
+      >
+        {content}
+      </text>
+    </svg>
+  )
+}
 
 export const NetworkItem: React.FC<NetworkItemProps> = ({
   token,
@@ -27,7 +57,8 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
 }) => {
 
   const { address } = useAccount()
-  const { data: balance2, isLoading } = useBalance({
+  const [displayFallback, setDisplayFallback] = useState<boolean>(false)
+  const { data: balance, isLoading } = useBalance({
     address,
     token: (token.address as `0x${string}`)
   })
@@ -39,11 +70,17 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
       tabIndex={0}
     >
       <div className="Modal__ItemLogo">
-        <img
-          src={token.logoURI || DEFAULT_IMAGE}
-          alt={token.name}
-          className="Modal__ItemImage"
-        />
+        {displayFallback
+          ? <FallbackImg content={token.symbol} />
+          : (
+
+            <img
+              src={token.logoURI}
+              alt={token.name}
+              onError={() => setDisplayFallback(true)}
+              className="Modal__ItemImage"
+            />
+          )}
       </div>
       <div className="Modal__ItemInfo">
         <span className="Modal__ItemName">{token.name}</span>
@@ -59,8 +96,7 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
       <div className="Modal__ItemBalanceContainer">
         <span className="Modal__ItemPrice">$0.00</span>
         <span className="Modal__ItemBalance">
-          {/* {loading ? <Loader /> : (balance !== undefined ? `${parseFloat(balance).toFixed(4)}` : '--')} */}
-          {isLoading ? <Loader /> : (balance2 ? `${parseInt(formatEther(balance2.value)).toFixed(4)}` : '--')}
+          {isLoading ? <Loader /> : (balance ? `${parseFloat(formatEther(balance.value)).toFixed(4)}` : '--')}
         </span>
       </div>
     </div>
