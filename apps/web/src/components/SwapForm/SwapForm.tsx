@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from "react";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { FromInput } from "../Inputs/FromInput";
 import { ConnectButton } from "../../components/Buttons/ConnectButton";
 import { Divider } from "../Inputs/Divider";
@@ -80,6 +80,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
     }, [swap.status, fromToken, toToken])
     console.log(swap)
 
+    useEffect(() => {
+      if (swap?.quote?.amountOut) {
+        setToAmount(swap.quote.amountOut)
+      }
+    }, [swap.quote])
+
     return (
       <div
         className={`Form ${customClassName || ""} ${isHide ? "hidden" : ""}`}
@@ -132,7 +138,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               <button
                 className={`btn btn--large btn__main`}
                 onClick={handleOpenModal}
-                disabled={false}>
+                disabled={swap.status !== "ready"}>
                 {btnText}
               </button>
             )}
