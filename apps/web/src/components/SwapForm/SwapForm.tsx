@@ -73,7 +73,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     const btnText = useMemo(() => {
       if (swap.status === "ready") return "Swap"
-      if (swap.status === "idle" && (!fromToken || !toToken)) return "select Token"
+      if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
       if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
 
       return swap.status

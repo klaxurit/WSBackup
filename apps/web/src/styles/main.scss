@@ -9,6 +9,7 @@
 @use 'components/inputs/inputs';
 @use 'components/inputs/divider';
 @use 'components/inputs/searchBar';
+@use 'components/inputs/liquidityInput';
 
 @use 'components/navigations/navbar';
 @use 'components/navigations/menu';
@@ -34,6 +35,7 @@
 @use 'pages/tokenPage';
 @use 'pages/explorePage';
 @use 'pages/poolsPage';
+
 
 // @import 'themes/dark';
 // @import 'themes/light';
