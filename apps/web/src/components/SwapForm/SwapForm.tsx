@@ -78,7 +78,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
       return swap.status
     }, [swap.status, fromToken, toToken])
-    console.log(swap)
 
     useEffect(() => {
       if (swap?.quote?.amountOut) {
@@ -149,8 +148,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
         <TransactionStatusModal
           open={showModal}
           onClose={handleCloseModal}
-          inputToken={fromToken || { symbol: '', name: '', logoURI: '' }}
-          outputToken={toToken || { symbol: '', name: '', logoURI: '' }}
+          inputToken={fromToken}
+          outputToken={toToken}
           inputAmount={fromAmount}
           outputAmount={toAmount}
           swap={swap}

@@ -1,57 +1,35 @@
-import { useEffect, useState } from 'react';
-import { BERACHAIN_TOKENS } from '../config/berachainTokens';
-import { useWatchContractEvent } from 'wagmi';
-import { v3CoreFactoryContract } from '../config/abis/v3CoreFactoryContractABI';
-import { berachainBepolia } from 'viem/chains';
 import type { Address } from 'viem';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 export interface BerachainToken {
-  name: string;
+  id: number;
   symbol: string;
-  address: Address; // toujours string, '' pour natif
-  logoURI: string;
+  name: string;
+  address: Address;
   decimals: number;
-  logoSymbol?: string;
+  chainId: number;
+  logoUri?: string;
+  isVerified: boolean;
+  coingeckoId?: string | null;
 }
 
-const getImageName = (token: { symbol: string; logoSymbol?: string }) => {
-  if (token.logoSymbol) return token.logoSymbol;
-  return token.symbol.toLowerCase();
-};
+export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
+  return useQuery({
+    queryKey: ['tokens'],
+    queryFn: async () => {
+      const url = import.meta.env.NODE_ENV === "production"
+        ? "https://winnieswap-api.charles-db1.workers.dev/tokens"
+        : "https://winnieswap-api.charles-db1.workers.dev/tokens/bepolia"
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error('Can\'t fetch token list')
+      }
 
-const getLogoUrl = (token: { symbol: string; logoSymbol?: string }) => {
-  const imageName = getImageName(token);
-  return `https://static.kodiak.finance/tokens/${imageName}.png`;
-};
-
-export function useBerachainTokenList(): BerachainToken[] {
-  const [tokenList, setTokenList] = useState<BerachainToken[]>([])
-
-  useWatchContractEvent({
-    address: '0x76fD9D07d5e4D889CAbED96884F15f7ebdcd6B63',
-    abi: v3CoreFactoryContract,
-    chainId: berachainBepolia.id,
-    eventName: 'PoolCreated',
-    onLogs: (logs) => {
-      console.log("PoolCreated Event:", logs)
-    }
+      const result = await response.json()
+      return result.map((t: any): BerachainToken => ({ ...t, isVerified: t.isVerified === 1 }))
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   })
+}
 
-  useEffect(() => {
-    if (tokenList.length === 0) {
-      const l = BERACHAIN_TOKENS.map((token) => {
-        return {
-          ...token,
-          address: (token.address as Address),
-          logoURI: getLogoUrl(token),
-        };
-      })
-
-      setTokenList(l)
-    }
-  }, [])
-
-
-
-  return tokenList
-} 

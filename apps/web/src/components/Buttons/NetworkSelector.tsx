@@ -1,18 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { NetworksList } from "../NetworksList/NetworksList";
-import { useTokenBalances } from '../../hooks/useTokenBalances';
-import { useAppSelector } from '../../store/hooks';
-import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';
+import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-
-interface Token {
-  name: string;
-  symbol: string;
-  address: string;
-  decimals: number;
-  logoURI: string;
-  logoSymbol?: string;
-}
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -33,9 +21,6 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
-  const address = useAppSelector((state) => state.wallet.address);
-  const tokens = useBerachainTokenList();
-  const { balances, loading } = useTokenBalances(tokens, address as `0x${string}`);
 
   useEffect(() => {
     if (preSelected) {
@@ -52,22 +37,15 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   }, [isNetworksListOpen, onToggleNetworkList]);
 
   const handleTokenSelect = useCallback((token: BerachainToken) => {
-    setTimeout(() => {
-      setSelectedToken(token);
-      setIsNetworksListOpen(false);
-      if (onSelect) {
-        onSelect(token);
-      }
-      if (onToggleNetworkList) {
-        onToggleNetworkList(false);
-      }
-    }, 0);
+    setSelectedToken(token);
+    setIsNetworksListOpen(false);
+    if (onSelect) {
+      onSelect(token);
+    }
+    if (onToggleNetworkList) {
+      onToggleNetworkList(false);
+    }
   }, [onSelect, onToggleNetworkList]);
-
-  const getDisplayName = (token: Token) => {
-    if (!token || !token.symbol) return 'Unknown';
-    return token.symbol;
-  };
 
   const renderButton = (
     <button
@@ -79,11 +57,11 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
         <>
           <span className="networkSelector__logoWrapper">
             <img
-              src={selectedToken.logoURI}
+              src={selectedToken.logoUri}
               alt={selectedToken.name}
             />
           </span>
-          <span className="networkSelector__symbol">{getDisplayName(selectedToken)}</span>
+          <span className="networkSelector__symbol">{selectedToken.name}</span>
         </>
       ) : (
         <span className="networkSelector__symbol">Select</span>
@@ -100,14 +78,11 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
     <>
       {renderButton}
       {isNetworksListOpen && (
-        <NetworksList
+        <TokenList
           isOpen={isNetworksListOpen}
           onClose={handleNetworksListToggle}
           onSelect={handleTokenSelect}
           selectedToken={selectedToken || preSelected}
-          tokens={tokens}
-          balances={balances}
-          loading={loading}
         />
       )}
     </>

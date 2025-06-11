@@ -14,6 +14,7 @@
 import { Hono } from "hono";
 import { cache } from "hono/cache";
 import { cors } from "hono/cors";
+import _ from "lodash"
 
 type Bindings = {
 	DB: D1Database,
@@ -30,10 +31,10 @@ app.use("*", cors({
 }))
 
 // Static CACHE
-app.use('/tokens/*', cache({
-	cacheName: 'winnieswap',
-	cacheControl: 'max-age-300' // 5 Minutes
-}))
+// app.use('/tokens/*', cache({
+// 	cacheName: 'winnieswap',
+// 	cacheControl: 'max-age-300' // 5 Minutes
+// }))
 
 // Main route
 app.use('/tokens/:network?', async (c) => {
@@ -49,14 +50,24 @@ app.use('/tokens/:network?', async (c) => {
 			'SELECT * FROM tokens WHERE chain_id = ? ORDER BY created_at DESC'
 		).bind(chainId).all()
 
+		const converted = convertKeys(results)
+
 		await c.env.CACHE.put(
-			`tokens:${chainId}`, JSON.stringify(results), { expirationTtl: 300 }
+			`tokens:${chainId}`, JSON.stringify(converted), { expirationTtl: 300 }
 		)
 
-		return c.json(results)
+
+
+		return c.json(converted)
 	} catch (error) {
 		return c.json({ error: "Failed to fetch tokens" }, 500)
 	}
+})
+
+app.use('/sync', async (c) => {
+	await fetchGithub(c)
+
+	return c.json({ success: true })
 })
 
 // Sync tokens with berachain metadatas
@@ -75,9 +86,16 @@ const fetchGithub = async (c) => {
 
 			for (const token of githubTokens.tokens) {
 				await c.env.DB.prepare(`
-          INSERT OR REPLACE INTO tokens
+          INSERT INTO tokens
           (symbol, name, address, decimals, chain_id, logo_uri, is_verified, coingecko_id, source, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'github', CURRENT_TIMESTAMP)
+					ON CONFLICT(address, chain_id) DO UPDATE SET
+					symbol = exclued.symbol,
+					name = excluded.name,
+        	decimals = excluded.decimals,
+        	logo_uri = excluded.logo_uri,
+        	updated_at = CURRENT_TIMESTAMP
+      		RETURNING *
         `).bind(
 					token.symbol,
 					token.name || "",
@@ -98,6 +116,16 @@ const fetchGithub = async (c) => {
 		}
 	}
 }
+
+const convertKeys = (obj) => {
+	if (Array.isArray(obj)) {
+		return obj.map(convertKeys);
+	}
+	if (_.isObject(obj)) {
+		return _.mapKeys(_.mapValues(obj, convertKeys), (v, k) => _.camelCase(k));
+	}
+	return obj;
+};
 
 export default {
 	fetch: app.fetch,

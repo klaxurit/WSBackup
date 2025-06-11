@@ -1,29 +1,24 @@
 import { useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import { SearchBar } from "../SearchBar/SearchBar";
-import { NetworkItem } from './NetworkItem';
-import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import { TokenItem } from './TokenItem';
+import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface NetworksListProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (token: BerachainToken) => void;
   selectedToken?: BerachainToken | null;
-  tokens: BerachainToken[];
-  balances: { [symbol: string]: string };
-  loading: boolean;
 }
 
-export const NetworksList = ({
+export const TokenList = ({
   isOpen,
   onClose,
   onSelect,
   selectedToken,
-  tokens,
-  balances,
-  loading,
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
+  const { data: tokens = [] } = useTokens()
 
   const handleTokenSelect = (token: BerachainToken) => {
     onSelect(token);
@@ -67,13 +62,11 @@ export const NetworksList = ({
         />
         <div className="Modal__Content">
           {filteredTokens.map((token) => (
-            <NetworkItem
+            <TokenItem
               key={token.address || token.symbol}
               token={token}
               isSelected={selectedToken?.symbol === token.symbol}
               onSelect={handleTokenSelect.bind(null, token)}
-              balance={balances[token.symbol]}
-              loading={loading}
             />
           ))}
         </div>

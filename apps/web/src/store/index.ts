@@ -1,13 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import walletReducer from './slices/walletSlice';
 import swapReducer from './slices/swapSlice';
-import tokensReducer from './slices/tokensSlice';
 
 export const store = configureStore({
   reducer: {
     wallet: walletReducer,
     swap: swapReducer,
-    tokens: tokensReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

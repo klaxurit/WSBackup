@@ -74,10 +74,14 @@ const TokenPage: React.FC = () => {
   const [activeChartTab, setActiveChartTab] = useState<IntervalKey>('day');
 
   const mockToken: BerachainToken & { website?: string; twitter?: string } = {
+    id: 1,
+    chainId: 80094,
+    isVerified: false,
+    coingeckoId: null,
     name: tokenId || 'Token',
     symbol: tokenId?.toUpperCase() || 'TOKEN',
     address: zeroAddress,
-    logoURI: '',
+    logoUri: '',
     decimals: 18,
     website: '',
     twitter: '',
@@ -146,8 +150,8 @@ const TokenPage: React.FC = () => {
                   className="Token__SectionHeadTitle"
                 >
                   <div className="Token__SectionHeadTitleLeft">
-                    {mockToken.logoURI ? (
-                      <img src={mockToken.logoURI} alt={mockToken.symbol} className="Token__Logo" />
+                    {mockToken.logoUri ? (
+                      <img src={mockToken.logoUri} alt={mockToken.symbol} className="Token__Logo" />
                     ) : (
                       <div className="Token__Logo Token__Logo--placeholder">{mockToken.symbol[0]}</div>
                     )}

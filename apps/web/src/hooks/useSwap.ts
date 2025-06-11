@@ -194,7 +194,7 @@ export const useSwap = (params: SwapParams) => {
       }
     }
 
-    // Multi-hop routres throught common bases
+    // Multi-hop routes throught common bases
     if (maxHops >= 2) {
       const bases = COMMON_BASES
 
@@ -300,6 +300,7 @@ export const useSwap = (params: SwapParams) => {
   }, [publicClient])
 
   const loadRoutes = useCallback(async () => {
+    console.log("loadRoutes", tokenIn, tokenOut)
     if (!tokenIn || !tokenOut || tokenIn === zeroAddress || tokenOut === zeroAddress || !amountIn || amountIn === 0n) return
 
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
@@ -398,7 +399,6 @@ export const useSwap = (params: SwapParams) => {
       enabled: !!address && !!tokenIn && state.status === "ready"
     }
   })
-
   const needsApproval = !!state.selectedRoute && allowance !== undefined && allowance < amountIn
   console.log("needsApproval", needsApproval)
 
@@ -414,7 +414,6 @@ export const useSwap = (params: SwapParams) => {
         }
       }
     })
-
   const { isLoading: isApprovingTxPending } = useWaitForTransactionReceipt({
     hash: approveTx
   })
@@ -436,7 +435,6 @@ export const useSwap = (params: SwapParams) => {
           tokenOut: state.selectedRoute.path[1].address,
           fee: state.selectedRoute.fees[0],
           recipient: recipient || address,
-          // deadline: BigInt(deadlineTS),
           amountIn,
           amountOutMinimum,
           sqrtPriceLimitX96: 0n
@@ -465,7 +463,6 @@ export const useSwap = (params: SwapParams) => {
     data: swapTx,
     isPending: isSwapping
   } = useWriteContract()
-
   const { isLoading: isSwapTxPending, isSuccess: isSwapSuccess } = useWaitForTransactionReceipt({
     hash: swapTx
   })

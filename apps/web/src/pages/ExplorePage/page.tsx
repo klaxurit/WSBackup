@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import Table from '../../components/Table/Table';
 import type { TableColumn } from '../../components/Table/Table';
-import { useBerachainTokenList } from '../../hooks/useBerachainTokenList';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import MiniChart from '../../components/Charts/MiniChart';
 import type { MiniChartPoint } from '../../components/Charts/MiniChart';
+import { useTokens } from '../../hooks/useBerachainTokenList';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
@@ -15,7 +15,7 @@ const TABS = [
 const ExplorePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tokens');
   const [search, setSearch] = useState('');
-  const tokens = useBerachainTokenList();
+  const { data: tokens = [] } = useTokens()
 
   function generateFakeChartData(points = 24): MiniChartPoint[] {
     let last = 100 + Math.random() * 20;
@@ -271,7 +271,7 @@ const ExplorePage: React.FC = () => {
           setSearchValue={setSearch}
           mode="compact"
         />
-      </div>  
+      </div>
       {activeTab === 'tokens' && (
         <Table
           columns={tokenColumns}

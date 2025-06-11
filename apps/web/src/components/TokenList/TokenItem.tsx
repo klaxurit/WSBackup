@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
 import { Loader } from '../Loader/Loader';
-import { formatEther } from 'viem';
+import { formatEther, zeroAddress } from 'viem';
 import { useAccount, useBalance } from 'wagmi';
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface NetworkItemProps {
-  token: {
-    name: string;
-    symbol: string;
-    address: string | null;
-    logo?: string;
-    decimals: number;
-    logoURI: string;
-  };
+  token: BerachainToken;
   isSelected: boolean;
   onSelect: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   balance?: string;
@@ -50,17 +44,16 @@ const FallbackImg = ({ content }: { content: string }) => {
   )
 }
 
-export const NetworkItem: React.FC<NetworkItemProps> = ({
+export const TokenItem: React.FC<NetworkItemProps> = ({
   token,
   isSelected,
   onSelect,
 }) => {
-
   const { address } = useAccount()
   const [displayFallback, setDisplayFallback] = useState<boolean>(false)
   const { data: balance, isLoading } = useBalance({
     address,
-    token: (token.address as `0x${string}`)
+    token: token.address === zeroAddress ? undefined : (token.address as `0x${string}`)
   })
 
   return (
@@ -73,9 +66,8 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
         {displayFallback
           ? <FallbackImg content={token.symbol} />
           : (
-
             <img
-              src={token.logoURI}
+              src={token.logoUri}
               alt={token.name}
               onError={() => setDisplayFallback(true)}
               className="Modal__ItemImage"
@@ -96,7 +88,14 @@ export const NetworkItem: React.FC<NetworkItemProps> = ({
       <div className="Modal__ItemBalanceContainer">
         <span className="Modal__ItemPrice">$0.00</span>
         <span className="Modal__ItemBalance">
-          {isLoading ? <Loader /> : (balance ? `${parseFloat(formatEther(balance.value)).toFixed(4)}` : '--')}
+          {isLoading
+            ? <Loader />
+            : (
+              balance && balance.value !== 0n
+                ? `${parseFloat(formatEther(balance.value)).toFixed(4)}`
+                : ''
+            )
+          }
         </span>
       </div>
     </div>

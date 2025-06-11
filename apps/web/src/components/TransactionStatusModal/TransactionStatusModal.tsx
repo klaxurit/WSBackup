@@ -1,18 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import type { useSwap } from '../../hooks/useSwap';
 import { formatEther } from 'viem';
-
-interface TokenInfo {
-  symbol: string;
-  name: string;
-  logoURI: string;
-}
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface TransactionStatusModalProps {
   open: boolean;
   onClose: () => void;
-  inputToken: TokenInfo;
-  outputToken: TokenInfo;
+  inputToken: BerachainToken | null;
+  outputToken: BerachainToken | null;
   inputAmount: bigint;
   outputAmount: bigint;
   swap: ReturnType<typeof useSwap>
@@ -72,6 +67,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     await swap.swap()
   };
 
+  if (!inputToken || !outputToken) return <></>
+
 
   return (
     <div className="TransactionModal__overlay">
@@ -88,7 +85,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               <span className="TransactionModal__tokenAmount">{formatEther(inputAmount)} {inputToken.symbol}</span>
               <span className="TransactionModal__tokenPrice">$9.23</span> {/* TODO: rendre dynamique */}
             </div>
-            <img src={inputToken.logoURI} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />
+            <img src={inputToken.logoUri} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />
           </div>
         </div>
         <div className="TransactionModal__arrowDown">↓</div>
@@ -98,7 +95,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               <span className="TransactionModal__tokenAmount">{quote?.amountOutFormatted} {outputToken.symbol}</span>
               <span className="TransactionModal__tokenPrice">$9.12</span> {/* TODO: rendre dynamique */}
             </div>
-            <img src={outputToken.logoURI} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />
+            <img src={outputToken.logoUri} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />
           </div>
         </div>
         <div className="TransactionModal__moreRow">
