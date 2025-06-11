@@ -72,7 +72,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     const btnText = useMemo(() => {
-      if (swap.status === "ready") return "Swap"
+      if (swap.status === "ready") return "Preview"
       if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
       if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
 
@@ -135,7 +135,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               />
             ) : (
               <button
-                className={`btn btn--large btn__main`}
+                className={`btn btn--large btn__${swap.status !== "ready" ? "disabled" : "main"}`}
                 onClick={handleOpenModal}
                 disabled={swap.status !== "ready"}>
                 {btnText}

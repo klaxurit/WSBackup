@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { useSwap } from '../../hooks/useSwap';
 import { formatEther } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import { FallbackImg } from '../utils/FallbackImg';
 
 interface TransactionStatusModalProps {
   open: boolean;
@@ -85,7 +86,10 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               <span className="TransactionModal__tokenAmount">{formatEther(inputAmount)} {inputToken.symbol}</span>
               <span className="TransactionModal__tokenPrice">$9.23</span> {/* TODO: rendre dynamique */}
             </div>
-            <img src={inputToken.logoUri} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />
+            {inputToken.logoUri
+              ? (<img src={inputToken.logoUri} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />)
+              : <FallbackImg content={inputToken.symbol} />
+            }
           </div>
         </div>
         <div className="TransactionModal__arrowDown">↓</div>
@@ -95,7 +99,10 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               <span className="TransactionModal__tokenAmount">{quote?.amountOutFormatted} {outputToken.symbol}</span>
               <span className="TransactionModal__tokenPrice">$9.12</span> {/* TODO: rendre dynamique */}
             </div>
-            <img src={outputToken.logoUri} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />
+            {outputToken.logoUri
+              ? (<img src={outputToken.logoUri} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />)
+              : <FallbackImg content={outputToken.symbol} />
+            }
           </div>
         </div>
         <div className="TransactionModal__moreRow">
