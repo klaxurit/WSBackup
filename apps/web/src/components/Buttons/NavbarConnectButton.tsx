@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
-import { useAppSelector } from '../../store/hooks';
 import { useWallet } from '../../hooks/useWallet';
 import { useBeraname } from '../../hooks/useBeraname';
 import { Loader } from '../Loader/Loader';
+import { useAccount, useBalance } from 'wagmi';
+import { formatEther } from 'viem';
 
 interface NavbarConnectButtonProps {
   onClick?: () => void;
@@ -13,9 +14,13 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   onClick,
   customClassName = '',
 }) => {
-  const { isConnected, address, balance } = useAppSelector((state) => state.wallet);
   const { connect, disconnect } = useWallet();
-  const { beraname } = useBeraname(address || undefined);
+  const { isConnected, address } = useAccount()
+  const { beraname } = useBeraname(address);
+  const { data: balance, isLoading } = useBalance({
+    address
+  })
+
   const formatAddress = (addr: string) => {
     if (!addr) return '';
     const start = addr.substring(0, 6);
@@ -52,10 +57,10 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
           className="Navbar__BalanceButton btn btn--small btn__disabled"
           disabled
         >
-          {balance === undefined || balance === null || balance === '' ? (
+          {isLoading ? (
             <Loader />
           ) : (
-            `${parseFloat(balance).toFixed(4)} BERA`
+            balance?.value !== 0n ? `${parseFloat(formatEther(balance!.value)).toFixed(4)} BERA` : "0 BERA"
           )}
         </button>
       )}
