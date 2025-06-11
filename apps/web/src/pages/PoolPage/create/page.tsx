@@ -431,8 +431,8 @@ const CreatePoolPage: React.FC = () => {
                 {tokenA && tokenB && (
                   <>
                     <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-                      <img src={tokenA.logoURI} alt={tokenA.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
-                      <img src={tokenB.logoURI} alt={tokenB.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />
+                      <img src={tokenA.logoUri} alt={tokenA.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
+                      <img src={tokenB.logoUri} alt={tokenB.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />
                     </span>
                     <span style={{ fontWeight: 700, fontSize: 18 }}>{tokenA.symbol} / {tokenB.symbol}</span>
                   </>
