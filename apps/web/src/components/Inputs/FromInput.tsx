@@ -1,11 +1,11 @@
 "use client";
 import { useMemo, useRef } from "react";
-import NetworkSelector from "../Buttons/NetworkSelector";
 import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from "wagmi";
 import { formatEther, parseEther, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
+import TokenSelector from "../Buttons/TokenSelector";
 
 interface FromInputProps {
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -88,7 +88,7 @@ export const FromInput: React.FC<FromInputProps> = (
           <div
             className={`From__Logos ${disabled ? "From__disabled" : ""}`}
           >
-            <NetworkSelector
+            <TokenSelector
               preSelected={selectedToken}
               onToggleNetworkList={onToggleNetworkList}
               minimized={minimized}

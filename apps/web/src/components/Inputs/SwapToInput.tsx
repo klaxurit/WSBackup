@@ -1,8 +1,8 @@
 import React, { useMemo, useRef } from "react";
-import NetworkSelector from "../Buttons/NetworkSelector";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { formatEther, parseEther } from "viem";
 import { usePrice } from "../../hooks/usePrice";
+import TokenSelector from "../Buttons/TokenSelector";
 
 interface ToInputProps {
   steps: any;
@@ -56,7 +56,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
           </div>
           <div className="From__LogosAndBalance">
             <div className="To__Logos">
-              <NetworkSelector
+              <TokenSelector
                 preSelected={preSelected}
                 onSelect={onSelect}
                 onToggleNetworkList={onToggleNetworkList}

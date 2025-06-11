@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import { FallbackImg } from "../utils/FallbackImg";
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -14,7 +15,7 @@ interface NetworkSelectorProps {
   isHomePage?: boolean;
 }
 
-const NetworkSelector: React.FC<NetworkSelectorProps> = ({
+const TokenSelector: React.FC<NetworkSelectorProps> = ({
   preSelected,
   onSelect,
   onToggleNetworkList,
@@ -56,12 +57,16 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
       {selectedToken ? (
         <>
           <span className="networkSelector__logoWrapper">
-            <img
-              src={selectedToken.logoUri}
-              alt={selectedToken.name}
-            />
+            {!selectedToken.logoUri
+              ? <FallbackImg content={selectedToken.symbol} />
+              : (
+                <img
+                  src={selectedToken.logoUri}
+                  alt={selectedToken.name}
+                />
+              )}
           </span>
-          <span className="networkSelector__symbol">{selectedToken.name}</span>
+          <span className="networkSelector__symbol">{selectedToken.symbol}</span>
         </>
       ) : (
         <span className="networkSelector__symbol">Select</span>
@@ -89,4 +94,4 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({
   );
 };
 
-export default NetworkSelector;
+export default TokenSelector;
