@@ -3,6 +3,7 @@ import type { useSwap } from '../../hooks/useSwap';
 import { formatEther } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
+import { usePrice } from '../../hooks/usePrice';
 
 interface TransactionStatusModalProps {
   open: boolean;
@@ -25,8 +26,20 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [shouldRenderDetails, setShouldRenderDetails] = useState(false);
+  const { data: usdValueIn = 0 } = usePrice(inputToken)
+  const { data: usdValueOut = 0 } = usePrice(outputToken)
 
   const { quote } = swap
+
+  const usdAmountIn = useMemo(() => {
+    if (inputAmount === 0n) return 0
+    return (usdValueIn * +formatEther(inputAmount)).toFixed(2)
+  }, [usdValueIn, inputAmount])
+  const usdAmountOut = useMemo(() => {
+    if (!quote || quote?.amountOut === 0n) return 0
+    return (usdValueOut * +formatEther(quote.amountOut)).toFixed(2)
+  }, [usdValueOut, quote])
+
 
   React.useEffect(() => {
     if (isDetailsOpen) {
@@ -77,7 +90,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
           <div className="TransactionModal__tokenRow">
             <div className="TransactionModal__tokenInfo">
               <span className="TransactionModal__tokenAmount">{formatEther(inputAmount)} {inputToken.symbol}</span>
-              <span className="TransactionModal__tokenPrice">$9.23</span> {/* TODO: rendre dynamique */}
+              <span className="TransactionModal__tokenPrice">${usdAmountIn}</span>
             </div>
             {inputToken.logoUri
               ? (<img src={inputToken.logoUri} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />)
@@ -90,7 +103,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
           <div className="TransactionModal__tokenRow">
             <div className="TransactionModal__tokenInfo">
               <span className="TransactionModal__tokenAmount">{quote?.amountOutFormatted} {outputToken.symbol}</span>
-              <span className="TransactionModal__tokenPrice">$9.12</span> {/* TODO: rendre dynamique */}
+              <span className="TransactionModal__tokenPrice">${usdAmountOut}</span>
             </div>
             {outputToken.logoUri
               ? (<img src={outputToken.logoUri} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />)
@@ -121,7 +134,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                   <span className="TransactionModal__infoLabel">Rate</span>
                   <span className="TransactionModal__infoContent">
                     1 {outputToken.symbol} &#8776; {rateValue} {inputToken.symbol}
-                    <span className="TransactionModal__rateUsd">(0$)</span>
+                    <span className="TransactionModal__rateUsd">(${usdValueOut.toFixed(2)})</span>
                   </span>
                 </div>
                 <div className="TransactionModal__infoRow">

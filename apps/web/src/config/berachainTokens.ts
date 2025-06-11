@@ -1,4 +1,6 @@
-export const BERACHAIN_TOKENS = [
+import type { BerachainToken } from "../hooks/useBerachainTokenList";
+
+export const BERACHAIN_TOKENS: BerachainToken[] = [
   // {
   //   name: 'USDC',
   //   symbol: 'USDC',
@@ -27,6 +29,7 @@ export const BERACHAIN_TOKENS = [
     symbol: 'mBera',
     address: '0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1',
     decimals: 18,
+    coingeckoId: "berachain-bera"
   },
   {
     id: 123123124,
@@ -36,6 +39,7 @@ export const BERACHAIN_TOKENS = [
     symbol: 'mHoney',
     address: '0x41936CA1174EE86B24c05a07653Df4Be68A0ED02',
     decimals: 18,
+    coingeckoId: "honey-3"
   },
   {
     id: 123123125,

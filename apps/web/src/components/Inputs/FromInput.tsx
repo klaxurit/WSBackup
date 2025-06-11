@@ -4,7 +4,8 @@ import NetworkSelector from "../Buttons/NetworkSelector";
 import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from "wagmi";
-import { formatEther, parseEther } from "viem";
+import { formatEther, parseEther, zeroAddress } from "viem";
+import { usePrice } from "../../hooks/usePrice";
 
 interface FromInputProps {
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -40,8 +41,17 @@ export const FromInput: React.FC<FromInputProps> = (
   const inputRef = useRef<HTMLInputElement>(null)
   const { data: balance, isLoading: loading } = useBalance({
     address,
-    token: selectedToken?.address as `0x${string}`
+    token: (selectedToken?.address !== zeroAddress) ? selectedToken?.address as `0x${string}` : undefined,
+    query: {
+      enabled: !!selectedToken
+    }
   })
+  const { data: usdValue = 0 } = usePrice(selectedToken)
+
+  const usdAmount = useMemo(() => {
+    if (value === 0n) return 0
+    return (usdValue * +formatEther(value)).toFixed(2)
+  }, [usdValue, value])
 
   const isOverBalance = useMemo(() => (value > (balance?.value || 0n)), [value, balance])
 
@@ -91,7 +101,7 @@ export const FromInput: React.FC<FromInputProps> = (
         </div>
       </div>
       <div className="From__Details">
-        <p className="From__Convertion">0 $US</p>
+        <p className="From__Convertion">${usdAmount}</p>
         <div className="From__Balance" style={{ display: 'flex', alignItems: 'baseline' }}>
           {selectedToken && (
             <>

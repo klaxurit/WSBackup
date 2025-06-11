@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Loader } from '../Loader/Loader';
 import { formatEther, zeroAddress } from 'viem';
 import { useAccount, useBalance } from 'wagmi';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
+import { usePrice } from '../../hooks/usePrice';
 
 interface NetworkItemProps {
   token: BerachainToken;
@@ -20,10 +21,15 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
 }) => {
   const { address } = useAccount()
   const [displayFallback, setDisplayFallback] = useState<boolean>(false)
-  const { data: balance, isLoading } = useBalance({
+  const { data: balance, isLoading: balanceLoading } = useBalance({
     address,
     token: token.address === zeroAddress ? undefined : (token.address as `0x${string}`)
   })
+  const { data: usdValue, isLoading: priceLoading } = usePrice(token)
+
+  const isLoading = useMemo(() => {
+    return balanceLoading || priceLoading
+  }, [balanceLoading, priceLoading])
 
   return (
     <div
@@ -55,7 +61,16 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         </div>
       </div>
       <div className="Modal__ItemBalanceContainer">
-        <span className="Modal__ItemPrice">$0.00</span>
+        <span className="Modal__ItemPrice">
+          {isLoading
+            ? <Loader />
+            : (
+              balance && balance.value !== 0n && usdValue && usdValue !== 0
+                ? `$${(usdValue * +formatEther(balance.value)).toFixed(2)}`
+                : ''
+            )
+          }
+        </span>
         <span className="Modal__ItemBalance">
           {isLoading
             ? <Loader />

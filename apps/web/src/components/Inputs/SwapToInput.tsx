@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import NetworkSelector from "../Buttons/NetworkSelector";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { formatEther, parseEther } from "viem";
+import { usePrice } from "../../hooks/usePrice";
 
 interface ToInputProps {
   steps: any;
@@ -30,6 +31,12 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     onInputChange,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
+    const { data: usdValue = 0 } = usePrice(preSelected)
+
+    const usdAmount = useMemo(() => {
+      if (inputValue === 0n) return 0
+      return (usdValue * +formatEther(inputValue)).toFixed(2)
+    }, [usdValue, inputValue])
 
     return (
       <div className={`Inputs__To To`}>
@@ -61,7 +68,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
           </div>
         </div>
         <div className="From__Details">
-          <p className="From__Convertion">0 $US</p>
+          <p className="From__Convertion">${usdAmount}</p>
         </div>
       </div>
     );
