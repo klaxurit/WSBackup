@@ -14,27 +14,15 @@ interface NetworkItemProps {
 
 const FallbackImg = ({ content }: { content: string }) => {
   return (
-    <svg
-      width={32}
-      height={32}
-      viewBox="0 0 100 100"
-      className="rounded-full"
-    >
-      <circle
-        cx="50"
-
-        cy="50"
-        r="50"
-        fill="#000000"
-      />
+    <svg width={32} height={32} viewBox="0 0 100 100" className="rounded-full">
+      <circle cx="50" cy="50" r="50" fill="#000000" />
       <text
-
         x="50"
         y="50"
         textAnchor="middle"
         dominantBaseline="central"
         fill="white"
-        fontSize="28"
+        fontSize={28}
         fontWeight="bold"
         fontFamily="Arial, sans-serif"
       >
@@ -63,7 +51,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
       tabIndex={0}
     >
       <div className="Modal__ItemLogo">
-        {displayFallback
+        {displayFallback || !token.logoUri
           ? <FallbackImg content={token.symbol} />
           : (
             <img
