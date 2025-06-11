@@ -84,7 +84,6 @@ export const useSwap = (params: SwapParams) => {
 
   const getTokenInfo = useCallback(async (tokenAddress: Address): Promise<TokenInfo> => {
     if (tokenCache.has(tokenAddress)) {
-      console.log("TokenInfo (cache):", tokenCache.get(tokenAddress))
       return tokenCache.get(tokenAddress)!
     }
 
@@ -109,7 +108,6 @@ export const useSwap = (params: SwapParams) => {
       }
 
       setTokenCache(prev => new Map(prev).set(tokenAddress, info))
-      console.log("TokenInfo:", info)
       return info
     } catch (error) {
       console.error('Failed to get token info', error)
@@ -130,7 +128,6 @@ export const useSwap = (params: SwapParams) => {
         args: [tokenA, tokenB, fee]
       })
 
-      console.log('checkPoolExists', tokenA, tokenB, poolAddress)
       return poolAddress === zeroAddress ? null : (poolAddress as Address)
     } catch {
       return null
@@ -161,8 +158,6 @@ export const useSwap = (params: SwapParams) => {
           functionName: 'token1'
         }),
       ])
-
-      console.log("PoolInfo", token0, token1, liquidity, slot0Result)
 
       return {
         token0: (token0 as Address),
@@ -246,8 +241,6 @@ export const useSwap = (params: SwapParams) => {
       }
     }
 
-    console.log("FindRoutes", routes)
-
     return routes
   }, [checkPoolExists])
 
@@ -272,7 +265,6 @@ export const useSwap = (params: SwapParams) => {
           }]
         })
 
-        console.log("QuoteRoute (SH)", result[0], result[3])
         return {
           quote: result[0],
           gasEstimate: result[3]
@@ -287,7 +279,6 @@ export const useSwap = (params: SwapParams) => {
           args: [path, amountInWei]
         })
 
-        console.log("QuoteRoute (MH)", result[0], result[3])
         return {
           quote: result[0],
           gasEstimate: result[3]
@@ -300,7 +291,6 @@ export const useSwap = (params: SwapParams) => {
   }, [publicClient])
 
   const loadRoutes = useCallback(async () => {
-    console.log("loadRoutes", tokenIn, tokenOut)
     if (!tokenIn || !tokenOut || tokenIn === zeroAddress || tokenOut === zeroAddress || !amountIn || amountIn === 0n) return
 
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
@@ -367,7 +357,6 @@ export const useSwap = (params: SwapParams) => {
         throw new Error('No valid quotes found')
       }
 
-      console.log("loadRoutes", validRoutes)
       setState({
         status: "ready",
         routes: validRoutes,
@@ -400,7 +389,6 @@ export const useSwap = (params: SwapParams) => {
     }
   })
   const needsApproval = !!state.selectedRoute && allowance !== undefined && allowance < amountIn
-  console.log("needsApproval", needsApproval)
 
   const {
     writeContract: approve,
@@ -523,6 +511,7 @@ export const useSwap = (params: SwapParams) => {
     routes: state.routes,
     selectedRoute: state.selectedRoute,
     txhash: state.txHash,
+    slippageTolerance: slippageTolerance,
 
     needsApproval,
     isLoading: ['loading-routes', 'quoting', 'approving', 'swapping'].includes(state.status),

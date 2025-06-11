@@ -23,22 +23,6 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   swap
 }) => {
 
-  const swapInfo = {
-    feeLabel: 'Fee (0.25%)',
-    feeValue: '$0.64',
-    networkLabel: 'Network cost',
-    networkValue: '$1.61',
-    rateLabel: 'Rate',
-    rateValue: '1 ETH = 2546.49 USDC',
-    rateValueUSD: '($2,546.49)',
-    slippageLabel: 'Max slippage',
-    slippageValue: 'Auto\n0.75%',
-    routingLabel: 'Order routing',
-    routingValue: 'Uniswap API',
-    priceImpactLabel: 'Price impact',
-    priceImpactValue: '-0.05%',
-  };
-
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [shouldRenderDetails, setShouldRenderDetails] = useState(false);
 
@@ -60,16 +44,25 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     return swap.status
   }, [swap.status, swap.needsApproval])
 
-  if (!open) return null;
+  const totalFees = useMemo(() => {
+    if (!swap.selectedRoute) return 0
+
+    return swap.selectedRoute.pools.reduce((t, pool) => (t + pool.fee), 0)
+  }, [swap.selectedRoute])
+  const rateValue = useMemo(() => {
+    if (!swap?.quote) return "0"
+
+    return parseFloat(formatEther((inputAmount * (10n ** BigInt(18))) / swap.quote.amountOut)).toFixed(2)
+  }, [swap.quote, inputAmount])
 
   const handleToggleDetails = () => setIsDetailsOpen((v) => !v);
   const handleSwap = async () => {
-    // setButtonState('loading');
     await swap.swap()
   };
 
-  if (!inputToken || !outputToken) return <></>
+  if (!open || !inputToken || !outputToken) return <></>
 
+  console.log(swap)
 
   return (
     <div className="TransactionModal__overlay">
@@ -114,31 +107,34 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         </div>
         <div className="TransactionModal__swapinfo">
           <div className="TransactionModal__infoRow">
-            <span className="TransactionModal__infoLabel">{swapInfo.feeLabel}</span>
-            <span className="TransactionModal__infoContent">{quote?.gasEstimate}</span>
+            <span className="TransactionModal__infoLabel">Pool(s) fees</span>
+            <span className="TransactionModal__infoContent">{totalFees} wei</span>
           </div>
           <div className="TransactionModal__infoRow">
-            <span className="TransactionModal__infoLabel">{swapInfo.networkLabel}</span>
-            <span className="TransactionModal__infoContent">{quote?.gasEstimate}wei</span>
+            <span className="TransactionModal__infoLabel">Gas fees</span>
+            <span className="TransactionModal__infoContent">{quote?.gasEstimate} wei</span>
           </div>
           <div className={`TransactionModal__detailsAnim${isDetailsOpen ? ' TransactionModal__detailsAnim--open' : ''}`}>
             {shouldRenderDetails && (
               <div className="TransactionModal__details">
                 <div className="TransactionModal__infoRow">
-                  <span className="TransactionModal__infoLabel">{swapInfo.rateLabel}</span>
-                  <span className="TransactionModal__infoContent">{swapInfo.rateValue} <span className="TransactionModal__rateUsd">{swapInfo.rateValueUSD}</span></span>
+                  <span className="TransactionModal__infoLabel">Rate</span>
+                  <span className="TransactionModal__infoContent">
+                    1 {outputToken.symbol} &#8776; {rateValue} {inputToken.symbol}
+                    <span className="TransactionModal__rateUsd">(0$)</span>
+                  </span>
                 </div>
                 <div className="TransactionModal__infoRow">
-                  <span className="TransactionModal__infoLabel">{swapInfo.slippageLabel}</span>
-                  <span className="TransactionModal__infoContent">{swapInfo.slippageValue}</span>
+                  <span className="TransactionModal__infoLabel">Max slippage</span>
+                  <span className="TransactionModal__infoContent">{swap.slippageTolerance}%</span>
                 </div>
                 <div className="TransactionModal__infoRow">
-                  <span className="TransactionModal__infoLabel">{swapInfo.routingLabel}</span>
-                  <span className="TransactionModal__infoContent">{swapInfo.routingValue}</span>
+                  <span className="TransactionModal__infoLabel">Min amount</span>
+                  <span className="TransactionModal__infoContent">{quote?.amountOutFormatted}{" "}{outputToken.symbol}</span>
                 </div>
                 <div className="TransactionModal__infoRow">
-                  <span className="TransactionModal__infoLabel">{swapInfo.priceImpactLabel}</span>
-                  <span className="TransactionModal__infoContent">{quote?.priceImpact ? 100 - quote.priceImpact : "0"}</span>
+                  <span className="TransactionModal__infoLabel">Price impact</span>
+                  <span className="TransactionModal__infoContent">{quote?.priceImpact}</span>
                 </div>
               </div>
             )}
