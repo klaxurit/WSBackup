@@ -75,6 +75,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.status === "ready") return "Preview"
       if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
       if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
+      if (swap.status === "error") return swap.error
 
       return swap.status
     }, [swap.status, fromToken, toToken])
@@ -84,6 +85,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setToAmount(swap.quote.amountOut)
       }
     }, [swap.quote])
+
+    console.log(swap)
 
     return (
       <div

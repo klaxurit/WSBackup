@@ -291,7 +291,7 @@ export const useSwap = (params: SwapParams) => {
   }, [publicClient])
 
   const loadRoutes = useCallback(async () => {
-    if (!tokenIn || !tokenOut || tokenIn === zeroAddress || tokenOut === zeroAddress || !amountIn || amountIn === 0n) return
+    if (!tokenIn || !tokenOut || !amountIn || amountIn === 0n) return
 
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
 
@@ -302,6 +302,7 @@ export const useSwap = (params: SwapParams) => {
 
       // Find all possible routes
       const possibleRoutes = await findRoutes(tokenIn, tokenOut)
+      console.log("possibleRoutes", possibleRoutes, tokenIn, tokenOut)
       if (possibleRoutes.length === 0) {
         throw new Error('No routes found')
       }
