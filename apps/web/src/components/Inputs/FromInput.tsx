@@ -19,6 +19,7 @@ interface FromInputProps {
   onTokenSelect: (token: BerachainToken) => void;
   defaultValue?: number;
   value: bigint;
+  showLabel?: boolean;
 }
 
 export const FromInput: React.FC<FromInputProps> = (
@@ -33,6 +34,7 @@ export const FromInput: React.FC<FromInputProps> = (
     onAmountChange,
     onTokenSelect,
     value,
+    showLabel = true,
   }) => {
   const { address } = useAccount()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -54,9 +56,11 @@ export const FromInput: React.FC<FromInputProps> = (
     <div
       className={`Inputs__From From From--${isOverBalance ? "error" : "idle"}`}
     >
-      <div className="From__Label">
-        <p>Buy</p>
-      </div>
+      {showLabel && (
+        <div className="From__Label">
+          <p>Buy</p>
+        </div>
+      )}
       <div className="From__AmountsAndChain">
         <div className="From__Amounts" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <input
@@ -118,7 +122,12 @@ export const FromInput: React.FC<FromInputProps> = (
                 Max
               </button>
               <p className="From__Amount" style={{ margin: 0, fontWeight: 500, color: isOverBalance ? '#FF7456' : undefined }}>
-                {loading ? "..." : formatEther(balance?.value || 0n)}
+                {loading
+                  ? "..."
+                  : showLabel
+                    ? formatEther(balance?.value || 0n)
+                    : Number(formatEther(balance?.value || 0n)).toLocaleString(undefined, { maximumFractionDigits: 3 })
+                }
               </p>
             </>
           )}

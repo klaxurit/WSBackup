@@ -1,0 +1,43 @@
+@use "../../utils" as *;
+
+.LiquidityInput {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+
+  &__InputWrapper {
+    width: 100%;
+
+    .From,
+    .To {
+      width: 100%;
+    }
+    .Inputs__From {
+      height: 96px;
+    }
+  }
+
+  &__ApproveBtn {
+    background: var(--accent1, #e39229);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    padding: 12px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.18s;
+    font-size: 14px;
+
+    &:hover {
+      background: #b97a1c;
+    }
+
+    &:disabled {
+      background: #2d2c2a;
+      color: #504f4c;
+      cursor: not-allowed;
+    }
+  }
+}
