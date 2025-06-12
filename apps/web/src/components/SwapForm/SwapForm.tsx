@@ -77,7 +77,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
       if (swap.status === "error") return swap.error
 
-      return swap.status
+      return swap.status.replace(/^./, swap.status[0].toUpperCase())
     }, [swap.status, fromToken, toToken])
 
     useEffect(() => {
