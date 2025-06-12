@@ -14,6 +14,10 @@ interface NetworkItemProps {
   loading?: boolean;
 }
 
+const baseExplorer = import.meta.env.NODE_ENV === "production"
+  ? "https://berascan.com/token/"
+  : "https://bepolia.beratrail.io/token/"
+
 export const TokenItem: React.FC<NetworkItemProps> = ({
   token,
   isSelected,
@@ -54,9 +58,11 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         <div className="Modal__ItemDetails">
           <span className="Modal__ItemSymbol">{token.symbol}</span>
           {token.address && (
-            <span className="Modal__ItemAddress">
-              {token.address.slice(0, 6) + '...' + token.address.slice(-4)}
-            </span>
+            <a href={`${baseExplorer}${token.address}`} target='_blank' onClick={(e) => e.stopPropagation()}>
+              <span className="Modal__ItemAddress">
+                {token.address.slice(0, 6) + '...' + token.address.slice(-4)}
+              </span>
+            </a>
           )}
         </div>
       </div>
