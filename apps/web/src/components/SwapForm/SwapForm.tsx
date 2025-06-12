@@ -10,7 +10,7 @@ import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { useTest } from "../../hooks/useTest";
 import { useSwap } from "../../hooks/useSwap";
-import { useAccount } from "wagmi";
+import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
 
 interface FormProps {
@@ -85,6 +85,14 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setToAmount(swap.quote.amountOut)
       }
     }, [swap.quote])
+
+    useWatchBlockNumber({
+      onBlockNumber() {
+        if (swap.status === "ready") {
+          swap?.refresh()
+        }
+      }
+    })
 
     console.log(swap)
 
