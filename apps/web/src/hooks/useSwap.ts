@@ -460,7 +460,7 @@ export const useSwap = (params: SwapParams) => {
     } else if (isSwapping || isSwapTxPending) {
       setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
     } else if (isSwapSuccess) {
-      setState(prev => ({ ...prev, status: 'success', txHash: swapTx, routes: [], selectedRoute: null }))
+      setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
       queryClient.invalidateQueries({ queryKey: ["balance"] })
     }
   }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient])
@@ -519,6 +519,14 @@ export const useSwap = (params: SwapParams) => {
     loadRoutes()
   }, [loadRoutes])
 
+  const reset = () => {
+    setState({
+      status: "idle",
+      routes: [],
+      selectedRoute: null
+    })
+  }
+
 
   return {
     status: state.status,
@@ -549,6 +557,7 @@ export const useSwap = (params: SwapParams) => {
     swap,
     approve,
     selectRoute,
-    refresh
+    refresh,
+    reset
   }
 }

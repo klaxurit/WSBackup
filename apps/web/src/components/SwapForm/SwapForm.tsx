@@ -94,7 +94,16 @@ const SwapForm: React.FC<FormProps> = React.memo(
       }
     })
 
-    console.log(swap)
+    useEffect(() => {
+      if (swap.status === "success") {
+        setTimeout(() => {
+          swap.reset()
+          setShowModal(false)
+          setFromAmount(0n)
+          setToAmount(0n)
+        }, 3000)
+      }
+    }, [swap.status])
 
     return (
       <div
