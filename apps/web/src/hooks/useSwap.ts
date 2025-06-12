@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { erc20Abi, formatUnits, zeroAddress, type Address, type Hex } from "viem"
 import { useAccount, usePublicClient, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI"
@@ -6,11 +6,12 @@ import { PoolABI } from "../config/abis/poolABI"
 import { QuoterV2ABI } from "../config/abis/QuoterV2"
 import { calculatePriceImpact, calculateSlippageAmount, encodePath } from "../utils/swap"
 import { SwapRouteV2ABI } from "../config/abis/swapRouter"
+import { useQueryClient } from "@tanstack/react-query"
 
 const COMMON_BASES: Address[] = [
-  '0x41936CA1174EE86B24c05a07653Df4Be68A0ED02', // HONEY
-  '0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1', // BERA
-  '0xEB587A20C3fF1aa2B6DA888483eb1ffb7009c020', // USDC.e
+  '0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce', // HONEY
+  '0x0000000000000000000000000000000000000000', // BERA
+  '0x6969696969696969696969696969696969696969', // wBera
 ]
 const CONTRACTS = {
   v3CoreFactory: '0x76fD9D07d5e4D889CAbED96884F15f7ebdcd6B63' as Address,
@@ -70,6 +71,7 @@ interface Route {
 }
 
 export const useSwap = (params: SwapParams) => {
+  const queryClient = useQueryClient()
   const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.5, deadline = 20, recipient } = params
 
   const { address } = useAccount()
@@ -292,6 +294,7 @@ export const useSwap = (params: SwapParams) => {
 
   const loadRoutes = useCallback(async () => {
     if (!tokenIn || !tokenOut || !amountIn || amountIn === 0n) return
+    if (!["ready", "idle"].includes(state.status)) return
 
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
 
@@ -302,7 +305,6 @@ export const useSwap = (params: SwapParams) => {
 
       // Find all possible routes
       const possibleRoutes = await findRoutes(tokenIn, tokenOut)
-      console.log("possibleRoutes", possibleRoutes, tokenIn, tokenOut)
       if (possibleRoutes.length === 0) {
         throw new Error('No routes found')
       }
@@ -389,20 +391,15 @@ export const useSwap = (params: SwapParams) => {
       enabled: !!address && !!tokenIn && state.status === "ready"
     }
   })
-  const needsApproval = !!state.selectedRoute && allowance !== undefined && allowance < amountIn
+  const needsApproval = useMemo(() => {
+    return !!state.selectedRoute && allowance !== undefined && allowance < amountIn
+  }, [state.selectedRoute, allowance, amountIn])
 
   const {
-    writeContract: approve,
+    writeContract: executeApprove,
     data: approveTx,
     isPending: isApproving,
-  } = useWriteContract(
-    {
-      mutation: {
-        onSuccess: () => {
-          refetchAllowance()
-        }
-      }
-    })
+  } = useWriteContract()
   const { isLoading: isApprovingTxPending } = useWaitForTransactionReceipt({
     hash: approveTx
   })
@@ -463,27 +460,44 @@ export const useSwap = (params: SwapParams) => {
     } else if (isSwapping || isSwapTxPending) {
       setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
     } else if (isSwapSuccess) {
-      setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
+      setState(prev => ({ ...prev, status: 'success', txHash: swapTx, routes: [], selectedRoute: null }))
+      queryClient.invalidateQueries({ queryKey: ["balance"] })
     }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx])
+  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient])
+
+  const approve = useCallback(async () => {
+    if (!state.selectedRoute || !address || !needsApproval) return
+
+    setState(prev => ({ ...prev, status: 'approving' }))
+
+    try {
+      executeApprove({
+        address: tokenIn,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [CONTRACTS.swapRouter02, 2n ** 256n - 1n], // Max approval
+      }, {
+        onSuccess: () => {
+          refetchAllowance()
+        }
+      })
+    } catch (error) {
+      console.error('Approve failed', error)
+      setState(prev => ({
+        ...prev,
+        status: "error",
+        error: error instanceof Error ? error.message : 'Approve failed'
+      }))
+    }
+  }, [tokenIn, state.selectedRoute, address, needsApproval, executeApprove])
 
   // Main Swap function
   const swap = useCallback(async () => {
-    if (!state.selectedRoute || !address) return
+    if (!state.selectedRoute || !address || needsApproval || !swapConfig) return
 
     try {
-      if (needsApproval) {
-        setState(prev => ({ ...prev, status: 'approving' }))
-        approve({
-          address: tokenIn,
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [CONTRACTS.swapRouter02, 2n ** 256n - 1n], // Max approval
-        })
-      } else if (swapConfig) {
-        setState(prev => ({ ...prev, status: 'swapping' }))
-        executeSwap(swapConfig.request)
-      }
+      setState(prev => ({ ...prev, status: 'swapping' }))
+      executeSwap(swapConfig.request)
     } catch (error) {
       console.error('Swap failed', error)
       setState(prev => ({
@@ -492,7 +506,7 @@ export const useSwap = (params: SwapParams) => {
         error: error instanceof Error ? error.message : 'Swap failed'
       }))
     }
-  }, [state.selectedRoute, address, needsApproval, approve, swapConfig, executeSwap, tokenIn])
+  }, [state.selectedRoute, address, needsApproval, swapConfig, executeSwap])
 
 
   // select a different route
@@ -533,6 +547,7 @@ export const useSwap = (params: SwapParams) => {
     } : null,
 
     swap,
+    approve,
     selectRoute,
     refresh
   }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { useSwap } from '../../hooks/useSwap';
 import { formatEther } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
@@ -41,7 +41,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   }, [usdValueOut, quote])
 
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDetailsOpen) {
       setShouldRenderDetails(true);
     } else if (shouldRenderDetails) {
@@ -70,12 +70,14 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const handleToggleDetails = () => setIsDetailsOpen((v) => !v);
   const handleSwap = async () => {
-    await swap.swap()
+    if (swap.needsApproval) {
+      await swap.approve()
+    } else {
+      await swap.swap()
+    }
   };
 
   if (!open || !inputToken || !outputToken) return <></>
-
-  console.log(swap)
 
   return (
     <div className="TransactionModal__overlay">
