@@ -60,13 +60,19 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   const totalFees = useMemo(() => {
     if (!swap.selectedRoute) return 0
 
-    return swap.selectedRoute.pools.reduce((t, pool) => (t + pool.fee), 0)
+    return formatEther(BigInt(swap.selectedRoute.pools.reduce((t, pool) => (t + pool.fee), 0)))
   }, [swap.selectedRoute])
   const rateValue = useMemo(() => {
     if (!swap?.quote) return "0"
 
     return parseFloat(formatEther((inputAmount * (10n ** BigInt(18))) / swap.quote.amountOut)).toFixed(2)
   }, [swap.quote, inputAmount])
+  const priceImpact = useMemo(() => {
+    if (!quote?.priceImpact) return "0"
+
+    if (quote.priceImpact <= 100) return `-${(100 - quote.priceImpact).toFixed(2)}`
+    if (quote.priceImpact > 100) return `+${(quote.priceImpact - 100).toFixed(2)}`
+  }, [quote])
 
   const handleToggleDetails = () => setIsDetailsOpen((v) => !v);
   const handleSwap = async () => {
@@ -123,11 +129,11 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapinfo">
           <div className="TransactionModal__infoRow">
             <span className="TransactionModal__infoLabel">Pool(s) fees</span>
-            <span className="TransactionModal__infoContent">{totalFees} wei</span>
+            <span className="TransactionModal__infoContent">{totalFees} BERA</span>
           </div>
           <div className="TransactionModal__infoRow">
             <span className="TransactionModal__infoLabel">Gas fees</span>
-            <span className="TransactionModal__infoContent">{quote?.gasEstimate} wei</span>
+            <span className="TransactionModal__infoContent">{formatEther(quote?.gasEstimate || 0n)} BERA</span>
           </div>
           <div className={`TransactionModal__detailsAnim${isDetailsOpen ? ' TransactionModal__detailsAnim--open' : ''}`}>
             {shouldRenderDetails && (
@@ -149,7 +155,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </div>
                 <div className="TransactionModal__infoRow">
                   <span className="TransactionModal__infoLabel">Price impact</span>
-                  <span className="TransactionModal__infoContent">{quote?.priceImpact}</span>
+                  <span className="TransactionModal__infoContent">{priceImpact}%</span>
                 </div>
               </div>
             )}
