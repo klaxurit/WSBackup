@@ -4,6 +4,8 @@ import { formatEther } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
 import { usePrice } from '../../hooks/usePrice';
+import { formatTokenAmount, formatUsdAmount } from '../../utils/format';
+import { getUsdAmount, getPoolFeesInBera } from '../../utils/transaction';
 
 interface TransactionStatusModalProps {
   open: boolean;
@@ -40,6 +42,13 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     return (usdValueOut * +formatEther(quote.amountOut)).toFixed(2)
   }, [usdValueOut, quote])
 
+  const poolFeesInBera = useMemo(() => getPoolFeesInBera(swap.selectedRoute), [swap.selectedRoute]);
+  const poolFeesUsd = useMemo(() => getUsdAmount(usdValueIn, BigInt(poolFeesInBera)), [usdValueIn, poolFeesInBera]);
+
+  const gasFeesUsd = useMemo(() => {
+    if (!usdValueIn) return 0;
+    return usdValueIn * +formatEther(quote?.gasEstimate || 0n);
+  }, [usdValueIn, quote]);
 
   useEffect(() => {
     if (isDetailsOpen) {
@@ -57,16 +66,12 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     return swap.status
   }, [swap.status, swap.needsApproval])
 
-  const totalFees = useMemo(() => {
-    if (!swap.selectedRoute) return 0
-
-    return formatEther(BigInt(swap.selectedRoute.pools.reduce((t, pool) => (t + pool.fee), 0)))
-  }, [swap.selectedRoute])
   const rateValue = useMemo(() => {
     if (!swap?.quote) return "0"
 
     return parseFloat(formatEther((inputAmount * (10n ** BigInt(18))) / swap.quote.amountOut)).toFixed(2)
   }, [swap.quote, inputAmount])
+  
   const priceImpact = useMemo(() => {
     if (!quote?.priceImpact) return "0"
 
@@ -97,7 +102,9 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapblock">
           <div className="TransactionModal__tokenRow">
             <div className="TransactionModal__tokenInfo">
-              <span className="TransactionModal__tokenAmount">{formatEther(inputAmount)} {inputToken.symbol}</span>
+              <span className="TransactionModal__tokenAmount">
+                {formatTokenAmount(formatEther(inputAmount))} {inputToken.symbol}
+              </span>
               <span className="TransactionModal__tokenPrice">${usdAmountIn}</span>
             </div>
             {inputToken.logoUri
@@ -110,7 +117,9 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapblock">
           <div className="TransactionModal__tokenRow">
             <div className="TransactionModal__tokenInfo">
-              <span className="TransactionModal__tokenAmount">{quote?.amountOutFormatted} {outputToken.symbol}</span>
+              <span className="TransactionModal__tokenAmount">
+                {quote?.amountOut ? formatTokenAmount(formatEther(quote.amountOut)) : '0'} {outputToken.symbol}
+              </span>
               <span className="TransactionModal__tokenPrice">${usdAmountOut}</span>
             </div>
             {outputToken.logoUri
@@ -129,11 +138,11 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <div className="TransactionModal__swapinfo">
           <div className="TransactionModal__infoRow">
             <span className="TransactionModal__infoLabel">Pool(s) fees</span>
-            <span className="TransactionModal__infoContent">{totalFees} BERA</span>
+            <span className="TransactionModal__infoContent">{formatUsdAmount(poolFeesUsd)}</span>
           </div>
           <div className="TransactionModal__infoRow">
             <span className="TransactionModal__infoLabel">Gas fees</span>
-            <span className="TransactionModal__infoContent">{formatEther(quote?.gasEstimate || 0n)} BERA</span>
+            <span className="TransactionModal__infoContent">{formatUsdAmount(gasFeesUsd)}</span>
           </div>
           <div className={`TransactionModal__detailsAnim${isDetailsOpen ? ' TransactionModal__detailsAnim--open' : ''}`}>
             {shouldRenderDetails && (
@@ -151,7 +160,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </div>
                 <div className="TransactionModal__infoRow">
                   <span className="TransactionModal__infoLabel">Min amount</span>
-                  <span className="TransactionModal__infoContent">{quote?.amountOutFormatted}{" "}{outputToken.symbol}</span>
+                  <span className="TransactionModal__infoContent">{quote?.amountOut ? formatTokenAmount(formatEther(quote.amountOut)) : '0'} {outputToken.symbol}</span>
                 </div>
                 <div className="TransactionModal__infoRow">
                   <span className="TransactionModal__infoLabel">Price impact</span>

@@ -15,8 +15,9 @@
 }
 
 .TransactionModal__box {
-  background: $onyx-dark-bis;
-  border-radius: 16px;
+  background: var(--Neutral-Onyx-blacker-bis, #12110e);
+  border-radius: var(--XL, 28px);
+  border: 1px solid var(--Neutral-Onyx-darker-ters, #1d1c1a);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   padding: 20px 24px;
   min-width: 340px;
@@ -26,6 +27,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  
 }
 
 .TransactionModal__head {
