@@ -132,12 +132,7 @@ export const FromInput: React.FC<FromInputProps> = (
                 Max
               </button>
               <p className="From__Amount" style={{ margin: 0, fontWeight: 500, color: isOverBalance ? '#FF7456' : undefined }}>
-                {loading
-                  ? "..."
-                  : showLabel
-                    ? formatEther(balance?.value || 0n)
-                    : Number(formatEther(balance?.value || 0n)).toLocaleString(undefined, { maximumFractionDigits: 3 })
-                }
+                {loading ? "..." : formatEther(balance?.value || 0n)}
               </p>
             </>
           )}

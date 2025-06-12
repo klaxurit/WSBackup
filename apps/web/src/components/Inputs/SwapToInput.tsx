@@ -1,8 +1,9 @@
 import React, { useMemo, useRef } from "react";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
-import { formatEther, parseEther } from "viem";
+import { formatEther, parseEther, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
+import { useAccount, useBalance } from "wagmi";
 
 interface ToInputProps {
   steps: any;
@@ -31,6 +32,14 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     onInputChange,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
+    const { address } = useAccount()
+    const { data: balance, isLoading: loading } = useBalance({
+      address,
+      token: (preSelected?.address !== zeroAddress) ? preSelected?.address as `0x${string}` : undefined,
+      query: {
+        enabled: !!preSelected
+      }
+    })
     const { data: usdValue = 0 } = usePrice(preSelected)
 
     const usdAmount = useMemo(() => {
@@ -69,6 +78,13 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
         </div>
         <div className="From__Details">
           <p className="From__Convertion">${usdAmount}</p>
+          <div className="From__Balance" style={{ display: 'flex', alignItems: 'baseline' }}>
+            {preSelected && (
+              <p className="From__Amount" style={{ margin: 0, fontWeight: 500 }}>
+                Current: {loading ? "..." : (+formatEther(balance?.value || 0n)).toFixed(4)}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
