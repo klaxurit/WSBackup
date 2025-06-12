@@ -53,8 +53,9 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   const btnText = useMemo(() => {
     if (swap.status === "ready" && !swap.needsApproval) return "Swap"
     if (swap.status === "ready" && swap.needsApproval) return "Approve"
+    if (["loading-routes", "quoting"].includes(swap.status)) return "Loading"
 
-    return swap.status
+    return swap.status.replace(/^./, swap.status[0].toUpperCase())
   }, [swap.status, swap.needsApproval])
 
   const totalFees = useMemo(() => {
@@ -164,6 +165,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <button
           className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready`}
           onClick={handleSwap}
+          disabled={swap.status !== "ready"}
         >
           {btnText}
         </button>

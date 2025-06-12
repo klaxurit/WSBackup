@@ -76,6 +76,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
       if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
       if (swap.status === "error") return swap.error
+      if (["loading-routes", "quoting"].includes(swap.status)) return "Loading"
 
       return swap.status.replace(/^./, swap.status[0].toUpperCase())
     }, [swap.status, fromToken, toToken])
