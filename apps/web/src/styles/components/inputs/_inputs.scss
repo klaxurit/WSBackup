@@ -124,19 +124,30 @@
 
     &__Max {
       margin: 0;
-      color: $beryl-pure;
+      color: $beryl-pure !important;
       text-align: right;
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 14px;
+      font-size: 14px !important;
       font-style: normal;
       font-weight: 500;
-      line-height: 140%;
       cursor: pointer;
       display: flex;
       justify-content: flex-end;
       align-items: center;
       gap: 2px;
       flex: 1 0 0;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      outline: none;
+      box-shadow: none;
+      border-radius: 0;
+      cursor: pointer !important;
+
+      &:hover {
+        color: $beryl-medium !important;
+      }
 
       &.disabled {
         color: $onyx-medium;
@@ -201,6 +212,29 @@
 
     &__disabled {
       pointer-events: none;
+    }
+
+    &__Balance {
+      display: flex;
+      align-items: baseline;
+    }
+
+    &__Max:hover,
+    &__Max:focus {
+      color: #fff;
+    }
+
+    &__Amount {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    &__Amount--error {
+      color: #FF7456;
+    }
+
+    &__Convertion {
+      margin: 0;
     }
   }
 

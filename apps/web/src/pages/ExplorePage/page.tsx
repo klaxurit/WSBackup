@@ -5,6 +5,9 @@ import { SearchBar } from '../../components/SearchBar/SearchBar';
 import MiniChart from '../../components/Charts/MiniChart';
 import type { MiniChartPoint } from '../../components/Charts/MiniChart';
 import { useTokens } from '../../hooks/useBerachainTokenList';
+import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
+import { FallbackImg } from '../../components/utils/FallbackImg';
+import { usePrice } from '../../hooks/usePrice';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
@@ -12,61 +15,62 @@ const TABS = [
   { key: 'transactions', label: 'Transactions' },
 ];
 
+// Colonnes pour le tableau
+const tokenColumns: TableColumn[] = [
+  { label: '#', key: 'index' },
+  { label: 'Token name', key: 'tokenName' },
+  { label: 'Prix', key: 'price' },
+  { label: '1h', key: 'change1h' },
+  { label: '1d', key: 'change1d' },
+  { label: 'FDV', key: 'fdv' },
+  { label: 'Volume', key: 'volume' },
+  { label: '1D Chart', key: 'chart' },
+];
+
+// Génère une ligne droite pour le MiniChart
+function generateFlatChartData(points = 24, value = 1): MiniChartPoint[] {
+  return Array.from({ length: points }, (_, i) => ({ x: i, y: value }));
+}
+
+// Composant pour une ligne du tableau token
+const TokenTableRow: React.FC<{ token: typeof BERACHAIN_TOKENS[number]; rowIndex: number }> = ({ token, rowIndex }) => {
+  const [displayFallback, setDisplayFallback] = React.useState(false);
+  const { data: price, isLoading } = usePrice(token);
+  return (
+    <>
+      <td>{rowIndex + 1}</td>
+      <td style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {displayFallback || !token.logoUri
+          ? <FallbackImg content={token.symbol} />
+          : (
+            <img
+              src={token.logoUri}
+              alt={token.name}
+              style={{ width: 28, height: 28, borderRadius: 8 }}
+              onError={() => setDisplayFallback(true)}
+            />
+          )}
+        <span style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontWeight: 600 }}>{token.name}</span>
+          <span style={{ color: '#aaa', fontSize: 13, fontWeight: 500 }}>{token.symbol}</span>
+        </span>
+      </td>
+      <td>{isLoading ? <span>...</span> : price ? `$${price.toFixed(4)}` : '-'}</td>
+      <td>N/A</td>
+      <td>N/A</td>
+      <td>N/A</td>
+      <td>N/A</td>
+      <td><MiniChart data={generateFlatChartData()} /></td>
+    </>
+  );
+};
+
 const ExplorePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tokens');
   const [search, setSearch] = useState('');
-  const { data: tokens = [] } = useTokens()
-
-  function generateFakeChartData(points = 24): MiniChartPoint[] {
-    let last = 100 + Math.random() * 20;
-    return Array.from({ length: points }, (_, i) => {
-      last += (Math.random() - 0.5) * 2;
-      return { x: i, y: last };
-    });
-  }
-
-  function fakePrice() {
-    return (Math.random() * 10 + 0.1).toFixed(2) + ' $';
-  }
-  function fakePercent() {
-    const n = +(Math.random() * 8 - 4).toFixed(2);
-    return (n > 0 ? '+' : '') + n.toFixed(2) + ' %';
-  }
-  function fakeFDV() {
-    return (Math.random() * 1_000_000_000).toLocaleString() + ' $';
-  }
-  function fakeVolume() {
-    return (Math.random() * 10_000_000).toLocaleString() + ' $';
-  }
-
-  const tokenColumns: TableColumn[] = [
-    { label: '#', key: 'index', render: (_row, i) => i + 1 },
-    { label: '', key: 'logoURI', render: (row) => <img src={row.logoURI} alt={row.symbol} style={{ width: 28, height: 28, borderRadius: 8 }} /> },
-    { label: 'Token Name', key: 'name', render: (row) => <span style={{ fontWeight: 600 }}>{row.name}</span> },
-    { label: 'Symbol', key: 'symbol' },
-    { label: 'Price', key: 'price', render: () => fakePrice() },
-    {
-      label: '1h', key: 'change1h', render: () => {
-        const value = fakePercent();
-        const isNeg = value.includes('-');
-        return <span style={{ color: isNeg ? '#ff4d4d' : '#16c784', fontWeight: 600 }}>{value}</span>;
-      }
-    },
-    {
-      label: '1d', key: 'change1d', render: () => {
-        const value = fakePercent();
-        const isNeg = value.includes('-');
-        return <span style={{ color: isNeg ? '#ff4d4d' : '#16c784', fontWeight: 600 }}>{value}</span>;
-      }
-    },
-    { label: 'FDV', key: 'fdv', render: () => fakeFDV() },
-    { label: 'Volume', key: 'volume', render: () => fakeVolume() },
-    { label: '1D Chart', key: 'chart', render: () => <MiniChart data={generateFakeChartData()} /> },
-  ];
-
   const filteredTokens = search
-    ? tokens.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
-    : tokens;
+    ? BERACHAIN_TOKENS.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
+    : BERACHAIN_TOKENS;
 
   const tokenLogos: Record<string, string> = {
     USDC: 'https://assets.trustwalletapp.com/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
@@ -273,13 +277,26 @@ const ExplorePage: React.FC = () => {
         />
       </div>
       {activeTab === 'tokens' && (
-        <Table
-          columns={tokenColumns}
-          data={filteredTokens}
-          tableClassName="Table"
-          wrapperClassName="Table__Wrapper"
-          scrollClassName="Table__Scroll"
-        />
+        <div className="Table__Wrapper Table__Scroll">
+          <table className="Table Table--bordered">
+            <thead>
+              <tr>
+                {tokenColumns.map(col => <th key={col.key}>{col.label}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTokens.length === 0 ? (
+                <tr><td colSpan={tokenColumns.length}>Aucun token</td></tr>
+              ) : (
+                filteredTokens.map((token, i) => (
+                  <tr key={token.address}>
+                    <TokenTableRow token={token} rowIndex={i} />
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
       {activeTab === 'pools' && (
         <Table

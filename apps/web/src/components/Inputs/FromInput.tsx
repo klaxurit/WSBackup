@@ -6,6 +6,7 @@ import { useAccount, useBalance } from "wagmi";
 import { formatEther, parseEther, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
+import { formatTokenAmount } from '../../utils/format';
 
 interface FromInputProps {
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -102,37 +103,19 @@ export const FromInput: React.FC<FromInputProps> = (
       </div>
       <div className="From__Details">
         <p className="From__Convertion">${usdAmount}</p>
-        <div className="From__Balance" style={{ display: 'flex', alignItems: 'baseline' }}>
+        <div className="From__Balance">
           {selectedToken && (
             <>
               <button
                 type="button"
                 className="From__Max"
-                style={{
-                  color: '#8a8984',
-                  background: 'none',
-                  border: 'none',
-                  borderRadius: 8,
-                  marginLeft: 8,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  padding: '2px 4px',
-                  cursor: 'pointer',
-                  height: 14,
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxShadow: '0 1px 4px 0 rgba(0,0,0,0.04)',
-                  transition: 'color 0.15s',
-                }}
-                onMouseOver={e => (e.currentTarget.style.color = '#fff')}
-                onMouseOut={e => (e.currentTarget.style.color = '#8a8984')}
                 onClick={setMax}
                 tabIndex={-1}
               >
                 Max
               </button>
-              <p className="From__Amount" style={{ margin: 0, fontWeight: 500, color: isOverBalance ? '#FF7456' : undefined }}>
-                {loading ? "..." : formatEther(balance?.value || 0n)}
+              <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
+                {loading ? "..." : formatTokenAmount(formatEther(balance?.value || 0n))}
               </p>
             </>
           )}
