@@ -1,11 +1,9 @@
-import React, { useMemo, useCallback, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, type ChangeEvent } from "react";
 import { FromInput } from "../Inputs/FromInput";
 import { ConnectButton } from "../../components/Buttons/ConnectButton";
 import { Divider } from "../Inputs/Divider";
 import { Nut } from "../SVGs/ProductSVGs";
-import { Tabs } from "../Tabs/Tabs";
 import { SwapToInput } from "../Inputs/SwapToInput";
-import { useBackgroundImage } from "../../hooks/useBackgroundImage";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { useTest } from "../../hooks/useTest";
@@ -32,7 +30,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
     customClassName,
     isHomePage,
   }) => {
-    const { toggleBackground } = useBackgroundImage();
     const { mint } = useTest()
     const { isConnected } = useAccount()
 
@@ -40,14 +37,22 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
     const [toAmount, setToAmount] = useState<bigint>(0n);
-    const [showModal, setShowModal] = useState(false);
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [paramOpen, setParamOpen] = useState<boolean>(false)
+    const [slippageConfig, setSlippageConfig] = useState<{ real: number, display: string, isAuto: boolean }>({
+      real: 0.05,
+      display: "5",
+      isAuto: true,
+    })
+    const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
 
-    const onTabChange = useCallback(
-      (newTab: string) => handleTabChange(newTab),
-      [handleTabChange],
-    );
-
-    const isHide = false
+    const swap = useSwap({
+      tokenIn: fromToken?.address || zeroAddress,
+      tokenOut: toToken?.address || zeroAddress,
+      amountIn: fromAmount,
+      slippageTolerance: slippageConfig.real,
+      deadline: deadlineConfig.real,
+    })
 
     const handleOpenModal = () => {
       setShowModal(true);
@@ -55,7 +60,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleCloseModal = () => {
       setShowModal(false);
     };
-
     const handleSwitchTokens = () => {
       setFromToken(toToken);
       setToToken(fromToken);
@@ -63,14 +67,33 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setToAmount(0n);
     };
 
-    const swap = useSwap({
-      tokenIn: fromToken?.address || zeroAddress,
-      tokenOut: toToken?.address || zeroAddress,
-      amountIn: fromAmount,
-      slippageTolerance: 0.5,
-      deadline: 20,
-    })
+    const updateSlippage = (e: ChangeEvent<HTMLInputElement>) => {
+      let val = e.target.value.replace(/[^\d.,]/g, '')
+      val = val.replace(',', '.')
 
+      if (val.includes('.')) {
+        const parts = val.split('.')
+        if (parts[1] && parts[1].length > 2) {
+          val = parts[0] + '.' + parts[1].substring(0, 2)
+        }
+      }
+      const numVal = val === "" ? 0 : parseFloat(val)
+      const real = numVal / 100
+
+      if (numVal < 0 || numVal > 100) return
+
+      setSlippageConfig({ real, display: val, isAuto: false })
+    }
+    const updateDeadline = (e: ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value.replace(/[^\d]/g, '')
+      if (+val < 0) return
+
+      setDeadlineConfig({ real: +val, display: val })
+    }
+
+    const handleClickParams = () => {
+      setParamOpen(!paramOpen)
+    }
     const btnText = useMemo(() => {
       if (swap.status === "ready") return "Preview"
       if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
@@ -81,12 +104,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
       return swap.status.replace(/^./, swap.status[0].toUpperCase())
     }, [swap.status, fromToken, toToken])
 
-    useEffect(() => {
-      if (swap?.quote?.amountOut) {
-        setToAmount(swap.quote.amountOut)
-      }
-    }, [swap.quote])
-
     useWatchBlockNumber({
       onBlockNumber() {
         if (swap.status === "ready") {
@@ -94,6 +111,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
         }
       }
     })
+
+    useEffect(() => {
+      if (swap?.quote?.amountOut) {
+        setToAmount(swap.quote.amountOut)
+      }
+    }, [swap.quote])
 
     useEffect(() => {
       if (swap.status === "success") {
@@ -108,18 +131,37 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     return (
       <div
-        className={`Form ${customClassName || ""} ${isHide ? "hidden" : ""}`}
+        className={`Form ${customClassName || ""}`}
       >
         <div className="Form__box">
           <div className="Form__head">
-            <Tabs
-              tabs={["Swap", "Buy", "Send"]}
-              defaultTab={activeTab}
-              onChange={onTabChange}
-            />
-            <button className="iconLink" onClick={toggleBackground}>
+            <button className="iconLink" onClick={handleClickParams}>
+              {!slippageConfig.isAuto ? slippageConfig.display : ""}
               <Nut />
             </button>
+            <div className={`ParamBox ${paramOpen ? "" : "ParamBox--hide"}`}>
+              <div className="ParamBox__param">
+                <p>Max slippage</p>
+                <div className="ParamBox__slippageInput">
+                  <button className={slippageConfig.isAuto ? "active" : ""} onClick={() => setSlippageConfig({ real: 0.05, display: "5%", isAuto: true })}>Auto</button>
+                  <input type="text"
+                    value={slippageConfig.display}
+                    onChange={updateSlippage}
+                  />
+                  <p>%</p>
+                </div>
+              </div>
+              <div className="ParamBox__param">
+                <p>Swap deadline</p>
+                <div className="ParamBox__slippageInput">
+                  <input type="text"
+                    value={deadlineConfig.display}
+                    onChange={updateDeadline}
+                  />
+                  <p>&nbsp;minutes</p>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="Inputs">
             <FromInput

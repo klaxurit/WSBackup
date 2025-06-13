@@ -18,9 +18,12 @@ export const calculateSlippageAmount = (
   amount: bigint,
   slippageTolerance: number
 ): bigint => {
-  const slippageFactore = BigInt(Math.floor((1 - slippageTolerance / 100) * 10000))
+  const receivePercent = 1 - slippageTolerance
+  const precision = 1000000 // 6 decimal precesion
+  const receivePercentageBigInt = BigInt(Math.floor(receivePercent * precision))
+  const minAmount = (amount * receivePercentageBigInt) / BigInt(precision)
 
-  return (amount * slippageFactore) / 10000n
+  return minAmount
 }
 
 export const calculatePriceImpact = (

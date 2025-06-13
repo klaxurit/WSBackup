@@ -25,7 +25,7 @@ interface SwapParams {
   tokenIn: Address
   tokenOut: Address
   amountIn: bigint
-  slippageTolerance?: number // Percent (0.5 = 0.5%)
+  slippageTolerance?: number // Percent (0.05 = 5%)
   deadline?: number // Minutes
   recipient?: Address
 }
@@ -72,7 +72,7 @@ interface Route {
 
 export const useSwap = (params: SwapParams) => {
   const queryClient = useQueryClient()
-  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.5, deadline = 20, recipient } = params
+  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient } = params
 
   const { address } = useAccount()
   const publicClient = usePublicClient()
