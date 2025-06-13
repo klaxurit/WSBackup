@@ -246,8 +246,6 @@ const TokenPage: React.FC = () => {
         <div className="Token__Right">
           <div className="Token__SwapForm">
             <SwapForm
-              activeTab="swap"
-              handleTabChange={() => { }}
               toggleSidebar={() => { }}
             />
           </div>

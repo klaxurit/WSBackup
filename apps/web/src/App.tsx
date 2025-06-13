@@ -10,12 +10,8 @@ import CreatePoolPage from './pages/PoolPage/create/page'
 import { useState } from 'react'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('swap')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab)
-  }
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
@@ -30,8 +26,6 @@ function App() {
             <Route path="/" element={
               <div className="swap-page">
                 <SwapForm
-                  activeTab={activeTab}
-                  handleTabChange={handleTabChange}
                   toggleSidebar={toggleSidebar}
                 />
                 {isSidebarOpen && <WalletConnect />}

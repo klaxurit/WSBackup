@@ -12,8 +12,6 @@ import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
 
 interface FormProps {
-  activeTab: string;
-  handleTabChange: (newTab: string) => void;
   toggleSidebar: () => void;
   dominantColor?: string;
   secondaryColor?: string;
@@ -23,8 +21,6 @@ interface FormProps {
 
 const SwapForm: React.FC<FormProps> = React.memo(
   ({
-    activeTab,
-    handleTabChange,
     dominantColor,
     secondaryColor,
     customClassName,
