@@ -12,6 +12,7 @@ import { IndexerService } from './services/indexer.service';
 import { PoolTrackerService } from './services/pool-tracker.service';
 import { ReorgHandlerService } from './services/reorg-handler.service';
 import { Address } from 'viem';
+import { DatabaseService } from 'src/database/database.service';
 
 @Controller('indexer')
 export class IndexerController {
@@ -20,6 +21,7 @@ export class IndexerController {
   constructor(
     private indexerService: IndexerService,
     private poolTracker: PoolTrackerService,
+    private databaseService: DatabaseService,
 
     private reorgHandler: ReorgHandlerService,
   ) { }
@@ -108,6 +110,18 @@ export class IndexerController {
 
     await this.poolTracker.removePool(address);
     return { message: `Pool ${address} removed from tracking` };
+  }
+
+  @Get('swaps')
+  async getSwaps() {
+    return await this.databaseService.swap.findMany({
+      include: {
+        pool: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   @Post('reorg/:fromBlock')
