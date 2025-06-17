@@ -1,6 +1,6 @@
 FROM node:20 AS base
 RUN npm install -g pnpm@latest
-RUN apk add --no-cache libc6-compat openssl python3
+# RUN apk add --no-cache libc6-compat openssl python3
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
