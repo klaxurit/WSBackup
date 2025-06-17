@@ -5,7 +5,7 @@ on:
     branches: ["develop"]
     paths:
       - "apps/backend/**"
-      - ".github/workflows/docker-publish-dev.yaml"
+      - ".github/workflows/docker-publish-dev.yml"
 
 env:
   REGISTRY: ghcr.io
