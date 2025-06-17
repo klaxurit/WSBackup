@@ -11,7 +11,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx src/seed.ts",
     "db:studio": "prisma studio",
-    "dev": "prisma generate --watch",
+    "dev": "tsc -w",
     "clean": "rm -rf dist node_modules/.prisma"
   },
   "dependencies": {
@@ -22,5 +22,8 @@
     "@types/node": "^24.0.2",
     "prisma": "^5.6.0",
     "tsx": "^4.0.0"
+  },
+  "exports": {
+    ".": "./dist/index.js"
   }
 }

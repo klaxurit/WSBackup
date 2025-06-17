@@ -18,6 +18,16 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  * 
  */
 export type Pool = $Result.DefaultSelection<Prisma.$PoolPayload>
+/**
+ * Model Swap
+ * 
+ */
+export type Swap = $Result.DefaultSelection<Prisma.$SwapPayload>
+/**
+ * Model IndexerState
+ * 
+ */
+export type IndexerState = $Result.DefaultSelection<Prisma.$IndexerStatePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -151,6 +161,26 @@ export class PrismaClient<
     * ```
     */
   get pool(): Prisma.PoolDelegate<ExtArgs>;
+
+  /**
+   * `prisma.swap`: Exposes CRUD operations for the **Swap** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Swaps
+    * const swaps = await prisma.swap.findMany()
+    * ```
+    */
+  get swap(): Prisma.SwapDelegate<ExtArgs>;
+
+  /**
+   * `prisma.indexerState`: Exposes CRUD operations for the **IndexerState** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more IndexerStates
+    * const indexerStates = await prisma.indexerState.findMany()
+    * ```
+    */
+  get indexerState(): Prisma.IndexerStateDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -592,7 +622,9 @@ export namespace Prisma {
 
 
   export const ModelName: {
-    Pool: 'Pool'
+    Pool: 'Pool',
+    Swap: 'Swap',
+    IndexerState: 'IndexerState'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -608,7 +640,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "pool"
+      modelProps: "pool" | "swap" | "indexerState"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -679,6 +711,146 @@ export namespace Prisma {
           count: {
             args: Prisma.PoolCountArgs<ExtArgs>
             result: $Utils.Optional<PoolCountAggregateOutputType> | number
+          }
+        }
+      }
+      Swap: {
+        payload: Prisma.$SwapPayload<ExtArgs>
+        fields: Prisma.SwapFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SwapFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SwapFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
+          }
+          findFirst: {
+            args: Prisma.SwapFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SwapFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
+          }
+          findMany: {
+            args: Prisma.SwapFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>[]
+          }
+          create: {
+            args: Prisma.SwapCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
+          }
+          createMany: {
+            args: Prisma.SwapCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SwapCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>[]
+          }
+          delete: {
+            args: Prisma.SwapDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
+          }
+          update: {
+            args: Prisma.SwapUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
+          }
+          deleteMany: {
+            args: Prisma.SwapDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SwapUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SwapUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
+          }
+          aggregate: {
+            args: Prisma.SwapAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSwap>
+          }
+          groupBy: {
+            args: Prisma.SwapGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SwapGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SwapCountArgs<ExtArgs>
+            result: $Utils.Optional<SwapCountAggregateOutputType> | number
+          }
+        }
+      }
+      IndexerState: {
+        payload: Prisma.$IndexerStatePayload<ExtArgs>
+        fields: Prisma.IndexerStateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.IndexerStateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.IndexerStateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
+          }
+          findFirst: {
+            args: Prisma.IndexerStateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.IndexerStateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
+          }
+          findMany: {
+            args: Prisma.IndexerStateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>[]
+          }
+          create: {
+            args: Prisma.IndexerStateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
+          }
+          createMany: {
+            args: Prisma.IndexerStateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.IndexerStateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>[]
+          }
+          delete: {
+            args: Prisma.IndexerStateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
+          }
+          update: {
+            args: Prisma.IndexerStateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
+          }
+          deleteMany: {
+            args: Prisma.IndexerStateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.IndexerStateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.IndexerStateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
+          }
+          aggregate: {
+            args: Prisma.IndexerStateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateIndexerState>
+          }
+          groupBy: {
+            args: Prisma.IndexerStateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<IndexerStateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.IndexerStateCountArgs<ExtArgs>
+            result: $Utils.Optional<IndexerStateCountAggregateOutputType> | number
           }
         }
       }
@@ -838,6 +1010,36 @@ export namespace Prisma {
    */
 
 
+  /**
+   * Count Type PoolCountOutputType
+   */
+
+  export type PoolCountOutputType = {
+    swaps: number
+  }
+
+  export type PoolCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    swaps?: boolean | PoolCountOutputTypeCountSwapsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PoolCountOutputType without action
+   */
+  export type PoolCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PoolCountOutputType
+     */
+    select?: PoolCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PoolCountOutputType without action
+   */
+  export type PoolCountOutputTypeCountSwapsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SwapWhereInput
+  }
+
 
   /**
    * Models
@@ -873,6 +1075,7 @@ export namespace Prisma {
     fee: number | null
     liquidity: string | null
     tick: number | null
+    sqrtPriceX96: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -885,6 +1088,7 @@ export namespace Prisma {
     fee: number | null
     liquidity: string | null
     tick: number | null
+    sqrtPriceX96: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -897,6 +1101,7 @@ export namespace Prisma {
     fee: number
     liquidity: number
     tick: number
+    sqrtPriceX96: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -921,6 +1126,7 @@ export namespace Prisma {
     fee?: true
     liquidity?: true
     tick?: true
+    sqrtPriceX96?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -933,6 +1139,7 @@ export namespace Prisma {
     fee?: true
     liquidity?: true
     tick?: true
+    sqrtPriceX96?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -945,6 +1152,7 @@ export namespace Prisma {
     fee?: true
     liquidity?: true
     tick?: true
+    sqrtPriceX96?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -1042,8 +1250,9 @@ export namespace Prisma {
     token0: string
     token1: string
     fee: number
-    liquidity: string
+    liquidity: string | null
     tick: number | null
+    sqrtPriceX96: string | null
     createdAt: Date
     updatedAt: Date
     _count: PoolCountAggregateOutputType | null
@@ -1075,8 +1284,11 @@ export namespace Prisma {
     fee?: boolean
     liquidity?: boolean
     tick?: boolean
+    sqrtPriceX96?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    swaps?: boolean | Pool$swapsArgs<ExtArgs>
+    _count?: boolean | PoolCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["pool"]>
 
   export type PoolSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1087,6 +1299,7 @@ export namespace Prisma {
     fee?: boolean
     liquidity?: boolean
     tick?: boolean
+    sqrtPriceX96?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["pool"]>
@@ -1099,22 +1312,31 @@ export namespace Prisma {
     fee?: boolean
     liquidity?: boolean
     tick?: boolean
+    sqrtPriceX96?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
+  export type PoolInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    swaps?: boolean | Pool$swapsArgs<ExtArgs>
+    _count?: boolean | PoolCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PoolIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $PoolPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Pool"
-    objects: {}
+    objects: {
+      swaps: Prisma.$SwapPayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       address: string
       token0: string
       token1: string
       fee: number
-      liquidity: string
+      liquidity: string | null
       tick: number | null
+      sqrtPriceX96: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["pool"]>
@@ -1481,6 +1703,7 @@ export namespace Prisma {
    */
   export interface Prisma__PoolClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    swaps<T extends Pool$swapsArgs<ExtArgs> = {}>(args?: Subset<T, Pool$swapsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1517,6 +1740,7 @@ export namespace Prisma {
     readonly fee: FieldRef<"Pool", 'Int'>
     readonly liquidity: FieldRef<"Pool", 'String'>
     readonly tick: FieldRef<"Pool", 'Int'>
+    readonly sqrtPriceX96: FieldRef<"Pool", 'String'>
     readonly createdAt: FieldRef<"Pool", 'DateTime'>
     readonly updatedAt: FieldRef<"Pool", 'DateTime'>
   }
@@ -1532,6 +1756,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * Filter, which Pool to fetch.
      */
     where: PoolWhereUniqueInput
@@ -1546,6 +1774,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * Filter, which Pool to fetch.
      */
     where: PoolWhereUniqueInput
@@ -1559,6 +1791,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the Pool
      */
     select?: PoolSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
     /**
      * Filter, which Pool to fetch.
      */
@@ -1604,6 +1840,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * Filter, which Pool to fetch.
      */
     where?: PoolWhereInput
@@ -1648,6 +1888,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * Filter, which Pools to fetch.
      */
     where?: PoolWhereInput
@@ -1686,6 +1930,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the Pool
      */
     select?: PoolSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
     /**
      * The data needed to create a Pool.
      */
@@ -1727,6 +1975,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * The data needed to update a Pool.
      */
     data: XOR<PoolUpdateInput, PoolUncheckedUpdateInput>
@@ -1759,6 +2011,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * The filter to search for the Pool to update in case it exists.
      */
     where: PoolWhereUniqueInput
@@ -1781,6 +2037,10 @@ export namespace Prisma {
      */
     select?: PoolSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+    /**
      * Filter which Pool to delete.
      */
     where: PoolWhereUniqueInput
@@ -1797,6 +2057,26 @@ export namespace Prisma {
   }
 
   /**
+   * Pool.swaps
+   */
+  export type Pool$swapsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    where?: SwapWhereInput
+    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
+    cursor?: SwapWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
+  }
+
+  /**
    * Pool without action
    */
   export type PoolDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1804,6 +2084,1981 @@ export namespace Prisma {
      * Select specific fields to fetch from the Pool
      */
     select?: PoolSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PoolInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Swap
+   */
+
+  export type AggregateSwap = {
+    _count: SwapCountAggregateOutputType | null
+    _avg: SwapAvgAggregateOutputType | null
+    _sum: SwapSumAggregateOutputType | null
+    _min: SwapMinAggregateOutputType | null
+    _max: SwapMaxAggregateOutputType | null
+  }
+
+  export type SwapAvgAggregateOutputType = {
+    tick: number | null
+    logIndex: number | null
+    gasUsed: number | null
+  }
+
+  export type SwapSumAggregateOutputType = {
+    tick: number | null
+    logIndex: number | null
+    gasUsed: number | null
+  }
+
+  export type SwapMinAggregateOutputType = {
+    id: string | null
+    sender: string | null
+    recipient: string | null
+    amount0: string | null
+    amount1: string | null
+    sqrtPriceX96: string | null
+    tick: number | null
+    transactionHash: string | null
+    logIndex: number | null
+    poolAddress: string | null
+    poolId: string | null
+    gasUsed: number | null
+    gasPrice: string | null
+    createdAt: Date | null
+  }
+
+  export type SwapMaxAggregateOutputType = {
+    id: string | null
+    sender: string | null
+    recipient: string | null
+    amount0: string | null
+    amount1: string | null
+    sqrtPriceX96: string | null
+    tick: number | null
+    transactionHash: string | null
+    logIndex: number | null
+    poolAddress: string | null
+    poolId: string | null
+    gasUsed: number | null
+    gasPrice: string | null
+    createdAt: Date | null
+  }
+
+  export type SwapCountAggregateOutputType = {
+    id: number
+    sender: number
+    recipient: number
+    amount0: number
+    amount1: number
+    sqrtPriceX96: number
+    tick: number
+    transactionHash: number
+    logIndex: number
+    poolAddress: number
+    poolId: number
+    gasUsed: number
+    gasPrice: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SwapAvgAggregateInputType = {
+    tick?: true
+    logIndex?: true
+    gasUsed?: true
+  }
+
+  export type SwapSumAggregateInputType = {
+    tick?: true
+    logIndex?: true
+    gasUsed?: true
+  }
+
+  export type SwapMinAggregateInputType = {
+    id?: true
+    sender?: true
+    recipient?: true
+    amount0?: true
+    amount1?: true
+    sqrtPriceX96?: true
+    tick?: true
+    transactionHash?: true
+    logIndex?: true
+    poolAddress?: true
+    poolId?: true
+    gasUsed?: true
+    gasPrice?: true
+    createdAt?: true
+  }
+
+  export type SwapMaxAggregateInputType = {
+    id?: true
+    sender?: true
+    recipient?: true
+    amount0?: true
+    amount1?: true
+    sqrtPriceX96?: true
+    tick?: true
+    transactionHash?: true
+    logIndex?: true
+    poolAddress?: true
+    poolId?: true
+    gasUsed?: true
+    gasPrice?: true
+    createdAt?: true
+  }
+
+  export type SwapCountAggregateInputType = {
+    id?: true
+    sender?: true
+    recipient?: true
+    amount0?: true
+    amount1?: true
+    sqrtPriceX96?: true
+    tick?: true
+    transactionHash?: true
+    logIndex?: true
+    poolAddress?: true
+    poolId?: true
+    gasUsed?: true
+    gasPrice?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SwapAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Swap to aggregate.
+     */
+    where?: SwapWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Swaps to fetch.
+     */
+    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SwapWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Swaps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Swaps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Swaps
+    **/
+    _count?: true | SwapCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SwapAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SwapSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SwapMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SwapMaxAggregateInputType
+  }
+
+  export type GetSwapAggregateType<T extends SwapAggregateArgs> = {
+        [P in keyof T & keyof AggregateSwap]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSwap[P]>
+      : GetScalarType<T[P], AggregateSwap[P]>
+  }
+
+
+
+
+  export type SwapGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SwapWhereInput
+    orderBy?: SwapOrderByWithAggregationInput | SwapOrderByWithAggregationInput[]
+    by: SwapScalarFieldEnum[] | SwapScalarFieldEnum
+    having?: SwapScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SwapCountAggregateInputType | true
+    _avg?: SwapAvgAggregateInputType
+    _sum?: SwapSumAggregateInputType
+    _min?: SwapMinAggregateInputType
+    _max?: SwapMaxAggregateInputType
+  }
+
+  export type SwapGroupByOutputType = {
+    id: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    poolId: string
+    gasUsed: number
+    gasPrice: string
+    createdAt: Date
+    _count: SwapCountAggregateOutputType | null
+    _avg: SwapAvgAggregateOutputType | null
+    _sum: SwapSumAggregateOutputType | null
+    _min: SwapMinAggregateOutputType | null
+    _max: SwapMaxAggregateOutputType | null
+  }
+
+  type GetSwapGroupByPayload<T extends SwapGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SwapGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SwapGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SwapGroupByOutputType[P]>
+            : GetScalarType<T[P], SwapGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SwapSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sender?: boolean
+    recipient?: boolean
+    amount0?: boolean
+    amount1?: boolean
+    sqrtPriceX96?: boolean
+    tick?: boolean
+    transactionHash?: boolean
+    logIndex?: boolean
+    poolAddress?: boolean
+    poolId?: boolean
+    gasUsed?: boolean
+    gasPrice?: boolean
+    createdAt?: boolean
+    pool?: boolean | PoolDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["swap"]>
+
+  export type SwapSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sender?: boolean
+    recipient?: boolean
+    amount0?: boolean
+    amount1?: boolean
+    sqrtPriceX96?: boolean
+    tick?: boolean
+    transactionHash?: boolean
+    logIndex?: boolean
+    poolAddress?: boolean
+    poolId?: boolean
+    gasUsed?: boolean
+    gasPrice?: boolean
+    createdAt?: boolean
+    pool?: boolean | PoolDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["swap"]>
+
+  export type SwapSelectScalar = {
+    id?: boolean
+    sender?: boolean
+    recipient?: boolean
+    amount0?: boolean
+    amount1?: boolean
+    sqrtPriceX96?: boolean
+    tick?: boolean
+    transactionHash?: boolean
+    logIndex?: boolean
+    poolAddress?: boolean
+    poolId?: boolean
+    gasUsed?: boolean
+    gasPrice?: boolean
+    createdAt?: boolean
+  }
+
+  export type SwapInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pool?: boolean | PoolDefaultArgs<ExtArgs>
+  }
+  export type SwapIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pool?: boolean | PoolDefaultArgs<ExtArgs>
+  }
+
+  export type $SwapPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Swap"
+    objects: {
+      pool: Prisma.$PoolPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sender: string
+      recipient: string
+      amount0: string
+      amount1: string
+      sqrtPriceX96: string
+      tick: number
+      transactionHash: string
+      logIndex: number
+      poolAddress: string
+      poolId: string
+      gasUsed: number
+      gasPrice: string
+      createdAt: Date
+    }, ExtArgs["result"]["swap"]>
+    composites: {}
+  }
+
+  type SwapGetPayload<S extends boolean | null | undefined | SwapDefaultArgs> = $Result.GetResult<Prisma.$SwapPayload, S>
+
+  type SwapCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SwapFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: SwapCountAggregateInputType | true
+    }
+
+  export interface SwapDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Swap'], meta: { name: 'Swap' } }
+    /**
+     * Find zero or one Swap that matches the filter.
+     * @param {SwapFindUniqueArgs} args - Arguments to find a Swap
+     * @example
+     * // Get one Swap
+     * const swap = await prisma.swap.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SwapFindUniqueArgs>(args: SelectSubset<T, SwapFindUniqueArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Swap that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {SwapFindUniqueOrThrowArgs} args - Arguments to find a Swap
+     * @example
+     * // Get one Swap
+     * const swap = await prisma.swap.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SwapFindUniqueOrThrowArgs>(args: SelectSubset<T, SwapFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Swap that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapFindFirstArgs} args - Arguments to find a Swap
+     * @example
+     * // Get one Swap
+     * const swap = await prisma.swap.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SwapFindFirstArgs>(args?: SelectSubset<T, SwapFindFirstArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Swap that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapFindFirstOrThrowArgs} args - Arguments to find a Swap
+     * @example
+     * // Get one Swap
+     * const swap = await prisma.swap.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SwapFindFirstOrThrowArgs>(args?: SelectSubset<T, SwapFindFirstOrThrowArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Swaps that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Swaps
+     * const swaps = await prisma.swap.findMany()
+     * 
+     * // Get first 10 Swaps
+     * const swaps = await prisma.swap.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const swapWithIdOnly = await prisma.swap.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SwapFindManyArgs>(args?: SelectSubset<T, SwapFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Swap.
+     * @param {SwapCreateArgs} args - Arguments to create a Swap.
+     * @example
+     * // Create one Swap
+     * const Swap = await prisma.swap.create({
+     *   data: {
+     *     // ... data to create a Swap
+     *   }
+     * })
+     * 
+     */
+    create<T extends SwapCreateArgs>(args: SelectSubset<T, SwapCreateArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Swaps.
+     * @param {SwapCreateManyArgs} args - Arguments to create many Swaps.
+     * @example
+     * // Create many Swaps
+     * const swap = await prisma.swap.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SwapCreateManyArgs>(args?: SelectSubset<T, SwapCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Swaps and returns the data saved in the database.
+     * @param {SwapCreateManyAndReturnArgs} args - Arguments to create many Swaps.
+     * @example
+     * // Create many Swaps
+     * const swap = await prisma.swap.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Swaps and only return the `id`
+     * const swapWithIdOnly = await prisma.swap.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SwapCreateManyAndReturnArgs>(args?: SelectSubset<T, SwapCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Swap.
+     * @param {SwapDeleteArgs} args - Arguments to delete one Swap.
+     * @example
+     * // Delete one Swap
+     * const Swap = await prisma.swap.delete({
+     *   where: {
+     *     // ... filter to delete one Swap
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SwapDeleteArgs>(args: SelectSubset<T, SwapDeleteArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Swap.
+     * @param {SwapUpdateArgs} args - Arguments to update one Swap.
+     * @example
+     * // Update one Swap
+     * const swap = await prisma.swap.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SwapUpdateArgs>(args: SelectSubset<T, SwapUpdateArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Swaps.
+     * @param {SwapDeleteManyArgs} args - Arguments to filter Swaps to delete.
+     * @example
+     * // Delete a few Swaps
+     * const { count } = await prisma.swap.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SwapDeleteManyArgs>(args?: SelectSubset<T, SwapDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Swaps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Swaps
+     * const swap = await prisma.swap.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SwapUpdateManyArgs>(args: SelectSubset<T, SwapUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Swap.
+     * @param {SwapUpsertArgs} args - Arguments to update or create a Swap.
+     * @example
+     * // Update or create a Swap
+     * const swap = await prisma.swap.upsert({
+     *   create: {
+     *     // ... data to create a Swap
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Swap we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SwapUpsertArgs>(args: SelectSubset<T, SwapUpsertArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Swaps.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapCountArgs} args - Arguments to filter Swaps to count.
+     * @example
+     * // Count the number of Swaps
+     * const count = await prisma.swap.count({
+     *   where: {
+     *     // ... the filter for the Swaps we want to count
+     *   }
+     * })
+    **/
+    count<T extends SwapCountArgs>(
+      args?: Subset<T, SwapCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SwapCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Swap.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SwapAggregateArgs>(args: Subset<T, SwapAggregateArgs>): Prisma.PrismaPromise<GetSwapAggregateType<T>>
+
+    /**
+     * Group by Swap.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SwapGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SwapGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SwapGroupByArgs['orderBy'] }
+        : { orderBy?: SwapGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SwapGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSwapGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Swap model
+   */
+  readonly fields: SwapFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Swap.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SwapClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    pool<T extends PoolDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PoolDefaultArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Swap model
+   */ 
+  interface SwapFieldRefs {
+    readonly id: FieldRef<"Swap", 'String'>
+    readonly sender: FieldRef<"Swap", 'String'>
+    readonly recipient: FieldRef<"Swap", 'String'>
+    readonly amount0: FieldRef<"Swap", 'String'>
+    readonly amount1: FieldRef<"Swap", 'String'>
+    readonly sqrtPriceX96: FieldRef<"Swap", 'String'>
+    readonly tick: FieldRef<"Swap", 'Int'>
+    readonly transactionHash: FieldRef<"Swap", 'String'>
+    readonly logIndex: FieldRef<"Swap", 'Int'>
+    readonly poolAddress: FieldRef<"Swap", 'String'>
+    readonly poolId: FieldRef<"Swap", 'String'>
+    readonly gasUsed: FieldRef<"Swap", 'Int'>
+    readonly gasPrice: FieldRef<"Swap", 'String'>
+    readonly createdAt: FieldRef<"Swap", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Swap findUnique
+   */
+  export type SwapFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * Filter, which Swap to fetch.
+     */
+    where: SwapWhereUniqueInput
+  }
+
+  /**
+   * Swap findUniqueOrThrow
+   */
+  export type SwapFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * Filter, which Swap to fetch.
+     */
+    where: SwapWhereUniqueInput
+  }
+
+  /**
+   * Swap findFirst
+   */
+  export type SwapFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * Filter, which Swap to fetch.
+     */
+    where?: SwapWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Swaps to fetch.
+     */
+    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Swaps.
+     */
+    cursor?: SwapWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Swaps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Swaps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Swaps.
+     */
+    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
+  }
+
+  /**
+   * Swap findFirstOrThrow
+   */
+  export type SwapFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * Filter, which Swap to fetch.
+     */
+    where?: SwapWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Swaps to fetch.
+     */
+    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Swaps.
+     */
+    cursor?: SwapWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Swaps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Swaps.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Swaps.
+     */
+    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
+  }
+
+  /**
+   * Swap findMany
+   */
+  export type SwapFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * Filter, which Swaps to fetch.
+     */
+    where?: SwapWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Swaps to fetch.
+     */
+    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Swaps.
+     */
+    cursor?: SwapWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Swaps from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Swaps.
+     */
+    skip?: number
+    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
+  }
+
+  /**
+   * Swap create
+   */
+  export type SwapCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Swap.
+     */
+    data: XOR<SwapCreateInput, SwapUncheckedCreateInput>
+  }
+
+  /**
+   * Swap createMany
+   */
+  export type SwapCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Swaps.
+     */
+    data: SwapCreateManyInput | SwapCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Swap createManyAndReturn
+   */
+  export type SwapCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Swaps.
+     */
+    data: SwapCreateManyInput | SwapCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Swap update
+   */
+  export type SwapUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Swap.
+     */
+    data: XOR<SwapUpdateInput, SwapUncheckedUpdateInput>
+    /**
+     * Choose, which Swap to update.
+     */
+    where: SwapWhereUniqueInput
+  }
+
+  /**
+   * Swap updateMany
+   */
+  export type SwapUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Swaps.
+     */
+    data: XOR<SwapUpdateManyMutationInput, SwapUncheckedUpdateManyInput>
+    /**
+     * Filter which Swaps to update
+     */
+    where?: SwapWhereInput
+  }
+
+  /**
+   * Swap upsert
+   */
+  export type SwapUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Swap to update in case it exists.
+     */
+    where: SwapWhereUniqueInput
+    /**
+     * In case the Swap found by the `where` argument doesn't exist, create a new Swap with this data.
+     */
+    create: XOR<SwapCreateInput, SwapUncheckedCreateInput>
+    /**
+     * In case the Swap was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SwapUpdateInput, SwapUncheckedUpdateInput>
+  }
+
+  /**
+   * Swap delete
+   */
+  export type SwapDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+    /**
+     * Filter which Swap to delete.
+     */
+    where: SwapWhereUniqueInput
+  }
+
+  /**
+   * Swap deleteMany
+   */
+  export type SwapDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Swaps to delete
+     */
+    where?: SwapWhereInput
+  }
+
+  /**
+   * Swap without action
+   */
+  export type SwapDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Swap
+     */
+    select?: SwapSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SwapInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model IndexerState
+   */
+
+  export type AggregateIndexerState = {
+    _count: IndexerStateCountAggregateOutputType | null
+    _avg: IndexerStateAvgAggregateOutputType | null
+    _sum: IndexerStateSumAggregateOutputType | null
+    _min: IndexerStateMinAggregateOutputType | null
+    _max: IndexerStateMaxAggregateOutputType | null
+  }
+
+  export type IndexerStateAvgAggregateOutputType = {
+    lastBlock: number | null
+  }
+
+  export type IndexerStateSumAggregateOutputType = {
+    lastBlock: bigint | null
+  }
+
+  export type IndexerStateMinAggregateOutputType = {
+    id: string | null
+    lastBlock: bigint | null
+    lastUpdate: Date | null
+  }
+
+  export type IndexerStateMaxAggregateOutputType = {
+    id: string | null
+    lastBlock: bigint | null
+    lastUpdate: Date | null
+  }
+
+  export type IndexerStateCountAggregateOutputType = {
+    id: number
+    lastBlock: number
+    lastUpdate: number
+    _all: number
+  }
+
+
+  export type IndexerStateAvgAggregateInputType = {
+    lastBlock?: true
+  }
+
+  export type IndexerStateSumAggregateInputType = {
+    lastBlock?: true
+  }
+
+  export type IndexerStateMinAggregateInputType = {
+    id?: true
+    lastBlock?: true
+    lastUpdate?: true
+  }
+
+  export type IndexerStateMaxAggregateInputType = {
+    id?: true
+    lastBlock?: true
+    lastUpdate?: true
+  }
+
+  export type IndexerStateCountAggregateInputType = {
+    id?: true
+    lastBlock?: true
+    lastUpdate?: true
+    _all?: true
+  }
+
+  export type IndexerStateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IndexerState to aggregate.
+     */
+    where?: IndexerStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IndexerStates to fetch.
+     */
+    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: IndexerStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IndexerStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IndexerStates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned IndexerStates
+    **/
+    _count?: true | IndexerStateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: IndexerStateAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: IndexerStateSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: IndexerStateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: IndexerStateMaxAggregateInputType
+  }
+
+  export type GetIndexerStateAggregateType<T extends IndexerStateAggregateArgs> = {
+        [P in keyof T & keyof AggregateIndexerState]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateIndexerState[P]>
+      : GetScalarType<T[P], AggregateIndexerState[P]>
+  }
+
+
+
+
+  export type IndexerStateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IndexerStateWhereInput
+    orderBy?: IndexerStateOrderByWithAggregationInput | IndexerStateOrderByWithAggregationInput[]
+    by: IndexerStateScalarFieldEnum[] | IndexerStateScalarFieldEnum
+    having?: IndexerStateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: IndexerStateCountAggregateInputType | true
+    _avg?: IndexerStateAvgAggregateInputType
+    _sum?: IndexerStateSumAggregateInputType
+    _min?: IndexerStateMinAggregateInputType
+    _max?: IndexerStateMaxAggregateInputType
+  }
+
+  export type IndexerStateGroupByOutputType = {
+    id: string
+    lastBlock: bigint
+    lastUpdate: Date
+    _count: IndexerStateCountAggregateOutputType | null
+    _avg: IndexerStateAvgAggregateOutputType | null
+    _sum: IndexerStateSumAggregateOutputType | null
+    _min: IndexerStateMinAggregateOutputType | null
+    _max: IndexerStateMaxAggregateOutputType | null
+  }
+
+  type GetIndexerStateGroupByPayload<T extends IndexerStateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<IndexerStateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof IndexerStateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], IndexerStateGroupByOutputType[P]>
+            : GetScalarType<T[P], IndexerStateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type IndexerStateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lastBlock?: boolean
+    lastUpdate?: boolean
+  }, ExtArgs["result"]["indexerState"]>
+
+  export type IndexerStateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lastBlock?: boolean
+    lastUpdate?: boolean
+  }, ExtArgs["result"]["indexerState"]>
+
+  export type IndexerStateSelectScalar = {
+    id?: boolean
+    lastBlock?: boolean
+    lastUpdate?: boolean
+  }
+
+
+  export type $IndexerStatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "IndexerState"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      lastBlock: bigint
+      lastUpdate: Date
+    }, ExtArgs["result"]["indexerState"]>
+    composites: {}
+  }
+
+  type IndexerStateGetPayload<S extends boolean | null | undefined | IndexerStateDefaultArgs> = $Result.GetResult<Prisma.$IndexerStatePayload, S>
+
+  type IndexerStateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<IndexerStateFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: IndexerStateCountAggregateInputType | true
+    }
+
+  export interface IndexerStateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IndexerState'], meta: { name: 'IndexerState' } }
+    /**
+     * Find zero or one IndexerState that matches the filter.
+     * @param {IndexerStateFindUniqueArgs} args - Arguments to find a IndexerState
+     * @example
+     * // Get one IndexerState
+     * const indexerState = await prisma.indexerState.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends IndexerStateFindUniqueArgs>(args: SelectSubset<T, IndexerStateFindUniqueArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one IndexerState that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {IndexerStateFindUniqueOrThrowArgs} args - Arguments to find a IndexerState
+     * @example
+     * // Get one IndexerState
+     * const indexerState = await prisma.indexerState.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends IndexerStateFindUniqueOrThrowArgs>(args: SelectSubset<T, IndexerStateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first IndexerState that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateFindFirstArgs} args - Arguments to find a IndexerState
+     * @example
+     * // Get one IndexerState
+     * const indexerState = await prisma.indexerState.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends IndexerStateFindFirstArgs>(args?: SelectSubset<T, IndexerStateFindFirstArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first IndexerState that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateFindFirstOrThrowArgs} args - Arguments to find a IndexerState
+     * @example
+     * // Get one IndexerState
+     * const indexerState = await prisma.indexerState.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends IndexerStateFindFirstOrThrowArgs>(args?: SelectSubset<T, IndexerStateFindFirstOrThrowArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more IndexerStates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all IndexerStates
+     * const indexerStates = await prisma.indexerState.findMany()
+     * 
+     * // Get first 10 IndexerStates
+     * const indexerStates = await prisma.indexerState.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const indexerStateWithIdOnly = await prisma.indexerState.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends IndexerStateFindManyArgs>(args?: SelectSubset<T, IndexerStateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a IndexerState.
+     * @param {IndexerStateCreateArgs} args - Arguments to create a IndexerState.
+     * @example
+     * // Create one IndexerState
+     * const IndexerState = await prisma.indexerState.create({
+     *   data: {
+     *     // ... data to create a IndexerState
+     *   }
+     * })
+     * 
+     */
+    create<T extends IndexerStateCreateArgs>(args: SelectSubset<T, IndexerStateCreateArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many IndexerStates.
+     * @param {IndexerStateCreateManyArgs} args - Arguments to create many IndexerStates.
+     * @example
+     * // Create many IndexerStates
+     * const indexerState = await prisma.indexerState.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends IndexerStateCreateManyArgs>(args?: SelectSubset<T, IndexerStateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many IndexerStates and returns the data saved in the database.
+     * @param {IndexerStateCreateManyAndReturnArgs} args - Arguments to create many IndexerStates.
+     * @example
+     * // Create many IndexerStates
+     * const indexerState = await prisma.indexerState.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many IndexerStates and only return the `id`
+     * const indexerStateWithIdOnly = await prisma.indexerState.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends IndexerStateCreateManyAndReturnArgs>(args?: SelectSubset<T, IndexerStateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a IndexerState.
+     * @param {IndexerStateDeleteArgs} args - Arguments to delete one IndexerState.
+     * @example
+     * // Delete one IndexerState
+     * const IndexerState = await prisma.indexerState.delete({
+     *   where: {
+     *     // ... filter to delete one IndexerState
+     *   }
+     * })
+     * 
+     */
+    delete<T extends IndexerStateDeleteArgs>(args: SelectSubset<T, IndexerStateDeleteArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one IndexerState.
+     * @param {IndexerStateUpdateArgs} args - Arguments to update one IndexerState.
+     * @example
+     * // Update one IndexerState
+     * const indexerState = await prisma.indexerState.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends IndexerStateUpdateArgs>(args: SelectSubset<T, IndexerStateUpdateArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more IndexerStates.
+     * @param {IndexerStateDeleteManyArgs} args - Arguments to filter IndexerStates to delete.
+     * @example
+     * // Delete a few IndexerStates
+     * const { count } = await prisma.indexerState.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends IndexerStateDeleteManyArgs>(args?: SelectSubset<T, IndexerStateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IndexerStates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many IndexerStates
+     * const indexerState = await prisma.indexerState.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends IndexerStateUpdateManyArgs>(args: SelectSubset<T, IndexerStateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one IndexerState.
+     * @param {IndexerStateUpsertArgs} args - Arguments to update or create a IndexerState.
+     * @example
+     * // Update or create a IndexerState
+     * const indexerState = await prisma.indexerState.upsert({
+     *   create: {
+     *     // ... data to create a IndexerState
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the IndexerState we want to update
+     *   }
+     * })
+     */
+    upsert<T extends IndexerStateUpsertArgs>(args: SelectSubset<T, IndexerStateUpsertArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of IndexerStates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateCountArgs} args - Arguments to filter IndexerStates to count.
+     * @example
+     * // Count the number of IndexerStates
+     * const count = await prisma.indexerState.count({
+     *   where: {
+     *     // ... the filter for the IndexerStates we want to count
+     *   }
+     * })
+    **/
+    count<T extends IndexerStateCountArgs>(
+      args?: Subset<T, IndexerStateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], IndexerStateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a IndexerState.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends IndexerStateAggregateArgs>(args: Subset<T, IndexerStateAggregateArgs>): Prisma.PrismaPromise<GetIndexerStateAggregateType<T>>
+
+    /**
+     * Group by IndexerState.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IndexerStateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends IndexerStateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: IndexerStateGroupByArgs['orderBy'] }
+        : { orderBy?: IndexerStateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, IndexerStateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIndexerStateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the IndexerState model
+   */
+  readonly fields: IndexerStateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for IndexerState.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__IndexerStateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the IndexerState model
+   */ 
+  interface IndexerStateFieldRefs {
+    readonly id: FieldRef<"IndexerState", 'String'>
+    readonly lastBlock: FieldRef<"IndexerState", 'BigInt'>
+    readonly lastUpdate: FieldRef<"IndexerState", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * IndexerState findUnique
+   */
+  export type IndexerStateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * Filter, which IndexerState to fetch.
+     */
+    where: IndexerStateWhereUniqueInput
+  }
+
+  /**
+   * IndexerState findUniqueOrThrow
+   */
+  export type IndexerStateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * Filter, which IndexerState to fetch.
+     */
+    where: IndexerStateWhereUniqueInput
+  }
+
+  /**
+   * IndexerState findFirst
+   */
+  export type IndexerStateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * Filter, which IndexerState to fetch.
+     */
+    where?: IndexerStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IndexerStates to fetch.
+     */
+    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IndexerStates.
+     */
+    cursor?: IndexerStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IndexerStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IndexerStates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IndexerStates.
+     */
+    distinct?: IndexerStateScalarFieldEnum | IndexerStateScalarFieldEnum[]
+  }
+
+  /**
+   * IndexerState findFirstOrThrow
+   */
+  export type IndexerStateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * Filter, which IndexerState to fetch.
+     */
+    where?: IndexerStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IndexerStates to fetch.
+     */
+    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IndexerStates.
+     */
+    cursor?: IndexerStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IndexerStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IndexerStates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IndexerStates.
+     */
+    distinct?: IndexerStateScalarFieldEnum | IndexerStateScalarFieldEnum[]
+  }
+
+  /**
+   * IndexerState findMany
+   */
+  export type IndexerStateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * Filter, which IndexerStates to fetch.
+     */
+    where?: IndexerStateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IndexerStates to fetch.
+     */
+    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing IndexerStates.
+     */
+    cursor?: IndexerStateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IndexerStates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IndexerStates.
+     */
+    skip?: number
+    distinct?: IndexerStateScalarFieldEnum | IndexerStateScalarFieldEnum[]
+  }
+
+  /**
+   * IndexerState create
+   */
+  export type IndexerStateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * The data needed to create a IndexerState.
+     */
+    data?: XOR<IndexerStateCreateInput, IndexerStateUncheckedCreateInput>
+  }
+
+  /**
+   * IndexerState createMany
+   */
+  export type IndexerStateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many IndexerStates.
+     */
+    data: IndexerStateCreateManyInput | IndexerStateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IndexerState createManyAndReturn
+   */
+  export type IndexerStateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many IndexerStates.
+     */
+    data: IndexerStateCreateManyInput | IndexerStateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IndexerState update
+   */
+  export type IndexerStateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * The data needed to update a IndexerState.
+     */
+    data: XOR<IndexerStateUpdateInput, IndexerStateUncheckedUpdateInput>
+    /**
+     * Choose, which IndexerState to update.
+     */
+    where: IndexerStateWhereUniqueInput
+  }
+
+  /**
+   * IndexerState updateMany
+   */
+  export type IndexerStateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update IndexerStates.
+     */
+    data: XOR<IndexerStateUpdateManyMutationInput, IndexerStateUncheckedUpdateManyInput>
+    /**
+     * Filter which IndexerStates to update
+     */
+    where?: IndexerStateWhereInput
+  }
+
+  /**
+   * IndexerState upsert
+   */
+  export type IndexerStateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * The filter to search for the IndexerState to update in case it exists.
+     */
+    where: IndexerStateWhereUniqueInput
+    /**
+     * In case the IndexerState found by the `where` argument doesn't exist, create a new IndexerState with this data.
+     */
+    create: XOR<IndexerStateCreateInput, IndexerStateUncheckedCreateInput>
+    /**
+     * In case the IndexerState was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<IndexerStateUpdateInput, IndexerStateUncheckedUpdateInput>
+  }
+
+  /**
+   * IndexerState delete
+   */
+  export type IndexerStateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
+    /**
+     * Filter which IndexerState to delete.
+     */
+    where: IndexerStateWhereUniqueInput
+  }
+
+  /**
+   * IndexerState deleteMany
+   */
+  export type IndexerStateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IndexerStates to delete
+     */
+    where?: IndexerStateWhereInput
+  }
+
+  /**
+   * IndexerState without action
+   */
+  export type IndexerStateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IndexerState
+     */
+    select?: IndexerStateSelect<ExtArgs> | null
   }
 
 
@@ -1829,11 +4084,41 @@ export namespace Prisma {
     fee: 'fee',
     liquidity: 'liquidity',
     tick: 'tick',
+    sqrtPriceX96: 'sqrtPriceX96',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type PoolScalarFieldEnum = (typeof PoolScalarFieldEnum)[keyof typeof PoolScalarFieldEnum]
+
+
+  export const SwapScalarFieldEnum: {
+    id: 'id',
+    sender: 'sender',
+    recipient: 'recipient',
+    amount0: 'amount0',
+    amount1: 'amount1',
+    sqrtPriceX96: 'sqrtPriceX96',
+    tick: 'tick',
+    transactionHash: 'transactionHash',
+    logIndex: 'logIndex',
+    poolAddress: 'poolAddress',
+    poolId: 'poolId',
+    gasUsed: 'gasUsed',
+    gasPrice: 'gasPrice',
+    createdAt: 'createdAt'
+  };
+
+  export type SwapScalarFieldEnum = (typeof SwapScalarFieldEnum)[keyof typeof SwapScalarFieldEnum]
+
+
+  export const IndexerStateScalarFieldEnum: {
+    id: 'id',
+    lastBlock: 'lastBlock',
+    lastUpdate: 'lastUpdate'
+  };
+
+  export type IndexerStateScalarFieldEnum = (typeof IndexerStateScalarFieldEnum)[keyof typeof IndexerStateScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -1908,6 +4193,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'BigInt'
+   */
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt[]'
+   */
+  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1933,10 +4232,12 @@ export namespace Prisma {
     token0?: StringFilter<"Pool"> | string
     token1?: StringFilter<"Pool"> | string
     fee?: IntFilter<"Pool"> | number
-    liquidity?: StringFilter<"Pool"> | string
+    liquidity?: StringNullableFilter<"Pool"> | string | null
     tick?: IntNullableFilter<"Pool"> | number | null
+    sqrtPriceX96?: StringNullableFilter<"Pool"> | string | null
     createdAt?: DateTimeFilter<"Pool"> | Date | string
     updatedAt?: DateTimeFilter<"Pool"> | Date | string
+    swaps?: SwapListRelationFilter
   }
 
   export type PoolOrderByWithRelationInput = {
@@ -1945,10 +4246,12 @@ export namespace Prisma {
     token0?: SortOrder
     token1?: SortOrder
     fee?: SortOrder
-    liquidity?: SortOrder
+    liquidity?: SortOrderInput | SortOrder
     tick?: SortOrderInput | SortOrder
+    sqrtPriceX96?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    swaps?: SwapOrderByRelationAggregateInput
   }
 
   export type PoolWhereUniqueInput = Prisma.AtLeast<{
@@ -1960,10 +4263,12 @@ export namespace Prisma {
     token0?: StringFilter<"Pool"> | string
     token1?: StringFilter<"Pool"> | string
     fee?: IntFilter<"Pool"> | number
-    liquidity?: StringFilter<"Pool"> | string
+    liquidity?: StringNullableFilter<"Pool"> | string | null
     tick?: IntNullableFilter<"Pool"> | number | null
+    sqrtPriceX96?: StringNullableFilter<"Pool"> | string | null
     createdAt?: DateTimeFilter<"Pool"> | Date | string
     updatedAt?: DateTimeFilter<"Pool"> | Date | string
+    swaps?: SwapListRelationFilter
   }, "id" | "address">
 
   export type PoolOrderByWithAggregationInput = {
@@ -1972,8 +4277,9 @@ export namespace Prisma {
     token0?: SortOrder
     token1?: SortOrder
     fee?: SortOrder
-    liquidity?: SortOrder
+    liquidity?: SortOrderInput | SortOrder
     tick?: SortOrderInput | SortOrder
+    sqrtPriceX96?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PoolCountOrderByAggregateInput
@@ -1992,10 +4298,158 @@ export namespace Prisma {
     token0?: StringWithAggregatesFilter<"Pool"> | string
     token1?: StringWithAggregatesFilter<"Pool"> | string
     fee?: IntWithAggregatesFilter<"Pool"> | number
-    liquidity?: StringWithAggregatesFilter<"Pool"> | string
+    liquidity?: StringNullableWithAggregatesFilter<"Pool"> | string | null
     tick?: IntNullableWithAggregatesFilter<"Pool"> | number | null
+    sqrtPriceX96?: StringNullableWithAggregatesFilter<"Pool"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Pool"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Pool"> | Date | string
+  }
+
+  export type SwapWhereInput = {
+    AND?: SwapWhereInput | SwapWhereInput[]
+    OR?: SwapWhereInput[]
+    NOT?: SwapWhereInput | SwapWhereInput[]
+    id?: StringFilter<"Swap"> | string
+    sender?: StringFilter<"Swap"> | string
+    recipient?: StringFilter<"Swap"> | string
+    amount0?: StringFilter<"Swap"> | string
+    amount1?: StringFilter<"Swap"> | string
+    sqrtPriceX96?: StringFilter<"Swap"> | string
+    tick?: IntFilter<"Swap"> | number
+    transactionHash?: StringFilter<"Swap"> | string
+    logIndex?: IntFilter<"Swap"> | number
+    poolAddress?: StringFilter<"Swap"> | string
+    poolId?: StringFilter<"Swap"> | string
+    gasUsed?: IntFilter<"Swap"> | number
+    gasPrice?: StringFilter<"Swap"> | string
+    createdAt?: DateTimeFilter<"Swap"> | Date | string
+    pool?: XOR<PoolRelationFilter, PoolWhereInput>
+  }
+
+  export type SwapOrderByWithRelationInput = {
+    id?: SortOrder
+    sender?: SortOrder
+    recipient?: SortOrder
+    amount0?: SortOrder
+    amount1?: SortOrder
+    sqrtPriceX96?: SortOrder
+    tick?: SortOrder
+    transactionHash?: SortOrder
+    logIndex?: SortOrder
+    poolAddress?: SortOrder
+    poolId?: SortOrder
+    gasUsed?: SortOrder
+    gasPrice?: SortOrder
+    createdAt?: SortOrder
+    pool?: PoolOrderByWithRelationInput
+  }
+
+  export type SwapWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    transactionHash_logIndex?: SwapTransactionHashLogIndexCompoundUniqueInput
+    AND?: SwapWhereInput | SwapWhereInput[]
+    OR?: SwapWhereInput[]
+    NOT?: SwapWhereInput | SwapWhereInput[]
+    sender?: StringFilter<"Swap"> | string
+    recipient?: StringFilter<"Swap"> | string
+    amount0?: StringFilter<"Swap"> | string
+    amount1?: StringFilter<"Swap"> | string
+    sqrtPriceX96?: StringFilter<"Swap"> | string
+    tick?: IntFilter<"Swap"> | number
+    transactionHash?: StringFilter<"Swap"> | string
+    logIndex?: IntFilter<"Swap"> | number
+    poolAddress?: StringFilter<"Swap"> | string
+    poolId?: StringFilter<"Swap"> | string
+    gasUsed?: IntFilter<"Swap"> | number
+    gasPrice?: StringFilter<"Swap"> | string
+    createdAt?: DateTimeFilter<"Swap"> | Date | string
+    pool?: XOR<PoolRelationFilter, PoolWhereInput>
+  }, "id" | "transactionHash_logIndex">
+
+  export type SwapOrderByWithAggregationInput = {
+    id?: SortOrder
+    sender?: SortOrder
+    recipient?: SortOrder
+    amount0?: SortOrder
+    amount1?: SortOrder
+    sqrtPriceX96?: SortOrder
+    tick?: SortOrder
+    transactionHash?: SortOrder
+    logIndex?: SortOrder
+    poolAddress?: SortOrder
+    poolId?: SortOrder
+    gasUsed?: SortOrder
+    gasPrice?: SortOrder
+    createdAt?: SortOrder
+    _count?: SwapCountOrderByAggregateInput
+    _avg?: SwapAvgOrderByAggregateInput
+    _max?: SwapMaxOrderByAggregateInput
+    _min?: SwapMinOrderByAggregateInput
+    _sum?: SwapSumOrderByAggregateInput
+  }
+
+  export type SwapScalarWhereWithAggregatesInput = {
+    AND?: SwapScalarWhereWithAggregatesInput | SwapScalarWhereWithAggregatesInput[]
+    OR?: SwapScalarWhereWithAggregatesInput[]
+    NOT?: SwapScalarWhereWithAggregatesInput | SwapScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Swap"> | string
+    sender?: StringWithAggregatesFilter<"Swap"> | string
+    recipient?: StringWithAggregatesFilter<"Swap"> | string
+    amount0?: StringWithAggregatesFilter<"Swap"> | string
+    amount1?: StringWithAggregatesFilter<"Swap"> | string
+    sqrtPriceX96?: StringWithAggregatesFilter<"Swap"> | string
+    tick?: IntWithAggregatesFilter<"Swap"> | number
+    transactionHash?: StringWithAggregatesFilter<"Swap"> | string
+    logIndex?: IntWithAggregatesFilter<"Swap"> | number
+    poolAddress?: StringWithAggregatesFilter<"Swap"> | string
+    poolId?: StringWithAggregatesFilter<"Swap"> | string
+    gasUsed?: IntWithAggregatesFilter<"Swap"> | number
+    gasPrice?: StringWithAggregatesFilter<"Swap"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Swap"> | Date | string
+  }
+
+  export type IndexerStateWhereInput = {
+    AND?: IndexerStateWhereInput | IndexerStateWhereInput[]
+    OR?: IndexerStateWhereInput[]
+    NOT?: IndexerStateWhereInput | IndexerStateWhereInput[]
+    id?: StringFilter<"IndexerState"> | string
+    lastBlock?: BigIntFilter<"IndexerState"> | bigint | number
+    lastUpdate?: DateTimeFilter<"IndexerState"> | Date | string
+  }
+
+  export type IndexerStateOrderByWithRelationInput = {
+    id?: SortOrder
+    lastBlock?: SortOrder
+    lastUpdate?: SortOrder
+  }
+
+  export type IndexerStateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: IndexerStateWhereInput | IndexerStateWhereInput[]
+    OR?: IndexerStateWhereInput[]
+    NOT?: IndexerStateWhereInput | IndexerStateWhereInput[]
+    lastBlock?: BigIntFilter<"IndexerState"> | bigint | number
+    lastUpdate?: DateTimeFilter<"IndexerState"> | Date | string
+  }, "id">
+
+  export type IndexerStateOrderByWithAggregationInput = {
+    id?: SortOrder
+    lastBlock?: SortOrder
+    lastUpdate?: SortOrder
+    _count?: IndexerStateCountOrderByAggregateInput
+    _avg?: IndexerStateAvgOrderByAggregateInput
+    _max?: IndexerStateMaxOrderByAggregateInput
+    _min?: IndexerStateMinOrderByAggregateInput
+    _sum?: IndexerStateSumOrderByAggregateInput
+  }
+
+  export type IndexerStateScalarWhereWithAggregatesInput = {
+    AND?: IndexerStateScalarWhereWithAggregatesInput | IndexerStateScalarWhereWithAggregatesInput[]
+    OR?: IndexerStateScalarWhereWithAggregatesInput[]
+    NOT?: IndexerStateScalarWhereWithAggregatesInput | IndexerStateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"IndexerState"> | string
+    lastBlock?: BigIntWithAggregatesFilter<"IndexerState"> | bigint | number
+    lastUpdate?: DateTimeWithAggregatesFilter<"IndexerState"> | Date | string
   }
 
   export type PoolCreateInput = {
@@ -2004,10 +4458,12 @@ export namespace Prisma {
     token0: string
     token1: string
     fee: number
-    liquidity: string
+    liquidity?: string | null
     tick?: number | null
+    sqrtPriceX96?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    swaps?: SwapCreateNestedManyWithoutPoolInput
   }
 
   export type PoolUncheckedCreateInput = {
@@ -2016,10 +4472,12 @@ export namespace Prisma {
     token0: string
     token1: string
     fee: number
-    liquidity: string
+    liquidity?: string | null
     tick?: number | null
+    sqrtPriceX96?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    swaps?: SwapUncheckedCreateNestedManyWithoutPoolInput
   }
 
   export type PoolUpdateInput = {
@@ -2028,10 +4486,12 @@ export namespace Prisma {
     token0?: StringFieldUpdateOperationsInput | string
     token1?: StringFieldUpdateOperationsInput | string
     fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: StringFieldUpdateOperationsInput | string
+    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
     tick?: NullableIntFieldUpdateOperationsInput | number | null
+    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    swaps?: SwapUpdateManyWithoutPoolNestedInput
   }
 
   export type PoolUncheckedUpdateInput = {
@@ -2040,10 +4500,12 @@ export namespace Prisma {
     token0?: StringFieldUpdateOperationsInput | string
     token1?: StringFieldUpdateOperationsInput | string
     fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: StringFieldUpdateOperationsInput | string
+    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
     tick?: NullableIntFieldUpdateOperationsInput | number | null
+    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    swaps?: SwapUncheckedUpdateManyWithoutPoolNestedInput
   }
 
   export type PoolCreateManyInput = {
@@ -2052,8 +4514,9 @@ export namespace Prisma {
     token0: string
     token1: string
     fee: number
-    liquidity: string
+    liquidity?: string | null
     tick?: number | null
+    sqrtPriceX96?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -2064,8 +4527,9 @@ export namespace Prisma {
     token0?: StringFieldUpdateOperationsInput | string
     token1?: StringFieldUpdateOperationsInput | string
     fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: StringFieldUpdateOperationsInput | string
+    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
     tick?: NullableIntFieldUpdateOperationsInput | number | null
+    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -2076,10 +4540,171 @@ export namespace Prisma {
     token0?: StringFieldUpdateOperationsInput | string
     token1?: StringFieldUpdateOperationsInput | string
     fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: StringFieldUpdateOperationsInput | string
+    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
     tick?: NullableIntFieldUpdateOperationsInput | number | null
+    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SwapCreateInput = {
+    id?: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    gasUsed: number
+    gasPrice: string
+    createdAt?: Date | string
+    pool: PoolCreateNestedOneWithoutSwapsInput
+  }
+
+  export type SwapUncheckedCreateInput = {
+    id?: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    poolId: string
+    gasUsed: number
+    gasPrice: string
+    createdAt?: Date | string
+  }
+
+  export type SwapUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pool?: PoolUpdateOneRequiredWithoutSwapsNestedInput
+  }
+
+  export type SwapUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    poolId?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SwapCreateManyInput = {
+    id?: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    poolId: string
+    gasUsed: number
+    gasPrice: string
+    createdAt?: Date | string
+  }
+
+  export type SwapUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SwapUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    poolId?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IndexerStateCreateInput = {
+    id?: string
+    lastBlock?: bigint | number
+    lastUpdate?: Date | string
+  }
+
+  export type IndexerStateUncheckedCreateInput = {
+    id?: string
+    lastBlock?: bigint | number
+    lastUpdate?: Date | string
+  }
+
+  export type IndexerStateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
+    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IndexerStateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
+    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IndexerStateCreateManyInput = {
+    id?: string
+    lastBlock?: bigint | number
+    lastUpdate?: Date | string
+  }
+
+  export type IndexerStateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
+    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IndexerStateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
+    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -2108,6 +4733,21 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -2130,9 +4770,19 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type SwapListRelationFilter = {
+    every?: SwapWhereInput
+    some?: SwapWhereInput
+    none?: SwapWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
+  }
+
+  export type SwapOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type PoolCountOrderByAggregateInput = {
@@ -2143,6 +4793,7 @@ export namespace Prisma {
     fee?: SortOrder
     liquidity?: SortOrder
     tick?: SortOrder
+    sqrtPriceX96?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -2160,6 +4811,7 @@ export namespace Prisma {
     fee?: SortOrder
     liquidity?: SortOrder
     tick?: SortOrder
+    sqrtPriceX96?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -2172,6 +4824,7 @@ export namespace Prisma {
     fee?: SortOrder
     liquidity?: SortOrder
     tick?: SortOrder
+    sqrtPriceX96?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -2215,6 +4868,24 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -2245,6 +4916,146 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type PoolRelationFilter = {
+    is?: PoolWhereInput
+    isNot?: PoolWhereInput
+  }
+
+  export type SwapTransactionHashLogIndexCompoundUniqueInput = {
+    transactionHash: string
+    logIndex: number
+  }
+
+  export type SwapCountOrderByAggregateInput = {
+    id?: SortOrder
+    sender?: SortOrder
+    recipient?: SortOrder
+    amount0?: SortOrder
+    amount1?: SortOrder
+    sqrtPriceX96?: SortOrder
+    tick?: SortOrder
+    transactionHash?: SortOrder
+    logIndex?: SortOrder
+    poolAddress?: SortOrder
+    poolId?: SortOrder
+    gasUsed?: SortOrder
+    gasPrice?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SwapAvgOrderByAggregateInput = {
+    tick?: SortOrder
+    logIndex?: SortOrder
+    gasUsed?: SortOrder
+  }
+
+  export type SwapMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sender?: SortOrder
+    recipient?: SortOrder
+    amount0?: SortOrder
+    amount1?: SortOrder
+    sqrtPriceX96?: SortOrder
+    tick?: SortOrder
+    transactionHash?: SortOrder
+    logIndex?: SortOrder
+    poolAddress?: SortOrder
+    poolId?: SortOrder
+    gasUsed?: SortOrder
+    gasPrice?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SwapMinOrderByAggregateInput = {
+    id?: SortOrder
+    sender?: SortOrder
+    recipient?: SortOrder
+    amount0?: SortOrder
+    amount1?: SortOrder
+    sqrtPriceX96?: SortOrder
+    tick?: SortOrder
+    transactionHash?: SortOrder
+    logIndex?: SortOrder
+    poolAddress?: SortOrder
+    poolId?: SortOrder
+    gasUsed?: SortOrder
+    gasPrice?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SwapSumOrderByAggregateInput = {
+    tick?: SortOrder
+    logIndex?: SortOrder
+    gasUsed?: SortOrder
+  }
+
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type IndexerStateCountOrderByAggregateInput = {
+    id?: SortOrder
+    lastBlock?: SortOrder
+    lastUpdate?: SortOrder
+  }
+
+  export type IndexerStateAvgOrderByAggregateInput = {
+    lastBlock?: SortOrder
+  }
+
+  export type IndexerStateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    lastBlock?: SortOrder
+    lastUpdate?: SortOrder
+  }
+
+  export type IndexerStateMinOrderByAggregateInput = {
+    id?: SortOrder
+    lastBlock?: SortOrder
+    lastUpdate?: SortOrder
+  }
+
+  export type IndexerStateSumOrderByAggregateInput = {
+    lastBlock?: SortOrder
+  }
+
+  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type SwapCreateNestedManyWithoutPoolInput = {
+    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
+    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
+    createMany?: SwapCreateManyPoolInputEnvelope
+    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+  }
+
+  export type SwapUncheckedCreateNestedManyWithoutPoolInput = {
+    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
+    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
+    createMany?: SwapCreateManyPoolInputEnvelope
+    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -2257,6 +5068,10 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -2267,6 +5082,56 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type SwapUpdateManyWithoutPoolNestedInput = {
+    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
+    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
+    upsert?: SwapUpsertWithWhereUniqueWithoutPoolInput | SwapUpsertWithWhereUniqueWithoutPoolInput[]
+    createMany?: SwapCreateManyPoolInputEnvelope
+    set?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    disconnect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    delete?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    update?: SwapUpdateWithWhereUniqueWithoutPoolInput | SwapUpdateWithWhereUniqueWithoutPoolInput[]
+    updateMany?: SwapUpdateManyWithWhereWithoutPoolInput | SwapUpdateManyWithWhereWithoutPoolInput[]
+    deleteMany?: SwapScalarWhereInput | SwapScalarWhereInput[]
+  }
+
+  export type SwapUncheckedUpdateManyWithoutPoolNestedInput = {
+    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
+    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
+    upsert?: SwapUpsertWithWhereUniqueWithoutPoolInput | SwapUpsertWithWhereUniqueWithoutPoolInput[]
+    createMany?: SwapCreateManyPoolInputEnvelope
+    set?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    disconnect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    delete?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
+    update?: SwapUpdateWithWhereUniqueWithoutPoolInput | SwapUpdateWithWhereUniqueWithoutPoolInput[]
+    updateMany?: SwapUpdateManyWithWhereWithoutPoolInput | SwapUpdateManyWithWhereWithoutPoolInput[]
+    deleteMany?: SwapScalarWhereInput | SwapScalarWhereInput[]
+  }
+
+  export type PoolCreateNestedOneWithoutSwapsInput = {
+    create?: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
+    connectOrCreate?: PoolCreateOrConnectWithoutSwapsInput
+    connect?: PoolWhereUniqueInput
+  }
+
+  export type PoolUpdateOneRequiredWithoutSwapsNestedInput = {
+    create?: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
+    connectOrCreate?: PoolCreateOrConnectWithoutSwapsInput
+    upsert?: PoolUpsertWithoutSwapsInput
+    connect?: PoolWhereUniqueInput
+    update?: XOR<XOR<PoolUpdateToOneWithWhereWithoutSwapsInput, PoolUpdateWithoutSwapsInput>, PoolUncheckedUpdateWithoutSwapsInput>
+  }
+
+  export type BigIntFieldUpdateOperationsInput = {
+    set?: bigint | number
+    increment?: bigint | number
+    decrement?: bigint | number
+    multiply?: bigint | number
+    divide?: bigint | number
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -2292,6 +5157,20 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
   export type NestedIntNullableFilter<$PrismaModel = never> = {
@@ -2360,6 +5239,23 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -2401,15 +5297,264 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedBigIntFilter<$PrismaModel>
+    _min?: NestedBigIntFilter<$PrismaModel>
+    _max?: NestedBigIntFilter<$PrismaModel>
+  }
+
+  export type SwapCreateWithoutPoolInput = {
+    id?: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    gasUsed: number
+    gasPrice: string
+    createdAt?: Date | string
+  }
+
+  export type SwapUncheckedCreateWithoutPoolInput = {
+    id?: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    gasUsed: number
+    gasPrice: string
+    createdAt?: Date | string
+  }
+
+  export type SwapCreateOrConnectWithoutPoolInput = {
+    where: SwapWhereUniqueInput
+    create: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput>
+  }
+
+  export type SwapCreateManyPoolInputEnvelope = {
+    data: SwapCreateManyPoolInput | SwapCreateManyPoolInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SwapUpsertWithWhereUniqueWithoutPoolInput = {
+    where: SwapWhereUniqueInput
+    update: XOR<SwapUpdateWithoutPoolInput, SwapUncheckedUpdateWithoutPoolInput>
+    create: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput>
+  }
+
+  export type SwapUpdateWithWhereUniqueWithoutPoolInput = {
+    where: SwapWhereUniqueInput
+    data: XOR<SwapUpdateWithoutPoolInput, SwapUncheckedUpdateWithoutPoolInput>
+  }
+
+  export type SwapUpdateManyWithWhereWithoutPoolInput = {
+    where: SwapScalarWhereInput
+    data: XOR<SwapUpdateManyMutationInput, SwapUncheckedUpdateManyWithoutPoolInput>
+  }
+
+  export type SwapScalarWhereInput = {
+    AND?: SwapScalarWhereInput | SwapScalarWhereInput[]
+    OR?: SwapScalarWhereInput[]
+    NOT?: SwapScalarWhereInput | SwapScalarWhereInput[]
+    id?: StringFilter<"Swap"> | string
+    sender?: StringFilter<"Swap"> | string
+    recipient?: StringFilter<"Swap"> | string
+    amount0?: StringFilter<"Swap"> | string
+    amount1?: StringFilter<"Swap"> | string
+    sqrtPriceX96?: StringFilter<"Swap"> | string
+    tick?: IntFilter<"Swap"> | number
+    transactionHash?: StringFilter<"Swap"> | string
+    logIndex?: IntFilter<"Swap"> | number
+    poolAddress?: StringFilter<"Swap"> | string
+    poolId?: StringFilter<"Swap"> | string
+    gasUsed?: IntFilter<"Swap"> | number
+    gasPrice?: StringFilter<"Swap"> | string
+    createdAt?: DateTimeFilter<"Swap"> | Date | string
+  }
+
+  export type PoolCreateWithoutSwapsInput = {
+    id?: string
+    address: string
+    token0: string
+    token1: string
+    fee: number
+    liquidity?: string | null
+    tick?: number | null
+    sqrtPriceX96?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PoolUncheckedCreateWithoutSwapsInput = {
+    id?: string
+    address: string
+    token0: string
+    token1: string
+    fee: number
+    liquidity?: string | null
+    tick?: number | null
+    sqrtPriceX96?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PoolCreateOrConnectWithoutSwapsInput = {
+    where: PoolWhereUniqueInput
+    create: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
+  }
+
+  export type PoolUpsertWithoutSwapsInput = {
+    update: XOR<PoolUpdateWithoutSwapsInput, PoolUncheckedUpdateWithoutSwapsInput>
+    create: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
+    where?: PoolWhereInput
+  }
+
+  export type PoolUpdateToOneWithWhereWithoutSwapsInput = {
+    where?: PoolWhereInput
+    data: XOR<PoolUpdateWithoutSwapsInput, PoolUncheckedUpdateWithoutSwapsInput>
+  }
+
+  export type PoolUpdateWithoutSwapsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    token0?: StringFieldUpdateOperationsInput | string
+    token1?: StringFieldUpdateOperationsInput | string
+    fee?: IntFieldUpdateOperationsInput | number
+    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
+    tick?: NullableIntFieldUpdateOperationsInput | number | null
+    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PoolUncheckedUpdateWithoutSwapsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    token0?: StringFieldUpdateOperationsInput | string
+    token1?: StringFieldUpdateOperationsInput | string
+    fee?: IntFieldUpdateOperationsInput | number
+    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
+    tick?: NullableIntFieldUpdateOperationsInput | number | null
+    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SwapCreateManyPoolInput = {
+    id?: string
+    sender: string
+    recipient: string
+    amount0: string
+    amount1: string
+    sqrtPriceX96: string
+    tick: number
+    transactionHash: string
+    logIndex: number
+    poolAddress: string
+    gasUsed: number
+    gasPrice: string
+    createdAt?: Date | string
+  }
+
+  export type SwapUpdateWithoutPoolInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SwapUncheckedUpdateWithoutPoolInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SwapUncheckedUpdateManyWithoutPoolInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    recipient?: StringFieldUpdateOperationsInput | string
+    amount0?: StringFieldUpdateOperationsInput | string
+    amount1?: StringFieldUpdateOperationsInput | string
+    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
+    tick?: IntFieldUpdateOperationsInput | number
+    transactionHash?: StringFieldUpdateOperationsInput | string
+    logIndex?: IntFieldUpdateOperationsInput | number
+    poolAddress?: StringFieldUpdateOperationsInput | string
+    gasUsed?: IntFieldUpdateOperationsInput | number
+    gasPrice?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
    * Aliases for legacy arg types
    */
     /**
+     * @deprecated Use PoolCountOutputTypeDefaultArgs instead
+     */
+    export type PoolCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PoolCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use PoolDefaultArgs instead
      */
     export type PoolArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PoolDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SwapDefaultArgs instead
+     */
+    export type SwapArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SwapDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use IndexerStateDefaultArgs instead
+     */
+    export type IndexerStateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = IndexerStateDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

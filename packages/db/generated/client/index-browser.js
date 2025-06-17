@@ -130,8 +130,32 @@ exports.Prisma.PoolScalarFieldEnum = {
   fee: 'fee',
   liquidity: 'liquidity',
   tick: 'tick',
+  sqrtPriceX96: 'sqrtPriceX96',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SwapScalarFieldEnum = {
+  id: 'id',
+  sender: 'sender',
+  recipient: 'recipient',
+  amount0: 'amount0',
+  amount1: 'amount1',
+  sqrtPriceX96: 'sqrtPriceX96',
+  tick: 'tick',
+  transactionHash: 'transactionHash',
+  logIndex: 'logIndex',
+  poolAddress: 'poolAddress',
+  poolId: 'poolId',
+  gasUsed: 'gasUsed',
+  gasPrice: 'gasPrice',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.IndexerStateScalarFieldEnum = {
+  id: 'id',
+  lastBlock: 'lastBlock',
+  lastUpdate: 'lastUpdate'
 };
 
 exports.Prisma.SortOrder = {
@@ -151,7 +175,9 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  Pool: 'Pool'
+  Pool: 'Pool',
+  Swap: 'Swap',
+  IndexerState: 'IndexerState'
 };
 
 /**

@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/client"
+  provider      = "prisma-client-js"
+  output        = "../generated/client"
   binaryTargets = ["native", "darwin-arm64"]
 }
 
@@ -11,15 +11,48 @@ datasource db {
 
 // Models
 model Pool {
-  id        String   @id @default(cuid())
-  address   String   @unique
-  token0    String
-  token1    String
-  fee       Int
-  liquidity String
-  tick      Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  address      String   @unique
+  token0       String
+  token1       String
+  fee          Int
+  liquidity    String?
+  tick         Int?
+  swaps        Swap[]
+  sqrtPriceX96 String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("pools")
+}
+
+model Swap {
+  id              String   @id @default(cuid())
+  sender          String
+  recipient       String
+  amount0         String
+  amount1         String
+  sqrtPriceX96    String
+  tick            Int
+  transactionHash String
+  logIndex        Int
+  poolAddress     String
+  poolId          String
+  pool            Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  gasUsed         Int
+  gasPrice        String
+  createdAt       DateTime @default(now())
+
+  @@unique([transactionHash, logIndex])
+  @@index([poolAddress, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("swaps")
+}
+
+model IndexerState {
+  id         String   @id @default("singleton")
+  lastBlock  BigInt   @default(0)
+  lastUpdate DateTime @default(now())
+
+  @@map("indexer_state")
 }
