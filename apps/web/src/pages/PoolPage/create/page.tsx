@@ -93,7 +93,6 @@ const CreatePoolPage: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState('∞');
   const [amountA, setAmountA] = useState<bigint>(0n);
   const [amountB, setAmountB] = useState<bigint>(0n);
-  const [lastChanged, setLastChanged] = useState<'A' | 'B' | null>(null);
 
   // Transaction states
   const [currentAction, setCurrentAction] = useState<'idle' | 'approving-a' | 'approving-b' | 'depositing'>('idle');
@@ -144,31 +143,45 @@ const CreatePoolPage: React.FC = () => {
 
   // Determine button state and action
   const buttonState = useMemo(() => {
-    if (!isConnected) return { text: 'Connect Wallet', action: 'connect', disabled: false };
-    if (!tokenA || !tokenB) return { text: 'Select tokens', action: 'none', disabled: true };
-    if (amountA === 0n || amountB === 0n) return { text: 'Enter amounts', action: 'none', disabled: true };
-    if (insufficientA) return { text: `Insufficient ${tokenA.symbol} balance`, action: 'none', disabled: true };
-    if (insufficientB) return { text: `Insufficient ${tokenB.symbol} balance`, action: 'none', disabled: true };
+    if (!isConnected) return { text: 'Connect Wallet', action: 'connect', disabled: false, loading: false };
+    if (!tokenA || !tokenB) return { text: 'Select tokens', action: 'none', disabled: true, loading: false };
+    if (amountA === 0n || amountB === 0n) return { text: 'Enter amounts', action: 'none', disabled: true, loading: false };
+    if (insufficientA) return { text: `Insufficient ${tokenA.symbol} balance`, action: 'none', disabled: true, loading: false };
+    if (insufficientB) return { text: `Insufficient ${tokenB.symbol} balance`, action: 'none', disabled: true, loading: false };
 
-    // Check current transaction state
+    // Approbation en cours
     if (currentAction === 'approving-a' && (isTransactionPending || isWaitingTx)) {
-      return { text: `Approving ${tokenA.symbol}...`, action: 'none', disabled: true };
+      return { text: `Approbation de ${tokenA.symbol}...`, action: 'none', disabled: true, loading: true };
     }
     if (currentAction === 'approving-b' && (isTransactionPending || isWaitingTx)) {
-      return { text: `Approving ${tokenB.symbol}...`, action: 'none', disabled: true };
+      return { text: `Approbation de ${tokenB.symbol}...`, action: 'none', disabled: true, loading: true };
     }
+    // Approbation succès
+    if (currentAction === 'approving-a' && isTxSuccess) {
+      if (needsApprovalB) {
+        return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
+      }
+      return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
+    }
+    if (currentAction === 'approving-b' && isTxSuccess) {
+      return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
+    }
+    // Dépôt en cours
     if (currentAction === 'depositing' && (isTransactionPending || isWaitingTx)) {
-      return { text: 'Depositing...', action: 'none', disabled: true };
+      return { text: 'Dépôt en cours...', action: 'none', disabled: true, loading: true };
     }
+    // Dépôt succès
+    if (currentAction === 'depositing' && isTxSuccess) {
+      return { text: 'Déposé !', action: 'none', disabled: true, loading: false };
+    }
+    // Approbation nécessaire
+    if (needsApprovalA) return { text: `Approve ${tokenA.symbol}`, action: 'approve-a', disabled: false, loading: false };
+    if (needsApprovalB) return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
 
-    // Check approval needs
-    if (needsApprovalA) return { text: `Approve ${tokenA.symbol}`, action: 'approve-a', disabled: false };
-    if (needsApprovalB) return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false };
-
-    return { text: 'Deposit Liquidity', action: 'deposit', disabled: false };
+    return { text: 'Deposit Liquidity', action: 'deposit', disabled: false, loading: false };
   }, [
     isConnected, tokenA, tokenB, amountA, amountB, insufficientA, insufficientB,
-    needsApprovalA, needsApprovalB, currentAction, isTransactionPending, isWaitingTx
+    needsApprovalA, needsApprovalB, currentAction, isTransactionPending, isWaitingTx, isTxSuccess
   ]);
 
   // Token selection handlers
@@ -189,7 +202,6 @@ const CreatePoolPage: React.FC = () => {
   // Amount change handlers with automatic ratio calculation
   const handleAmountAChange = useCallback((amount: bigint) => {
     setAmountA(amount);
-    setLastChanged('A');
     if (tokenA && tokenB && priceA !== undefined && priceB !== undefined && amount > 0n) {
       const amountAFloat = parseFloat(formatUnits(amount, tokenA.decimals));
       const usdValue = amountAFloat * priceA;
@@ -203,7 +215,6 @@ const CreatePoolPage: React.FC = () => {
 
   const handleAmountBChange = useCallback((amount: bigint) => {
     setAmountB(amount);
-    setLastChanged('B');
     if (tokenA && tokenB && priceA !== undefined && priceB !== undefined && amount > 0n) {
       const amountBFloat = parseFloat(formatUnits(amount, tokenB.decimals));
       const usdValue = amountBFloat * priceB;
@@ -227,10 +238,9 @@ const CreatePoolPage: React.FC = () => {
     }, {
       onSuccess: () => {
         refetchAllowanceA();
-        setCurrentAction('idle');
       },
       onError: () => {
-        setCurrentAction('idle');
+        // Optionnel : gérer l'erreur ici
       }
     });
   }, [tokenA, amountA, writeContract, refetchAllowanceA]);
@@ -247,10 +257,9 @@ const CreatePoolPage: React.FC = () => {
     }, {
       onSuccess: () => {
         refetchAllowanceB();
-        setCurrentAction('idle');
       },
       onError: () => {
-        setCurrentAction('idle');
+        // Optionnel : gérer l'erreur ici
       }
     });
   }, [tokenB, amountB, writeContract, refetchAllowanceB]);
@@ -340,17 +349,35 @@ const CreatePoolPage: React.FC = () => {
     }
   }, [isTxSuccess, currentAction, navigate]);
 
+  // Ajout d'un useEffect pour remettre currentAction à 'idle' après confirmation on-chain d'une approbation
+  useEffect(() => {
+    if ((currentAction === 'approving-a' || currentAction === 'approving-b') && isTxSuccess) {
+      if (currentAction === 'approving-a') {
+        refetchAllowanceA();
+      }
+      if (currentAction === 'approving-b') {
+        refetchAllowanceB();
+      }
+      setCurrentAction('idle');
+    }
+  }, [isTxSuccess, currentAction, refetchAllowanceA, refetchAllowanceB]);
+
   return (
     <div className="PoolPage PoolPage--create">
-      {/* Timeline */}
-      <div className="PoolPage__Timeline">
-        <div className={`PoolPage__Step${currentStep === 1 ? ' PoolPage__Step--active' : ''}`}>
-          <div className="PoolPage__StepNum">1</div>
-          <div className="PoolPage__StepLabel">Select token pair and fees</div>
+      <div className="PoolPage__CreateHeader">
+        <div className="PoolPage__Header">
+          <h2 className="PoolPage__Title">New position</h2>
         </div>
-        <div className={`PoolPage__Step${currentStep === 2 ? ' PoolPage__Step--active' : ' PoolPage__Step--next'}`}>
-          <div className="PoolPage__StepNum">2</div>
-          <div className="PoolPage__StepLabel">Set price range and deposit amounts</div>
+        {/* Timeline */}
+        <div className="PoolPage__Timeline">
+          <div className={`PoolPage__Step${currentStep === 1 ? ' PoolPage__Step--active' : ''}`}>
+            <div className="PoolPage__StepNum">1</div>
+            <div className="PoolPage__StepLabel">Select token pair and fees</div>
+          </div>
+          <div className={`PoolPage__Step${currentStep === 2 ? ' PoolPage__Step--active' : ' PoolPage__Step--next'}`}>
+            <div className="PoolPage__StepNum">2</div>
+            <div className="PoolPage__StepLabel">Set price range and deposit amounts</div>
+          </div>
         </div>
       </div>
 
@@ -358,9 +385,6 @@ const CreatePoolPage: React.FC = () => {
       <div className="PoolPage__CreateContent">
         {currentStep === 1 && (
           <>
-            <div className="PoolPage__Header">
-              <h2 className="PoolPage__Title">New position</h2>
-            </div>
 
             <div className="PoolPage__CreateSection">
               <h3 className="PoolPage__CreateSectionTitle">Select pair</h3>
@@ -520,7 +544,7 @@ const CreatePoolPage: React.FC = () => {
                   disabled={buttonState.disabled}
                   onClick={handleMainAction}
                 >
-                  {(currentAction === 'approving-a' || currentAction === 'approving-b' || currentAction === 'depositing') && (isTransactionPending || isWaitingTx) && (
+                  {buttonState.loading && (
                     <Loader className="PoolPage__ContinueBtnLoader" />
                   )}
                   {buttonState.text}

@@ -13,12 +13,14 @@ interface NetworkSelectorProps {
   secondaryColor?: string;
   minimized?: boolean;
   isHomePage?: boolean;
+  onForceOpen?: () => void;
 }
 
 const TokenSelector: React.FC<NetworkSelectorProps> = ({
   preSelected,
   onSelect,
   onToggleNetworkList,
+  onForceOpen,
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
@@ -35,7 +37,10 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
     if (onToggleNetworkList) {
       onToggleNetworkList(newState);
     }
-  }, [isNetworksListOpen, onToggleNetworkList]);
+    if (onForceOpen && !isNetworksListOpen) {
+      onForceOpen();
+    }
+  }, [isNetworksListOpen, onToggleNetworkList, onForceOpen]);
 
   const handleTokenSelect = useCallback((token: BerachainToken) => {
     setSelectedToken(token);

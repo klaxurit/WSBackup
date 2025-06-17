@@ -10,6 +10,9 @@ import { useTest } from "../../hooks/useTest";
 import { useSwap } from "../../hooks/useSwap";
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
+import { usePrice } from '../../hooks/usePrice';
+import { formatEther, parseEther } from "viem";
+import { TokenList } from '../TokenList/TokenList';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -28,7 +31,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
   }) => {
     const { mint } = useTest()
     const { isConnected } = useAccount()
-
     const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
@@ -41,6 +43,11 @@ const SwapForm: React.FC<FormProps> = React.memo(
       isAuto: true,
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
+    const [editing, setEditing] = useState<'from' | 'to' | null>(null);
+    const { data: priceFrom = 0 } = usePrice(fromToken);
+    const { data: priceTo = 0 } = usePrice(toToken);
+    const [fromTokenListOpen, setFromTokenListOpen] = useState(false);
+    const [toTokenListOpen, setToTokenListOpen] = useState(false);
 
     const swap = useSwap({
       tokenIn: fromToken?.address || zeroAddress,
@@ -59,8 +66,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleSwitchTokens = () => {
       setFromToken(toToken);
       setToToken(fromToken);
-      setFromAmount(0n);
-      setToAmount(0n);
+      setFromAmount(toAmount);
+      setToAmount(fromAmount);
+      setEditing(null);
     };
 
     const updateSlippage = (e: ChangeEvent<HTMLInputElement>) => {
@@ -109,10 +117,10 @@ const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut) {
+      if (swap?.quote?.amountOut && editing !== 'to') {
         setToAmount(swap.quote.amountOut)
       }
-    }, [swap.quote])
+    }, [swap.quote, editing])
 
     useEffect(() => {
       if (swap.status === "success") {
@@ -124,6 +132,24 @@ const SwapForm: React.FC<FormProps> = React.memo(
         }, 3000)
       }
     }, [swap.status])
+
+    const handleFromAmountChange = (amount: bigint) => {
+      setEditing('from');
+      setFromAmount(amount);
+      // Le hook useSwap s'occupe de mettre à jour toAmount via la quote
+    };
+
+    const handleToAmountChange = (amount: bigint) => {
+      setEditing('to');
+      setToAmount(amount);
+      // Synchronisation : on recalcule fromAmount pour que la valeur USD soit identique
+      if (priceFrom && priceTo && toToken && fromToken) {
+        const toAmountFloat = parseFloat(formatEther(amount));
+        const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
+        const fromAmountWei = parseEther(fromAmountFloat.toFixed(fromToken.decimals));
+        setFromAmount(fromAmountWei);
+      }
+    };
 
     return (
       <div
@@ -163,11 +189,14 @@ const SwapForm: React.FC<FormProps> = React.memo(
             <FromInput
               selectedToken={fromToken}
               onTokenSelect={setFromToken}
-              onAmountChange={setFromAmount}
+              onAmountChange={handleFromAmountChange}
               value={fromAmount}
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
+              disabled={!fromToken}
+              onInputClick={() => setFromTokenListOpen(true)}
+              onBlur={() => setEditing(null)}
             />
             <Divider
               dominantColor={dominantColor}
@@ -179,10 +208,13 @@ const SwapForm: React.FC<FormProps> = React.memo(
               preSelected={toToken}
               onSelect={setToToken}
               inputValue={toAmount}
-              onInputChange={setToAmount}
+              onInputChange={handleToAmountChange}
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
+              disabled={!toToken}
+              onInputClick={() => setToTokenListOpen(true)}
+              onBlur={() => setEditing(null)}
             />
           </div>
           <div className="Form__ConnectBtnWrapper">
@@ -213,6 +245,28 @@ const SwapForm: React.FC<FormProps> = React.memo(
           outputAmount={toAmount}
           swap={swap}
         />
+        {fromTokenListOpen && (
+          <TokenList
+            isOpen={fromTokenListOpen}
+            onClose={() => setFromTokenListOpen(false)}
+            onSelect={(token) => {
+              setFromToken(token);
+              setFromTokenListOpen(false);
+            }}
+            selectedToken={fromToken}
+          />
+        )}
+        {toTokenListOpen && (
+          <TokenList
+            isOpen={toTokenListOpen}
+            onClose={() => setToTokenListOpen(false)}
+            onSelect={(token) => {
+              setToToken(token);
+              setToTokenListOpen(false);
+            }}
+            selectedToken={toToken}
+          />
+        )}
       </div >
     );
   },

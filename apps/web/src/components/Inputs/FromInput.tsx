@@ -22,6 +22,8 @@ interface FromInputProps {
   defaultValue?: number;
   value: bigint;
   showLabel?: boolean;
+  onInputClick?: () => void;
+  onBlur?: () => void;
 }
 
 export const FromInput: React.FC<FromInputProps> = (
@@ -37,6 +39,8 @@ export const FromInput: React.FC<FromInputProps> = (
     onTokenSelect,
     value,
     showLabel = true,
+    onInputClick,
+    onBlur,
   }) => {
   const { address } = useAccount()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -55,6 +59,34 @@ export const FromInput: React.FC<FromInputProps> = (
   }, [usdValue, value])
 
   const isOverBalance = useMemo(() => (value > (balance?.value || 0n)), [value, balance])
+
+  const [inputValue, setInputValue] = React.useState('');
+  const isInputting = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!isInputting.current) {
+      setInputValue(value === 0n ? '' : formatEther(value));
+    }
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+    isInputting.current = true;
+
+    if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
+      try {
+        onAmountChange(parseEther(val));
+      } catch { }
+    } else if (val === '') {
+      onAmountChange(0n);
+    }
+  };
+
+  const handleBlur = () => {
+    isInputting.current = false;
+    setInputValue(value === 0n ? '' : formatEther(value));
+  };
 
   const setMax = () => {
     if (inputRef.current) {
@@ -80,16 +112,17 @@ export const FromInput: React.FC<FromInputProps> = (
             type="text"
             inputMode="decimal"
             placeholder="0"
-            value={value === 0n ? '' : formatEther(value)}
-            onChange={(e) => onAmountChange(parseEther(e.target.value || '0'))}
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={() => { handleBlur(); if (typeof onBlur === 'function') onBlur(); }}
             min={0}
             style={{ color: isOverBalance ? '#FF7456' : undefined }}
+            readOnly={disabled}
+            onClick={disabled ? onInputClick : undefined}
           />
         </div>
         <div className="From__LogosAndBalance">
-          <div
-            className={`From__Logos ${disabled ? "From__disabled" : ""}`}
-          >
+          <div className={`From__Logos${disabled ? " From__disabled" : ""}`}>
             <TokenSelector
               preSelected={selectedToken}
               onToggleNetworkList={onToggleNetworkList}
@@ -98,6 +131,7 @@ export const FromInput: React.FC<FromInputProps> = (
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               onSelect={onTokenSelect}
+              onForceOpen={onInputClick}
             />
           </div>
         </div>
