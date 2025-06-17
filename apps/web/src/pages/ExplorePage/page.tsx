@@ -4,7 +4,6 @@ import type { TableColumn } from '../../components/Table/Table';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import MiniChart from '../../components/Charts/MiniChart';
 import type { MiniChartPoint } from '../../components/Charts/MiniChart';
-import { useTokens } from '../../hooks/useBerachainTokenList';
 import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { usePrice } from '../../hooks/usePrice';

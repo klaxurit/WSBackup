@@ -18,6 +18,9 @@ interface ToInputProps {
   isOverBalance?: boolean;
   inputValue: bigint;
   onInputChange: (value: bigint) => void;
+  disabled?: boolean;
+  onInputClick?: () => void;
+  onBlur?: () => void;
 }
 
 export const SwapToInput: React.FC<ToInputProps> = React.memo(
@@ -30,6 +33,9 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     isHomePage,
     inputValue,
     onInputChange,
+    disabled = false,
+    onInputClick,
+    onBlur,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
     const { address } = useAccount()
@@ -61,6 +67,9 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
               type="number"
               placeholder="0"
               onChange={e => onInputChange(parseEther(e.target.value))}
+              readOnly={disabled}
+              onClick={disabled ? onInputClick : undefined}
+              onBlur={onBlur}
             />
           </div>
           <div className="From__LogosAndBalance">

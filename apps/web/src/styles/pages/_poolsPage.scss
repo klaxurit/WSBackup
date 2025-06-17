@@ -223,6 +223,12 @@
     gap: 16px;
   }
 
+  .PoolPage__CreateHeader {
+    padding: 32px 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
   .PoolPage__Timeline {
     min-width: 180px;
     display: flex;
@@ -287,7 +293,7 @@
     flex: 1;
     background: none;
     border-radius: 16px;
-    padding: 32px 24px 24px 24px;
+    padding: 32px 12px 12px 12px;
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -406,9 +412,12 @@
   .PoolPage__CreateFooter {
     display: flex;
     justify-content: flex-end;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .PoolPage__ContinueBtn {
+    justify-content: center;
     padding: 12px 32px;
     border-radius: 10px;
     background: var(--accent1, #e39229);
@@ -418,6 +427,7 @@
     font-size: 1.1rem;
     cursor: pointer;
     transition: background 0.18s;
+    width: 100%;
 
     &:hover {
       background: #b97a1c;
