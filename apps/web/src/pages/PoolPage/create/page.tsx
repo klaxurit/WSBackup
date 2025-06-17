@@ -8,6 +8,7 @@ import { ConnectButton } from '../../../components/Buttons/ConnectButton';
 import '../../../styles/pages/_poolsPage.scss';
 import { useNavigate } from 'react-router-dom';
 import { Loader } from '../../../components/Loader/Loader';
+import { usePrice } from '../../../hooks/usePrice';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -92,6 +93,7 @@ const CreatePoolPage: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState('∞');
   const [amountA, setAmountA] = useState<bigint>(0n);
   const [amountB, setAmountB] = useState<bigint>(0n);
+  const [lastChanged, setLastChanged] = useState<'A' | 'B' | null>(null);
 
   // Transaction states
   const [currentAction, setCurrentAction] = useState<'idle' | 'approving-a' | 'approving-b' | 'depositing'>('idle');
@@ -103,14 +105,6 @@ const CreatePoolPage: React.FC = () => {
 
   // Get selected fee tier details
   const selectedFeeTier = feeTiers.find(tier => tier.value === selectedFee);
-
-  // Mock market price
-  const marketPrice = useMemo(() => {
-    if (tokenA?.symbol === 'ETH' && tokenB?.symbol === 'USDC') return 2680.06;
-    if (tokenA?.symbol === 'mBera' && tokenB?.symbol === 'mHoney') return 2.7;
-    if (tokenA?.symbol === 'mHoney' && tokenB?.symbol === 'mBera') return 1 / 2.7;
-    return 1.0;
-  }, [tokenA, tokenB]);
 
   // Get token balances
   const { data: balanceA } = useBalance({
@@ -188,42 +182,38 @@ const CreatePoolPage: React.FC = () => {
     if (tokenA && tokenA.symbol === token.symbol) setTokenA(null);
   }, [tokenA]);
 
+  // Ajout des hooks de prix AVANT les handlers
+  const { data: priceA } = usePrice(tokenA);
+  const { data: priceB } = usePrice(tokenB);
+
   // Amount change handlers with automatic ratio calculation
   const handleAmountAChange = useCallback((amount: bigint) => {
     setAmountA(amount);
-
-    // Auto-calculate amount B based on market price
-    if (amount > 0n && tokenA && tokenB && marketPrice !== 1.0) {
-      try {
-        const amountAFloat = parseFloat(formatUnits(amount, tokenA.decimals));
-        const calculatedBFloat = amountAFloat * marketPrice;
-        const calculatedB = parseUnits(calculatedBFloat.toFixed(tokenB.decimals), tokenB.decimals);
-        setAmountB(calculatedB);
-      } catch (error) {
-        console.warn('Failed to calculate amount B:', error);
-      }
+    setLastChanged('A');
+    if (tokenA && tokenB && priceA !== undefined && priceB !== undefined && amount > 0n) {
+      const amountAFloat = parseFloat(formatUnits(amount, tokenA.decimals));
+      const usdValue = amountAFloat * priceA;
+      const amountBFloat = usdValue / priceB;
+      const amountB = parseUnits(amountBFloat.toFixed(Math.min(tokenB.decimals, 8)), tokenB.decimals);
+      setAmountB(amountB);
     } else if (amount === 0n) {
       setAmountB(0n);
     }
-  }, [tokenA, tokenB, marketPrice]);
+  }, [tokenA, tokenB, priceA, priceB]);
 
   const handleAmountBChange = useCallback((amount: bigint) => {
     setAmountB(amount);
-
-    // Auto-calculate amount A based on market price
-    if (amount > 0n && tokenA && tokenB && marketPrice !== 1.0) {
-      try {
-        const amountBFloat = parseFloat(formatUnits(amount, tokenB.decimals));
-        const calculatedAFloat = amountBFloat / marketPrice;
-        const calculatedA = parseUnits(calculatedAFloat.toFixed(tokenA.decimals), tokenA.decimals);
-        setAmountA(calculatedA);
-      } catch (error) {
-        console.warn('Failed to calculate amount A:', error);
-      }
+    setLastChanged('B');
+    if (tokenA && tokenB && priceA !== undefined && priceB !== undefined && amount > 0n) {
+      const amountBFloat = parseFloat(formatUnits(amount, tokenB.decimals));
+      const usdValue = amountBFloat * priceB;
+      const amountAFloat = usdValue / priceA;
+      const amountA = parseUnits(amountAFloat.toFixed(Math.min(tokenA.decimals, 8)), tokenA.decimals);
+      setAmountA(amountA);
     } else if (amount === 0n) {
       setAmountA(0n);
     }
-  }, [tokenA, tokenB, marketPrice]);
+  }, [tokenA, tokenB, priceA, priceB]);
 
   // Approve token A
   const approveTokenA = useCallback(() => {
@@ -451,9 +441,9 @@ const CreatePoolPage: React.FC = () => {
                 <div className="PoolPage__PriceRow">
                   <span className="PoolPage__PriceLabel">Market price:</span>
                   <span className="PoolPage__PriceValue">
-                    {marketPrice.toLocaleString()} {tokenB?.symbol} = 1 {tokenA?.symbol}
+                    {priceA !== undefined ? priceA.toLocaleString() : '-'} {tokenB?.symbol} = 1 {tokenA?.symbol}
                     <span style={{ color: '#888', marginLeft: 8 }}>
-                      ${marketPrice.toLocaleString()}
+                      {priceA !== undefined ? `$${priceA.toLocaleString()}` : '-'}
                     </span>
                   </span>
                 </div>
