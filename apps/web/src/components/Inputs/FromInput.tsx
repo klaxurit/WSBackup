@@ -80,7 +80,8 @@ export const FromInput: React.FC<FromInputProps> = (
             type="text"
             inputMode="decimal"
             placeholder="0"
-            onChange={(e) => onAmountChange(parseEther(e.target.value))}
+            value={value === 0n ? '' : formatEther(value)}
+            onChange={(e) => onAmountChange(parseEther(e.target.value || '0'))}
             min={0}
             style={{ color: isOverBalance ? '#FF7456' : undefined }}
           />
