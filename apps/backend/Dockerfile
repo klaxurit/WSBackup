@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:20 AS base
 RUN npm install -g pnpm@latest
 RUN apk add --no-cache libc6-compat openssl python3
 ENV PNPM_HOME="/pnpm"
@@ -28,7 +28,7 @@ RUN if [ -f "packages/db/prisma/schema.prisma" ]; then \
     fi
 RUN turbo build --filter=@repo/backend
 
-FROM node:20-alpine AS runner
+FROM node:20 AS runner
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 WORKDIR /app
