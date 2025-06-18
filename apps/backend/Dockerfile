@@ -42,5 +42,5 @@ COPY --from=builder --chown=nestjs:nodejs /app/packages ./packages
 USER nestjs
 EXPOSE 3000
 
-WORKDIR /app/apps/backend
-CMD ["node", "dist/main.js"]
+WORKDIR /app
+CMD ["node", "apps/backend/dist/main.js"]
