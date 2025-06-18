@@ -1,5 +1,6 @@
 @use 'utils' as *;
 @use 'layout/default';
+@use 'layout/swapPageLayout';
 // @use 'layout/grid';
 // @use 'layout/containers';
 
@@ -29,6 +30,7 @@
 @use 'components/common/walletConnect';
 @use 'components/common/networkItem';
 @use 'components/common/modal';
+@use 'components/common/swapBanner';
 
 @use 'components/tables/table';
 @use 'components/tables/simpleChart';
