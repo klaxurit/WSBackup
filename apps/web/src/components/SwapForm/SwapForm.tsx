@@ -1,19 +1,19 @@
 // src/components/SwapForm/SwapForm.tsx (version adaptée)
 import React, { useMemo, useState, useEffect, type ChangeEvent } from "react";
-import { FromInput } from "../Inputs/FromInput";
-import { ConnectButton } from "../../components/Buttons/ConnectButton";
-import { Divider } from "../Inputs/Divider";
+import { ConnectButton } from '../Buttons/ConnectButton';
+import { FromInput } from '../Inputs/FromInput';
+import { SwapToInput } from '../Inputs/SwapToInput';
+import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
-import { SwapToInput } from "../Inputs/SwapToInput";
-import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
-import { useTest } from "../../hooks/useTest";
-import { useSwap } from "../../hooks/useSwap";
+import { useTest } from '../../hooks/useTest';
+import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
 import { usePrice } from '../../hooks/usePrice';
 import { formatEther, parseEther } from "viem";
-import { TokenList } from '../TokenList/TokenList';
+import { usePoolAddress } from '../../hooks/usePoolAddress';
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -51,8 +51,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
     const { data: priceFrom = 0 } = usePrice(fromToken);
     const { data: priceTo = 0 } = usePrice(toToken);
-    const [fromTokenListOpen, setFromTokenListOpen] = useState(false);
-    const [toTokenListOpen, setToTokenListOpen] = useState(false);
+    const [fromTokenListOpen, setFromTokenListOpen] = useState<boolean>(false);
+    const [toTokenListOpen, setToTokenListOpen] = useState<boolean>(false);
 
     const swap = useSwap({
       tokenIn: fromToken?.address || zeroAddress,
@@ -61,6 +61,11 @@ const SwapForm: React.FC<FormProps> = React.memo(
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
     })
+
+    const { poolAddress } = usePoolAddress(
+      fromToken?.address,
+      toToken?.address
+    );
 
     const handleOpenModal = () => {
       setShowModal(true);
@@ -140,17 +145,18 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     useEffect(() => {
       if (onPoolChange) {
-        // On tente de récupérer l'adresse de la pool principale de la route sélectionnée
-        let poolAddress: string | null = null;
-        if (swap.selectedRoute && swap.selectedRoute.pools && swap.selectedRoute.pools.length > 0) {
-          // On doit retrouver l'adresse de la pool à partir des tokens et du fee
-          // Malheureusement PoolInfo ne contient pas l'adresse, donc on ne peut pas la transmettre ici
-          // On transmet null, le parent pourra fallback sur la pool par défaut
-          poolAddress = null;
-        }
-        onPoolChange(poolAddress, fromToken, toToken);
+        // Utiliser l'adresse de la pool récupérée par usePoolAddress
+        const poolAddressStr = poolAddress ? poolAddress : null;
+        onPoolChange(poolAddressStr, fromToken, toToken);
       }
-    }, [swap.selectedRoute, fromToken, toToken, onPoolChange]);
+    }, [poolAddress, fromToken, toToken, onPoolChange]);
+
+    useEffect(() => {
+      if (poolAddress) {
+        console.log('[SwapForm] Pool Address:', poolAddress);
+        // Ici vous pourrez mettre à jour l'iframe avec la nouvelle adresse de pool
+      }
+    }, [poolAddress]);
 
     const handleFromAmountChange = (amount: bigint) => {
       setEditing('from');
@@ -226,6 +232,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               isHomePage={isHomePage}
               disabled={!fromToken}
               onInputClick={() => setFromTokenListOpen(true)}
+              isListOpen={fromTokenListOpen}
               onBlur={() => setEditing(null)}
             />
             <Divider
@@ -245,6 +252,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               disabled={!toToken}
               onInputClick={() => setToTokenListOpen(true)}
               onBlur={() => setEditing(null)}
+              isListOpen={toTokenListOpen}
             />
           </div>
 
@@ -288,30 +296,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
           outputAmount={toAmount}
           swap={swap}
         />
-
-        {fromTokenListOpen && (
-          <TokenList
-            isOpen={fromTokenListOpen}
-            onClose={() => setFromTokenListOpen(false)}
-            onSelect={(token) => {
-              setFromToken(token);
-              setFromTokenListOpen(false);
-            }}
-            selectedToken={fromToken}
-          />
-        )}
-
-        {toTokenListOpen && (
-          <TokenList
-            isOpen={toTokenListOpen}
-            onClose={() => setToTokenListOpen(false)}
-            onSelect={(token) => {
-              setToToken(token);
-              setToTokenListOpen(false);
-            }}
-            selectedToken={toToken}
-          />
-        )}
       </div >
     );
   },

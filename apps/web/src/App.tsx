@@ -26,7 +26,6 @@ function App() {
               <div className="swap-page">
                 <SwapPageLayout
                   onToggleSidebar={toggleSidebar}
-                  bannerImage="/path/to/your/banner-image.jpg" // Optionnel
                 />
                 {isSidebarOpen && <WalletConnect />}
               </div>

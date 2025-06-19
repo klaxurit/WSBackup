@@ -24,6 +24,7 @@ interface FromInputProps {
   showLabel?: boolean;
   onInputClick?: () => void;
   onBlur?: () => void;
+  isListOpen?: boolean;
 }
 
 export const FromInput: React.FC<FromInputProps> = (
@@ -41,6 +42,7 @@ export const FromInput: React.FC<FromInputProps> = (
     showLabel = true,
     onInputClick,
     onBlur,
+    isListOpen,
   }) => {
   const { address } = useAccount()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -118,7 +120,12 @@ export const FromInput: React.FC<FromInputProps> = (
             min={0}
             style={{ color: isOverBalance ? '#FF7456' : undefined }}
             readOnly={disabled}
-            onClick={disabled ? onInputClick : undefined}
+            onClick={(e) => {
+              if (disabled && onInputClick) {
+                e.stopPropagation();
+                onInputClick();
+              }
+            }}
           />
         </div>
         <div className="From__LogosAndBalance">
@@ -132,6 +139,7 @@ export const FromInput: React.FC<FromInputProps> = (
               isHomePage={isHomePage}
               onSelect={onTokenSelect}
               onForceOpen={onInputClick}
+              forceListOpen={isListOpen}
             />
           </div>
         </div>

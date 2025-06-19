@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LayoutUtils } from '../utils/layoutUtils';
+import { LayoutUtils } from '../utils/layout';
 
 interface ResponsiveLayout {
   isMobile: boolean;
