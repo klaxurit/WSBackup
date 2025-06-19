@@ -24,7 +24,7 @@ export const PoolsTable = () => {
           className="Table__Address"
           title={row.address}
         >
-          {row.address.slice(0, 4) + '...' + row.address.slice(-4)}
+          {row.token0.symbol + '/' + row.token1.symbol}
         </a>)
     },
     {
@@ -39,7 +39,7 @@ export const PoolsTable = () => {
       )
     },
     // { label: 'Protocol', key: 'protocol' },
-    { label: 'Fee Tier', key: 'fee' },
+    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.fee / 10000}%`) },
     { label: 'TVL', key: 'liquidity', render: (row) => (formatEther(row.liquidity || "0")) },
     { label: 'Pool APR', key: 'apr' },
     { label: 'Reward APR', key: 'rewardApr' },
