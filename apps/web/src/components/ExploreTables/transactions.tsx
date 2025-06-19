@@ -7,7 +7,7 @@ export const TransactionsTable = () => {
   const { data: txs = [], isLoading } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch('http://localhost:3000/indexer/swaps')
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`)
       if (!resp.ok) return []
 
       return resp.json()

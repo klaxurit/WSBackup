@@ -6,7 +6,7 @@ export const TokensTable = () => {
   const { data: tokens = [], isLoading } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const resp = await fetch('http://localhost:3000/indexer/tokens')
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/tokens`)
       if (!resp.ok) return []
 
       return resp.json()

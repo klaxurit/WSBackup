@@ -7,7 +7,7 @@ export const PoolsTable = () => {
   const { data: pools = [], isLoading } = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
-      const resp = await fetch('http://localhost:3000/indexer/pools')
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/pools`)
       if (!resp.ok) return []
 
       return resp.json()
