@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DatabaseService } from 'src/database/database.service';
+import { JsonTokenDto } from '../dto/jsonToken.dto';
+import { Prisma } from '@repo/db';
 
 @Injectable()
 export class TokensTrackerService {
@@ -54,6 +56,14 @@ export class TokensTrackerService {
 
   async getToken(address: string) {
     return await this.databaseService.token.findFirst({ where: { address } });
+  }
+
+  async create(data: Prisma.TokenCreateInput) {
+    return await this.databaseService.token.create({
+      data: {
+        ...data,
+      },
+    });
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

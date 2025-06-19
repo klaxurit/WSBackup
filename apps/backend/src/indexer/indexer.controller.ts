@@ -14,6 +14,7 @@ import { ReorgHandlerService } from './services/reorg-handler.service';
 import { Address } from 'viem';
 import { DatabaseService } from 'src/database/database.service';
 import { TokensTrackerService } from './services/tokens.service';
+import { JsonTokenDto } from './dto/jsonToken.dto';
 
 @Controller('indexer')
 export class IndexerController {
@@ -138,6 +139,11 @@ export class IndexerController {
   @Get('tokens')
   async getTokens() {
     return await this.tokenService.getAllTokens();
+  }
+
+  @Post('tokens')
+  async createToken(@Body() jsonTokenDto: JsonTokenDto) {
+    return await this.tokenService.create(jsonTokenDto);
   }
 
   @Post('reorg/:fromBlock')
