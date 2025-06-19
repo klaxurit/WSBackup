@@ -174,6 +174,7 @@ export class IndexerService implements OnModuleInit {
           ? targetBlock
           : batchStart + this.batchSize - 1n;
 
+      await this.poolTracker.trackNewPools(batchStart, batchEnd);
       await this.processBatchBlocks(batchStart, batchEnd);
       this.lastProcessedBlock = batchEnd;
 
