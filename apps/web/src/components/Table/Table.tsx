@@ -16,6 +16,7 @@ interface TableProps<T = any> {
   wrapperClassName?: string;
   scrollClassName?: string;
   getRowClassName?: (row: T, rowIndex: number) => string;
+  isLoading?: boolean;
 }
 
 export function Table<T = any>({
@@ -27,6 +28,7 @@ export function Table<T = any>({
   wrapperClassName = 'TokenTxTable__Wrapper',
   scrollClassName = 'TokenTxTable__Scroll',
   getRowClassName,
+  isLoading = false,
 }: TableProps<T>) {
   return (
     <div className={`${wrapperClassName} ${className}`.trim()}>
@@ -40,7 +42,11 @@ export function Table<T = any>({
             </tr>
           </thead>
           <tbody>
-            {data.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={columns.length} className="TokenTxTable__Empty">Loading...</td>
+              </tr>
+            ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="TokenTxTable__Empty">{emptyMessage}</td>
               </tr>

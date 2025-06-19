@@ -48,6 +48,7 @@ export const TokensTable = () => {
     <Table
       columns={columns}
       data={tokens}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"

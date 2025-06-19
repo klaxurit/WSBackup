@@ -13,7 +13,7 @@ export const TransactionsTable = () => {
       return resp.json()
     },
     select: (data) => {
-      return data.map((s) => {
+      return data.map((s: any) => {
         if (s.amount0 > 0n) {
           // A -> B
           return {
@@ -65,9 +65,7 @@ export const TransactionsTable = () => {
       ),
     },
     {
-      label: 'USD', key: 'usd', render: (row) => {
-        return 0
-      }
+      label: 'USD', key: 'usd'
     },
     {
       label: 'Token amount (sent)',
@@ -110,6 +108,7 @@ export const TransactionsTable = () => {
     <Table
       columns={txColumns}
       data={txs}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"

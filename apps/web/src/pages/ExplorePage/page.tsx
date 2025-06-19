@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import Table from '../../components/Table/Table';
-import type { TableColumn } from '../../components/Table/Table';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
-import MiniChart from '../../components/Charts/MiniChart';
-import type { MiniChartPoint } from '../../components/Charts/MiniChart';
 import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
-import { FallbackImg } from '../../components/utils/FallbackImg';
-import { usePrice } from '../../hooks/usePrice';
 import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
@@ -23,6 +17,8 @@ const ExplorePage: React.FC = () => {
   const filteredTokens = search
     ? BERACHAIN_TOKENS.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
     : BERACHAIN_TOKENS;
+
+  console.log(filteredTokens)
 
   return (
     <div className="ExplorePage">

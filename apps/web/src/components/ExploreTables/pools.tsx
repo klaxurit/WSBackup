@@ -52,6 +52,7 @@ export const PoolsTable = () => {
     <Table
       columns={columns}
       data={pools}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
