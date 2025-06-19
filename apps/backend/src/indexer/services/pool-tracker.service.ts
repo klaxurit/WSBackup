@@ -3,7 +3,7 @@ import { DatabaseService } from '../../database/database.service';
 import { BlockchainService } from './blockchain.service';
 import { Address, decodeEventLog, getContract, Log, parseAbiItem } from 'viem';
 import { UNISWAP_V3_FACTORY_ABI, UNISWAP_V3_POOL_ABI } from '../constants/abis';
-import { Pool } from '@repo/db';
+import { Pool, Prisma } from '@repo/db';
 import { TokensTrackerService } from './tokens.service';
 
 @Injectable()
@@ -20,8 +20,8 @@ export class PoolTrackerService {
       '0x000') as Address;
   }
 
-  async getAllTrackedPools(): Promise<Pool[]> {
-    return await this.databaseService.pool.findMany();
+  async getAllTrackedPools(args?: Prisma.PoolFindManyArgs): Promise<Pool[]> {
+    return await this.databaseService.pool.findMany(args);
   }
 
   async trackNewPools(fromBlock: bigint, toBlock: bigint): Promise<void> {
