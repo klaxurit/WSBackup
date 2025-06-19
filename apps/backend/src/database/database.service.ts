@@ -22,6 +22,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return prisma.swap;
   }
 
+  get token() {
+    return prisma.token;
+  }
+
   get client() {
     return prisma;
   }

@@ -125,8 +125,8 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.PoolScalarFieldEnum = {
   id: 'id',
   address: 'address',
-  token0: 'token0',
-  token1: 'token1',
+  token0Id: 'token0Id',
+  token1Id: 'token1Id',
   fee: 'fee',
   liquidity: 'liquidity',
   tick: 'tick',
@@ -158,6 +158,17 @@ exports.Prisma.IndexerStateScalarFieldEnum = {
   lastUpdate: 'lastUpdate'
 };
 
+exports.Prisma.TokenScalarFieldEnum = {
+  id: 'id',
+  address: 'address',
+  symbol: 'symbol',
+  name: 'name',
+  decimals: 'decimals',
+  logoUri: 'logoUri',
+  coingeckoId: 'coingeckoId',
+  tags: 'tags'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -177,7 +188,8 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   Pool: 'Pool',
   Swap: 'Swap',
-  IndexerState: 'IndexerState'
+  IndexerState: 'IndexerState',
+  Token: 'Token'
 };
 
 /**

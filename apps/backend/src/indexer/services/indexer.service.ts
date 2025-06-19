@@ -6,6 +6,7 @@ import { EventProcessorService } from './event-processor.service';
 import { PoolTrackerService } from './pool-tracker.service';
 import { DatabaseService } from 'src/database/database.service';
 import { Address } from 'viem';
+import { TokensTrackerService } from './tokens.service';
 
 @Injectable()
 export class IndexerService implements OnModuleInit {
@@ -23,6 +24,7 @@ export class IndexerService implements OnModuleInit {
     private blockchainService: BlockchainService,
     private eventProcessor: EventProcessorService,
     private poolTracker: PoolTrackerService,
+    private tokenTracker: TokensTrackerService,
   ) {
     // this.batchSize = this.configService.get<bigint>('INDEXER_BATCH_SIZE', 100n);
     this.batchSize = 10000n;
@@ -61,6 +63,8 @@ export class IndexerService implements OnModuleInit {
       this.logger.log(
         `🚀 Indexer initialized - Last block: ${this.lastProcessedBlock}`,
       );
+
+      await this.tokenTracker.fetchTokens();
 
       // Start real-time subscription for confirmed blocks
       await this.startRealtimeIndexing();

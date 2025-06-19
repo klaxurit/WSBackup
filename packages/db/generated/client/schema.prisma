@@ -13,8 +13,10 @@ datasource db {
 model Pool {
   id           String   @id @default(cuid())
   address      String   @unique
-  token0       String
-  token1       String
+  token0Id     String
+  token0       Token    @relation("PoolToken0", fields: [token0Id], references: [id], onDelete: Cascade)
+  token1Id     String
+  token1       Token    @relation("PoolToken1", fields: [token1Id], references: [id], onDelete: Cascade)
   fee          Int
   liquidity    String?
   tick         Int?
@@ -55,4 +57,17 @@ model IndexerState {
   lastUpdate DateTime @default(now())
 
   @@map("indexer_state")
+}
+
+model Token {
+  id            String   @id @default(cuid())
+  address       String   @unique()
+  symbol        String
+  name          String
+  decimals      Int
+  logoUri       String?
+  coingeckoId   String?
+  tags          String[]
+  poolsAsToken0 Pool[]   @relation("PoolToken0")
+  poolsAsToken1 Pool[]   @relation("PoolToken1")
 }
