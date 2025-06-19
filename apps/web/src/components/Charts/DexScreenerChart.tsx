@@ -4,21 +4,44 @@ import type { Address } from 'viem';
 interface DexScreenerChartProps {
   poolAddress: Address | null;
   className?: string;
+  theme?: 'dark' | 'light';
+  showInfo?: boolean;
+  showTabs?: boolean;
+  showFooter?: boolean;
+  interval?: 1 | 5 | 15 | 30 | 60 | 240 | 720 | 1440; // minutes
+  showTrades?: boolean;
+  showChartSettings?: boolean;
 }
 
 export const DexScreenerChart: React.FC<DexScreenerChartProps> = ({
   poolAddress,
-  className = ""
+  className = "",
+  theme = 'dark',
+  showInfo = false,
+  showTabs = false,
+  showFooter = false,
+  interval = 60,
+  showTrades = false,
+  showChartSettings = false
 }) => {
   const iframeUrl = useMemo(() => {
-    if (!poolAddress) {
-      // URL par défaut si aucune pool n'est sélectionnée
-      return 'https://dexscreener.com/berachain?embed=1&theme=dark&info=0&tabs=0&footer=0&interval=60&trades=0&loadChartSettings=0';
-    }
+    const baseUrl = !poolAddress
+      ? 'https://dexscreener.com/berachain'
+      : `https://dexscreener.com/berachain/${poolAddress}`;
 
-    // URL avec l'adresse de la pool spécifique
-    return `https://dexscreener.com/berachain/${poolAddress}?embed=1&theme=dark&info=0&tabs=0&footer=0&interval=60&trades=0&loadChartSettings=0`;
-  }, [poolAddress]);
+    const params = new URLSearchParams({
+      embed: '1',
+      theme,
+      info: showInfo ? '1' : '0',
+      tabs: showTabs ? '1' : '0',
+      footer: showFooter ? '1' : '0',
+      interval: interval.toString(),
+      trades: showTrades ? '1' : '0',
+      loadChartSettings: showChartSettings ? '1' : '0'
+    });
+
+    return `${baseUrl}?${params.toString()}`;
+  }, [poolAddress, theme, showInfo, showTabs, showFooter, interval, showTrades, showChartSettings]);
 
   return (
     <iframe
