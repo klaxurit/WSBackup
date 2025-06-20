@@ -5378,12 +5378,14 @@ export namespace Prisma {
     price: number | null
     oneHourEvolution: number | null
     oneDayEvolution: number | null
+    volume: number | null
   }
 
   export type TokenStatisticSumAggregateOutputType = {
     price: number | null
     oneHourEvolution: number | null
     oneDayEvolution: number | null
+    volume: number | null
   }
 
   export type TokenStatisticMinAggregateOutputType = {
@@ -5392,6 +5394,7 @@ export namespace Prisma {
     price: number | null
     oneHourEvolution: number | null
     oneDayEvolution: number | null
+    volume: number | null
     createdAt: Date | null
   }
 
@@ -5401,6 +5404,7 @@ export namespace Prisma {
     price: number | null
     oneHourEvolution: number | null
     oneDayEvolution: number | null
+    volume: number | null
     createdAt: Date | null
   }
 
@@ -5410,6 +5414,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume: number
     createdAt: number
     _all: number
   }
@@ -5419,12 +5424,14 @@ export namespace Prisma {
     price?: true
     oneHourEvolution?: true
     oneDayEvolution?: true
+    volume?: true
   }
 
   export type TokenStatisticSumAggregateInputType = {
     price?: true
     oneHourEvolution?: true
     oneDayEvolution?: true
+    volume?: true
   }
 
   export type TokenStatisticMinAggregateInputType = {
@@ -5433,6 +5440,7 @@ export namespace Prisma {
     price?: true
     oneHourEvolution?: true
     oneDayEvolution?: true
+    volume?: true
     createdAt?: true
   }
 
@@ -5442,6 +5450,7 @@ export namespace Prisma {
     price?: true
     oneHourEvolution?: true
     oneDayEvolution?: true
+    volume?: true
     createdAt?: true
   }
 
@@ -5451,6 +5460,7 @@ export namespace Prisma {
     price?: true
     oneHourEvolution?: true
     oneDayEvolution?: true
+    volume?: true
     createdAt?: true
     _all?: true
   }
@@ -5547,6 +5557,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume: number
     createdAt: Date
     _count: TokenStatisticCountAggregateOutputType | null
     _avg: TokenStatisticAvgAggregateOutputType | null
@@ -5575,6 +5586,7 @@ export namespace Prisma {
     price?: boolean
     oneHourEvolution?: boolean
     oneDayEvolution?: boolean
+    volume?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenStatistic"]>
@@ -5585,6 +5597,7 @@ export namespace Prisma {
     price?: boolean
     oneHourEvolution?: boolean
     oneDayEvolution?: boolean
+    volume?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenStatistic"]>
@@ -5595,6 +5608,7 @@ export namespace Prisma {
     price?: boolean
     oneHourEvolution?: boolean
     oneDayEvolution?: boolean
+    volume?: boolean
     createdAt?: boolean
   }
 
@@ -5616,6 +5630,7 @@ export namespace Prisma {
       price: number
       oneHourEvolution: number
       oneDayEvolution: number
+      volume: number
       createdAt: Date
     }, ExtArgs["result"]["tokenStatistic"]>
     composites: {}
@@ -6016,6 +6031,7 @@ export namespace Prisma {
     readonly price: FieldRef<"TokenStatistic", 'Float'>
     readonly oneHourEvolution: FieldRef<"TokenStatistic", 'Float'>
     readonly oneDayEvolution: FieldRef<"TokenStatistic", 'Float'>
+    readonly volume: FieldRef<"TokenStatistic", 'Float'>
     readonly createdAt: FieldRef<"TokenStatistic", 'DateTime'>
   }
     
@@ -6428,6 +6444,7 @@ export namespace Prisma {
     price: 'price',
     oneHourEvolution: 'oneHourEvolution',
     oneDayEvolution: 'oneDayEvolution',
+    volume: 'volume',
     createdAt: 'createdAt'
   };
 
@@ -6858,6 +6875,7 @@ export namespace Prisma {
     price?: FloatFilter<"TokenStatistic"> | number
     oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
+    volume?: FloatFilter<"TokenStatistic"> | number
     createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
   }
@@ -6868,6 +6886,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
     createdAt?: SortOrder
     token?: TokenOrderByWithRelationInput
   }
@@ -6881,6 +6900,7 @@ export namespace Prisma {
     price?: FloatFilter<"TokenStatistic"> | number
     oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
+    volume?: FloatFilter<"TokenStatistic"> | number
     createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
   }, "id">
@@ -6891,6 +6911,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
     createdAt?: SortOrder
     _count?: TokenStatisticCountOrderByAggregateInput
     _avg?: TokenStatisticAvgOrderByAggregateInput
@@ -6908,6 +6929,7 @@ export namespace Prisma {
     price?: FloatWithAggregatesFilter<"TokenStatistic"> | number
     oneHourEvolution?: FloatWithAggregatesFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatWithAggregatesFilter<"TokenStatistic"> | number
+    volume?: FloatWithAggregatesFilter<"TokenStatistic"> | number
     createdAt?: DateTimeWithAggregatesFilter<"TokenStatistic"> | Date | string
   }
 
@@ -7258,6 +7280,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume?: number
     createdAt?: Date | string
     token: TokenCreateNestedOneWithoutStatisticInput
   }
@@ -7268,6 +7291,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume?: number
     createdAt?: Date | string
   }
 
@@ -7276,6 +7300,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     token?: TokenUpdateOneRequiredWithoutStatisticNestedInput
   }
@@ -7286,6 +7311,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -7295,6 +7321,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume?: number
     createdAt?: Date | string
   }
 
@@ -7303,6 +7330,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -7312,6 +7340,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -7739,6 +7768,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -7746,6 +7776,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
   }
 
   export type TokenStatisticMaxOrderByAggregateInput = {
@@ -7754,6 +7785,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -7763,6 +7795,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -7770,6 +7803,7 @@ export namespace Prisma {
     price?: SortOrder
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
+    volume?: SortOrder
   }
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -8630,6 +8664,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume?: number
     createdAt?: Date | string
   }
 
@@ -8638,6 +8673,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume?: number
     createdAt?: Date | string
   }
 
@@ -8724,6 +8760,7 @@ export namespace Prisma {
     price?: FloatFilter<"TokenStatistic"> | number
     oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
+    volume?: FloatFilter<"TokenStatistic"> | number
     createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
   }
 
@@ -8888,6 +8925,7 @@ export namespace Prisma {
     price: number
     oneHourEvolution: number
     oneDayEvolution: number
+    volume?: number
     createdAt?: Date | string
   }
 
@@ -8972,6 +9010,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8980,6 +9019,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8988,6 +9028,7 @@ export namespace Prisma {
     price?: FloatFieldUpdateOperationsInput | number
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
+    volume?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

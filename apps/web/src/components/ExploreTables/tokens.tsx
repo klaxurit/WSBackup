@@ -37,22 +37,32 @@ export const TokensTable = () => {
       )
     },
     {
-      label: 'Reward APR', key: 'rewardapr', render: (row) => {
-        return row.Statistic?.length > 0 ? `-` : '-'
+      label: 'Price', key: 'price', render: (row) => {
+        return row.Statistic?.length > 0 ? `$${row.Statistic[0].price.toFixed(2)}` : '-'
       }
     },
     {
       label: '1h', key: '1h', render: (row) => {
-        return row.Statistic?.length > 0 ? `${row.Statistic[0].oneHourEvolution.toFixed(2)}%` : '-'
+        return row.Statistic?.length > 0 && row.Statistic[0].oneHourEvolution !== 0
+          ? `${row.Statistic[0].oneHourEvolution.toFixed(2)}%`
+          : '-'
       }
     },
     {
       label: '1d', key: '1d', render: (row) => {
-        return row.Statistic?.length > 0 ? `${row.Statistic[0].oneDayEvolution.toFixed(2)}%` : '-'
+        return row.Statistic?.length > 0 && row.Statistic[0].oneDayEvolution !== 0
+          ? `${row.Statistic[0].oneDayEvolution.toFixed(2)}%`
+          : '-'
       }
     },
-    { label: 'FDV', key: 'fdv' },
-    { label: 'Volume', key: 'volume' },
+    // { label: 'FDV', key: 'fdv' },
+    {
+      label: 'Volume', key: 'volume', render: (row) => {
+        return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
+          ? `${row.Statistic[0].volume.toFixed(2)}`
+          : '-'
+      }
+    },
   ];
 
   return (

@@ -42,6 +42,7 @@ export class PriceService {
 
     for (const batch of batches) {
       const promises = batch.map(async (token) => {
+        const volume = await this.calculateVolume24h(token)
         const currentPrice = await this.getTokenPrice(token);
 
         if (currentPrice) {
@@ -54,6 +55,7 @@ export class PriceService {
               price: currentPrice,
               oneHourEvolution: oneHourEvolution || 0,
               oneDayEvolution: oneDayEvolution || 0,
+              volume: volume || 0
             },
           });
         }
@@ -195,23 +197,54 @@ export class PriceService {
     return ((currentPrice - prevStat[0].Statistic[0].price) / prevStat[0].Statistic[0].price) * 100
   }
 
-  private async calculateVolume24h(poolAddress: string): Promise<number> {
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  private async calculateVolume24h(token: Token): Promise<number | null> {
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
 
-    const swaps = await this.databaseService.swap.findMany({
+    const tokenWithSwaps = await this.databaseService.token.findUnique({
       where: {
-        poolAddress,
-        createdAt: {
-          gte: yesterday,
-        },
+        address: token.address
       },
+      include: {
+        poolsAsToken0: {
+          include: {
+            swaps: {
+              where: {
+                createdAt: {
+                  gte: oneDayAgo
+                }
+              }
+            }
+          }
+        },
+        poolsAsToken1: {
+          include: {
+            swaps: {
+              where: {
+                createdAt: {
+                  gte: oneDayAgo
+                }
+              }
+            }
+          }
+        }
+      }
     });
 
-    return swaps.reduce((total, swap) => {
-      const amount0 = Math.abs(parseFloat(swap.amount0));
-      const amount1 = Math.abs(parseFloat(swap.amount1));
-      return total + Math.max(amount0, amount1); // Simplification
+    if (!tokenWithSwaps) return null
+
+    const totalAsToken0 = tokenWithSwaps.poolsAsToken0.reduce((total, pool) => {
+      return pool.swaps.reduce((swapVol, swap) => {
+        return total + swapVol + Math.abs(parseInt(swap.amount0))
+      }, 0)
     }, 0);
+    const totalAsToken1 = tokenWithSwaps.poolsAsToken1.reduce((total, pool) => {
+      return total + pool.swaps.reduce((swapVol, swap) => {
+        return swapVol + Math.abs(parseInt(swap.amount1))
+      }, 0)
+    }, 0);
+
+    return totalAsToken0 + totalAsToken1
   }
 
 

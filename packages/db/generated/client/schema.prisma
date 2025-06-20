@@ -80,5 +80,6 @@ model TokenStatistic {
   price            Float
   oneHourEvolution Float
   oneDayEvolution  Float
+  volume           Float    @default(0)
   createdAt        DateTime @default(now())
 }

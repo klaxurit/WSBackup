@@ -175,6 +175,7 @@ exports.Prisma.TokenStatisticScalarFieldEnum = {
   price: 'price',
   oneHourEvolution: 'oneHourEvolution',
   oneDayEvolution: 'oneDayEvolution',
+  volume: 'volume',
   createdAt: 'createdAt'
 };
 
