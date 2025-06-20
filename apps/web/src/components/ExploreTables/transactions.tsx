@@ -71,7 +71,7 @@ export const TransactionsTable = () => {
       label: 'Token amount (sent)',
       key: 'amount1',
       render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
           {formatEther(row.amountIn)}
           {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} />}
         </span>
@@ -81,7 +81,7 @@ export const TransactionsTable = () => {
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
           {formatEther(BigInt(row.amountOut) * -1n)}
           {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} />}
         </span>

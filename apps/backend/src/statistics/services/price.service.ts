@@ -1,10 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import {
-  GetTokenPriceOptions,
-  PriceHistoryPoint,
-  TokenPriceCache,
-} from '../types/tokenPrices';
 import { CoinGeckoService } from './coingecko.service';
 import { PoolPriceService } from './poolPrice.service';
 import { Token } from '@repo/db';
@@ -13,7 +8,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class PriceService {
   private readonly logger = new Logger(PriceService.name);
-  private priceCache = new Map<string, TokenPriceCache>();
   private readonly DEFAULT_CACHE_DURATION = 5;
 
   constructor(

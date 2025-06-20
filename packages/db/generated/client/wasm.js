@@ -179,6 +179,16 @@ exports.Prisma.TokenStatisticScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PoolStatisticScalarFieldEnum = {
+  id: 'id',
+  poolId: 'poolId',
+  apr: 'apr',
+  tvlUSD: 'tvlUSD',
+  volOneDay: 'volOneDay',
+  volOneMonth: 'volOneMonth',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -200,7 +210,8 @@ exports.Prisma.ModelName = {
   Swap: 'Swap',
   IndexerState: 'IndexerState',
   Token: 'Token',
-  TokenStatistic: 'TokenStatistic'
+  TokenStatistic: 'TokenStatistic',
+  PoolStatistic: 'PoolStatistic'
 };
 
 /**

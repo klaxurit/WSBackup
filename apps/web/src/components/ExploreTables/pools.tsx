@@ -7,7 +7,7 @@ export const PoolsTable = () => {
   const { data: pools = [], isLoading } = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/pools`)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`)
       if (!resp.ok) return []
 
       return resp.json()
@@ -38,14 +38,36 @@ export const PoolsTable = () => {
         </span>
       )
     },
-    // { label: 'Protocol', key: 'protocol' },
     { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.fee / 10000}%`) },
-    { label: 'TVL', key: 'liquidity', render: (row) => (formatEther(row.liquidity || "0")) },
-    { label: 'Pool APR', key: 'apr' },
-    { label: 'Reward APR', key: 'rewardApr' },
-    { label: 'Vol. 1d', key: 'vol1d' },
-    { label: 'Vol. 30d', key: 'vol30d' },
-    { label: 'Vol. 1d/TVL', key: 'vol1dTvl' },
+    {
+      label: 'TVL', key: 'tvl', render: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].tvlUSD !== "0"
+          ? `$${parseInt(row.PoolStatistic[0].tvlUSD).toFixed(2)}`
+          : "-"
+      }
+    },
+    {
+      label: 'Pool APR', key: 'apr', render: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].apr !== 0
+          ? `$${parseInt(row.PoolStatistic[0].apr).toFixed(2)}`
+          : "-"
+      }
+    },
+    {
+      label: 'Vol. 1d', key: 'vol1d', render: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
+          ? `$${parseInt(row.PoolStatistic[0].volOneDay).toFixed(2)}`
+          : "-"
+      }
+    },
+    {
+      label: 'Vol. 30d', key: 'vol30d', render: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneMonth !== "0"
+          ? `$${parseInt(formatEther(BigInt(row.PoolStatistic[0].volOneMonth))).toFixed(2)}`
+          : "-"
+      }
+    },
+    // { label: 'Vol. 1d/TVL', key: 'vol1dTvl' },
   ];
 
   return (
