@@ -15,7 +15,7 @@ const Navbar = () => {
     <nav className="Navbar">
       <div className="Navbar__Content">
         <div className="Navbar__Menu">
-          <Menu onMenuClick={toggleSidebar} />
+          <Menu />
         </div>
         <SearchBar
           searchValue={searchValue}
