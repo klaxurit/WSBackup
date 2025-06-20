@@ -6,7 +6,7 @@ export const TokensTable = () => {
   const { data: tokens = [], isLoading } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/tokens`)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`)
       if (!resp.ok) return []
 
       return resp.json()
@@ -36,12 +36,23 @@ export const TokensTable = () => {
         </span>
       )
     },
-    { label: 'Price', key: 'price' },
-    { label: 'Pool APR', key: '1h' },
-    { label: 'Reward APR', key: '1d' },
-    { label: 'Vol. 1d', key: 'FDV' },
-    { label: 'Vol. 30d', key: 'volume' },
-    { label: 'Vol. 1d/TVL', key: '1dchart' },
+    {
+      label: 'Reward APR', key: 'rewardapr', render: (row) => {
+        return row.Statistic?.length > 0 ? `-` : '-'
+      }
+    },
+    {
+      label: '1h', key: '1h', render: (row) => {
+        return row.Statistic?.length > 0 ? `${row.Statistic[0].oneHourEvolution.toFixed(2)}%` : '-'
+      }
+    },
+    {
+      label: '1d', key: '1d', render: (row) => {
+        return row.Statistic?.length > 0 ? `${row.Statistic[0].oneDayEvolution.toFixed(2)}%` : '-'
+      }
+    },
+    { label: 'FDV', key: 'fdv' },
+    { label: 'Volume', key: 'volume' },
   ];
 
   return (

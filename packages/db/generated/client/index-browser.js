@@ -169,6 +169,15 @@ exports.Prisma.TokenScalarFieldEnum = {
   tags: 'tags'
 };
 
+exports.Prisma.TokenStatisticScalarFieldEnum = {
+  id: 'id',
+  tokenId: 'tokenId',
+  price: 'price',
+  oneHourEvolution: 'oneHourEvolution',
+  oneDayEvolution: 'oneDayEvolution',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -189,7 +198,8 @@ exports.Prisma.ModelName = {
   Pool: 'Pool',
   Swap: 'Swap',
   IndexerState: 'IndexerState',
-  Token: 'Token'
+  Token: 'Token',
+  TokenStatistic: 'TokenStatistic'
 };
 
 /**

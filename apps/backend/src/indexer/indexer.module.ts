@@ -32,6 +32,6 @@ import { TokensTrackerService } from './services/tokens.service';
     },
   ],
   controllers: [IndexerController],
-  exports: [IndexerService, BlockchainService],
+  exports: [IndexerService, BlockchainService, TokensTrackerService],
 })
 export class IndexerModule { }

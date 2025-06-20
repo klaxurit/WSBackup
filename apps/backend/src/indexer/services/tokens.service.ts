@@ -50,8 +50,8 @@ export class TokensTrackerService {
     this.logger.log('Tokens list updated!');
   }
 
-  async getAllTokens() {
-    return await this.databaseService.token.findMany();
+  async getAllTokens(args?: Prisma.TokenFindManyArgs) {
+    return await this.databaseService.token.findMany(args);
   }
 
   async getToken(address: string) {
