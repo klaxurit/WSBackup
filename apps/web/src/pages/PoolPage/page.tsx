@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import '../../styles/pages/_poolsPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { FallbackImg } from '../../components/utils/FallbackImg';
+import { useAccount } from 'wagmi';
 
 const columns: TableColumn[] = [
   {
@@ -31,16 +32,8 @@ const columns: TableColumn[] = [
   // { label: '', key: 'actions', render: () => <button className="PoolPage__ManageBtn">Manage</button> },
 ];
 
-const topPools = [
-  { tokens: ['WISE', 'ETH'], version: 'v2', fee: '0.3%', apr: '0.00%', aprChange: '', },
-  { tokens: ['USDC', 'USDTE'], version: 'v4', fee: '0.01%', apr: '2.33%', aprChange: '+8.92%' },
-  { tokens: ['USDC', 'ETH'], version: 'v3', fee: '0.05%', apr: '25.35%', aprChange: '' },
-  { tokens: ['WBTC', 'ETH'], version: 'v3', fee: '0.3%', apr: '28.54%', aprChange: '' },
-];
-
 const PoolPage: React.FC = () => {
-  // const { address } = useAccount()
-  const address = "0xf5ED909Ff51045A4c1a8fc194809108a6F33d656"
+  const { address } = useAccount()
   const { data: positions, isLoading } = useQuery({
     queryKey: ['positions', address],
     queryFn: async () => {
@@ -50,6 +43,16 @@ const PoolPage: React.FC = () => {
       return resp.json()
     },
     enabled: !!address
+  })
+
+  const { data: topPools } = useQuery({
+    queryKey: ['topPools'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/topPools`)
+      if (!resp.ok) return []
+
+      return resp.json()
+    }
   })
 
   return (
@@ -92,21 +95,21 @@ const PoolPage: React.FC = () => {
       <div className="PoolPage__Right">
         <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
         <div className="PoolPage__TopList">
-          {/* {topPools.map((pool, i) => ( */}
-          {/*   <div className="PoolPage__TopCard" key={i}> */}
-          {/*     <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 8 }}> */}
-          {/*       <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}> */}
-          {/*         <img src={getTokenLogo(pool.tokens[0])} alt={pool.tokens[0]} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> */}
-          {/*         <img src={getTokenLogo(pool.tokens[1])} alt={pool.tokens[1]} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> */}
-          {/*       </span> */}
-          {/*       {pool.tokens.join(' / ')} <span className="PoolPage__TopVersion">{pool.version}</span> */}
-          {/*     </div> */}
-          {/*     <div className="PoolPage__TopFee">{pool.fee} fee</div> */}
-          {/*     <div className="PoolPage__TopApr"> */}
-          {/*       {pool.apr} APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>} */}
-          {/*     </div> */}
-          {/*   </div> */}
-          {/* ))} */}
+          {topPools.map((pool: any, i: number) => (
+            <div className="PoolPage__TopCard" key={i}>
+              <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
+                  {pool.token0.logoUri ? <img src={pool.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={pool.token0.symbol} />}
+                  {pool.token1.logoUri ? <img src={pool.token1.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> : <FallbackImg content={pool.token1.symbol} />}
+                </span>
+                {pool.token0.symbol} / {pool.token1.symbol} <span className="PoolPage__TopVersion">v3</span>
+              </div>
+              <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
+              <div className="PoolPage__TopApr">
+                {pool.PoolStatistic[0]?.apr || '0%'} APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

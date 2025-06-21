@@ -26,6 +26,11 @@ export class StatisticsController {
     return await this.poolService.getPoolStats();
   }
 
+  @Get('/topPools')
+  async getTopPools() {
+    return await this.poolService.getTopPoolStats();
+  }
+
   @Get('/positions/:address')
   async getAddressPositions(@Param('address') address: Address) {
     const positions: any[] = [];

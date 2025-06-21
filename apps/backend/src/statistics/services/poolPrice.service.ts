@@ -59,6 +59,22 @@ export class PoolPriceService {
     });
   }
 
+  async getTopPoolStats() {
+    return await this.databaseService.pool.findMany({
+      include: {
+        PoolStatistic: {
+          orderBy: {
+            tvlUSD: 'desc',
+          },
+          take: 1,
+        },
+        token0: true,
+        token1: true,
+      },
+      take: 4,
+    });
+  }
+
   async updatePoolStats() {
     const pools = await this.databaseService.pool.findMany({
       include: {
