@@ -11,6 +11,7 @@ import { BlockchainService } from 'src/indexer/services/blockchain.service';
 import { Pool } from '@repo/db';
 import { UNISWAP_V3_POOL_ABI } from 'src/indexer/constants/abis';
 import { Address, formatUnits } from 'viem';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PoolPriceService {
@@ -75,6 +76,7 @@ export class PoolPriceService {
     });
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async updatePoolStats() {
     const pools = await this.databaseService.pool.findMany({
       include: {
