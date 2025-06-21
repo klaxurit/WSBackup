@@ -45,7 +45,7 @@ const PoolPage: React.FC = () => {
     enabled: !!address
   })
 
-  const { data: topPools } = useQuery({
+  const { data: topPools = [] } = useQuery({
     queryKey: ['topPools'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/topPools`)
@@ -95,8 +95,8 @@ const PoolPage: React.FC = () => {
       <div className="PoolPage__Right">
         <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
         <div className="PoolPage__TopList">
-          {topPools.map((pool: any, i: number) => (
-            <div className="PoolPage__TopCard" key={i}>
+          {topPools.map((pool: any) => (
+            <div className="PoolPage__TopCard" key={pool.id}>
               <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
                   {pool.token0.logoUri ? <img src={pool.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={pool.token0.symbol} />}
