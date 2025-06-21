@@ -19,38 +19,60 @@ export class PoolPriceService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly coinGeckoService: CoinGeckoService,
-    private readonly blockchainService: BlockchainService
-  ) { }
+    private readonly blockchainService: BlockchainService,
+  ) {}
 
   async getPoolStats() {
     return await this.databaseService.pool.findMany({
       include: {
         PoolStatistic: {
           orderBy: {
-            createdAt: 'desc'
+            createdAt: 'desc',
           },
-          take: 1
+          take: 1,
         },
         token0: true,
-        token1: true
-      }
-    })
+        token1: true,
+      },
+    });
+  }
+
+  async getOnePoolStat(token0Addr: string, token1Addr: string, fee: number) {
+    return await this.databaseService.pool.findFirst({
+      where: {
+        AND: [
+          { token0: { address: token0Addr } },
+          { token1: { address: token1Addr } },
+          { fee: fee },
+        ],
+      },
+      include: {
+        PoolStatistic: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+        },
+        token0: true,
+        token1: true,
+      },
+    });
   }
 
   async updatePoolStats() {
     const pools = await this.databaseService.pool.findMany({
       include: {
         swaps: true,
-      }
-    })
+      },
+    });
 
-    const batches = this.chunkArray(pools, 10)
+    const batches = this.chunkArray(pools, 10);
 
     for (const batch of batches) {
       const promises = batch.map(async (pool) => {
-        const dayVol = this.getVolumeByPeriod(pool, 24)
-        const monthVol = this.getVolumeByPeriod(pool, 24 * 30)
-        const aprAndTvl = await this.calculateApr(pool, dayVol)
+        const dayVol = this.getVolumeByPeriod(pool, 24);
+        const monthVol = this.getVolumeByPeriod(pool, 24 * 30);
+        const aprAndTvl = await this.calculateApr(pool, dayVol);
 
         if (aprAndTvl) {
           await this.databaseService.poolStats.create({
@@ -60,12 +82,12 @@ export class PoolPriceService {
               tvlUSD: aprAndTvl.tvlUSD,
               volOneDay: dayVol.toString(),
               volOneMonth: monthVol.toString(),
-            }
-          })
+            },
+          });
         }
-      })
+      });
 
-      await Promise.all(promises)
+      await Promise.all(promises);
     }
   }
 
@@ -303,77 +325,86 @@ export class PoolPriceService {
     }
   }
 
-  private getVolumeByPeriod(pool: PoolWithSwap, hourPeriod: number = 24): bigint {
-    const xHourAgo = new Date()
-    xHourAgo.setHours(xHourAgo.getHours() - hourPeriod)
+  private getVolumeByPeriod(
+    pool: PoolWithSwap,
+    hourPeriod: number = 24,
+  ): bigint {
+    const xHourAgo = new Date();
+    xHourAgo.setHours(xHourAgo.getHours() - hourPeriod);
 
-    const dayliSwaps = pool.swaps.filter(s => s.createdAt > xHourAgo)
+    const dayliSwaps = pool.swaps.filter((s) => s.createdAt > xHourAgo);
     const vol = dayliSwaps.reduce((total, swap) => {
-      return total + BigInt(Math.abs(parseInt(swap.amount0)))
-    }, 0n)
+      return total + BigInt(Math.abs(parseInt(swap.amount0)));
+    }, 0n);
 
-    return vol
+    return vol;
   }
 
-  private async calculateApr(pool: Pool, volume24h: bigint): Promise<{ apr: number, tvlUSD: number } | null> {
+  private async calculateApr(
+    pool: Pool,
+    volume24h: bigint,
+  ): Promise<{ apr: number; tvlUSD: number } | null> {
     const token0Stat = await this.databaseService.tokenStats.findMany({
       where: {
-        tokenId: pool.token0Id
+        tokenId: pool.token0Id,
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
-      take: 1
-    })
+      take: 1,
+    });
     const token1Stat = await this.databaseService.tokenStats.findMany({
       where: {
-        tokenId: pool.token1Id
+        tokenId: pool.token1Id,
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
-      take: 1
-    })
+      take: 1,
+    });
 
-    if (token0Stat.length === 0 || token1Stat.length === 0) return null
+    if (token0Stat.length === 0 || token1Stat.length === 0) return null;
 
-    const [slot0, liquidity, fee] = await this.blockchainService.getPublicClient().multicall({
-      contracts: [
-        {
-          address: (pool.address as Address),
-          abi: UNISWAP_V3_POOL_ABI,
-          functionName: 'slot0'
-        },
-        {
-          address: (pool.address as Address),
-          abi: UNISWAP_V3_POOL_ABI,
-          functionName: 'liquidity'
-        },
-        {
-          address: (pool.address as Address),
-          abi: UNISWAP_V3_POOL_ABI,
-          functionName: 'fee'
-        }
-      ]
-    })
+    const [slot0, liquidity, fee] = await this.blockchainService
+      .getPublicClient()
+      .multicall({
+        contracts: [
+          {
+            address: pool.address as Address,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'slot0',
+          },
+          {
+            address: pool.address as Address,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'liquidity',
+          },
+          {
+            address: pool.address as Address,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'fee',
+          },
+        ],
+      });
 
-    const sqrtPriceX96 = slot0.result![0]
-    const poolLiquidity = liquidity.result
-    const poolFee = fee.result
+    const sqrtPriceX96 = slot0.result![0];
+    const poolLiquidity = liquidity.result;
+    const poolFee = fee.result;
 
-    if (!sqrtPriceX96 || !poolLiquidity || !poolFee) return null
+    if (!sqrtPriceX96 || !poolLiquidity || !poolFee) return null;
 
-    const price = Number(sqrtPriceX96) ** 2 / (2 ** 192)
-    const amount1 = Number(formatUnits(poolLiquidity || 0n, 18))
-    const amount0 = amount1 / price
-    const tvlUSD = (amount0 * token0Stat[0].price) + (amount1 * token1Stat[0].price)
+    const price = Number(sqrtPriceX96) ** 2 / 2 ** 192;
+    const amount1 = Number(formatUnits(poolLiquidity || 0n, 18));
+    const amount0 = amount1 / price;
+    const tvlUSD =
+      amount0 * token0Stat[0].price + amount1 * token1Stat[0].price;
 
-    const vol24hUSD = Number(formatUnits(volume24h, 18)) * token0Stat[0].price
-    const fees24h = vol24hUSD * (poolFee / 10000)
+    const vol24hUSD = Number(formatUnits(volume24h, 18)) * token0Stat[0].price;
+    const fees24h = vol24hUSD * (poolFee / 10000);
 
-    const apr = (fees24h / tvlUSD) * 365 / 100
+    const apr = ((fees24h / tvlUSD) * 365) / 100;
 
-    return { apr, tvlUSD }
+    return { apr, tvlUSD };
   }
 
   async findBestPricingPath(tokenAddress: string): Promise<string[]> {
@@ -429,8 +460,8 @@ export class PoolPriceService {
 
     return paths.length > 0
       ? paths.reduce((shortest, current) =>
-        current.length < shortest.length ? current : shortest,
-      )
+          current.length < shortest.length ? current : shortest,
+        )
       : [];
   }
 
