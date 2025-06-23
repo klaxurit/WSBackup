@@ -5,7 +5,6 @@ import { SwapToInput } from '../Inputs/SwapToInput';
 import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
-import { useTest } from '../../hooks/useTest';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
@@ -33,7 +32,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
     isSticky = false, // Default to false for compatibility
     onPoolChange,
   }) => {
-    const { mint } = useTest()
     const { isConnected } = useAccount()
     const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
@@ -50,8 +48,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
     const { data: priceFrom = 0 } = usePrice(fromToken);
     const { data: priceTo = 0 } = usePrice(toToken);
-    const [fromTokenListOpen, setFromTokenListOpen] = useState<boolean>(false);
-    const [toTokenListOpen, setToTokenListOpen] = useState<boolean>(false);
 
     const swap = useSwap({
       tokenIn: fromToken?.address || zeroAddress,
@@ -238,7 +234,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!fromToken}
-              onInputClick={() => setFromTokenListOpen(true)}
               onBlur={() => setEditing(null)}
             />
             <Divider
@@ -256,7 +251,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!toToken}
-              onInputClick={() => setToTokenListOpen(true)}
               onBlur={() => setEditing(null)}
             />
           </div>
