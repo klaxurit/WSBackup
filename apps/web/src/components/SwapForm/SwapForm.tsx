@@ -236,6 +236,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
         </div>
         <button onClick={() => mint('0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1')}>mint mBera</button>
         <button onClick={() => mint('0x41936CA1174EE86B24c05a07653Df4Be68A0ED02')}>mint mHoney</button>
+        <button onClick={() => mint('0x92F7c1aa2BFDC2Fc09D3a596cEAfF9D55dd04aa7')}>mint mHoney2</button>
+        <button onClick={() => mint('0xEB587A20C3fF1aa2B6DA888483eb1ffb7009c020')}>mint mUSDC</button>
         <TransactionStatusModal
           open={showModal}
           onClose={handleCloseModal}
