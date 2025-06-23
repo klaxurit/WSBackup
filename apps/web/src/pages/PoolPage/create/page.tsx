@@ -149,32 +149,32 @@ const CreatePoolPage: React.FC = () => {
     if (insufficientA) return { text: `Insufficient ${tokenA.symbol} balance`, action: 'none', disabled: true, loading: false };
     if (insufficientB) return { text: `Insufficient ${tokenB.symbol} balance`, action: 'none', disabled: true, loading: false };
 
-    // Approbation en cours
+    // Approval in progress
     if (currentAction === 'approving-a' && (isTransactionPending || isWaitingTx)) {
-      return { text: `Approbation de ${tokenA.symbol}...`, action: 'none', disabled: true, loading: true };
+      return { text: `Approving ${tokenA.symbol}...`, action: 'none', disabled: true, loading: true };
     }
     if (currentAction === 'approving-b' && (isTransactionPending || isWaitingTx)) {
-      return { text: `Approbation de ${tokenB.symbol}...`, action: 'none', disabled: true, loading: true };
+      return { text: `Approving ${tokenB.symbol}...`, action: 'none', disabled: true, loading: true };
     }
-    // Approbation succès
+    // Approval success
     if (currentAction === 'approving-a' && isTxSuccess) {
       if (needsApprovalB) {
         return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
       }
-      return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
+      return { text: 'Ready for deposit', action: 'deposit', disabled: false, loading: false };
     }
     if (currentAction === 'approving-b' && isTxSuccess) {
-      return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
+      return { text: 'Ready for deposit', action: 'deposit', disabled: false, loading: false };
     }
-    // Dépôt en cours
+    // Deposit in progress
     if (currentAction === 'depositing' && (isTransactionPending || isWaitingTx)) {
-      return { text: 'Dépôt en cours...', action: 'none', disabled: true, loading: true };
+      return { text: 'Depositing...', action: 'none', disabled: true, loading: true };
     }
-    // Dépôt succès
+    // Deposit success
     if (currentAction === 'depositing' && isTxSuccess) {
-      return { text: 'Déposé !', action: 'none', disabled: true, loading: false };
+      return { text: 'Done', action: 'none', disabled: true, loading: false };
     }
-    // Approbation nécessaire
+    // Approval needed
     if (needsApprovalA) return { text: `Approve ${tokenA.symbol}`, action: 'approve-a', disabled: false, loading: false };
     if (needsApprovalB) return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
 
@@ -195,7 +195,7 @@ const CreatePoolPage: React.FC = () => {
     if (tokenA && tokenA.symbol === token.symbol) setTokenA(null);
   }, [tokenA]);
 
-  // Ajout des hooks de prix AVANT les handlers
+  // Add price hooks BEFORE handlers
   const { data: priceA } = usePrice(tokenA);
   const { data: priceB } = usePrice(tokenB);
 
@@ -240,7 +240,7 @@ const CreatePoolPage: React.FC = () => {
         refetchAllowanceA();
       },
       onError: () => {
-        // Optionnel : gérer l'erreur ici
+        // Optional: handle error here
       }
     });
   }, [tokenA, amountA, writeContract, refetchAllowanceA]);
@@ -259,7 +259,7 @@ const CreatePoolPage: React.FC = () => {
         refetchAllowanceB();
       },
       onError: () => {
-        // Optionnel : gérer l'erreur ici
+        // Optional: handle error here
       }
     });
   }, [tokenB, amountB, writeContract, refetchAllowanceB]);
@@ -339,7 +339,7 @@ const CreatePoolPage: React.FC = () => {
     }
   }, [buttonState.action, approveTokenA, approveTokenB, depositLiquidity]);
 
-  // Redirection après succès de la transaction
+  // Redirect after successful transaction
   useEffect(() => {
     if (isTxSuccess && currentAction === 'depositing') {
       const timeout = setTimeout(() => {
@@ -349,7 +349,7 @@ const CreatePoolPage: React.FC = () => {
     }
   }, [isTxSuccess, currentAction, navigate]);
 
-  // Ajout d'un useEffect pour remettre currentAction à 'idle' après confirmation on-chain d'une approbation
+  // Add useEffect to reset currentAction to 'idle' after on-chain confirmation of approval
   useEffect(() => {
     if ((currentAction === 'approving-a' || currentAction === 'approving-b') && isTxSuccess) {
       if (currentAction === 'approving-a') {
@@ -501,7 +501,7 @@ const CreatePoolPage: React.FC = () => {
                 Specify the token amounts for your liquidity contribution.
               </p>
 
-              {/* Liquidity Inputs sans boutons d'approbation */}
+              {/* Liquidity Inputs without approval buttons */}
               <div className="PoolPage__LiquidityInputs">
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput

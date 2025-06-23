@@ -41,7 +41,7 @@ export const ChartCandle: React.FC<ChartCandleProps> = ({
       chartRef.current = null;
     }
 
-    // Création du chart
+    // Chart creation
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height,

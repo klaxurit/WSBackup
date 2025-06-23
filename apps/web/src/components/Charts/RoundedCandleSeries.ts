@@ -27,7 +27,7 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.fill();
 }
 
-// --- Utilitaires pour positionnement (simples) ---
+// --- Simple positioning utils ---
 function positionsLine(x: number, pixelRatio: number, width: number) {
   const position = Math.round(x * pixelRatio - width * 0.5);
   return { position, length: Math.max(1, Math.floor(width)) };
