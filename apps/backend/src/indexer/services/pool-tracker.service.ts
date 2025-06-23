@@ -3,7 +3,8 @@ import { DatabaseService } from '../../database/database.service';
 import { BlockchainService } from './blockchain.service';
 import { Address, decodeEventLog, getContract, Log, parseAbiItem } from 'viem';
 import { UNISWAP_V3_FACTORY_ABI, UNISWAP_V3_POOL_ABI } from '../constants/abis';
-import { Pool } from '@repo/db';
+import { Pool, Prisma } from '@repo/db';
+import { TokensTrackerService } from './tokens.service';
 
 @Injectable()
 export class PoolTrackerService {
@@ -13,13 +14,14 @@ export class PoolTrackerService {
   constructor(
     private databaseService: DatabaseService,
     private blockchainService: BlockchainService,
+    private tokenService: TokensTrackerService,
   ) {
     this.factoryAddress = (process.env.UNISWAP_V3_FACTORY_ADDRESS ||
       '0x000') as Address;
   }
 
-  async getAllTrackedPools(): Promise<Pool[]> {
-    return await this.databaseService.pool.findMany();
+  async getAllTrackedPools(args?: Prisma.PoolFindManyArgs): Promise<Pool[]> {
+    return await this.databaseService.pool.findMany(args);
   }
 
   async trackNewPools(fromBlock: bigint, toBlock: bigint): Promise<void> {
@@ -51,35 +53,36 @@ export class PoolTrackerService {
         topics: log.topics,
       });
 
-      const {
-        token0,
-        token1,
-        fee,
-        tickSpacing,
-        pool: poolAddress,
-      } = decoded.args;
-
       // Check if pool already exists
       const existingPool = await this.databaseService.pool.findUnique({
-        where: { address: poolAddress },
+        where: { address: decoded.args.pool },
       });
 
       if (existingPool) {
-        return; // Pool already tracked
+        this.logger.warn('New pool already exists');
+        return;
+      }
+
+      const token0 = await this.tokenService.getToken(decoded.args.token0);
+      const token1 = await this.tokenService.getToken(decoded.args.token1);
+
+      if (!token0 || !token1) {
+        this.logger.warn('New pool tokens not found!');
+        return;
       }
 
       // Create pool record
       await this.databaseService.pool.create({
         data: {
-          address: poolAddress.toLowerCase(),
-          token0: token0,
-          token1: token1,
-          fee: Number(fee),
-          tick: Number(tickSpacing),
+          address: decoded.args.pool.toLowerCase(),
+          token0Id: token0.id,
+          token1Id: token1.id,
+          fee: Number(decoded.args.fee),
+          tick: Number(decoded.args.tickSpacing),
         },
       });
 
-      this.logger.log(`🆕 New pool tracked: ${poolAddress}`);
+      this.logger.log(`🆕 New pool tracked: ${decoded.args.pool}`);
     } catch (error) {
       this.logger.error('Error processing PoolCreated event:', error);
     }
@@ -128,19 +131,24 @@ export class PoolTrackerService {
       });
 
       // Get pool details
-      const [token0, token1, fee, liquidity] = await Promise.all([
+      const [token0Addr, token1Addr, fee, liquidity] = await Promise.all([
         poolContract.read.token0(),
         poolContract.read.token1(),
         poolContract.read.fee(),
         poolContract.read.liquidity(),
       ]);
 
+      const token0 = await this.tokenService.getToken(token0Addr);
+      const token1 = await this.tokenService.getToken(token1Addr);
+
+      if (!token0 || !token1) return;
+
       // Create pool record
       await this.databaseService.pool.create({
         data: {
           address: poolAddress.toLowerCase(),
-          token0: token0,
-          token1: token1,
+          token0Id: token0.id,
+          token1Id: token1.id,
           fee: Number(fee),
           tick: 60, // Default, should be fetched from factory
           liquidity: liquidity.toString(),

@@ -23,7 +23,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     try {
       await connect('injected');
     } catch (err) {
-      console.error('Erreur de connexion:', err);
+      console.error('Connection error:', err);
     }
   }, [connect]);
 

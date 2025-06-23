@@ -11,6 +11,7 @@ import { PoolTrackerService } from './services/pool-tracker.service';
 import { ReorgHandlerService } from './services/reorg-handler.service';
 import { IndexerController } from './indexer.controller';
 import { DatabaseModule } from 'src/database/database.module';
+import { TokensTrackerService } from './services/tokens.service';
 
 @Module({
   imports: [ConfigModule, ScheduleModule.forRoot(), DatabaseModule],
@@ -20,6 +21,7 @@ import { DatabaseModule } from 'src/database/database.module';
     EventProcessorService,
     PoolTrackerService,
     ReorgHandlerService,
+    TokensTrackerService,
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
@@ -30,6 +32,6 @@ import { DatabaseModule } from 'src/database/database.module';
     },
   ],
   controllers: [IndexerController],
-  exports: [IndexerService, BlockchainService],
+  exports: [IndexerService, BlockchainService, TokensTrackerService],
 })
 export class IndexerModule { }

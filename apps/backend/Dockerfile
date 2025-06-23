@@ -1,6 +1,5 @@
 FROM node:20 AS base
 RUN npm install -g pnpm@latest
-# RUN apk add --no-cache libc6-compat openssl python3
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
@@ -17,7 +16,7 @@ RUN turbo prune @repo/backend --docker
 FROM base AS installer
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN pnpm install --frozen-lockfile --prefer-offline
+RUN pnpm install
 
 FROM base AS builder
 COPY --from=installer /app .
@@ -29,18 +28,8 @@ RUN if [ -f "packages/db/prisma/schema.prisma" ]; then \
 RUN turbo build --filter=@repo/backend
 
 FROM node:20 AS runner
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
 WORKDIR /app
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/dist ./apps/backend/dist
-COPY --from=builder --chown=nestjs:nodejs /app/apps/backend/package.json ./apps/backend/
-COPY --from=builder --chown=nestjs:nodejs /app/packages ./packages
-USER nestjs
-EXPOSE 3000
+COPY --from=builder /app/ ./
 
-WORKDIR /app
+EXPOSE 3000
 CMD ["node", "apps/backend/dist/main.js"]

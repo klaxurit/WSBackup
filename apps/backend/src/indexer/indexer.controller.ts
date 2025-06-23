@@ -13,6 +13,8 @@ import { PoolTrackerService } from './services/pool-tracker.service';
 import { ReorgHandlerService } from './services/reorg-handler.service';
 import { Address } from 'viem';
 import { DatabaseService } from 'src/database/database.service';
+import { TokensTrackerService } from './services/tokens.service';
+import { JsonTokenDto } from './dto/jsonToken.dto';
 
 @Controller('indexer')
 export class IndexerController {
@@ -22,7 +24,7 @@ export class IndexerController {
     private indexerService: IndexerService,
     private poolTracker: PoolTrackerService,
     private databaseService: DatabaseService,
-
+    private tokenService: TokensTrackerService,
     private reorgHandler: ReorgHandlerService,
   ) { }
 
@@ -89,7 +91,12 @@ export class IndexerController {
 
   @Get('pools')
   async getTrackedPools() {
-    return await this.poolTracker.getAllTrackedPools();
+    return await this.poolTracker.getAllTrackedPools({
+      include: {
+        token0: true,
+        token1: true,
+      },
+    });
   }
 
   @Post('pools')
@@ -116,12 +123,27 @@ export class IndexerController {
   async getSwaps() {
     return await this.databaseService.swap.findMany({
       include: {
-        pool: true,
+        pool: {
+          include: {
+            token0: true,
+            token1: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+  }
+
+  @Get('tokens')
+  async getTokens() {
+    return await this.tokenService.getAllTokens();
+  }
+
+  @Post('tokens')
+  async createToken(@Body() jsonTokenDto: JsonTokenDto) {
+    return await this.tokenService.create(jsonTokenDto);
   }
 
   @Post('reorg/:fromBlock')

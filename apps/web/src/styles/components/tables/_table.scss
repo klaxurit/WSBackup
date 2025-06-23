@@ -61,6 +61,9 @@
   text-align: left;
   border-bottom: 1px solid #232323;
 
+  &:nth-child(n+3) {
+    text-align: right;
+  }
 }
 
 .Table tbody tr {
@@ -68,6 +71,10 @@
 
   &:last-child {
     border-bottom: none !important;
+  }
+
+  td:nth-child(n+3) {
+    text-align: right;
   }
 }
 

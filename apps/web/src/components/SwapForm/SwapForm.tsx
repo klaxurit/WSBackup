@@ -1,4 +1,3 @@
-// src/components/SwapForm/SwapForm.tsx (version adaptée)
 import React, { useMemo, useState, useEffect, type ChangeEvent } from "react";
 import { ConnectButton } from '../Buttons/ConnectButton';
 import { FromInput } from '../Inputs/FromInput';
@@ -21,7 +20,7 @@ interface FormProps {
   secondaryColor?: string;
   customClassName?: string;
   isHomePage?: boolean;
-  isSticky?: boolean; // Nouvelle prop pour le mode sticky
+  isSticky?: boolean; // New prop for sticky mode
   onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
 }
 
@@ -31,7 +30,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     secondaryColor,
     customClassName,
     isHomePage,
-    isSticky = false, // Par défaut false pour garder la compatibilité
+    isSticky = false, // Default to false for compatibility
     onPoolChange,
   }) => {
     const { mint } = useTest()
@@ -145,18 +144,11 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     useEffect(() => {
       if (onPoolChange) {
-        // Utiliser l'adresse de la pool récupérée par usePoolAddress
+        // Use the pool address retrieved by usePoolAddress
         const poolAddressStr = poolAddress ? poolAddress : null;
         onPoolChange(poolAddressStr, fromToken, toToken);
       }
     }, [poolAddress, fromToken, toToken, onPoolChange]);
-
-    useEffect(() => {
-      if (poolAddress) {
-        console.log('[SwapForm] Pool Address:', poolAddress);
-        // Ici vous pourrez mettre à jour l'iframe avec la nouvelle adresse de pool
-      }
-    }, [poolAddress]);
 
     const handleFromAmountChange = (amount: bigint) => {
       setEditing('from');
@@ -166,6 +158,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleToAmountChange = (amount: bigint) => {
       setEditing('to');
       setToAmount(amount);
+      // Synchronization: recalculate fromAmount so that the USD value is identical
       if (priceFrom && priceTo && toToken && fromToken) {
         const toAmountFloat = parseFloat(formatEther(amount));
         const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
@@ -174,7 +167,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
       }
     };
 
-    // Classes conditionnelles pour le mode sticky
+    // Conditional classes for sticky mode
     const formClasses = [
       'Form',
       isSticky ? 'Form--sticky' : '',
@@ -232,7 +225,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
               isHomePage={isHomePage}
               disabled={!fromToken}
               onInputClick={() => setFromTokenListOpen(true)}
-              isListOpen={fromTokenListOpen}
               onBlur={() => setEditing(null)}
             />
             <Divider
@@ -252,7 +244,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
               disabled={!toToken}
               onInputClick={() => setToTokenListOpen(true)}
               onBlur={() => setEditing(null)}
-              isListOpen={toTokenListOpen}
             />
           </div>
 
@@ -273,20 +264,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               </button>
             )}
           </div>
-
-          {/* Boutons de mint seulement si pas en mode sticky */}
-          {!isSticky && (
-            <div className="Form__TestButtons">
-              <button onClick={() => mint('0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1')}>
-                mint mBera
-              </button>
-              <button onClick={() => mint('0x41936CA1174EE86B24c05a07653Df4Be68A0ED02')}>
-                mint mHoney
-              </button>
-            </div>
-          )}
         </div>
-
         <TransactionStatusModal
           open={showModal}
           onClose={handleCloseModal}

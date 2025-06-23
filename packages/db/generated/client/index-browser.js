@@ -125,8 +125,8 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.PoolScalarFieldEnum = {
   id: 'id',
   address: 'address',
-  token0: 'token0',
-  token1: 'token1',
+  token0Id: 'token0Id',
+  token1Id: 'token1Id',
   fee: 'fee',
   liquidity: 'liquidity',
   tick: 'tick',
@@ -158,6 +158,37 @@ exports.Prisma.IndexerStateScalarFieldEnum = {
   lastUpdate: 'lastUpdate'
 };
 
+exports.Prisma.TokenScalarFieldEnum = {
+  id: 'id',
+  address: 'address',
+  symbol: 'symbol',
+  name: 'name',
+  decimals: 'decimals',
+  logoUri: 'logoUri',
+  coingeckoId: 'coingeckoId',
+  tags: 'tags'
+};
+
+exports.Prisma.TokenStatisticScalarFieldEnum = {
+  id: 'id',
+  tokenId: 'tokenId',
+  price: 'price',
+  oneHourEvolution: 'oneHourEvolution',
+  oneDayEvolution: 'oneDayEvolution',
+  volume: 'volume',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PoolStatisticScalarFieldEnum = {
+  id: 'id',
+  poolId: 'poolId',
+  apr: 'apr',
+  tvlUSD: 'tvlUSD',
+  volOneDay: 'volOneDay',
+  volOneMonth: 'volOneMonth',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -177,7 +208,10 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   Pool: 'Pool',
   Swap: 'Swap',
-  IndexerState: 'IndexerState'
+  IndexerState: 'IndexerState',
+  Token: 'Token',
+  TokenStatistic: 'TokenStatistic',
+  PoolStatistic: 'PoolStatistic'
 };
 
 /**

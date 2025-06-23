@@ -1,1103 +1,1046 @@
 export const UNISWAP_V3_POOL_ABI = [
   {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
+        indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
       },
       {
-        "indexed": true,
+        indexed: true,
 
-        "internalType": "int24",
-        "name": "tickLower",
-        "type": "int24"
+        internalType: 'int24',
+        name: 'tickLower',
+        type: 'int24',
       },
       {
-        "indexed": true,
-        "internalType": "int24",
-        "name": "tickUpper",
-        "type": "int24"
+        indexed: true,
+        internalType: 'int24',
+        name: 'tickUpper',
+        type: 'int24',
       },
       {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "amount",
-        "type": "uint128"
+        indexed: false,
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
       },
       {
-        "indexed": false,
+        indexed: false,
 
-        "internalType": "uint256",
-        "name": "amount0",
-        "type": "uint256"
+        internalType: 'uint256',
+        name: 'amount0',
+        type: 'uint256',
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount1',
+        type: 'uint256',
+      },
     ],
-    "name": "Burn",
-    "type": "event"
+    name: 'Burn',
+    type: 'event',
   },
   {
-
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-
+        indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        indexed: false,
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
 
       {
-        "indexed": true,
-        "internalType": "int24",
-        "name": "tickLower",
-        "type": "int24"
-
+        indexed: true,
+        internalType: 'int24',
+        name: 'tickLower',
+        type: 'int24',
       },
       {
-        "indexed": true,
-        "internalType": "int24",
+        indexed: true,
+        internalType: 'int24',
 
-        "name": "tickUpper",
+        name: 'tickUpper',
 
-        "type": "int24"
+        type: 'int24',
       },
 
       {
-        "indexed": false,
-        "internalType": "uint128",
+        indexed: false,
+        internalType: 'uint128',
 
-        "name": "amount0",
-        "type": "uint128"
+        name: 'amount0',
+        type: 'uint128',
       },
       {
-        "indexed": false,
+        indexed: false,
 
-        "internalType": "uint128",
-        "name": "amount1",
-        "type": "uint128"
-      }
+        internalType: 'uint128',
+        name: 'amount1',
+        type: 'uint128',
+      },
     ],
-    "name": "Collect",
-    "type": "event"
+    name: 'Collect',
+    type: 'event',
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
+        indexed: true,
+        internalType: 'address',
+        name: 'sender',
+        type: 'address',
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        indexed: true,
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
       {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "amount0",
-        "type": "uint128"
+        indexed: false,
+        internalType: 'uint128',
+        name: 'amount0',
+        type: 'uint128',
       },
       {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "amount1",
-        "type": "uint128"
-
-      }
+        indexed: false,
+        internalType: 'uint128',
+        name: 'amount1',
+        type: 'uint128',
+      },
     ],
-    "name": "CollectProtocol",
+    name: 'CollectProtocol',
 
-    "type": "event"
+    type: 'event',
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
+        indexed: true,
+        internalType: 'address',
+        name: 'sender',
+        type: 'address',
       },
       {
-        "indexed": true,
+        indexed: true,
 
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
       {
-
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount0",
-        "type": "uint256"
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount0',
+        type: 'uint256',
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount1',
+        type: 'uint256',
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "paid0",
-        "type": "uint256"
+        indexed: false,
+        internalType: 'uint256',
+        name: 'paid0',
+        type: 'uint256',
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "paid1",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: 'uint256',
+        name: 'paid1',
+        type: 'uint256',
+      },
     ],
-    "name": "Flash",
-    "type": "event"
+    name: 'Flash',
+    type: 'event',
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint16",
-        "name": "observationCardinalityNextOld",
-        "type": "uint16"
+        indexed: false,
+        internalType: 'uint16',
+        name: 'observationCardinalityNextOld',
+        type: 'uint16',
       },
       {
-        "indexed": false,
-        "internalType": "uint16",
-        "name": "observationCardinalityNextNew",
-        "type": "uint16"
-      }
+        indexed: false,
+        internalType: 'uint16',
+        name: 'observationCardinalityNextNew',
+        type: 'uint16',
+      },
     ],
-    "name": "IncreaseObservationCardinalityNext",
-    "type": "event"
+    name: 'IncreaseObservationCardinalityNext',
+    type: 'event',
   },
   {
-
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-
-        "indexed": false,
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
+        indexed: false,
+        internalType: 'uint160',
+        name: 'sqrtPriceX96',
+        type: 'uint160',
       },
       {
-        "indexed": false,
-        "internalType": "int24",
-        "name": "tick",
-        "type": "int24"
-      }
+        indexed: false,
+        internalType: 'int24',
+        name: 'tick',
+        type: 'int24',
+      },
     ],
-    "name": "Initialize",
-    "type": "event"
+    name: 'Initialize',
+    type: 'event',
   },
   {
-
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-
-        "indexed": false,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
+        indexed: false,
+        internalType: 'address',
+        name: 'sender',
+        type: 'address',
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
+        indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
       },
       {
-
-        "indexed": true,
-        "internalType": "int24",
-        "name": "tickLower",
-        "type": "int24"
+        indexed: true,
+        internalType: 'int24',
+        name: 'tickLower',
+        type: 'int24',
       },
       {
-        "indexed": true,
-        "internalType": "int24",
-        "name": "tickUpper",
-        "type": "int24"
+        indexed: true,
+        internalType: 'int24',
+        name: 'tickUpper',
+        type: 'int24',
       },
       {
-
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "amount",
-        "type": "uint128"
+        indexed: false,
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount0",
-        "type": "uint256"
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount0',
+        type: 'uint256',
       },
       {
-
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount1',
+        type: 'uint256',
+      },
     ],
-    "name": "Mint",
-    "type": "event"
+    name: 'Mint',
+    type: 'event',
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint8',
+        name: 'feeProtocol0Old',
+        type: 'uint8',
+      },
+      {
+        indexed: false,
+        internalType: 'uint8',
+        name: 'feeProtocol1Old',
+        type: 'uint8',
+      },
+      {
+        indexed: false,
+        internalType: 'uint8',
+        name: 'feeProtocol0New',
+        type: 'uint8',
+      },
+      {
+        indexed: false,
 
-      {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "feeProtocol0Old",
-        "type": "uint8"
+        internalType: 'uint8',
+        name: 'feeProtocol1New',
+        type: 'uint8',
       },
-      {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "feeProtocol1Old",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint8",
-        "name": "feeProtocol0New",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-
-        "internalType": "uint8",
-        "name": "feeProtocol1New",
-        "type": "uint8"
-      }
     ],
-    "name": "SetFeeProtocol",
+    name: 'SetFeeProtocol',
 
-    "type": "event"
+    type: 'event',
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
+        indexed: true,
 
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
+        internalType: 'address',
+        name: 'sender',
+        type: 'address',
       },
       {
-        "indexed": true,
+        indexed: true,
 
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
       {
-
-        "indexed": false,
-        "internalType": "int256",
-        "name": "amount0",
-        "type": "int256"
-
+        indexed: false,
+        internalType: 'int256',
+        name: 'amount0',
+        type: 'int256',
       },
       {
-        "indexed": false,
-        "internalType": "int256",
-        "name": "amount1",
-        "type": "int256"
+        indexed: false,
+        internalType: 'int256',
+        name: 'amount1',
+        type: 'int256',
       },
       {
-        "indexed": false,
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
-
+        indexed: false,
+        internalType: 'uint160',
+        name: 'sqrtPriceX96',
+        type: 'uint160',
       },
       {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "liquidity",
-        "type": "uint128"
+        indexed: false,
+        internalType: 'uint128',
+        name: 'liquidity',
+        type: 'uint128',
       },
       {
-        "indexed": false,
-        "internalType": "int24",
-        "name": "tick",
-        "type": "int24"
-      }
+        indexed: false,
+        internalType: 'int24',
+        name: 'tick',
+        type: 'int24',
+      },
     ],
-    "name": "Swap",
-    "type": "event"
+    name: 'Swap',
+    type: 'event',
   },
   {
-    "inputs": [
+    inputs: [
       {
-
-        "internalType": "int24",
-        "name": "tickLower",
-        "type": "int24"
+        internalType: 'int24',
+        name: 'tickLower',
+        type: 'int24',
       },
       {
-        "internalType": "int24",
-        "name": "tickUpper",
-        "type": "int24"
+        internalType: 'int24',
+        name: 'tickUpper',
+        type: 'int24',
       },
       {
-        "internalType": "uint128",
-        "name": "amount",
-        "type": "uint128"
-      }
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
+      },
     ],
-    "name": "burn",
-    "outputs": [
+    name: 'burn',
+    outputs: [
       {
-
-        "internalType": "uint256",
-        "name": "amount0",
-        "type": "uint256"
+        internalType: 'uint256',
+        name: 'amount0',
+        type: 'uint256',
       },
       {
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
-      }
+        internalType: 'uint256',
+        name: 'amount1',
+        type: 'uint256',
+      },
     ],
 
-    "stateMutability": "nonpayable",
+    stateMutability: 'nonpayable',
 
-    "type": "function"
+    type: 'function',
   },
   {
-
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
       {
-        "internalType": "int24",
-        "name": "tickLower",
-        "type": "int24"
-
+        internalType: 'int24',
+        name: 'tickLower',
+        type: 'int24',
       },
       {
-        "internalType": "int24",
-        "name": "tickUpper",
-        "type": "int24"
+        internalType: 'int24',
+        name: 'tickUpper',
+        type: 'int24',
       },
       {
-
-        "internalType": "uint128",
-        "name": "amount0Requested",
-        "type": "uint128"
-
+        internalType: 'uint128',
+        name: 'amount0Requested',
+        type: 'uint128',
       },
       {
-        "internalType": "uint128",
+        internalType: 'uint128',
 
-        "name": "amount1Requested",
+        name: 'amount1Requested',
 
-        "type": "uint128"
-      }
+        type: 'uint128',
+      },
     ],
-    "name": "collect",
-    "outputs": [
+    name: 'collect',
+    outputs: [
       {
-        "internalType": "uint128",
-        "name": "amount0",
-        "type": "uint128"
+        internalType: 'uint128',
+        name: 'amount0',
+        type: 'uint128',
       },
       {
-        "internalType": "uint128",
-        "name": "amount1",
+        internalType: 'uint128',
+        name: 'amount1',
 
-        "type": "uint128"
-      }
+        type: 'uint128',
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
+        internalType: 'address',
 
-        "name": "recipient",
-        "type": "address"
+        name: 'recipient',
+        type: 'address',
       },
       {
-        "internalType": "uint128",
-        "name": "amount0Requested",
-        "type": "uint128"
+        internalType: 'uint128',
+        name: 'amount0Requested',
+        type: 'uint128',
       },
       {
-        "internalType": "uint128",
-        "name": "amount1Requested",
-        "type": "uint128"
-      }
+        internalType: 'uint128',
+        name: 'amount1Requested',
+        type: 'uint128',
+      },
     ],
-    "name": "collectProtocol",
-    "outputs": [
+    name: 'collectProtocol',
+    outputs: [
       {
-        "internalType": "uint128",
+        internalType: 'uint128',
 
-        "name": "amount0",
-        "type": "uint128"
+        name: 'amount0',
+        type: 'uint128',
       },
       {
-        "internalType": "uint128",
-        "name": "amount1",
-        "type": "uint128"
-      }
+        internalType: 'uint128',
+        name: 'amount1',
+        type: 'uint128',
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
 
   {
-    "inputs": [],
-    "name": "factory",
-    "outputs": [
+    inputs: [],
+    name: 'factory',
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "fee",
-    "outputs": [
+    inputs: [],
+    name: 'fee',
+    outputs: [
       {
-        "internalType": "uint24",
-        "name": "",
-        "type": "uint24"
-
-      }
+        internalType: 'uint24',
+        name: '',
+        type: 'uint24',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
-
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "feeGrowthGlobal0X128",
-    "outputs": [
+    inputs: [],
+    name: 'feeGrowthGlobal0X128',
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
+        internalType: 'uint256',
+        name: '',
 
-        "type": "uint256"
-      }
+        type: 'uint256',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "feeGrowthGlobal1X128",
-    "outputs": [
+    inputs: [],
+    name: 'feeGrowthGlobal1X128',
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
-
+    inputs: [
       {
-        "internalType": "address",
-        "name": "recipient",
+        internalType: 'address',
+        name: 'recipient',
 
-        "type": "address"
+        type: 'address',
       },
 
       {
-        "internalType": "uint256",
-        "name": "amount0",
-        "type": "uint256"
+        internalType: 'uint256',
+        name: 'amount0',
+        type: 'uint256',
       },
       {
-
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
+        internalType: 'uint256',
+        name: 'amount1',
+        type: 'uint256',
       },
       {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
-
+        internalType: 'bytes',
+        name: 'data',
+        type: 'bytes',
+      },
     ],
-    "name": "flash",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: 'flash',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint16",
-        "name": "observationCardinalityNext",
-        "type": "uint16"
-      }
+        internalType: 'uint16',
+        name: 'observationCardinalityNext',
+        type: 'uint16',
+      },
     ],
-    "name": "increaseObservationCardinalityNext",
+    name: 'increaseObservationCardinalityNext',
 
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
 
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
-      }
+        internalType: 'uint160',
+        name: 'sqrtPriceX96',
+        type: 'uint160',
+      },
     ],
 
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: 'initialize',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "liquidity",
-    "outputs": [
-
+    inputs: [],
+    name: 'liquidity',
+    outputs: [
       {
-        "internalType": "uint128",
-        "name": "",
-        "type": "uint128"
-      }
+        internalType: 'uint128',
+        name: '',
+        type: 'uint128',
+      },
     ],
-    "stateMutability": "view",
+    stateMutability: 'view',
 
-    "type": "function"
+    type: 'function',
   },
   {
-
-    "inputs": [],
-    "name": "maxLiquidityPerTick",
-    "outputs": [
+    inputs: [],
+    name: 'maxLiquidityPerTick',
+    outputs: [
       {
-        "internalType": "uint128",
-        "name": "",
-        "type": "uint128"
-      }
+        internalType: 'uint128',
+        name: '',
+        type: 'uint128',
+      },
     ],
 
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
       {
-
-        "internalType": "int24",
-        "name": "tickLower",
-        "type": "int24"
+        internalType: 'int24',
+        name: 'tickLower',
+        type: 'int24',
       },
       {
-        "internalType": "int24",
-        "name": "tickUpper",
-        "type": "int24"
+        internalType: 'int24',
+        name: 'tickUpper',
+        type: 'int24',
       },
       {
-        "internalType": "uint128",
-        "name": "amount",
-        "type": "uint128"
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
       },
       {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
-
+        internalType: 'bytes',
+        name: 'data',
+        type: 'bytes',
+      },
     ],
-    "name": "mint",
+    name: 'mint',
 
-    "outputs": [
+    outputs: [
       {
-        "internalType": "uint256",
+        internalType: 'uint256',
 
-        "name": "amount0",
-        "type": "uint256"
+        name: 'amount0',
+        type: 'uint256',
       },
       {
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
-      }
+        internalType: 'uint256',
+        name: 'amount1',
+        type: 'uint256',
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
 
-    "name": "observations",
-    "outputs": [
+    name: 'observations',
+    outputs: [
       {
-        "internalType": "uint32",
-        "name": "blockTimestamp",
-        "type": "uint32"
+        internalType: 'uint32',
+        name: 'blockTimestamp',
+        type: 'uint32',
       },
       {
-        "internalType": "int56",
-        "name": "tickCumulative",
+        internalType: 'int56',
+        name: 'tickCumulative',
 
-        "type": "int56"
+        type: 'int56',
       },
 
       {
-        "internalType": "uint160",
-        "name": "secondsPerLiquidityCumulativeX128",
-        "type": "uint160"
+        internalType: 'uint160',
+        name: 'secondsPerLiquidityCumulativeX128',
+        type: 'uint160',
       },
       {
-
-        "internalType": "bool",
-        "name": "initialized",
-        "type": "bool"
-      }
-
+        internalType: 'bool',
+        name: 'initialized',
+        type: 'bool',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint32[]",
-        "name": "secondsAgos",
-        "type": "uint32[]"
-
-      }
+        internalType: 'uint32[]',
+        name: 'secondsAgos',
+        type: 'uint32[]',
+      },
     ],
-    "name": "observe",
-    "outputs": [
+    name: 'observe',
+    outputs: [
       {
-        "internalType": "int56[]",
-        "name": "tickCumulatives",
-        "type": "int56[]"
+        internalType: 'int56[]',
+        name: 'tickCumulatives',
+        type: 'int56[]',
       },
       {
-        "internalType": "uint160[]",
-        "name": "secondsPerLiquidityCumulativeX128s",
+        internalType: 'uint160[]',
+        name: 'secondsPerLiquidityCumulativeX128s',
 
-        "type": "uint160[]"
-      }
+        type: 'uint160[]',
+      },
     ],
 
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
+        internalType: 'bytes32',
 
-        "internalType": "bytes32",
-
-        "name": "",
-        "type": "bytes32"
-      }
+        name: '',
+        type: 'bytes32',
+      },
     ],
-    "name": "positions",
-    "outputs": [
-
+    name: 'positions',
+    outputs: [
       {
-        "internalType": "uint128",
-        "name": "liquidity",
-        "type": "uint128"
+        internalType: 'uint128',
+        name: 'liquidity',
+        type: 'uint128',
       },
       {
-        "internalType": "uint256",
-        "name": "feeGrowthInside0LastX128",
+        internalType: 'uint256',
+        name: 'feeGrowthInside0LastX128',
 
-        "type": "uint256"
+        type: 'uint256',
       },
       {
-        "internalType": "uint256",
-        "name": "feeGrowthInside1LastX128",
-        "type": "uint256"
+        internalType: 'uint256',
+        name: 'feeGrowthInside1LastX128',
+        type: 'uint256',
       },
 
       {
-        "internalType": "uint128",
-        "name": "tokensOwed0",
-        "type": "uint128"
+        internalType: 'uint128',
+        name: 'tokensOwed0',
+        type: 'uint128',
       },
       {
-        "internalType": "uint128",
-        "name": "tokensOwed1",
-        "type": "uint128"
-
-      }
+        internalType: 'uint128',
+        name: 'tokensOwed1',
+        type: 'uint128',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
-
+    stateMutability: 'view',
+    type: 'function',
   },
 
   {
-    "inputs": [],
-    "name": "protocolFees",
-    "outputs": [
-
+    inputs: [],
+    name: 'protocolFees',
+    outputs: [
       {
-        "internalType": "uint128",
-        "name": "token0",
-        "type": "uint128"
-
+        internalType: 'uint128',
+        name: 'token0',
+        type: 'uint128',
       },
       {
-        "internalType": "uint128",
+        internalType: 'uint128',
 
-        "name": "token1",
-        "type": "uint128"
-      }
+        name: 'token1',
+        type: 'uint128',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint8",
-        "name": "feeProtocol0",
-        "type": "uint8"
+        internalType: 'uint8',
+        name: 'feeProtocol0',
+        type: 'uint8',
       },
       {
-        "internalType": "uint8",
-        "name": "feeProtocol1",
-        "type": "uint8"
-      }
+        internalType: 'uint8',
+        name: 'feeProtocol1',
+        type: 'uint8',
+      },
     ],
-    "name": "setFeeProtocol",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: 'setFeeProtocol',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "slot0",
-    "outputs": [
+    inputs: [],
+    name: 'slot0',
+    outputs: [
       {
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
+        internalType: 'uint160',
+        name: 'sqrtPriceX96',
+        type: 'uint160',
       },
       {
+        internalType: 'int24',
+        name: 'tick',
 
-        "internalType": "int24",
-        "name": "tick",
-
-        "type": "int24"
-      },
-
-      {
-        "internalType": "uint16",
-        "name": "observationIndex",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint16",
-        "name": "observationCardinality",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint16",
-        "name": "observationCardinalityNext",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint8",
-        "name": "feeProtocol",
-        "type": "uint8"
+        type: 'int24',
       },
 
       {
-        "internalType": "bool",
-        "name": "unlocked",
-        "type": "bool"
-      }
+        internalType: 'uint16',
+        name: 'observationIndex',
+        type: 'uint16',
+      },
+      {
+        internalType: 'uint16',
+        name: 'observationCardinality',
+        type: 'uint16',
+      },
+      {
+        internalType: 'uint16',
+        name: 'observationCardinalityNext',
+        type: 'uint16',
+      },
+      {
+        internalType: 'uint8',
+        name: 'feeProtocol',
+        type: 'uint8',
+      },
 
+      {
+        internalType: 'bool',
+        name: 'unlocked',
+        type: 'bool',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "int24",
+        internalType: 'int24',
 
-        "name": "tickLower",
+        name: 'tickLower',
 
-        "type": "int24"
+        type: 'int24',
       },
 
       {
-        "internalType": "int24",
-        "name": "tickUpper",
-        "type": "int24"
-      }
-
+        internalType: 'int24',
+        name: 'tickUpper',
+        type: 'int24',
+      },
     ],
-    "name": "snapshotCumulativesInside",
-    "outputs": [
+    name: 'snapshotCumulativesInside',
+    outputs: [
       {
-        "internalType": "int56",
-        "name": "tickCumulativeInside",
+        internalType: 'int56',
+        name: 'tickCumulativeInside',
 
-        "type": "int56"
+        type: 'int56',
       },
 
       {
-        "internalType": "uint160",
-        "name": "secondsPerLiquidityInsideX128",
-        "type": "uint160"
+        internalType: 'uint160',
+        name: 'secondsPerLiquidityInsideX128',
+        type: 'uint160',
       },
       {
-        "internalType": "uint32",
-        "name": "secondsInside",
-        "type": "uint32"
-      }
+        internalType: 'uint32',
+        name: 'secondsInside',
+        type: 'uint32',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
       },
       {
-        "internalType": "bool",
-        "name": "zeroForOne",
-        "type": "bool"
+        internalType: 'bool',
+        name: 'zeroForOne',
+        type: 'bool',
       },
       {
-        "internalType": "int256",
-        "name": "amountSpecified",
-        "type": "int256"
+        internalType: 'int256',
+        name: 'amountSpecified',
+        type: 'int256',
       },
       {
-        "internalType": "uint160",
-        "name": "sqrtPriceLimitX96",
-        "type": "uint160"
+        internalType: 'uint160',
+        name: 'sqrtPriceLimitX96',
+        type: 'uint160',
       },
       {
-        "internalType": "bytes",
+        internalType: 'bytes',
 
-        "name": "data",
-        "type": "bytes"
-      }
+        name: 'data',
+        type: 'bytes',
+      },
     ],
-    "name": "swap",
-    "outputs": [
+    name: 'swap',
+    outputs: [
       {
-        "internalType": "int256",
-        "name": "amount0",
-        "type": "int256"
+        internalType: 'int256',
+        name: 'amount0',
+        type: 'int256',
       },
       {
-        "internalType": "int256",
-        "name": "amount1",
-        "type": "int256"
-      }
-
+        internalType: 'int256',
+        name: 'amount1',
+        type: 'int256',
+      },
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-
-        "internalType": "int16",
-        "name": "",
-        "type": "int16"
-
-      }
+        internalType: 'int16',
+        name: '',
+        type: 'int16',
+      },
     ],
-    "name": "tickBitmap",
-    "outputs": [
+    name: 'tickBitmap',
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
+        internalType: 'uint256',
+        name: '',
 
-        "type": "uint256"
-      }
+        type: 'uint256',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "tickSpacing",
-    "outputs": [
+    inputs: [],
+    name: 'tickSpacing',
+    outputs: [
       {
-        "internalType": "int24",
-        "name": "",
-        "type": "int24"
-      }
+        internalType: 'int24',
+        name: '',
+        type: 'int24',
+      },
     ],
-    "stateMutability": "view",
+    stateMutability: 'view',
 
-    "type": "function"
+    type: 'function',
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "int24",
-        "name": "",
-        "type": "int24"
-      }
+        internalType: 'int24',
+        name: '',
+        type: 'int24',
+      },
     ],
-    "name": "ticks",
-    "outputs": [
+    name: 'ticks',
+    outputs: [
       {
-        "internalType": "uint128",
-        "name": "liquidityGross",
-        "type": "uint128"
+        internalType: 'uint128',
+        name: 'liquidityGross',
+        type: 'uint128',
       },
       {
-        "internalType": "int128",
-        "name": "liquidityNet",
+        internalType: 'int128',
+        name: 'liquidityNet',
 
-        "type": "int128"
+        type: 'int128',
       },
       {
-        "internalType": "uint256",
-        "name": "feeGrowthOutside0X128",
+        internalType: 'uint256',
+        name: 'feeGrowthOutside0X128',
 
-        "type": "uint256"
+        type: 'uint256',
       },
       {
-        "internalType": "uint256",
-        "name": "feeGrowthOutside1X128",
-        "type": "uint256"
-
+        internalType: 'uint256',
+        name: 'feeGrowthOutside1X128',
+        type: 'uint256',
       },
       {
-        "internalType": "int56",
-        "name": "tickCumulativeOutside",
-        "type": "int56"
+        internalType: 'int56',
+        name: 'tickCumulativeOutside',
+        type: 'int56',
       },
       {
-        "internalType": "uint160",
-        "name": "secondsPerLiquidityOutsideX128",
-        "type": "uint160"
-
+        internalType: 'uint160',
+        name: 'secondsPerLiquidityOutsideX128',
+        type: 'uint160',
       },
       {
-        "internalType": "uint32",
-        "name": "secondsOutside",
-        "type": "uint32"
-
+        internalType: 'uint32',
+        name: 'secondsOutside',
+        type: 'uint32',
       },
       {
-        "internalType": "bool",
-        "name": "initialized",
-        "type": "bool"
-      }
+        internalType: 'bool',
+        name: 'initialized',
+        type: 'bool',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "inputs": [],
-    "name": "token0",
-    "outputs": [
+    inputs: [],
+    name: 'token0',
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
-    "stateMutability": "view",
+    stateMutability: 'view',
 
-    "type": "function"
+    type: 'function',
   },
   {
-
-    "inputs": [],
-    "name": "token1",
-    "outputs": [
+    inputs: [],
+    name: 'token1',
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
-  }
+    stateMutability: 'view',
+    type: 'function',
+  },
 ] as const;
 
 export const UNISWAP_V3_FACTORY_ABI = [
@@ -1115,3 +1058,37 @@ export const UNISWAP_V3_FACTORY_ABI = [
     type: 'event',
   },
 ] as const;
+
+export const POSITION_MANAGER_ABI = [
+  {
+    name: 'balanceOf',
+    type: 'function',
+    inputs: [{ type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    name: 'tokenOfOwnerByIndex',
+    type: 'function',
+    inputs: [{ type: 'address' }, { type: 'uint256' }],
+    outputs: [{ type: 'uint256' }],
+  },
+  {
+    name: 'positions',
+    type: 'function',
+    inputs: [{ type: 'uint256' }],
+    outputs: [
+      { name: 'nonce', type: 'uint96' },
+      { name: 'operator', type: 'address' },
+      { name: 'token0', type: 'address' },
+      { name: 'token1', type: 'address' },
+      { name: 'fee', type: 'uint24' },
+      { name: 'tickLower', type: 'int24' },
+      { name: 'tickUpper', type: 'int24' },
+      { name: 'liquidity', type: 'uint128' },
+      { name: 'feeGrowthInside0LastX128', type: 'uint256' },
+      { name: 'feeGrowthInside1LastX128', type: 'uint256' },
+      { name: 'tokensOwed0', type: 'uint128' },
+      { name: 'tokensOwed1', type: 'uint128' },
+    ],
+  },
+];
