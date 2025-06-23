@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, type ChangeEvent } from "react";
+import React, { useMemo, useState, useEffect, type ChangeEvent, useCallback } from "react";
 import { ConnectButton } from '../Buttons/ConnectButton';
 import { FromInput } from '../Inputs/FromInput';
 import { SwapToInput } from '../Inputs/SwapToInput';
@@ -65,6 +65,20 @@ const SwapForm: React.FC<FormProps> = React.memo(
       fromToken?.address,
       toToken?.address
     );
+
+    const handleFromTokenSelect = useCallback((token: BerachainToken) => {
+      if (toToken?.address === token.address) {
+        setToToken(null);
+      }
+      setFromToken(token);
+    }, [toToken]);
+
+    const handleToTokenSelect = useCallback((token: BerachainToken) => {
+      if (fromToken?.address === token.address) {
+        setFromToken(null);
+      }
+      setToToken(token);
+    }, [fromToken]);
 
     const handleOpenModal = () => {
       setShowModal(true);
@@ -217,7 +231,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
           <div className="Inputs">
             <FromInput
               selectedToken={fromToken}
-              onTokenSelect={setFromToken}
+              onTokenSelect={handleFromTokenSelect}
               onAmountChange={handleFromAmountChange}
               value={fromAmount}
               dominantColor={dominantColor}
@@ -235,7 +249,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
             <SwapToInput
               steps={{ totalRatio: 0, steps: [] }}
               preSelected={toToken}
-              onSelect={setToToken}
+              onSelect={handleToTokenSelect}
               inputValue={toAmount}
               onInputChange={handleToAmountChange}
               dominantColor={dominantColor}

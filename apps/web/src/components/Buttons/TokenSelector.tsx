@@ -28,9 +28,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
 
   useEffect(() => {
-    if (preSelected) {
-      setSelectedToken(preSelected);
-    }
+    setSelectedToken(preSelected || null);
   }, [preSelected]);
 
   useEffect(() => {
