@@ -7,19 +7,15 @@ import { QuoterV2ABI } from "../config/abis/QuoterV2"
 import { calculatePriceImpact, calculateSlippageAmount, encodePath } from "../utils/swap"
 import { SwapRouteV2ABI } from "../config/abis/swapRouter"
 import { useQueryClient } from "@tanstack/react-query"
+import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
 
 const COMMON_BASES: Address[] = [
   '0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce', // HONEY
   '0x0000000000000000000000000000000000000000', // BERA
   '0x6969696969696969696969696969696969696969', // wBera
 ]
-const CONTRACTS = {
-  v3CoreFactory: '0x76fD9D07d5e4D889CAbED96884F15f7ebdcd6B63' as Address,
-  quoterV2: '0x35E02133b7Ee5E4cDE7cb7FF278a19c35d4cd965' as Address,
-  swapRouter02: '0x86e02f3D4Cb55974B7EE7E7c98c199e65F9023a4' as Address,
-  multicall2: '0x2B35c459e86fABd62b9C37fb652091671C5aA3ad' as Address,
-} as const;
-const FEE_TIERS = [100, 500, 3000, 10000]; // 0.01%, 0.05%, 0.3%, 1%
+
+const FEE_TIERS = [100, 500, 3000, 10000]
 
 interface SwapParams {
   tokenIn: Address
@@ -124,7 +120,7 @@ export const useSwap = (params: SwapParams) => {
   ): Promise<Address | null> => {
     try {
       const poolAddress = await publicClient.readContract({
-        address: CONTRACTS.v3CoreFactory,
+        address: CONTRACTS_ADDRESS.v3CoreFactory,
         abi: v3CoreFactoryContract,
         functionName: 'getPool',
         args: [tokenA, tokenB, fee]
@@ -255,7 +251,7 @@ export const useSwap = (params: SwapParams) => {
       if (tokens.length === 2) {
         // Single Hop
         const result = await publicClient.readContract({
-          address: CONTRACTS.quoterV2,
+          address: CONTRACTS_ADDRESS.quoterV2,
           abi: QuoterV2ABI,
           functionName: 'quoteExactInputSingle',
           args: [{
@@ -275,7 +271,7 @@ export const useSwap = (params: SwapParams) => {
         // Multi-hop
         const path = encodePath(tokens, fees)
         const result = await publicClient.readContract({
-          address: CONTRACTS.quoterV2,
+          address: CONTRACTS_ADDRESS.quoterV2,
           abi: QuoterV2ABI,
           functionName: "quoteExactInput",
           args: [path, amountInWei]
@@ -386,7 +382,7 @@ export const useSwap = (params: SwapParams) => {
     address: tokenIn,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: address ? [address, CONTRACTS.swapRouter02] : undefined,
+    args: address ? [address, CONTRACTS_ADDRESS.swapRouter02] : undefined,
     query: {
       enabled: !!address && !!tokenIn && state.status === "ready"
     }
@@ -406,7 +402,7 @@ export const useSwap = (params: SwapParams) => {
 
   // Swap Simulation
   const { data: swapConfig } = useSimulateContract({
-    address: CONTRACTS.swapRouter02,
+    address: CONTRACTS_ADDRESS.swapRouter02,
     abi: SwapRouteV2ABI,
     functionName: state.selectedRoute?.path.length === 2 ? 'exactInputSingle' : 'exactInput',
     args: (() => {
@@ -475,7 +471,7 @@ export const useSwap = (params: SwapParams) => {
         address: tokenIn,
         abi: erc20Abi,
         functionName: "approve",
-        args: [CONTRACTS.swapRouter02, 2n ** 256n - 1n], // Max approval
+        args: [CONTRACTS_ADDRESS.swapRouter02, 2n ** 256n - 1n], // Max approval
       }, {
         onSuccess: () => {
           refetchAllowance()

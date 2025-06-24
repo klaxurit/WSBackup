@@ -118,3 +118,30 @@
     height: 40px;
   }
 }
+
+.toggleBtn {
+  position: relative;
+  height: 40px;
+  background: #151311;
+  color: #ffffff;
+  border-radius: 25px;
+  border: 1px solid #504f4c;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &__item {
+    border: none;
+    border-radius: 25px;
+    background-color: rgba(0, 0, 0, 0);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &.active {
+      background-color: #232323;
+    }
+  }
+}

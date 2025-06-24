@@ -1,14 +1,14 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, type ChangeEvent } from 'react';
 import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
-import { useAccount, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits, formatUnits, type Address } from 'viem';
+import { useAccount, useBalance } from 'wagmi';
+import { type Address } from 'viem';
 import { ConnectButton } from '../../../components/Buttons/ConnectButton';
 import '../../../styles/pages/_poolsPage.scss';
-import { useNavigate } from 'react-router-dom';
 import { Loader } from '../../../components/Loader/Loader';
-import { usePrice } from '../../../hooks/usePrice';
+import { usePositionManager } from '../../../hooks/usePositionManager';
+import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -17,350 +17,161 @@ const feeTiers = [
   { value: '1%', fee: 10000, label: '1%', desc: 'Best for exotic pairs.', tvl: '0 TVL' },
 ];
 
-// Position Manager ABI for minting positions
-const POSITION_MANAGER_ABI = [
-  {
-    name: 'mint',
-    type: 'function',
-    inputs: [{
-      name: 'params',
-      type: 'tuple',
-      components: [
-        { name: 'token0', type: 'address' },
-        { name: 'token1', type: 'address' },
-        { name: 'fee', type: 'uint24' },
-        { name: 'tickLower', type: 'int24' },
-        { name: 'tickUpper', type: 'int24' },
-        { name: 'amount0Desired', type: 'uint256' },
-        { name: 'amount1Desired', type: 'uint256' },
-        { name: 'amount0Min', type: 'uint256' },
-        { name: 'amount1Min', type: 'uint256' },
-        { name: 'recipient', type: 'address' },
-        { name: 'deadline', type: 'uint256' }
-      ]
-    }],
-    outputs: [
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'liquidity', type: 'uint128' },
-      { name: 'amount0', type: 'uint256' },
-      { name: 'amount1', type: 'uint256' }
-    ],
-    stateMutability: 'payable'
-  }
-] as const;
-
-const ERC20_ABI = [
-  {
-    name: 'approve',
-    type: 'function',
-    inputs: [
-      { name: 'spender', type: 'address' },
-      { name: 'amount', type: 'uint256' }
-    ],
-    outputs: [{ name: '', type: 'bool' }],
-    stateMutability: 'nonpayable'
-  },
-  {
-    name: 'allowance',
-    type: 'function',
-    inputs: [
-      { name: 'owner', type: 'address' },
-      { name: 'spender', type: 'address' }
-    ],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view'
-  }
-] as const;
-
-// Contract addresses from state_bepolia.json
-const CONTRACTS = {
-  nonfungibleTokenPositionManager: '0xEf089afF769bC068520a1A90f0773037eF31fbBC' as Address,
-  quoterV2: '0x35E02133b7Ee5E4cDE7cb7FF278a19c35d4cd965' as Address,
-};
-
 const CreatePoolPage: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const { writeContract, data: txHash, isPending: isTransactionPending } = useWriteContract();
-  const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [tokenA, setTokenA] = useState<BerachainToken | null>(null);
-  const [tokenB, setTokenB] = useState<BerachainToken | null>(null);
-  const [selectedFee, setSelectedFee] = useState('0.3%');
+  const [token0, setToken0] = useState<BerachainToken | null>(null);
+  const [token1, setToken1] = useState<BerachainToken | null>(null);
+  const [fee, setFee] = useState(feeTiers[2].fee);
 
   // Step 2 states
-  const [minPrice, setMinPrice] = useState('0');
-  const [maxPrice, setMaxPrice] = useState('∞');
-  const [amountA, setAmountA] = useState<bigint>(0n);
-  const [amountB, setAmountB] = useState<bigint>(0n);
+  const [minPrice, setMinPrice] = useState<string>("0");
+  const [maxPrice, setMaxPrice] = useState<string>("∞");
+  const [inputAmount, setInputAmount] = useState<bigint>(0n);
+  const [inputToken, setInputToken] = useState<"token0" | "token1">("token0");
+  const [initialPrice, setInitialPrice] = useState<bigint>(0n)
 
-  // Transaction states
-  const [currentAction, setCurrentAction] = useState<'idle' | 'approving-a' | 'approving-b' | 'depositing'>('idle');
-
-  // Wait for transaction completion
-  const { isLoading: isWaitingTx, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({
-    hash: txHash,
-  });
-
-  // Get selected fee tier details
-  const selectedFeeTier = feeTiers.find(tier => tier.value === selectedFee);
-
-  // Get token balances
-  const { data: balanceA } = useBalance({
+  const { data: balance0 } = useBalance({
     address,
-    token: tokenA?.address as Address | undefined,
+    token: token0?.address as Address | undefined,
+    query: {
+      enabled: !!token0
+    }
   });
-
-  const { data: balanceB } = useBalance({
+  const { data: balance1 } = useBalance({
     address,
-    token: tokenB?.address as Address | undefined,
+    token: token1?.address as Address | undefined,
+    query: {
+      enabled: !!token1
+    }
   });
 
-  // Check token allowances
-  const { data: allowanceA, refetch: refetchAllowanceA } = useReadContract({
-    address: tokenA?.address as Address,
-    abi: ERC20_ABI,
-    functionName: 'allowance',
-    args: address ? [address, CONTRACTS.nonfungibleTokenPositionManager] : undefined,
-    query: { enabled: !!address && !!tokenA?.address }
-  });
+  const positionManager = usePositionManager({
+    btoken0: token0,
+    btoken1: token1,
+    fee,
+    inputToken,
+    inputAmount,
+    minPrice,
+    maxPrice,
+    initialPrice
+  })
 
-  const { data: allowanceB, refetch: refetchAllowanceB } = useReadContract({
-    address: tokenB?.address as Address,
-    abi: ERC20_ABI,
-    functionName: 'allowance',
-    args: address ? [address, CONTRACTS.nonfungibleTokenPositionManager] : undefined,
-    query: { enabled: !!address && !!tokenB?.address }
-  });
+  console.log(positionManager)
 
-  // Check if amounts exceed balances
-  const insufficientA = balanceA && amountA > balanceA.value;
-  const insufficientB = balanceB && amountB > balanceB.value;
+  const { insufficient0, insufficient1 } = useMemo(() => {
+    return {
+      insufficient0: balance0 && positionManager.amount0 > balance0.value,
+      insufficient1: balance1 && positionManager.amount1 > balance1.value
+    }
+  }, [balance0, balance1, positionManager])
 
-  // Check approval needs
-  const needsApprovalA = tokenA && allowanceA !== undefined && amountA > 0n && amountA > allowanceA;
-  const needsApprovalB = tokenB && allowanceB !== undefined && amountB > 0n && amountB > allowanceB;
 
   // Determine button state and action
   const buttonState = useMemo(() => {
     if (!isConnected) return { text: 'Connect Wallet', action: 'connect', disabled: false, loading: false };
-    if (!tokenA || !tokenB) return { text: 'Select tokens', action: 'none', disabled: true, loading: false };
-    if (amountA === 0n || amountB === 0n) return { text: 'Enter amounts', action: 'none', disabled: true, loading: false };
-    if (insufficientA) return { text: `Insufficient ${tokenA.symbol} balance`, action: 'none', disabled: true, loading: false };
-    if (insufficientB) return { text: `Insufficient ${tokenB.symbol} balance`, action: 'none', disabled: true, loading: false };
+    if (!token0 || !token1) return { text: 'Select tokens', action: 'none', disabled: true, loading: false };
+    // if (positionManager.amount0 === 0n || positionManager.amount1 === 0n) return { text: 'Enter amounts', action: 'none', disabled: true, loading: false };
+    if (insufficient0) return { text: `Insufficient ${token0.symbol} balance`, action: 'none', disabled: true, loading: false };
+    if (insufficient1) return { text: `Insufficient ${token1.symbol} balance`, action: 'none', disabled: true, loading: false };
 
+    if (positionManager.poolExists) return { text: 'Deposit Liquidity', action: 'deposit', disabled: false, loading: false };
     // Approbation en cours
-    if (currentAction === 'approving-a' && (isTransactionPending || isWaitingTx)) {
-      return { text: `Approbation de ${tokenA.symbol}...`, action: 'none', disabled: true, loading: true };
-    }
-    if (currentAction === 'approving-b' && (isTransactionPending || isWaitingTx)) {
-      return { text: `Approbation de ${tokenB.symbol}...`, action: 'none', disabled: true, loading: true };
-    }
+    // if (currentAction === 'approving-a' && (isTransactionPending || isWaitingTx)) {
+    //   return { text: `Approbation de ${tokenA.symbol}...`, action: 'none', disabled: true, loading: true };
+    // }
+    // if (currentAction === 'approving-b' && (isTransactionPending || isWaitingTx)) {
+    //   return { text: `Approbation de ${tokenB.symbol}...`, action: 'none', disabled: true, loading: true };
+    // }
     // Approbation succès
-    if (currentAction === 'approving-a' && isTxSuccess) {
-      if (needsApprovalB) {
-        return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
-      }
-      return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
-    }
-    if (currentAction === 'approving-b' && isTxSuccess) {
-      return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
-    }
+    // if (currentAction === 'approving-a' && isTxSuccess) {
+    //   if (needsApprovalB) {
+    //     return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
+    //   }
+    //   return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
+    // }
+    // if (currentAction === 'approving-b' && isTxSuccess) {
+    //   return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
+    // }
     // Dépôt en cours
-    if (currentAction === 'depositing' && (isTransactionPending || isWaitingTx)) {
-      return { text: 'Dépôt en cours...', action: 'none', disabled: true, loading: true };
-    }
+    // if (currentAction === 'depositing' && (isTransactionPending || isWaitingTx)) {
+    //   return { text: 'Dépôt en cours...', action: 'none', disabled: true, loading: true };
+    // }
     // Dépôt succès
-    if (currentAction === 'depositing' && isTxSuccess) {
-      return { text: 'Déposé !', action: 'none', disabled: true, loading: false };
-    }
+    // if (currentAction === 'depositing' && isTxSuccess) {
+    //   return { text: 'Déposé !', action: 'none', disabled: true, loading: false };
+    // }
     // Approbation nécessaire
-    if (needsApprovalA) return { text: `Approve ${tokenA.symbol}`, action: 'approve-a', disabled: false, loading: false };
-    if (needsApprovalB) return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
+    if (positionManager.token0NeedApproval) return { text: `Approve ${token0.symbol}`, action: 'approve-a', disabled: false, loading: false };
+    if (positionManager.token1NeedApproval) return { text: `Approve ${token1.symbol}`, action: 'approve-b', disabled: false, loading: false };
 
-    return { text: 'Deposit Liquidity', action: 'deposit', disabled: false, loading: false };
+    return { text: 'Create pool', action: 'deposit', disabled: false, loading: false };
   }, [
-    isConnected, tokenA, tokenB, amountA, amountB, insufficientA, insufficientB,
-    needsApprovalA, needsApprovalB, currentAction, isTransactionPending, isWaitingTx, isTxSuccess
+    isConnected, token0, token1, positionManager, insufficient0, insufficient1,
   ]);
 
-  // Token selection handlers
-  const handleSelectA = useCallback((token: BerachainToken) => {
-    setTokenA(token);
-    if (tokenB && tokenB.symbol === token.symbol) setTokenB(null);
-  }, [tokenB]);
+  const handleSelect0 = useCallback((token: BerachainToken) => {
+    setToken0(token);
+    if (token1 && token1.symbol === token.symbol) setToken1(null);
+  }, [token1]);
+  const handleSelect1 = useCallback((token: BerachainToken) => {
+    setToken1(token);
+    if (token0 && token0.symbol === token.symbol) setToken0(null);
+  }, [token0]);
 
-  const handleSelectB = useCallback((token: BerachainToken) => {
-    setTokenB(token);
-    if (tokenA && tokenA.symbol === token.symbol) setTokenA(null);
-  }, [tokenA]);
 
-  // Ajout des hooks de prix AVANT les handlers
-  const { data: priceA } = usePrice(tokenA);
-  const { data: priceB } = usePrice(tokenB);
-
-  // Amount change handlers with automatic ratio calculation
-  const handleAmountAChange = useCallback((amount: bigint) => {
-    setAmountA(amount);
-    if (tokenA && tokenB && priceA !== undefined && priceB !== undefined && amount > 0n) {
-      const amountAFloat = parseFloat(formatUnits(amount, tokenA.decimals));
-      const usdValue = amountAFloat * priceA;
-      const amountBFloat = usdValue / priceB;
-      const amountB = parseUnits(amountBFloat.toFixed(Math.min(tokenB.decimals, 8)), tokenB.decimals);
-      setAmountB(amountB);
-    } else if (amount === 0n) {
-      setAmountB(0n);
+  const handleMainAction = useCallback(async () => {
+    if (positionManager.token0NeedApproval) {
+      await positionManager.approveToken0()
+      return
     }
-  }, [tokenA, tokenB, priceA, priceB]);
-
-  const handleAmountBChange = useCallback((amount: bigint) => {
-    setAmountB(amount);
-    if (tokenA && tokenB && priceA !== undefined && priceB !== undefined && amount > 0n) {
-      const amountBFloat = parseFloat(formatUnits(amount, tokenB.decimals));
-      const usdValue = amountBFloat * priceB;
-      const amountAFloat = usdValue / priceA;
-      const amountA = parseUnits(amountAFloat.toFixed(Math.min(tokenA.decimals, 8)), tokenA.decimals);
-      setAmountA(amountA);
-    } else if (amount === 0n) {
-      setAmountA(0n);
+    if (positionManager.token1NeedApproval) {
+      await positionManager.approveToken1()
+      return
     }
-  }, [tokenA, tokenB, priceA, priceB]);
+    if (positionManager.poolExists) {
+      await positionManager.mintPosition()
+      return
+    } else {
+      await positionManager.createPoolAndMint()
+      return
+    }
+  }, [positionManager]);
 
-  // Approve token A
-  const approveTokenA = useCallback(() => {
-    if (!tokenA) return;
-    setCurrentAction('approving-a');
-    writeContract({
-      address: tokenA.address as Address,
-      abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [CONTRACTS.nonfungibleTokenPositionManager, amountA * 2n], // 2x for safety
-    }, {
-      onSuccess: () => {
-        refetchAllowanceA();
-      },
-      onError: () => {
-        // Optionnel : gérer l'erreur ici
+  const handleMinPriceChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^\d.,]/g, '')
+    val = val.replace(',', '.')
+
+    if (val.includes('.')) {
+      const parts = val.split('.')
+      if (parts[1] && parts[1].length > 2) {
+        val = parts[0] + '.' + parts[1].substring(0, 2)
       }
-    });
-  }, [tokenA, amountA, writeContract, refetchAllowanceA]);
+    }
+    setMinPrice(val)
+  }
+  const handleMaxPriceChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^\d.,]/g, '')
+    val = val.replace(',', '.')
 
-  // Approve token B
-  const approveTokenB = useCallback(() => {
-    if (!tokenB) return;
-    setCurrentAction('approving-b');
-    writeContract({
-      address: tokenB.address as Address,
-      abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [CONTRACTS.nonfungibleTokenPositionManager, amountB * 2n], // 2x for safety
-    }, {
-      onSuccess: () => {
-        refetchAllowanceB();
-      },
-      onError: () => {
-        // Optionnel : gérer l'erreur ici
+    if (val.includes('.')) {
+      const parts = val.split('.')
+      if (parts[1] && parts[1].length > 2) {
+        val = parts[0] + '.' + parts[1].substring(0, 2)
       }
-    });
-  }, [tokenB, amountB, writeContract, refetchAllowanceB]);
-
-  // Deposit liquidity
-  const depositLiquidity = useCallback(async () => {
-    if (!tokenA || !tokenB || !selectedFeeTier) return;
-
-    setCurrentAction('depositing');
-    try {
-      // Ensure tokens are in correct order (token0 < token1)
-      const token0 = tokenA.address.toLowerCase() < tokenB.address.toLowerCase() ? tokenA : tokenB;
-      const token1 = tokenA.address.toLowerCase() < tokenB.address.toLowerCase() ? tokenB : tokenA;
-      const amount0Desired = token0 === tokenA ? amountA : amountB;
-      const amount1Desired = token0 === tokenA ? amountB : amountA;
-
-      // Calculate minimum amounts (5% slippage tolerance)
-      const amount0Min = (amount0Desired * 95n) / 100n;
-      const amount1Min = (amount1Desired * 95n) / 100n;
-
-      // Full range ticks
-      const tickLower = -887220;
-      const tickUpper = 887220;
-
-      // Deadline: 20 minutes from now
-      const deadline = Math.floor(Date.now() / 1000) + 1200;
-
-      const mintParams = {
-        token0: token0.address as Address,
-        token1: token1.address as Address,
-        fee: selectedFeeTier.fee,
-        tickLower,
-        tickUpper,
-        amount0Desired,
-        amount1Desired,
-        amount0Min,
-        amount1Min,
-        recipient: address as Address,
-        deadline: BigInt(deadline),
-      };
-
-      writeContract({
-        address: CONTRACTS.nonfungibleTokenPositionManager,
-        abi: POSITION_MANAGER_ABI,
-        functionName: 'mint',
-        args: [mintParams],
-      }, {
-        onSuccess: () => {
-          setCurrentAction('idle');
-          // Reset form or redirect
-        },
-        onError: () => {
-          setCurrentAction('idle');
-        }
-      });
-
-    } catch (error) {
-      console.error('Deposit failed:', error);
-      setCurrentAction('idle');
     }
-  }, [tokenA, tokenB, selectedFeeTier, amountA, amountB, address, writeContract]);
+    setMaxPrice(val)
+  }
+  const handleAmount0Change = (v: bigint) => {
+    setInputAmount(v)
+    setInputToken("token0")
+  }
+  const handleAmount1Change = (v: bigint) => {
+    setInputAmount(v)
+    setInputToken("token1")
+  }
 
-  // Main button handler
-  const handleMainAction = useCallback(() => {
-    switch (buttonState.action) {
-      case 'approve-a':
-        approveTokenA();
-        break;
-      case 'approve-b':
-        approveTokenB();
-        break;
-      case 'deposit':
-        depositLiquidity();
-        break;
-      default:
-        break;
-    }
-  }, [buttonState.action, approveTokenA, approveTokenB, depositLiquidity]);
-
-  // Redirection après succès de la transaction
-  useEffect(() => {
-    if (isTxSuccess && currentAction === 'depositing') {
-      const timeout = setTimeout(() => {
-        navigate('/pools');
-      }, 1500);
-      return () => clearTimeout(timeout);
-    }
-  }, [isTxSuccess, currentAction, navigate]);
-
-  // Ajout d'un useEffect pour remettre currentAction à 'idle' après confirmation on-chain d'une approbation
-  useEffect(() => {
-    if ((currentAction === 'approving-a' || currentAction === 'approving-b') && isTxSuccess) {
-      if (currentAction === 'approving-a') {
-        refetchAllowanceA();
-      }
-      if (currentAction === 'approving-b') {
-        refetchAllowanceB();
-      }
-      setCurrentAction('idle');
-    }
-  }, [isTxSuccess, currentAction, refetchAllowanceA, refetchAllowanceB]);
 
   return (
     <div className="PoolPage PoolPage--create">
@@ -385,7 +196,6 @@ const CreatePoolPage: React.FC = () => {
       <div className="PoolPage__CreateContent">
         {currentStep === 1 && (
           <>
-
             <div className="PoolPage__CreateSection">
               <h3 className="PoolPage__CreateSectionTitle">Select pair</h3>
               <p className="PoolPage__CreateSectionDesc">
@@ -393,13 +203,13 @@ const CreatePoolPage: React.FC = () => {
               </p>
               <div className="PoolPage__TokenSelectors">
                 <NetworkSelector
-                  preSelected={tokenA}
-                  onSelect={handleSelectA}
+                  preSelected={token0}
+                  onSelect={handleSelect0}
                 />
                 <span className="PoolPage__TokenSeparator">/</span>
                 <NetworkSelector
-                  preSelected={tokenB}
-                  onSelect={handleSelectB}
+                  preSelected={token1}
+                  onSelect={handleSelect1}
                 />
               </div>
             </div>
@@ -413,8 +223,8 @@ const CreatePoolPage: React.FC = () => {
                 {feeTiers.map((tier) => (
                   <button
                     key={tier.value}
-                    className={`PoolPage__FeeTierBtn${selectedFee === tier.value ? ' active' : ''}`}
-                    onClick={() => setSelectedFee(tier.value)}
+                    className={`PoolPage__FeeTierBtn${fee === tier.fee ? ' active' : ''}`}
+                    onClick={() => setFee(tier.fee)}
                     type="button"
                   >
                     <div className="PoolPage__FeeTierLabel">{tier.label}</div>
@@ -425,11 +235,20 @@ const CreatePoolPage: React.FC = () => {
               </div>
             </div>
 
+            {!positionManager.poolExists && (
+              <div className="PoolPage__CreateSection">
+                <h3 className="PoolPage__CreateSectionTitle">Creating new pool</h3>
+                <p className="PoolPage__CreateSectionDesc">
+                  Your selections will create a new liquidity pool which may result in lower initial liquidity and increased volatility. Consider adding to an existing pool to minimize these risks.
+                </p>
+              </div>
+            )}
+
             <div className="PoolPage__CreateFooter">
               <button
                 className="PoolPage__ContinueBtn"
                 type="button"
-                disabled={!(tokenA && tokenB && selectedFee)}
+                disabled={!(token0 && token1 && fee)}
                 onClick={() => setCurrentStep(2)}
               >
                 Continue
@@ -442,18 +261,45 @@ const CreatePoolPage: React.FC = () => {
           <>
             <div className="PoolPage__Header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {tokenA && tokenB && (
+                {token0 && token1 && (
                   <>
                     <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-                      <img src={tokenA.logoUri} alt={tokenA.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
-                      <img src={tokenB.logoUri} alt={tokenB.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />
+                      <img src={token0.logoUri} alt={token0.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
+                      <img src={token1.logoUri} alt={token1.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />
                     </span>
-                    <span style={{ fontWeight: 700, fontSize: 18 }}>{tokenA.symbol} / {tokenB.symbol}</span>
+                    <span style={{ fontWeight: 700, fontSize: 18 }}>{token0.symbol} / {token1.symbol}</span>
                   </>
                 )}
-                <span className="PoolPage__StepFee">{selectedFee}</span>
+                <span className="PoolPage__StepFee">{fee / 10000}%</span>
               </div>
             </div>
+
+            {!positionManager.poolExists && token0 && token1 && (
+              <>
+                <div className="PoolPage__CreateSection">
+                  <h3 className="PoolPage__CreateSectionTitle">Creating new pool</h3>
+                  <p className="PoolPage__CreateSectionDesc">
+                    Your selections will create a new liquidity pool which may result in lower initial liquidity and increased volatility. Consider adding to an existing pool to minimize these risks.
+                  </p>
+                </div>
+                <div className="PoolPage__CreateSection">
+                  <h3 className="PoolPage__CreateSectionTitle">Set initial price</h3>
+                  <p className="PoolPage__CreateSectionDesc">
+                    When creating a new pool, you must set the starting exchange rate for both tokens. This rate will reflect the initial market price.
+                  </p>
+                  <div className="PoolPage__LiquidityInputs">
+                    <div className="PoolPage__LiquidityInput">
+                      <InitialPriceInput
+                        tokens={[token0!, token1!]}
+                        onAmountChange={setInitialPrice}
+                        onTokenSelect={() => { }}
+                        value={initialPrice || 0n}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="PoolPage__CreateSection">
               <h3 className="PoolPage__CreateSectionTitle">Set price range</h3>
@@ -465,9 +311,9 @@ const CreatePoolPage: React.FC = () => {
                 <div className="PoolPage__PriceRow">
                   <span className="PoolPage__PriceLabel">Market price:</span>
                   <span className="PoolPage__PriceValue">
-                    {priceA !== undefined ? priceA.toLocaleString() : '-'} {tokenB?.symbol} = 1 {tokenA?.symbol}
+                    {positionManager?.currentPrice ? positionManager.currentPrice.toLocaleString() : '-'} {token1?.symbol} = 1 {token0?.symbol}
                     <span style={{ color: '#888', marginLeft: 8 }}>
-                      {priceA !== undefined ? `$${priceA.toLocaleString()}` : '-'}
+                      {positionManager?.currentPrice ? `$${positionManager.currentPrice.toLocaleString()}` : '-'}
                     </span>
                   </span>
                 </div>
@@ -475,12 +321,11 @@ const CreatePoolPage: React.FC = () => {
                   <span className="PoolPage__PriceLabel">Min price</span>
                   <input
                     className="PoolPage__PriceInput"
-                    type="number"
-                    min={0}
+                    type="text"
                     value={minPrice}
-                    onChange={e => setMinPrice(e.target.value)}
+                    onChange={handleMinPriceChange}
                   />
-                  <span className="PoolPage__PriceUnit">{tokenB?.symbol} = 1 {tokenA?.symbol}</span>
+                  <span className="PoolPage__PriceUnit">{token1?.symbol} = 1 {token0?.symbol}</span>
                 </div>
                 <div className="PoolPage__PriceRow">
                   <span className="PoolPage__PriceLabel">Max price</span>
@@ -488,9 +333,9 @@ const CreatePoolPage: React.FC = () => {
                     className="PoolPage__PriceInput"
                     type="text"
                     value={maxPrice}
-                    onChange={e => setMaxPrice(e.target.value)}
+                    onChange={handleMaxPriceChange}
                   />
-                  <span className="PoolPage__PriceUnit">{tokenB?.symbol} = 1 {tokenA?.symbol}</span>
+                  <span className="PoolPage__PriceUnit">{token1?.symbol} = 1 {token0?.symbol}</span>
                 </div>
               </div>
             </div>
@@ -501,24 +346,23 @@ const CreatePoolPage: React.FC = () => {
                 Specify the token amounts for your liquidity contribution.
               </p>
 
-              {/* Liquidity Inputs sans boutons d'approbation */}
               <div className="PoolPage__LiquidityInputs">
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={tokenA}
-                    onTokenSelect={handleSelectA}
-                    onAmountChange={handleAmountAChange}
-                    value={amountA}
+                    selectedToken={positionManager?.pool?.token0.address === token0?.address ? token0 : token1}
+                    onAmountChange={handleAmount0Change}
+                    value={positionManager.amount0}
+                    isOverBalance={insufficient0 || false}
                     disabled={false}
                   />
                 </div>
 
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={tokenB}
-                    onTokenSelect={handleSelectB}
-                    onAmountChange={handleAmountBChange}
-                    value={amountB}
+                    selectedToken={positionManager?.pool?.token1.address === token1?.address ? token1 : token0}
+                    onAmountChange={handleAmount1Change}
+                    value={positionManager.amount1}
+                    isOverBalance={insufficient0 || false}
                     disabled={false}
                   />
                 </div>
@@ -554,7 +398,7 @@ const CreatePoolPage: React.FC = () => {
           </>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

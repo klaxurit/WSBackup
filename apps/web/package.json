@@ -11,8 +11,11 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
+    "@uniswap/sdk-core": "^7.7.2",
+    "@uniswap/v3-sdk": "^3.25.2",
     "@winnieswap/ui": "file:../../packages/ui",
     "framer-motion": "^12.11.3",
+    "jsbi": "3.2.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
