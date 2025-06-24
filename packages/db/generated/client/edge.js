@@ -192,7 +192,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/junca/Projets/WinnieSwap/packages/db/generated/client",
+      "value": "/home/skalv/Projets/Winnie/winnieswap/packages/db/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -201,7 +201,7 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "debian-openssl-3.0.x",
         "native": true
       },
       {
@@ -210,7 +210,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/junca/Projets/WinnieSwap/packages/db/prisma/schema.prisma",
+    "sourceFilePath": "/home/skalv/Projets/Winnie/winnieswap/packages/db/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
