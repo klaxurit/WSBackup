@@ -250,7 +250,7 @@ const TokenPage: React.FC = () => {
             />
           </div>
 
-          {/* Section Informations */}
+          {/* Information Section */}
           <div data-testid="token-details-info-section" className="Token__InfoSection">
             <h3 className="Token__InfoSectionTitle">Information</h3>
             <div data-testid="token-details-info-links" className="Token__InfoLinks">
@@ -260,7 +260,7 @@ const TokenPage: React.FC = () => {
                 href={mockToken.address ? `https://beratrail.io/address/${mockToken.address}` : '#'}
                 className="Token__InfoLink"
               >
-                {/* Icône explorateur */}
+                {/* Explorer Icon */}
                 <ExplorerIcon />
                 <span>Explorer</span>
               </a>
@@ -270,7 +270,7 @@ const TokenPage: React.FC = () => {
                 href={mockToken.website || '#'}
                 className="Token__InfoLink"
               >
-                {/* Icône site web */}
+                {/* Website Icon */}
                 <WebsiteIcon />
                 <span>Website</span>
               </a>
@@ -280,11 +280,11 @@ const TokenPage: React.FC = () => {
                 href={mockToken.twitter || '#'}
                 className="Token__InfoLink"
               >
-                {/* Icône Twitter */}
+                {/* Twitter Icon */}
                 <TwitterIcon />
               </a>
             </div>
-            {/* Description du token (factice, à remplacer par API) */}
+            {/* Token description (dummy, to be replaced by API) */}
             <TokenDescription />
           </div>
         </div>
@@ -293,7 +293,7 @@ const TokenPage: React.FC = () => {
   );
 };
 
-// Nouveau composant SwitchTabs
+// New SwitchTabs component
 function SwitchTabs({ intervals, activeKey, onChange }: { intervals: typeof INTERVALS, activeKey: IntervalKey, onChange: (k: IntervalKey) => void }) {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [sliderStyle, setSliderStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
@@ -309,7 +309,7 @@ function SwitchTabs({ intervals, activeKey, onChange }: { intervals: typeof INTE
     }
   }, [activeKey, intervals]);
 
-  // Recalcule sur resize
+  // Recalculate on resize
   useEffect(() => {
     const handleResize = () => {
       const idx = intervals.findIndex(i => i.key === activeKey);

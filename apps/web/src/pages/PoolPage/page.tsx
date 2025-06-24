@@ -57,7 +57,7 @@ const PoolPage: React.FC = () => {
 
   return (
     <div className="PoolPage">
-      {/* Section gauche (70%) */}
+      {/* Left Section (70%) */}
       <div className="PoolPage__Left">
         <div className="PoolPage__Header">
           <h2 className="PoolPage__Title">Your positions</h2>
@@ -79,10 +79,10 @@ const PoolPage: React.FC = () => {
                     tableClassName="PoolPage__Table"
                     wrapperClassName="PoolPage__TableWrapper"
                     scrollClassName="PoolPage__TableScroll"
-                    emptyMessage="Aucune position trouvée"
+                    emptyMessage="No positions found"
                   />
                 </div>
-                {/* <button className="PoolPage__ClosedBtn">Voir les positions fermées</button> */}
+                {/* <button className="PoolPage__ClosedBtn">View closed positions</button> */}
               </>
             )
           : (
@@ -91,7 +91,7 @@ const PoolPage: React.FC = () => {
             </div>
           )}
       </div>
-      {/* Section droite (30%) */}
+      {/* Right Section (30%) */}
       <div className="PoolPage__Right">
         <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
         <div className="PoolPage__TopList">

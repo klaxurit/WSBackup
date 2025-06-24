@@ -33,7 +33,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
       await connect('injected');
       if (onClick) onClick();
     } catch (err) {
-      console.error('Erreur de connexion:', err);
+      console.error('Connection error:', err);
     }
   }, [connect, onClick]);
 

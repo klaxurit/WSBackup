@@ -172,7 +172,6 @@ const CreatePoolPage: React.FC = () => {
     setInputToken("token1")
   }
 
-
   return (
     <div className="PoolPage PoolPage--create">
       <div className="PoolPage__CreateHeader">

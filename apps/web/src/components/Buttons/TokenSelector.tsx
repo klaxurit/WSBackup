@@ -14,6 +14,7 @@ interface NetworkSelectorProps {
   minimized?: boolean;
   isHomePage?: boolean;
   onForceOpen?: () => void;
+  forceListOpen?: boolean;
 }
 
 const TokenSelector: React.FC<NetworkSelectorProps> = ({
@@ -21,15 +22,23 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   onSelect,
   onToggleNetworkList,
   onForceOpen,
+  forceListOpen,
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
 
   useEffect(() => {
-    if (preSelected) {
-      setSelectedToken(preSelected);
-    }
+    setSelectedToken(preSelected || null);
   }, [preSelected]);
+
+  useEffect(() => {
+    if (forceListOpen) {
+      setIsNetworksListOpen(true);
+      if (onToggleNetworkList) {
+        onToggleNetworkList(true);
+      }
+    }
+  }, [forceListOpen, onToggleNetworkList]);
 
   const handleNetworksListToggle = useCallback(() => {
     const newState = !isNetworksListOpen;

@@ -45,7 +45,7 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data }) => {
       .attr('width', containerWidth)
       .attr('height', containerHeight);
 
-    // Marges adaptatives basées sur la taille du conteneur
+    // Adaptive margins based on container size
     const margin = {
       top: Math.max(20, containerHeight * 0.05),
       right: Math.max(40, containerWidth * 0.1),
@@ -56,7 +56,7 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data }) => {
     const width = containerWidth - margin.left - margin.right;
     const height = containerHeight - margin.top - margin.bottom;
 
-    // Créer les échelles
+    // Create scales
     const x = d3.scaleTime()
       .domain(d3.extent(data, d => new Date(d.date)) as [Date, Date])
       .range([margin.left, width + margin.left]);
@@ -66,17 +66,17 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data }) => {
       .nice()
       .range([height + margin.top, margin.top]);
 
-    // Nettoyer le SVG
+    // Clear SVG
     svg.selectAll("*").remove();
 
     if (chartType === 'line') {
-      // Créer la ligne
+      // Create the line
       const line = d3.line<{ date: string; value: number }>()
         .x(d => x(new Date(d.date)))
         .y(d => y(d.value))
         .curve(d3.curveMonotoneX);
 
-      // Créer l'aire sous la ligne
+      // Create the area under the line
       const area = d3.area<{ date: string; value: number }>()
         .x(d => x(new Date(d.date)))
         .y0(height + margin.top)

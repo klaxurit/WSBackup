@@ -1,18 +1,17 @@
-import React, { useMemo, useState, useEffect, type ChangeEvent } from "react";
-import { FromInput } from "../Inputs/FromInput";
-import { ConnectButton } from "../../components/Buttons/ConnectButton";
-import { Divider } from "../Inputs/Divider";
+import React, { useMemo, useState, useEffect, type ChangeEvent, useCallback } from "react";
+import { ConnectButton } from '../Buttons/ConnectButton';
+import { FromInput } from '../Inputs/FromInput';
+import { SwapToInput } from '../Inputs/SwapToInput';
+import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
-import { SwapToInput } from "../Inputs/SwapToInput";
-import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
-import { useTest } from "../../hooks/useTest";
-import { useSwap } from "../../hooks/useSwap";
+import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
 import { usePrice } from '../../hooks/usePrice';
 import { formatEther, parseEther } from "viem";
-import { TokenList } from '../TokenList/TokenList';
+import { usePoolAddress } from '../../hooks/usePoolAddress';
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -20,6 +19,8 @@ interface FormProps {
   secondaryColor?: string;
   customClassName?: string;
   isHomePage?: boolean;
+  isSticky?: boolean; // New prop for sticky mode
+  onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
 }
 
 const SwapForm: React.FC<FormProps> = React.memo(
@@ -28,8 +29,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
     secondaryColor,
     customClassName,
     isHomePage,
+    isSticky = false, // Default to false for compatibility
+    onPoolChange,
   }) => {
-    const { mint } = useTest()
     const { isConnected } = useAccount()
     const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
@@ -46,8 +48,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
     const { data: priceFrom = 0 } = usePrice(fromToken);
     const { data: priceTo = 0 } = usePrice(toToken);
-    const [fromTokenListOpen, setFromTokenListOpen] = useState(false);
-    const [toTokenListOpen, setToTokenListOpen] = useState(false);
 
     const swap = useSwap({
       tokenIn: fromToken?.address || zeroAddress,
@@ -56,6 +56,25 @@ const SwapForm: React.FC<FormProps> = React.memo(
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
     })
+
+    const { poolAddress } = usePoolAddress(
+      fromToken?.address,
+      toToken?.address
+    );
+
+    const handleFromTokenSelect = useCallback((token: BerachainToken) => {
+      if (toToken?.address === token.address) {
+        setToToken(null);
+      }
+      setFromToken(token);
+    }, [toToken]);
+
+    const handleToTokenSelect = useCallback((token: BerachainToken) => {
+      if (fromToken?.address === token.address) {
+        setFromToken(null);
+      }
+      setToToken(token);
+    }, [fromToken]);
 
     const handleOpenModal = () => {
       setShowModal(true);
@@ -133,16 +152,23 @@ const SwapForm: React.FC<FormProps> = React.memo(
       }
     }, [swap.status])
 
+    useEffect(() => {
+      if (onPoolChange) {
+        // Use the pool address retrieved by usePoolAddress
+        const poolAddressStr = poolAddress ? poolAddress : null;
+        onPoolChange(poolAddressStr, fromToken, toToken);
+      }
+    }, [poolAddress, fromToken, toToken, onPoolChange]);
+
     const handleFromAmountChange = (amount: bigint) => {
       setEditing('from');
       setFromAmount(amount);
-      // Le hook useSwap s'occupe de mettre à jour toAmount via la quote
     };
 
     const handleToAmountChange = (amount: bigint) => {
       setEditing('to');
       setToAmount(amount);
-      // Synchronisation : on recalcule fromAmount pour que la valeur USD soit identique
+      // Synchronization: recalculate fromAmount so that the USD value is identical
       if (priceFrom && priceTo && toToken && fromToken) {
         const toAmountFloat = parseFloat(formatEther(amount));
         const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
@@ -151,10 +177,15 @@ const SwapForm: React.FC<FormProps> = React.memo(
       }
     };
 
+    // Conditional classes for sticky mode
+    const formClasses = [
+      'Form',
+      isSticky ? 'Form--sticky' : '',
+      customClassName || ''
+    ].filter(Boolean).join(' ');
+
     return (
-      <div
-        className={`Form ${customClassName || ""}`}
-      >
+      <div className={formClasses}>
         <div className="Form__box">
           <div className="Form__head">
             <button className="iconLink" onClick={handleClickParams}>
@@ -165,8 +196,14 @@ const SwapForm: React.FC<FormProps> = React.memo(
               <div className="ParamBox__param">
                 <p>Max slippage</p>
                 <div className="ParamBox__slippageInput">
-                  <button className={slippageConfig.isAuto ? "active" : ""} onClick={() => setSlippageConfig({ real: 0.05, display: "5%", isAuto: true })}>Auto</button>
-                  <input type="text"
+                  <button
+                    className={slippageConfig.isAuto ? "active" : ""}
+                    onClick={() => setSlippageConfig({ real: 0.05, display: "5%", isAuto: true })}
+                  >
+                    Auto
+                  </button>
+                  <input
+                    type="text"
                     value={slippageConfig.display}
                     onChange={updateSlippage}
                   />
@@ -176,7 +213,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
               <div className="ParamBox__param">
                 <p>Swap deadline</p>
                 <div className="ParamBox__slippageInput">
-                  <input type="text"
+                  <input
+                    type="text"
                     value={deadlineConfig.display}
                     onChange={updateDeadline}
                   />
@@ -185,17 +223,17 @@ const SwapForm: React.FC<FormProps> = React.memo(
               </div>
             </div>
           </div>
+
           <div className="Inputs">
             <FromInput
               selectedToken={fromToken}
-              onTokenSelect={setFromToken}
+              onTokenSelect={handleFromTokenSelect}
               onAmountChange={handleFromAmountChange}
               value={fromAmount}
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!fromToken}
-              onInputClick={() => setFromTokenListOpen(true)}
               onBlur={() => setEditing(null)}
             />
             <Divider
@@ -206,17 +244,17 @@ const SwapForm: React.FC<FormProps> = React.memo(
             <SwapToInput
               steps={{ totalRatio: 0, steps: [] }}
               preSelected={toToken}
-              onSelect={setToToken}
+              onSelect={handleToTokenSelect}
               inputValue={toAmount}
               onInputChange={handleToAmountChange}
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!toToken}
-              onInputClick={() => setToTokenListOpen(true)}
               onBlur={() => setEditing(null)}
             />
           </div>
+
           <div className="Form__ConnectBtnWrapper">
             {!isConnected ? (
               <ConnectButton
@@ -228,14 +266,13 @@ const SwapForm: React.FC<FormProps> = React.memo(
               <button
                 className={`btn btn--large btn__${swap.status !== "ready" ? "disabled" : "main"}`}
                 onClick={handleOpenModal}
-                disabled={swap.status !== "ready"}>
+                disabled={swap.status !== "ready"}
+              >
                 {btnText}
               </button>
             )}
           </div>
         </div>
-        <button onClick={() => mint('0xC672D663A6945E4D7fCd3b8dcb73f9a5116F19E1')}>mint mBera</button>
-        <button onClick={() => mint('0x41936CA1174EE86B24c05a07653Df4Be68A0ED02')}>mint mHoney</button>
         <TransactionStatusModal
           open={showModal}
           onClose={handleCloseModal}
@@ -245,28 +282,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
           outputAmount={toAmount}
           swap={swap}
         />
-        {fromTokenListOpen && (
-          <TokenList
-            isOpen={fromTokenListOpen}
-            onClose={() => setFromTokenListOpen(false)}
-            onSelect={(token) => {
-              setFromToken(token);
-              setFromTokenListOpen(false);
-            }}
-            selectedToken={fromToken}
-          />
-        )}
-        {toTokenListOpen && (
-          <TokenList
-            isOpen={toTokenListOpen}
-            onClose={() => setToTokenListOpen(false)}
-            onSelect={(token) => {
-              setToToken(token);
-              setToTokenListOpen(false);
-            }}
-            selectedToken={toToken}
-          />
-        )}
       </div >
     );
   },

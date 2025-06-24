@@ -5,8 +5,8 @@ interface ModalProps {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  className?: string; // pour custom box si besoin
-  overlayClassName?: string; // pour custom overlay si besoin
+  className?: string; // for custom box if needed
+  overlayClassName?: string; // for custom overlay if needed
 }
 
 export const Modal: React.FC<ModalProps> = ({ open, onClose, children, className = '', overlayClassName = '' }) => {

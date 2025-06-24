@@ -21,6 +21,7 @@ interface ToInputProps {
   disabled?: boolean;
   onInputClick?: () => void;
   onBlur?: () => void;
+  isListOpen?: boolean;
 }
 
 export const SwapToInput: React.FC<ToInputProps> = React.memo(

@@ -17,7 +17,7 @@ const MiniChart: React.FC<MiniChartProps> = ({
 }) => {
   if (!data.length) return null;
 
-  // Normalisation des points pour le SVG
+  // Normalize points for SVG
   const minY = Math.min(...data.map(p => p.y));
   const maxY = Math.max(...data.map(p => p.y));
   const rangeY = maxY - minY || 1;
