@@ -1,4 +1,7 @@
-export const PositionManagerABI = [
+// Ajouter à src/indexer/constants/abis.ts
+
+export const POSITION_MANAGER_ABI = [
+  // Lectures
   {
     "inputs": [
 

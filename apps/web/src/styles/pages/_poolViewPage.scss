@@ -1,0 +1,254 @@
+@use "../utils" as *;
+
+.PoolView__Container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 70vh;
+}
+
+.PoolView__Card {
+  width: 420px;
+  background: var(--onyx-blacker-bis, #12110e);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #232323;
+  margin-top: 90px;
+}
+
+.PoolView__Wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: 18px;
+  color: #fff;
+}
+
+.PoolView__Header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.PoolView__HeaderTitle {
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.PoolView__HeaderAddress {
+  color: #888;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.PoolView__HeaderUSD {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.PoolView__HeaderValue {
+  font-weight: 700;
+  font-size: 24px;
+  color: #FFD056;
+}
+
+.PoolView__Info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.PoolView__TokenLogos {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  width: 36px;
+  height: 28px;
+}
+
+.PoolView__TokenLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #232323;
+  background: #fff;
+  position: absolute;
+}
+
+.PoolView__TokenLogo--left {
+  left: 0;
+  z-index: 2;
+}
+
+.PoolView__TokenLogo--right {
+  left: 16px;
+  z-index: 1;
+}
+
+.PoolView__InfoPair {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.PoolView__InfoVersion {
+  background: #f3f3f3;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.PoolView__InfoStatus--in {
+  color: $success-pure;
+  background: rgba($success-pure, 0.1);
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.PoolView__InfoStatus--out {
+  color: $carmel-pure;
+  background: rgba($carmel-pure, 0.1);
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.PoolView__Actions {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.PoolView__ActionBtn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.18s, color 0.18s;
+}
+
+.PoolView__ActionBtn--add {
+  background: #FFD056;
+  color: #232323;
+}
+
+.PoolView__ActionBtn--remove {
+  background: #fff;
+  color: #232323;
+  border: 1.5px solid #232323;
+}
+
+.PoolView__Stats {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.PoolView__StatRow {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.PoolView__StatLabel {
+  color: #888;
+  font-size: 14px;
+}
+
+.PoolView__StatValue {
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.PoolView__StatTokenLogo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+// Ajouter à _poolViewPage.scss
+
+.PoolView__Fees {
+  width: 100%;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #232323;
+
+  h4 {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .PoolView__StatRow {
+    margin-bottom: 8px;
+  }
+
+  .PoolView__StatLabel {
+    color: #888;
+    font-size: 14px;
+  }
+
+  .PoolView__StatValue {
+    font-weight: 600;
+    font-size: 16px;
+    color: $beryl-pure;
+  }
+}
+
+.PoolView__InfoVersion {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+}
+
+// Améliorer les logos de tokens
+.PoolView__TokenLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #232323;
+  background: #fff;
+  position: absolute;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.PoolView__StatTokenLogo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-left: 4px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

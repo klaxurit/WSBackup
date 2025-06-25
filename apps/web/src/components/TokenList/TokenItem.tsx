@@ -69,7 +69,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
       <div className="Modal__ItemBalanceContainer">
         <span className="Modal__ItemPrice">
           {isLoading
-            ? <Loader />
+            ? <Loader size="mini" />
             : (
               balance && balance.value !== 0n && usdValue && usdValue !== 0
                 ? `$${(usdValue * +formatEther(balance.value)).toFixed(2)}`
@@ -79,7 +79,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         </span>
         <span className="Modal__ItemBalance">
           {isLoading
-            ? <Loader />
+            ? <Loader size="mini" />
             : (
               balance && balance.value !== 0n
                 ? `${parseFloat(formatEther(balance.value)).toFixed(4)}`

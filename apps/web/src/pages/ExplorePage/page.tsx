@@ -18,8 +18,6 @@ const ExplorePage: React.FC = () => {
     ? BERACHAIN_TOKENS.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
     : BERACHAIN_TOKENS;
 
-  console.log(filteredTokens)
-
   return (
     <div className="ExplorePage">
       <div className="ExplorePage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

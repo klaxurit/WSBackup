@@ -58,8 +58,6 @@ const CreatePoolPage: React.FC = () => {
     initialPrice
   })
 
-  console.log(positionManager)
-
   const { insufficient0, insufficient1 } = useMemo(() => {
     return {
       insufficient0: balance0 && positionManager.amount0 > balance0.value,
@@ -388,7 +386,7 @@ const CreatePoolPage: React.FC = () => {
                   onClick={handleMainAction}
                 >
                   {buttonState.loading && (
-                    <Loader className="PoolPage__ContinueBtnLoader" />
+                    <Loader className="PoolPage__ContinueBtnLoader" size="mobile" />
                   )}
                   {buttonState.text}
                 </button>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { type Address, encodeFunctionData, erc20Abi, parseEther, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
-import { PositionManagerABI } from "../config/abis/positionManagerABI";
+import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
 import { CONTRACTS_ADDRESS } from "../config/contractsAddress";
 import { PoolABI } from "../config/abis/poolABI";
 import { usePrice } from "./usePrice";
@@ -370,7 +370,7 @@ export const usePositionManager = ({
     mintPosition(
       {
         address: CONTRACTS_ADDRESS.positionManager,
-        abi: PositionManagerABI,
+        abi: POSITION_MANAGER_ABI,
         functionName: 'mint',
         args: [{
           token0: (pool.token0.address as Address),
