@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, type ChangeEvent } from 'react';
+import React, { useState, useMemo, type ChangeEvent } from 'react';
 import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
@@ -19,13 +19,14 @@ const feeTiers = [
 
 const CreatePoolPage: React.FC = () => {
   const { address, isConnected } = useAccount();
-
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Step 1
   const [token0, setToken0] = useState<BerachainToken | null>(null);
   const [token1, setToken1] = useState<BerachainToken | null>(null);
   const [fee, setFee] = useState(feeTiers[2].fee);
 
-  // Step 2 states
+  // Step 2
   const [minPrice, setMinPrice] = useState<string>("0");
   const [maxPrice, setMaxPrice] = useState<string>("∞");
   const [inputAmount, setInputAmount] = useState<bigint>(0n);
@@ -57,6 +58,7 @@ const CreatePoolPage: React.FC = () => {
     maxPrice,
     initialPrice
   })
+  console.log(positionManager)
 
   const { insufficient0, insufficient1 } = useMemo(() => {
     return {
@@ -65,77 +67,152 @@ const CreatePoolPage: React.FC = () => {
     }
   }, [balance0, balance1, positionManager])
 
-
-  // Determine button state and action
   const buttonState = useMemo(() => {
-    if (!isConnected) return { text: 'Connect Wallet', action: 'connect', disabled: false, loading: false };
-    if (!token0 || !token1) return { text: 'Select tokens', action: 'none', disabled: true, loading: false };
-    // if (positionManager.amount0 === 0n || positionManager.amount1 === 0n) return { text: 'Enter amounts', action: 'none', disabled: true, loading: false };
-    if (insufficient0) return { text: `Insufficient ${token0.symbol} balance`, action: 'none', disabled: true, loading: false };
-    if (insufficient1) return { text: `Insufficient ${token1.symbol} balance`, action: 'none', disabled: true, loading: false };
+    if (positionManager.status === "idle") {
+      return {
+        text: "Select tokens",
+        action: () => { },
+        disabled: true,
+        loading: false
+      }
+    }
+    if (positionManager.status === "fetchAllowance") {
+      return {
+        text: "Fetching tokens allowance",
+        action: () => { },
+        disabled: true,
+        loading: true
+      }
+    }
+    if (positionManager.status === "waitAmount") {
+      return {
+        text: "Wait for amounts",
+        action: () => { },
+        disabled: true,
+        loading: false
+      }
+    }
+    if (positionManager.status === "waitInitialAmount") {
+      return {
+        text: "Wait initial Amount",
+        action: () => { },
+        disabled: true,
+        loading: false
+      }
+    }
 
-    if (positionManager.poolExists) return { text: 'Deposit Liquidity', action: 'deposit', disabled: false, loading: false };
-    // Approbation en cours
-    // if (currentAction === 'approving-a' && (isTransactionPending || isWaitingTx)) {
-    //   return { text: `Approbation de ${tokenA.symbol}...`, action: 'none', disabled: true, loading: true };
-    // }
-    // if (currentAction === 'approving-b' && (isTransactionPending || isWaitingTx)) {
-    //   return { text: `Approbation de ${tokenB.symbol}...`, action: 'none', disabled: true, loading: true };
-    // }
-    // Approbation succès
-    // if (currentAction === 'approving-a' && isTxSuccess) {
-    //   if (needsApprovalB) {
-    //     return { text: `Approve ${tokenB.symbol}`, action: 'approve-b', disabled: false, loading: false };
-    //   }
-    //   return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
-    // }
-    // if (currentAction === 'approving-b' && isTxSuccess) {
-    //   return { text: 'Prêt à déposer', action: 'deposit', disabled: false, loading: false };
-    // }
-    // Dépôt en cours
-    // if (currentAction === 'depositing' && (isTransactionPending || isWaitingTx)) {
-    //   return { text: 'Dépôt en cours...', action: 'none', disabled: true, loading: true };
-    // }
-    // Dépôt succès
-    // if (currentAction === 'depositing' && isTxSuccess) {
-    //   return { text: 'Déposé !', action: 'none', disabled: true, loading: false };
-    // }
-    // Approbation nécessaire
-    if (positionManager.token0NeedApproval) return { text: `Approve ${token0.symbol}`, action: 'approve-a', disabled: false, loading: false };
-    if (positionManager.token1NeedApproval) return { text: `Approve ${token1.symbol}`, action: 'approve-b', disabled: false, loading: false };
+    if (insufficient0) return { text: `Insufficient ${token0?.symbol} balance`, action: () => { }, disabled: true, loading: false };
+    if (insufficient1) return { text: `Insufficient ${token1?.symbol} balance`, action: () => { }, disabled: true, loading: false };
 
-    return { text: 'Create pool', action: 'deposit', disabled: false, loading: false };
+    if (positionManager.status === "needT0Approve") {
+      return {
+        text: `Approve ${token0?.symbol}`,
+        action: positionManager?.approveToken0,
+        disabled: false,
+        loading: false
+      };
+    }
+    if (positionManager.status === "needT1Approve") {
+      return {
+        text: `Approve ${token1?.symbol}`,
+        action: positionManager?.approveToken1,
+        disabled: false,
+        loading: false
+      };
+    }
+    if (positionManager.status === "waitUserApprovement") {
+      return {
+        text: `Waiting user's approvement`,
+        action: () => { },
+        disabled: true,
+        loading: true
+      };
+    }
+    if (positionManager.status === "waitApprovementReceipt") {
+      return {
+        text: `Waiting approvement receipt`,
+        action: () => { },
+        disabled: true,
+        loading: true
+      };
+    }
+
+    if (positionManager.status === "waitMainUserSign") {
+      return {
+        text: `Waiting user's signature`,
+        action: () => { },
+        disabled: true,
+        loading: true
+      };
+    }
+    if (positionManager.status === "waitMainReceipt") {
+      return {
+        text: `Waiting block validation`,
+        action: () => { },
+        disabled: true,
+        loading: true
+      };
+    }
+
+    if (positionManager.status === "readyMintPosition") {
+      return {
+        text: `Mint position`,
+        action: positionManager?.mintPosition,
+        disabled: false,
+        loading: false
+      };
+    }
+    if (positionManager.status === "readyCreatePosition") {
+      return {
+        text: `Create position`,
+        action: positionManager?.createPool,
+        disabled: false,
+        loading: false
+      };
+    }
   }, [
-    isConnected, token0, token1, positionManager, insufficient0, insufficient1,
+    positionManager, insufficient0, insufficient1, token0, token1
   ]);
 
-  const handleSelect0 = useCallback((token: BerachainToken) => {
+  const canContinueStep2 = useMemo(() => {
+    if (currentStep === 2) return true
+    if (!positionManager) return false
+
+    return ['idle', 'fetchPool'].includes(positionManager.status)
+  }, [currentStep, positionManager])
+
+  const handleSelect0 = (token: BerachainToken) => {
+    if (token1) {
+      if (token1.symbol === token.symbol) {
+        setToken0(token)
+        setToken1(null)
+        return
+      }
+      if (token.address > token1.address) {
+        setToken0(token1)
+        setToken1(token)
+        return
+      }
+    }
+
     setToken0(token);
-    if (token1 && token1.symbol === token.symbol) setToken1(null);
-  }, [token1]);
-  const handleSelect1 = useCallback((token: BerachainToken) => {
+  };
+  const handleSelect1 = (token: BerachainToken) => {
+    if (token0) {
+      if (token0.symbol === token.symbol) {
+        setToken1(token)
+        setToken0(null)
+        return
+      }
+      if (token.address < token0.address) {
+        setToken1(token0)
+        setToken0(token)
+        return
+      }
+    }
+
     setToken1(token);
-    if (token0 && token0.symbol === token.symbol) setToken0(null);
-  }, [token0]);
-
-
-  const handleMainAction = useCallback(async () => {
-    if (positionManager.token0NeedApproval) {
-      await positionManager.approveToken0()
-      return
-    }
-    if (positionManager.token1NeedApproval) {
-      await positionManager.approveToken1()
-      return
-    }
-    if (positionManager.poolExists) {
-      await positionManager.mintPosition()
-      return
-    } else {
-      await positionManager.createPoolAndMint()
-      return
-    }
-  }, [positionManager]);
+  };
 
   const handleMinPriceChange = (e: ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/[^\d.,]/g, '')
@@ -232,7 +309,7 @@ const CreatePoolPage: React.FC = () => {
               </div>
             </div>
 
-            {!positionManager.poolExists && (
+            {!positionManager.poolAlreadyExist && (
               <div className="PoolPage__CreateSection">
                 <h3 className="PoolPage__CreateSectionTitle">Creating new pool</h3>
                 <p className="PoolPage__CreateSectionDesc">
@@ -245,7 +322,7 @@ const CreatePoolPage: React.FC = () => {
               <button
                 className="PoolPage__ContinueBtn"
                 type="button"
-                disabled={!(token0 && token1 && fee)}
+                disabled={canContinueStep2}
                 onClick={() => setCurrentStep(2)}
               >
                 Continue
@@ -271,7 +348,7 @@ const CreatePoolPage: React.FC = () => {
               </div>
             </div>
 
-            {!positionManager.poolExists && token0 && token1 && (
+            {!positionManager.poolAlreadyExist && (
               <>
                 <div className="PoolPage__CreateSection">
                   <h3 className="PoolPage__CreateSectionTitle">Creating new pool</h3>
@@ -382,13 +459,13 @@ const CreatePoolPage: React.FC = () => {
                 <button
                   className="PoolPage__ContinueBtn"
                   type="button"
-                  disabled={buttonState.disabled}
-                  onClick={handleMainAction}
+                  disabled={buttonState?.disabled}
+                  onClick={buttonState?.action}
                 >
-                  {buttonState.loading && (
+                  {buttonState?.loading && (
                     <Loader className="PoolPage__ContinueBtnLoader" size="mobile" />
                   )}
-                  {buttonState.text}
+                  {buttonState?.text}
                 </button>
               )}
             </div>
