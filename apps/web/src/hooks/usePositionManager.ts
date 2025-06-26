@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { type Address, encodeFunctionData, erc20Abi, parseEther, zeroAddress } from "viem"
-import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWriteContract } from "wagmi"
+import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
 import { CONTRACTS_ADDRESS } from "../config/contractsAddress";
@@ -42,7 +42,6 @@ export const usePositionManager = ({
   initialPrice
 }: usePositionManagerParams) => {
   const { address } = useAccount()
-  const [poolExists, setPoolExists] = useState<boolean>(false)
 
   const token0 = useMemo(() => (parseToken(btoken0)), [btoken0])
   const token1 = useMemo(() => (parseToken(btoken1)), [btoken1])
@@ -54,7 +53,7 @@ export const usePositionManager = ({
    * Yes -> mint
    * No => Create pool and mint
    */
-  const { data: existingPoolAddress, isLoading: isCheckingPool } = useReadContract({
+  const { data: existingPoolAddress, isLoading: isCheckingPool, isFetched: existingPoolFetched } = useReadContract({
     address: CONTRACTS_ADDRESS.v3CoreFactory,
     abi: v3CoreFactoryContract,
     functionName: 'getPool',
@@ -64,7 +63,7 @@ export const usePositionManager = ({
     }
   })
 
-  const { data: poolData, isLoading: isGettingPoolData } = useReadContracts({
+  const { data: poolData, isLoading: isGettingPoolData, isFetched: poolDataFetched } = useReadContracts({
     contracts: [
       {
         address: (existingPoolAddress as Address),
@@ -78,15 +77,13 @@ export const usePositionManager = ({
       },
     ],
     query: {
-      enabled: !!existingPoolAddress
+      enabled: !!existingPoolAddress && existingPoolFetched
     }
   })
 
-  useEffect(() => {
-    if (!isCheckingPool && !isGettingPoolData) {
-      setPoolExists(!!existingPoolAddress && existingPoolAddress !== zeroAddress)
-    }
-  }, [isCheckingPool, isGettingPoolData])
+  const poolAlreadyExist = useMemo(() => {
+    return existingPoolFetched && !!existingPoolAddress && existingPoolAddress !== zeroAddress
+  }, [existingPoolFetched, existingPoolAddress])
 
   /*
    * If no Pool already exist computed the address of the new one
@@ -107,10 +104,12 @@ export const usePositionManager = ({
    */
   const pool = useMemo(() => {
     try {
-      if (poolData && poolExists) {
-        const sqrtPriceX96: bigint = (poolData as any)[0].result[0]
-        const tick = (poolData as any)[0].result[1]
-        const liquidity: bigint = (poolData as any)[1].result
+      if (poolAlreadyExist && poolData) {
+        const sqrtPriceX96 = poolData[0]?.result?.[0]
+        const tick = poolData[0]?.result?.[1]
+        const liquidity = poolData[1]?.result
+
+        if (!sqrtPriceX96 || !tick || !liquidity) return null
 
         return new Pool(
           token0!,
@@ -140,8 +139,7 @@ export const usePositionManager = ({
       console.error("Error when creating pool", err)
       return null
     }
-
-  }, [token0, token1, fee, initialPrice, poolExists])
+  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData])
 
   /*
    * PRICE CALCULATION
@@ -216,26 +214,26 @@ export const usePositionManager = ({
         position: null
       }
     }
-  }, [pool, token0, token1, tickLower, tickUpper, inputAmount, inputToken])
+  }, [pool, tickLower, tickUpper, inputAmount, inputToken])
 
   /*
    * CHECK ALLOWANCE
    */
-  const { data: token0Allowance = 0n, isLoading: isCheckingToken0Allowance } = useReadContract({
-    address: btoken0?.address,
+  const { data: token0Allowance = 0n, isLoading: isCheckingToken0Allowance, isFetched: token0AllowanceFetched, refetch: refetchT0Allowance } = useReadContract({
+    address: (token0?.address as Address),
     abi: erc20Abi,
     functionName: "allowance",
     args: address ? [address, CONTRACTS_ADDRESS.positionManager] : undefined,
     query: {
-      enabled: !!address && !!btoken0
+      enabled: !!address && !!token0
     }
   })
   const token0NeedApproval = useMemo(() => {
     return token0Allowance < prices.amount0 * 105n / 100n
   }, [token0Allowance, prices])
 
-  const { data: token1Allowance = 0n, isLoading: isCheckingToken1Allowance } = useReadContract({
-    address: btoken1?.address,
+  const { data: token1Allowance = 0n, isLoading: isCheckingToken1Allowance, isFetched: token1AllowanceFetched, refetch: refetchT1Allowance } = useReadContract({
+    address: (token1?.address as Address),
     abi: erc20Abi,
     functionName: "allowance",
     args: address ? [address, CONTRACTS_ADDRESS.positionManager] : undefined,
@@ -247,42 +245,64 @@ export const usePositionManager = ({
     return token1Allowance < prices.amount1 * 105n / 100n
   }, [token1Allowance, prices])
 
-  const isCheckingAllowance = useMemo(() => {
-    return isCheckingToken0Allowance && isCheckingToken1Allowance
-  }, [isCheckingToken0Allowance, isCheckingToken1Allowance])
-
   /*
    * APPROVAL FUNCTIONS
    */
-  const { writeContract: approveToken0, isPending: isApprovingToken0 } = useWriteContract()
-  const { writeContract: approveToken1, isPending: isApprovingToken1 } = useWriteContract()
+  const { data: approveToken0Config } = useSimulateContract({
+    address: (token0?.address as Address),
+    abi: erc20Abi,
+    functionName: 'approve',
+    args: [CONTRACTS_ADDRESS.positionManager, prices.amount0 * 105n / 100n],
+    query: {
+      enabled: !!token0 && token0NeedApproval
+    }
+  })
+  const { data: approveToken1Config } = useSimulateContract({
+    address: (token1?.address as Address),
+    abi: erc20Abi,
+    functionName: 'approve',
+    args: [CONTRACTS_ADDRESS.positionManager, prices.amount1 * 105n / 100n],
+    query: {
+      enabled: !!token1 && token1NeedApproval
+    }
+  })
+
+  const { data: approveToken0txHash, writeContract: approveToken0, isPending: isApprovingToken0 } = useWriteContract()
+  const { data: approveToken1TxHash, writeContract: approveToken1, isPending: isApprovingToken1 } = useWriteContract()
 
   const handleApproveToken0 = () => {
-    if (!btoken0) return
-    approveToken0({
-      address: btoken0.address,
-      abi: erc20Abi,
-      functionName: 'approve',
-      args: [CONTRACTS_ADDRESS.positionManager, prices.amount0 * 105n / 100n]
-    })
+    if (!approveToken0Config?.request) return
+    approveToken0(approveToken0Config.request)
   }
   const handleApproveToken1 = () => {
-    if (!btoken1) return
-    approveToken1({
-      address: btoken1.address,
-      abi: erc20Abi,
-      functionName: 'approve',
-      args: [CONTRACTS_ADDRESS.positionManager, prices.amount1 * 105n / 100n]
-    })
+    if (!approveToken1Config?.request) return
+    approveToken1(approveToken1Config.request)
   }
+
+  const { data: approveToken0Receipt, isLoading: waitingT0ApproveReceipt } = useWaitForTransactionReceipt({
+    hash: approveToken0txHash
+  })
+  const { data: approveToken1Receipt, isLoading: waitingT1ApproveReceipt } = useWaitForTransactionReceipt({
+    hash: approveToken1TxHash
+  })
+
+  useEffect(() => {
+    console.log("apprive Receipt", approveToken0Receipt, approveToken1Receipt)
+    if (approveToken0Receipt) {
+      refetchT0Allowance()
+    }
+    if (approveToken1Receipt) {
+      refetchT1Allowance()
+    }
+  }, [approveToken0Receipt, approveToken1Receipt, refetchT0Allowance, refetchT1Allowance])
 
   /*
    * MAIN FUNCTIONS
    */
-  const { writeContract: executeMultiCall, isPending: isExecutingMultiCall } = useWriteContract()
-  const { writeContract: mintPosition, isPending: isMintingPosition } = useWriteContract()
+  const { data: createPoolTxHash, writeContract: createPool, isPending: waitCreatePool } = useWriteContract()
+  const { data: mintPositionTxHash, writeContract: mintPosition, isPending: waitMintPosition } = useWriteContract()
 
-  const { data: createpoolConfig, status, error } = useSimulateContract({
+  const { data: createpoolConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.multicall2,
     abi: MultiCall2ABI,
     functionName: 'multicall',
@@ -312,32 +332,6 @@ export const usePositionManager = ({
           })
         }
       ]
-      // if (prices?.amount0 && prices?.amount1) {
-      //   const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
-      //   // Mint position
-      //   console.log(tickLower, tickUpper, prices)
-      //   calls.push({
-      //     target: (CONTRACTS_ADDRESS.positionManager as Address),
-      //     gasLimit: 1000000n,
-      //     callData: encodeFunctionData({
-      //       abi: PositionManagerABI,
-      //       functionName: 'mint',
-      //       args: [{
-      //         token0: (token0!.address as Address),
-      //         token1: (token1!.address as Address),
-      //         fee,
-      //         tickLower: tickLower,
-      //         tickUpper: tickUpper,
-      //         amount0Desired: prices.amount0,
-      //         amount1Desired: prices.amount1,
-      //         amount0Min: prices.amount0 * 95n / 100n,
-      //         amount1Min: prices.amount1 * 95n / 100n,
-      //         recipient: (address as Address),
-      //         deadline
-      //       }]
-      //     })
-      //   })
-      // }
 
       return [calls]
     })(),
@@ -345,91 +339,110 @@ export const usePositionManager = ({
       enabled: !!pool
     }
   })
+  const { data: mintPositionConfig } = useSimulateContract({
+    address: CONTRACTS_ADDRESS.positionManager,
+    abi: POSITION_MANAGER_ABI,
+    functionName: 'mint',
+    args: (() => {
+      if (!pool || !tickUpper || !tickLower || !prices || !address) return undefined
 
-  console.log(createpoolConfig, status, error)
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
+      return [{
+        token0: (pool.token0.address as Address),
+        token1: (pool.token1.address as Address),
+        fee,
+        tickLower: tickLower,
+        tickUpper: tickUpper,
+        amount0Desired: prices.amount0,
+        amount1Desired: prices.amount1,
+        amount0Min: 0n,
+        amount1Min: 0n,
+        recipient: address,
+        deadline
+      }]
+    })(),
+    query: {
+      enabled: !!pool && !!prices?.position && !!address
+    }
+  })
 
   const handleCreatePool = async () => {
     if (!createpoolConfig?.request) return
-
-    executeMultiCall(createpoolConfig.request)
+    createPool(createpoolConfig.request)
+  }
+  const handleMintPosition = async () => {
+    if (!mintPositionConfig?.request) return
+    mintPosition(mintPositionConfig.request)
   }
 
-  const handleMintPosition = async (params?: {
-    tickLower?: number,
-    tickUpper?: number;
-    amount0Desired?: bigint,
-    amount1Desired?: bigint,
-    amount0Min?: bigint,
-    amount1Min?: bigint,
-    deadline?: bigint
-  }) => {
-    if (!pool || !tickUpper || !tickLower || !prices || !address) return undefined
+  const { data: createPoolReceipt, isLoading: waitingCreatePoolReceipt } = useWaitForTransactionReceipt({
+    hash: createPoolTxHash
+  })
+  const { data: mintPositionReceipt, isLoading: waitingMintPositionReceipt } = useWaitForTransactionReceipt({
+    hash: mintPositionTxHash
+  })
 
-    const deadline = params?.deadline || BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
+  const status = useMemo(() => {
+    if (!token0 || !token1) return 'idle'
 
-    mintPosition(
-      {
-        address: CONTRACTS_ADDRESS.positionManager,
-        abi: POSITION_MANAGER_ABI,
-        functionName: 'mint',
-        args: [{
-          token0: (pool.token0.address as Address),
-          token1: (pool.token1.address as Address),
-          fee,
-          tickLower: params?.tickLower || tickLower,
-          tickUpper: params?.tickUpper || tickUpper,
-          amount0Desired: params?.amount0Desired || prices.amount0,
-          amount1Desired: params?.amount1Desired || prices.amount1,
-          amount0Min: params?.amount0Min || 0n,
-          amount1Min: params?.amount1Min || 0n,
-          recipient: address,
-          deadline
-        }]
-      }, {
-      onError: (e) => {
-        console.error("Error when mint the position", e)
-      }
-    })
-  }
+    if (isCheckingPool || isGettingPoolData) return 'fetchPool'
+    if (isCheckingToken0Allowance || isCheckingToken1Allowance) return "fetchAllowance"
 
-  const handleCreatePoolAndMint = async () => {
-    await handleCreatePool()
-  }
-  const handleCreatePoolOnly = () => {
-    handleCreatePool()
-  }
+    if (isApprovingToken0 || isApprovingToken1) return "waitUserApprovement"
+    if (waitingT0ApproveReceipt || waitingT1ApproveReceipt) return "waitApprovementReceipt"
+    if (waitCreatePool || waitMintPosition) return "waitMainUserSign"
+    if (waitingCreatePoolReceipt || waitingMintPositionReceipt) return "waitMainReceipt"
+
+    if (!poolAlreadyExist && initialPrice === 0n) {
+      return 'waitInitialAmount'
+    }
+
+    if (!prices.position) {
+      return 'waitAmount'
+    }
+
+    if (token0NeedApproval) return "needT0Approve"
+    if (token1NeedApproval) return "needT1Approve"
+
+    return poolAlreadyExist ? 'readyMintPosition' : 'readyCreatePosition'
+  }, [
+    token0,
+    token1,
+    isCheckingPool,
+    isGettingPoolData,
+    isCheckingToken1Allowance,
+    isCheckingToken0Allowance,
+    poolAlreadyExist,
+    prices,
+    initialPrice,
+    token0NeedApproval,
+    token1NeedApproval,
+    isApprovingToken0,
+    isApprovingToken1,
+    waitingT0ApproveReceipt,
+    waitingT1ApproveReceipt,
+    waitCreatePool,
+    waitMintPosition,
+    waitingCreatePoolReceipt,
+    waitingMintPositionReceipt
+  ])
 
   return {
     // PoolState
-    poolExists,
-    pool,
+    status,
+    poolAlreadyExist,
 
     // Price calculation
     ...prices,
     currentPrice,
 
-    // Allowances
-    token0NeedApproval,
-    token1NeedApproval,
-    token0Allowance,
-    token1Allowance,
-    isCheckingAllowance,
-
-    // Approvals
     approveToken0: handleApproveToken0,
     approveToken1: handleApproveToken1,
-    isApprovingToken0,
-    isApprovingToken1,
 
-    // Main action
     createPool: handleCreatePool,
     mintPosition: handleMintPosition,
-    createPoolAndMint: handleCreatePoolAndMint,
-    createPoolOnly: handleCreatePoolOnly,
 
-    // Loading state
-    isExecutingMultiCall,
-    isMintingPosition,
-    isLoading: isCheckingPool || isExecutingMultiCall || isMintingPosition || isCheckingAllowance,
+    createPoolReceipt,
+    mintPositionReceipt
   }
 }
