@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { type Address, encodeFunctionData, erc20Abi, parseEther, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
@@ -63,7 +63,7 @@ export const usePositionManager = ({
     }
   })
 
-  const { data: poolData, isLoading: isGettingPoolData, isFetched: poolDataFetched } = useReadContracts({
+  const { data: poolData, isLoading: isGettingPoolData } = useReadContracts({
     contracts: [
       {
         address: (existingPoolAddress as Address),
@@ -219,7 +219,7 @@ export const usePositionManager = ({
   /*
    * CHECK ALLOWANCE
    */
-  const { data: token0Allowance = 0n, isLoading: isCheckingToken0Allowance, isFetched: token0AllowanceFetched, refetch: refetchT0Allowance } = useReadContract({
+  const { data: token0Allowance = 0n, isLoading: isCheckingToken0Allowance, refetch: refetchT0Allowance } = useReadContract({
     address: (token0?.address as Address),
     abi: erc20Abi,
     functionName: "allowance",
@@ -232,7 +232,7 @@ export const usePositionManager = ({
     return token0Allowance < prices.amount0 * 105n / 100n
   }, [token0Allowance, prices])
 
-  const { data: token1Allowance = 0n, isLoading: isCheckingToken1Allowance, isFetched: token1AllowanceFetched, refetch: refetchT1Allowance } = useReadContract({
+  const { data: token1Allowance = 0n, isLoading: isCheckingToken1Allowance, refetch: refetchT1Allowance } = useReadContract({
     address: (token1?.address as Address),
     abi: erc20Abi,
     functionName: "allowance",
@@ -431,6 +431,7 @@ export const usePositionManager = ({
     // PoolState
     status,
     poolAlreadyExist,
+    pool,
 
     // Price calculation
     ...prices,

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, type ChangeEvent } from 'react';
+import React, { useState, useMemo, type ChangeEvent } from 'react';
 import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
@@ -459,13 +459,13 @@ const CreatePoolPage: React.FC = () => {
                 <button
                   className="PoolPage__ContinueBtn"
                   type="button"
-                  disabled={buttonState.disabled}
-                  onClick={buttonState.action}
+                  disabled={buttonState?.disabled}
+                  onClick={buttonState?.action}
                 >
-                  {buttonState.loading && (
+                  {buttonState?.loading && (
                     <Loader className="PoolPage__ContinueBtnLoader" size="mobile" />
                   )}
-                  {buttonState.text}
+                  {buttonState?.text}
                 </button>
               )}
             </div>
