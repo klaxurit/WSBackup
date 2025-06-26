@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './styles/main.scss'
 import Navbar from './components/Navbar/Navbar'
-import SwapForm from './components/SwapForm/SwapForm'
+import { SwapPageLayout } from './components/Layout/SwapPageLayout'
 import { WalletConnect } from './components/WalletConnect/WalletConnect'
 import TokenPage from './pages/TokenPage/page'
 import ExplorePage from './pages/ExplorePage/page'
@@ -25,8 +25,8 @@ function App() {
           <Routes>
             <Route path="/" element={
               <div className="swap-page">
-                <SwapForm
-                  toggleSidebar={toggleSidebar}
+                <SwapPageLayout
+                  onToggleSidebar={toggleSidebar}
                 />
                 {isSidebarOpen && <WalletConnect />}
               </div>
@@ -37,6 +37,7 @@ function App() {
             <Route path="/pools/:poolAddress" element={<PoolViewPage />} />
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
+            <Route path="/tokens/:tokenAddress" element={<TokenPage />} />
           </Routes>
         </main>
       </div>

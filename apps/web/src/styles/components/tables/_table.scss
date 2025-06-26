@@ -166,3 +166,42 @@
   background: rgba(255, 77, 77, 0.15);
   color: #ff4d4d;
 }
+
+// Aligne verticalement tous les éléments des lignes du tableau
+.Table__Row>td,
+.Table__Row>th {
+  vertical-align: middle;
+}
+
+// Pour la cellule du nom du token (TokensTable)
+.TokensTable__NameCell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.TokensTable__LogoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+}
+
+.TokensTable__Logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #232323;
+  background: #fff;
+  position: relative;
+  left: 0;
+  z-index: 2;
+}
+
+.TokensTable__NameLink {
+  font-weight: 600;
+  color: #FFD056;
+  text-decoration: none;
+  cursor: pointer;
+}

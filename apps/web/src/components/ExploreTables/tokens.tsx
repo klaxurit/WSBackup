@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
+import { Link } from 'react-router-dom';
 
 export const TokensTable = () => {
   const { data: tokens = [], isLoading } = useQuery({
@@ -27,12 +28,21 @@ export const TokensTable = () => {
         </a>)
     },
     {
-      label: 'Token name', key: 'name', render: (row) => (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-            {row.logoUri ? <img src={row.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={row.symbol} />}
+      label: 'Token name',
+      key: 'name',
+      className: 'TokensTable__NameTd',
+      render: (row) => (
+        <span className="TokensTable__NameCell">
+          <span className="TokensTable__LogoWrapper">
+            {row.logoUri ? <img src={row.logoUri} className="TokensTable__Logo" /> : <FallbackImg content={row.symbol} />}
           </span>
-          <span style={{ fontWeight: 600 }}>{row.name}</span>
+          <Link
+            to={`/tokens/${row.address}`}
+            className="TokensTable__NameLink"
+            title={`View ${row.name} details`}
+          >
+            {row.name}
+          </Link>
         </span>
       )
     },

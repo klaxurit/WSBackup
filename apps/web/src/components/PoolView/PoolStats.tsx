@@ -1,6 +1,5 @@
 import React from 'react';
 import { FallbackImg } from '../utils/FallbackImg';
-import { getAmountsForPosition } from '../../utils/positionManager';
 
 interface TokenInfo {
   symbol: string;

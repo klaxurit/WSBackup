@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
-import { BERACHAIN_TOKENS } from '../../config/berachainTokens';
 import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
@@ -14,9 +13,6 @@ const TABS = [
 const ExplorePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tokens');
   const [search, setSearch] = useState('');
-  const filteredTokens = search
-    ? BERACHAIN_TOKENS.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
-    : BERACHAIN_TOKENS;
 
   return (
     <div className="ExplorePage">
