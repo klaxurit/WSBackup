@@ -6,47 +6,45 @@ import '../../styles/pages/_poolsPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { useAccount } from 'wagmi';
+import { usePositions } from '../../hooks/usePositions';
 
 const columns: TableColumn[] = [
+  { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.nftTokenId) },
   {
     label: 'Pair',
     key: 'pair',
     render: (row) => (
-      <Link to={`/pools/${row.address}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-            {row.token0.logoUri ? <img src={row.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={row.token0.symbol} />}
-            {row.token1.logoUri ? <img src={row.token1.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> : <FallbackImg content={row.token1.symbol} />}
+            {row.pool.token0.logoUri ? <img src={row.pool.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={row.pool.token0.symbol} />}
+            {row.pool.token1.logoUri ? <img src={row.pool.token1.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> : <FallbackImg content={row.pool.token1.symbol} />}
           </span>
-          {row.token0.symbol} / {row.token1.symbol}
+          {row.pool.token0.symbol} / {row.pool.token1.symbol}
         </span>
       </Link>
     ),
   },
-  { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.fee / 10000}%`) },
+  { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.position.fee / 10000}%`) },
   {
     label: 'Pool APR', key: 'apr', render: (row) => {
-      return row.PoolStatistic.length > 0 && row.PoolStatistic[0].apr !== 0
-        ? `$${parseInt(row.PoolStatistic[0].apr).toFixed(2)}`
+      return row.pool.PoolStatistic.length > 0 && row.pool.PoolStatistic[0].apr !== 0
+        ? `$${parseInt(row.pool.PoolStatistic[0].apr).toFixed(2)}`
         : "-"
     }
   },
-  // { label: '', key: 'actions', render: () => <button className="PoolPage__ManageBtn">Manage</button> },
+  {
+    label: '', key: 'actions', render: (row) => (
+      <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <button className="PoolPage__ManageBtn">Manage</button>
+      </Link>
+    )
+  },
 ];
 
 const PoolPage: React.FC = () => {
-  const { address } = useAccount()
-  const { data: positions, isLoading } = useQuery({
-    queryKey: ['positions', address],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/positions/${address}`)
-      if (!resp.ok) return []
-
-      return resp.json()
-    },
-    enabled: !!address
-  })
-
+  const { isConnected } = useAccount()
+  const { positions, isLoading } = usePositions()
   const { data: topPools = [] } = useQuery({
     queryKey: ['topPools'],
     queryFn: async () => {
@@ -63,9 +61,9 @@ const PoolPage: React.FC = () => {
       <div className="PoolPage__Left">
         <div className="PoolPage__Header">
           <h2 className="PoolPage__Title">Your positions</h2>
-          {!!address && <Link className="PoolPage__NewBtn" to="/pools/create">New</Link>}
+          {isConnected && <Link className="PoolPage__NewBtn" to="/pools/create">New</Link>}
         </div>
-        {address
+        {isConnected
           ? isLoading
             ? (
               <div className="PoolPage__TableWrapper">
