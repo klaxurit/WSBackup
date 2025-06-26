@@ -1,55 +1,31 @@
 import React, { useMemo } from 'react';
-import type { Address } from 'viem';
 
 interface DexScreenerChartProps {
-  poolAddress: Address | null;
-  className?: string;
-  theme?: 'dark' | 'light';
-  showInfo?: boolean;
-  showTabs?: boolean;
-  showFooter?: boolean;
-  interval?: 1 | 5 | 15 | 30 | 60 | 240 | 720 | 1440; // minutes
-  showTrades?: boolean;
-  showChartSettings?: boolean;
+  poolAddress: string | null;
 }
 
-export const DexScreenerChart: React.FC<DexScreenerChartProps> = ({
-  poolAddress,
-  className = "",
-  theme = 'dark',
-  showInfo = false,
-  showTabs = false,
-  showFooter = false,
-  interval = 60,
-  showTrades = false,
-  showChartSettings = false
-}) => {
-  const iframeUrl = useMemo(() => {
-    const baseUrl = !poolAddress
-      ? 'https://dexscreener.com/berachain'
-      : `https://dexscreener.com/berachain/${poolAddress}`;
+// Pool par défaut contenant BERA (à rendre dynamique plus tard)
+const DEFAULT_BERA_POOL = '0x4a2ca01312065a96a93cb37172217e4b42003c0d'; // Pool BERA/USDC réelle
 
-    const params = new URLSearchParams({
-      embed: '1',
-      theme,
-      info: showInfo ? '1' : '0',
-      tabs: showTabs ? '1' : '0',
-      footer: showFooter ? '1' : '0',
-      interval: interval.toString(),
-      trades: showTrades ? '1' : '0',
-      loadChartSettings: showChartSettings ? '1' : '0'
-    });
+export const DexScreenerChart: React.FC<DexScreenerChartProps> = ({ poolAddress }) => {
+  // Fallback sur une pool BERA si aucune pool sélectionnée
+  const effectivePoolAddress = useMemo(() => {
+    if (poolAddress) return poolAddress;
+    // TODO: Rendre dynamique (fetch pools et trouver une pool avec BERA)
+    return DEFAULT_BERA_POOL;
+  }, [poolAddress]);
 
-    return `${baseUrl}?${params.toString()}`;
-  }, [poolAddress, theme, showInfo, showTabs, showFooter, interval, showTrades, showChartSettings]);
-
+  if (!effectivePoolAddress || effectivePoolAddress === '0x0000000000000000000000000000000000000000') {
+    return <div style={{ minHeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No BERA pool found</div>;
+  }
+  // URL DexScreener widget pour la pool
+  const url = `https://dexscreener.com/berachain/${effectivePoolAddress}?embed=1&theme=dark&trades=0&info=0&tools=0&header=0`;
   return (
     <iframe
-      src={iframeUrl}
-      className={`dexscreener-chart ${className}`}
-      title="DexScreener Chart"
-      frameBorder="0"
+      src={url}
+      style={{ width: '100%', minHeight: 500, border: 'none', borderRadius: 8 }}
       allowFullScreen
+      title="DexScreener Chart"
     />
   );
 }; 

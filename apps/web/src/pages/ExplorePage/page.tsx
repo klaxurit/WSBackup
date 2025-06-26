@@ -13,9 +13,6 @@ const TABS = [
 const ExplorePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('tokens');
   const [search, setSearch] = useState('');
-  // const filteredTokens = search
-  //   ? BERACHAIN_TOKENS.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.symbol.toLowerCase().includes(search.toLowerCase()))
-  //   : BERACHAIN_TOKENS;
 
   return (
     <div className="ExplorePage">

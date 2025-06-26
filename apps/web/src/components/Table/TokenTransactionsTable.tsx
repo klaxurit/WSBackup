@@ -1,4 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import Table, { type TableColumn } from "./Table";
+import { FallbackImg } from "../utils/FallbackImg";
+import { formatEther } from "viem";
 
 // Types
 export interface Transaction {
@@ -10,84 +13,120 @@ export interface Transaction {
   time: string;
 }
 
-interface TokenTransactionsTableProps {
-  transactions: Transaction[];
-  referenceToken: { symbol: string; address: string };
-  chainId: number;
-}
+export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string }) => {
+  const { data: txs = [], isLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
+      if (!resp.ok) return [];
+      return resp.json();
+    },
+    select: (data) => {
+      return data
+        .map((s: any) => {
+          if (s.amount0 > 0n) {
+            // A -> B
+            return {
+              ...s,
+              tokenIn: s.pool.token0,
+              tokenOut: s.pool.token1,
+              amountIn: s.amount0,
+              amountOut: s.amount1,
+            }
+          } else {
+            // B -> A
+            return {
+              ...s,
+              tokenIn: s.pool.token1,
+              tokenOut: s.pool.token0,
+              amountIn: s.amount1,
+              amountOut: s.amount0,
+            }
+          }
+        })
+        .filter((tx: any) =>
+          tx.tokenIn.address?.toLowerCase() === tokenAddress.toLowerCase() ||
+          tx.tokenOut.address?.toLowerCase() === tokenAddress.toLowerCase()
+        );
+    }
+  });
 
-const shortenAddress = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
-
-const getExplorerLink = (address: string) => {
-  return `https://beratrail.io/address/${address}`;
-};
-
-const FILTERS = ['All', 'Buy', 'Sell'] as const;
-type FilterType = typeof FILTERS[number];
-
-export const TokenTransactionsTable: React.FC<TokenTransactionsTableProps> = ({ transactions, referenceToken }) => {
-  const [filter, setFilter] = useState<FilterType>('All');
-
-  const filteredTxs = useMemo(() =>
-    filter === 'All' ? transactions : transactions.filter(tx => tx.type === filter),
-    [transactions, filter]
-  );
+  const txColumns: TableColumn[] = [
+    {
+      label: 'Time',
+      key: 'time',
+      render: (row) => {
+        const now = new Date();
+        const txTime = new Date(row.createdAt);
+        const diffMs = now.getTime() - txTime.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return `${diffMin} min ago`;
+        const diffH = Math.floor(diffMin / 60);
+        return `${diffH}h ago`;
+      },
+    },
+    {
+      label: 'Type',
+      key: 'type',
+      render: (row) => (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          Swap
+          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} />}
+          for
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} />}
+        </span>
+      ),
+    },
+    {
+      label: 'USD', key: 'usd'
+    },
+    {
+      label: 'Token amount (sent)',
+      key: 'amount1',
+      render: (row) => (
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+          {formatEther(row.amountIn)}
+          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} />}
+        </span>
+      ),
+    },
+    {
+      label: 'Token amount (received)',
+      key: 'amount2',
+      render: (row) => (
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+          {formatEther(BigInt(row.amountOut) * -1n)}
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} />}
+        </span>
+      ),
+    },
+    {
+      label: 'Wallet',
+      key: 'wallet',
+      render: (row) => (
+        <a
+          href={`https://beratrail.io/address/${row.recipient}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="Table__Address"
+          title={row.recipient}
+        >
+          {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
+        </a>
+      ),
+    },
+  ];
 
   return (
-    <div className="TokenTxTable__Wrapper">
-      <div className="TokenTxTable__Filters">
-        {FILTERS.map(f => (
-          <button
-            key={f}
-            className={`TokenTxTable__FilterBtn${filter === f ? ' active' : ''}`}
-            onClick={() => setFilter(f)}
-            type="button"
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-      <div className="TokenTxTable__Scroll">
-        <table className="TokenTxTable">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Type</th>
-              <th>{referenceToken.symbol}</th>
-              <th>For</th>
-              <th>Value</th>
-              <th>Address</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTxs.length === 0 ? (
-              <tr><td colSpan={6} className="TokenTxTable__Empty">No transactions</td></tr>
-            ) : filteredTxs.map((tx, i) => (
-              <tr key={i} className={`TokenTxTable__Row TokenTxTable__Row--${tx.type.toLowerCase()}`}>
-                <td>{tx.time}</td>
-                <td>
-                  <span className={`TokenTxTable__Type TokenTxTable__Type--${tx.type.toLowerCase()}`}>{tx.type}</span>
-                </td>
-                <td>{tx.amount}</td>
-                <td>{tx.token}</td>
-                <td>{tx.value}</td>
-                <td>
-                  <a
-                    href={getExplorerLink(tx.address)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="TokenTxTable__Address"
-                    title={tx.address}
-                  >
-                    {shortenAddress(tx.address)}
-                  </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Table
+      columns={txColumns}
+      data={txs}
+      isLoading={isLoading}
+      tableClassName="Table"
+      wrapperClassName="Table__Wrapper"
+      scrollClassName="Table__Scroll"
+    />
   );
 };
 

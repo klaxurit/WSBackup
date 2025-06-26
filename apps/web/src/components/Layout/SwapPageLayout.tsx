@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { SwapBanner } from '../Common/SwapBanner';
 import SwapForm from '../SwapForm/SwapForm';
-import { DexScreenerChart } from '../Charts/DexScreenerChart';
 import type { Address } from 'viem';
+import { DexScreenerChart } from '../Charts/DexScreenerChart';
 
 interface SwapPageLayoutProps {
   className?: string;
