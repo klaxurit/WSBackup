@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PoolHeader from '../../../components/PoolView/PoolHeader';
 import PoolInfo from '../../../components/PoolView/PoolInfo';
@@ -7,10 +7,11 @@ import PoolStats from '../../../components/PoolView/PoolStats';
 import '../../../styles/pages/_poolsPage.scss';
 import '../../../styles/pages/_poolViewPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
-import { usePositionManager } from '../../../hooks/usePositionManager';
+import { usePositionManager, type UsePositionManagerDatas } from '../../../hooks/usePositionManager';
 import { usePositions } from '../../../hooks/usePositions';
 
 const PoolViewPage: React.FC = () => {
+  const [config, setConfig] = useState<UsePositionManagerDatas>({})
   const { tokenId } = useParams<{ tokenId: string }>();
   const { getPosition, isLoading } = usePositions()
 
@@ -21,8 +22,8 @@ const PoolViewPage: React.FC = () => {
   const pool = posData?.pool
   const position = posData?.position
 
-  const { inRange, positionDetails, unclaimedFees } = usePositionManager(posData)
-  console.log(unclaimedFees)
+  const pm = usePositionManager(posData, config)
+  const { inRange, positionDetails } = pm
 
   if (isLoading) {
     return (
@@ -54,7 +55,12 @@ const PoolViewPage: React.FC = () => {
           inRange={inRange}
         />
 
-        <PoolActions />
+        <PoolActions
+          positionData={posData}
+          positionManager={pm}
+          config={config}
+          updateConfig={setConfig}
+        />
 
         <PoolStats
           positionValue={"n/a"}
