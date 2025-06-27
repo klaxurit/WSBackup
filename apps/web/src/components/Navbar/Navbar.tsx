@@ -17,21 +17,21 @@ const Navbar = () => {
       <div className="Navbar__Content">
         {/* Mobile: burger | logo | connect - Desktop: logo | search | connect */}
         <div className="Navbar__Left">
-          <button className="Navbar__Hamburger" onClick={() => setMobileMenuOpen(true)} aria-label="Open menu">
+          <button className="Navbar__Hamburger Navbar__Hamburger--mobile" onClick={() => setMobileMenuOpen(true)} aria-label="Open menu">
             <span />
             <span />
             <span />
           </button>
-        </div>
-        <div className="Navbar__Center">
           <Menu />
         </div>
-        <div className="Navbar__SearchBar Navbar__SearchBar--desktop">
-          <SearchBar
-            searchValue={searchValue}
-            setSearchValue={setSearchValue}
-            mode="expanded"
-          />
+        <div className="Navbar__Center">
+          <div className="Navbar__SearchBar Navbar__SearchBar--desktop">
+            <SearchBar
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              mode="expanded"
+            />
+          </div>
         </div>
         <div className="Navbar__Right">
           <div className="Navbar__ConnectButton">

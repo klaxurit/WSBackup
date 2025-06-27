@@ -79,6 +79,10 @@
   }
 }
 
+.Navbar__Hamburger--mobile {
+  display: none;
+}
+
 @media (max-width: 767px) {
 
   .Menu__Links--desktop,
@@ -87,6 +91,10 @@
   }
 
   .Navbar__Hamburger {
+    display: flex;
+  }
+
+  .Navbar__Hamburger--mobile {
     display: flex;
   }
 
