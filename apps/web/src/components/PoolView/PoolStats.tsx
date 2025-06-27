@@ -1,19 +1,15 @@
 import React from 'react';
 import { FallbackImg } from '../utils/FallbackImg';
-
-interface TokenInfo {
-  symbol: string;
-  logo: string;
-}
+import type { Token } from '../../hooks/usePositions';
 
 interface PoolStatsProps {
   positionValue: string;
-  totalPoolTokens: string;
-  depositedToken0: string;
-  depositedToken1: string;
-  share: string;
-  token0: TokenInfo;
-  token1: TokenInfo;
+  totalPoolTokens?: number;
+  depositedToken0?: string;
+  depositedToken1?: string;
+  share?: string;
+  token0: Token;
+  token1: Token;
 }
 
 const PoolStats: React.FC<PoolStatsProps> = ({
@@ -40,9 +36,9 @@ const PoolStats: React.FC<PoolStatsProps> = ({
       <span className="PoolView__StatLabel">Deposited {token0.symbol}</span>
       <span className="PoolView__StatValue">
         {depositedToken0}
-        {token0.logo ? (
+        {token0.logoUri ? (
           <img
-            src={token0.logo}
+            src={token0.logoUri}
             alt={token0.symbol}
             className="PoolView__StatTokenLogo"
           />
@@ -58,9 +54,9 @@ const PoolStats: React.FC<PoolStatsProps> = ({
       <span className="PoolView__StatLabel">Deposited {token1.symbol}</span>
       <span className="PoolView__StatValue">
         {depositedToken1}
-        {token1.logo ? (
+        {token1.logoUri ? (
           <img
-            src={token1.logo}
+            src={token1.logoUri}
             alt={token1.symbol}
             className="PoolView__StatTokenLogo"
           />

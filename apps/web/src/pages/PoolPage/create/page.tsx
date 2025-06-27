@@ -7,7 +7,7 @@ import { type Address } from 'viem';
 import { ConnectButton } from '../../../components/Buttons/ConnectButton';
 import '../../../styles/pages/_poolsPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
-import { usePositionManager } from '../../../hooks/usePositionManager';
+import { usePoolManager } from '../../../hooks/usePoolManager';
 import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput';
 import { useTokens } from '../../../hooks/useBerachainTokenList';
 
@@ -49,7 +49,7 @@ const CreatePoolPage: React.FC = () => {
     }
   });
 
-  const positionManager = usePositionManager({
+  const poolManager = usePoolManager({
     btoken0: token0,
     btoken1: token1,
     fee,
@@ -59,17 +59,17 @@ const CreatePoolPage: React.FC = () => {
     maxPrice,
     initialPrice
   })
-  console.log(positionManager)
+  console.log(poolManager)
 
   const { insufficient0, insufficient1 } = useMemo(() => {
     return {
-      insufficient0: balance0 && positionManager.amount0 > balance0.value,
-      insufficient1: balance1 && positionManager.amount1 > balance1.value
+      insufficient0: balance0 && poolManager.amount0 > balance0.value,
+      insufficient1: balance1 && poolManager.amount1 > balance1.value
     }
-  }, [balance0, balance1, positionManager])
+  }, [balance0, balance1, poolManager])
 
   const buttonState = useMemo(() => {
-    if (positionManager.status === "idle") {
+    if (poolManager.status === "idle") {
       return {
         text: "Select tokens",
         action: () => { },
@@ -77,7 +77,7 @@ const CreatePoolPage: React.FC = () => {
         loading: false
       }
     }
-    if (positionManager.status === "fetchAllowance") {
+    if (poolManager.status === "fetchAllowance") {
       return {
         text: "Fetching tokens allowance",
         action: () => { },
@@ -85,7 +85,7 @@ const CreatePoolPage: React.FC = () => {
         loading: true
       }
     }
-    if (positionManager.status === "waitAmount") {
+    if (poolManager.status === "waitAmount") {
       return {
         text: "Wait for amounts",
         action: () => { },
@@ -93,7 +93,7 @@ const CreatePoolPage: React.FC = () => {
         loading: false
       }
     }
-    if (positionManager.status === "waitInitialAmount") {
+    if (poolManager.status === "waitInitialAmount") {
       return {
         text: "Wait initial Amount",
         action: () => { },
@@ -105,23 +105,23 @@ const CreatePoolPage: React.FC = () => {
     if (insufficient0) return { text: `Insufficient ${token0?.symbol} balance`, action: () => { }, disabled: true, loading: false };
     if (insufficient1) return { text: `Insufficient ${token1?.symbol} balance`, action: () => { }, disabled: true, loading: false };
 
-    if (positionManager.status === "needT0Approve") {
+    if (poolManager.status === "needT0Approve") {
       return {
         text: `Approve ${token0?.symbol}`,
-        action: positionManager?.approveToken0,
+        action: poolManager?.approveToken0,
         disabled: false,
         loading: false
       };
     }
-    if (positionManager.status === "needT1Approve") {
+    if (poolManager.status === "needT1Approve") {
       return {
         text: `Approve ${token1?.symbol}`,
-        action: positionManager?.approveToken1,
+        action: poolManager?.approveToken1,
         disabled: false,
         loading: false
       };
     }
-    if (positionManager.status === "waitUserApprovement") {
+    if (poolManager.status === "waitUserApprovement") {
       return {
         text: `Waiting user's approvement`,
         action: () => { },
@@ -129,7 +129,7 @@ const CreatePoolPage: React.FC = () => {
         loading: true
       };
     }
-    if (positionManager.status === "waitApprovementReceipt") {
+    if (poolManager.status === "waitApprovementReceipt") {
       return {
         text: `Waiting approvement receipt`,
         action: () => { },
@@ -138,7 +138,7 @@ const CreatePoolPage: React.FC = () => {
       };
     }
 
-    if (positionManager.status === "waitMainUserSign") {
+    if (poolManager.status === "waitMainUserSign") {
       return {
         text: `Waiting user's signature`,
         action: () => { },
@@ -146,7 +146,7 @@ const CreatePoolPage: React.FC = () => {
         loading: true
       };
     }
-    if (positionManager.status === "waitMainReceipt") {
+    if (poolManager.status === "waitMainReceipt") {
       return {
         text: `Waiting block validation`,
         action: () => { },
@@ -155,32 +155,32 @@ const CreatePoolPage: React.FC = () => {
       };
     }
 
-    if (positionManager.status === "readyMintPosition") {
+    if (poolManager.status === "readyMintPosition") {
       return {
         text: `Mint position`,
-        action: positionManager?.mintPosition,
+        action: poolManager?.mintPosition,
         disabled: false,
         loading: false
       };
     }
-    if (positionManager.status === "readyCreatePosition") {
+    if (poolManager.status === "readyCreatePosition") {
       return {
         text: `Create position`,
-        action: positionManager?.createPool,
+        action: poolManager?.createPool,
         disabled: false,
         loading: false
       };
     }
   }, [
-    positionManager, insufficient0, insufficient1, token0, token1
+    poolManager, insufficient0, insufficient1, token0, token1
   ]);
 
   const canContinueStep2 = useMemo(() => {
     if (currentStep === 2) return true
-    if (!positionManager) return false
+    if (!poolManager) return false
 
-    return ['idle', 'fetchPool'].includes(positionManager.status)
-  }, [currentStep, positionManager])
+    return ['idle', 'fetchPool'].includes(poolManager.status)
+  }, [currentStep, poolManager])
 
   const handleSelect0 = (token: BerachainToken) => {
     if (token1) {
@@ -320,7 +320,7 @@ const CreatePoolPage: React.FC = () => {
               </div>
             </div>
 
-            {!positionManager.poolAlreadyExist && (
+            {!poolManager.poolAlreadyExist && (
               <div className="PoolPage__CreateSection">
                 <h3 className="PoolPage__CreateSectionTitle">Creating new pool</h3>
                 <p className="PoolPage__CreateSectionDesc">
@@ -359,7 +359,7 @@ const CreatePoolPage: React.FC = () => {
               </div>
             </div>
 
-            {!positionManager.poolAlreadyExist && (
+            {!poolManager.poolAlreadyExist && (
               <>
                 <div className="PoolPage__CreateSection">
                   <h3 className="PoolPage__CreateSectionTitle">Creating new pool</h3>
@@ -396,9 +396,9 @@ const CreatePoolPage: React.FC = () => {
                 <div className="PoolPage__PriceRow">
                   <span className="PoolPage__PriceLabel">Market price:</span>
                   <span className="PoolPage__PriceValue">
-                    {positionManager?.currentPrice ? positionManager.currentPrice.toLocaleString() : '-'} {token1?.symbol} = 1 {token0?.symbol}
+                    {poolManager?.currentPrice ? poolManager.currentPrice.toLocaleString() : '-'} {token1?.symbol} = 1 {token0?.symbol}
                     <span style={{ color: '#888', marginLeft: 8 }}>
-                      {positionManager?.currentPrice ? `$${positionManager.currentPrice.toLocaleString()}` : '-'}
+                      {poolManager?.currentPrice ? `$${poolManager.currentPrice.toLocaleString()}` : '-'}
                     </span>
                   </span>
                 </div>
@@ -434,9 +434,9 @@ const CreatePoolPage: React.FC = () => {
               <div className="PoolPage__LiquidityInputs">
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={positionManager?.pool?.token0.address === token0?.address ? token0 : token1}
+                    selectedToken={poolManager?.pool?.token0.address === token0?.address ? token0 : token1}
                     onAmountChange={handleAmount0Change}
-                    value={positionManager.amount0}
+                    value={poolManager.amount0}
                     isOverBalance={insufficient0 || false}
                     disabled={false}
                   />
@@ -444,9 +444,9 @@ const CreatePoolPage: React.FC = () => {
 
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={positionManager?.pool?.token1.address === token1?.address ? token1 : token0}
+                    selectedToken={poolManager?.pool?.token1.address === token1?.address ? token1 : token0}
                     onAmountChange={handleAmount1Change}
-                    value={positionManager.amount1}
+                    value={poolManager.amount1}
                     isOverBalance={insufficient0 || false}
                     disabled={false}
                   />

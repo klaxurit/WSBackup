@@ -5,9 +5,10 @@ import { usePrice } from '../../hooks/usePrice';
 import { formatEther, parseEther, zeroAddress } from 'viem';
 import { formatTokenAmount } from '../../utils/format';
 import { FallbackImg } from '../utils/FallbackImg';
+import type { Token } from '../../hooks/usePositions';
 
 interface LiquidityInputProps {
-  selectedToken: BerachainToken | null;
+  selectedToken: BerachainToken | Token | null;
   onAmountChange: (amount: bigint) => void;
   value: bigint;
   isOverBalance: boolean;

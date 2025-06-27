@@ -1,23 +1,19 @@
 import React from 'react';
 import { FallbackImg } from '../utils/FallbackImg';
-
-interface TokenInfo {
-  symbol: string;
-  logo: string;
-}
+import type { Token } from '../../hooks/usePositions';
 
 interface PoolInfoProps {
-  token0: TokenInfo;
-  token1: TokenInfo;
+  token0: Token;
+  token1: Token;
   inRange: boolean;
 }
 
 const PoolInfo: React.FC<PoolInfoProps> = ({ token0, token1, inRange }) => (
   <div className="PoolView__Info">
     <span className="PoolView__TokenLogos">
-      {token0.logo ? (
+      {token0.logoUri ? (
         <img
-          src={token0.logo}
+          src={token0.logoUri}
           alt={token0.symbol}
           className="PoolView__TokenLogo PoolView__TokenLogo--left"
         />
@@ -26,9 +22,9 @@ const PoolInfo: React.FC<PoolInfoProps> = ({ token0, token1, inRange }) => (
           <FallbackImg content={token0.symbol} />
         </div>
       )}
-      {token1.logo ? (
+      {token1.logoUri ? (
         <img
-          src={token1.logo}
+          src={token1.logoUri}
           alt={token1.symbol}
           className="PoolView__TokenLogo PoolView__TokenLogo--right"
         />

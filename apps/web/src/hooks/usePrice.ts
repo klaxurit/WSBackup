@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { BerachainToken } from "./useBerachainTokenList";
+import type { Token } from "./usePositions";
 
 type CoingeckoResponse = Record<string, { usd: number }>
 
@@ -12,7 +13,7 @@ const fetchPrice = async (coingeckoId: string): Promise<CoingeckoResponse> => {
   return await res.json();
 }
 
-export const usePrice = (token?: BerachainToken | null) => {
+export const usePrice = (token?: BerachainToken | Token | null) => {
   const hasValidToken = !!token?.coingeckoId
 
   return useQuery({

@@ -21,7 +21,7 @@ export class PoolPriceService {
     private readonly databaseService: DatabaseService,
     private readonly coinGeckoService: CoinGeckoService,
     private readonly blockchainService: BlockchainService,
-  ) { }
+  ) {}
 
   async getPoolStats() {
     return await this.databaseService.pool.findMany({
@@ -39,23 +39,36 @@ export class PoolPriceService {
   }
 
   async getOnePoolStat(token0Addr: string, token1Addr: string, fee: number) {
-    console.log('Searching pool with:', { token0Addr, token1Addr, fee });
-
-    // Recherche avec les deux ordres possibles car les tokens peuvent être inversés
     const pool = await this.databaseService.pool.findFirst({
       where: {
         OR: [
           {
             AND: [
-              { token0: { address: { equals: token0Addr, mode: 'insensitive' } } },
-              { token1: { address: { equals: token1Addr, mode: 'insensitive' } } },
+              {
+                token0: {
+                  address: { equals: token0Addr, mode: 'insensitive' },
+                },
+              },
+              {
+                token1: {
+                  address: { equals: token1Addr, mode: 'insensitive' },
+                },
+              },
               { fee: fee },
             ],
           },
           {
             AND: [
-              { token0: { address: { equals: token1Addr, mode: 'insensitive' } } },
-              { token1: { address: { equals: token0Addr, mode: 'insensitive' } } },
+              {
+                token0: {
+                  address: { equals: token1Addr, mode: 'insensitive' },
+                },
+              },
+              {
+                token1: {
+                  address: { equals: token0Addr, mode: 'insensitive' },
+                },
+              },
               { fee: fee },
             ],
           },
@@ -90,18 +103,6 @@ export class PoolPriceService {
         },
       },
     });
-
-    if (pool) {
-      console.log('Found pool:', {
-        id: pool.id,
-        address: pool.address,
-        token0: pool.token0.symbol,
-        token1: pool.token1.symbol,
-        fee: pool.fee
-      });
-    } else {
-      console.log('Pool not found in database');
-    }
 
     return pool;
   }
@@ -471,8 +472,6 @@ export class PoolPriceService {
     return { apr, tvlUSD };
   }
 
-  
-
   async findBestPricingPath(tokenAddress: string): Promise<string[]> {
     const paths: string[][] = [];
 
@@ -526,8 +525,8 @@ export class PoolPriceService {
 
     return paths.length > 0
       ? paths.reduce((shortest, current) =>
-        current.length < shortest.length ? current : shortest,
-      )
+          current.length < shortest.length ? current : shortest,
+        )
       : [];
   }
 
