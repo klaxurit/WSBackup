@@ -1,4 +1,4 @@
-import React, { useState, useMemo, type ChangeEvent } from 'react';
+import React, { useState, useMemo, type ChangeEvent, useEffect } from 'react';
 import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
@@ -9,6 +9,7 @@ import '../../../styles/pages/_poolsPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
 import { usePositionManager } from '../../../hooks/usePositionManager';
 import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput';
+import { useTokens } from '../../../hooks/useBerachainTokenList';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -246,6 +247,16 @@ const CreatePoolPage: React.FC = () => {
     setInputAmount(v)
     setInputToken("token1")
   }
+
+  const { data: tokens } = useTokens();
+
+  // Pré-sélectionner BERA comme token0 dès que la liste des tokens est chargée
+  useEffect(() => {
+    if (!token0 && tokens) {
+      const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+      if (bera) setToken0(bera);
+    }
+  }, [tokens, token0]);
 
   return (
     <div className="PoolPage PoolPage--create">

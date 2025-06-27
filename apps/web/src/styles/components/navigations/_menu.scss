@@ -27,3 +27,13 @@
     }
   }
 }
+
+@media (max-width: 767px) {
+  .Menu__Links--desktop {
+    display: none !important;
+  }
+
+  .Menu__Logo--desktop {
+    display: none !important;
+  }
+}

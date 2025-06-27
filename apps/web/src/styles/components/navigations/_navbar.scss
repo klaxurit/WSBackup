@@ -45,7 +45,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
     font-weight: 600;
     font-size: 14px;
   }
@@ -54,4 +53,107 @@
 .ConnectButtonPlaceholder {
   width: 120px;
   height: 40px;
+}
+
+// Hamburger menu (mobile only)
+.Navbar__Hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  gap: 5px;
+  z-index: 2100;
+
+  span {
+    display: block;
+    width: 26px;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+}
+
+@media (max-width: 767px) {
+
+  .Menu__Links--desktop,
+  .Navbar__SearchBar--desktop {
+    display: none !important;
+  }
+
+  .Navbar__Hamburger {
+    display: flex;
+  }
+
+  .Navbar__Menu,
+  .Navbar__ConnectButton,
+  .Menu__Logo {
+    display: flex !important;
+  }
+}
+
+.Navbar__Content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.Navbar__Left {
+  display: flex;
+  align-items: center;
+}
+
+.Navbar__Center {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Navbar__Right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+  .Navbar__Left {
+    flex: 0 0 auto;
+  }
+
+  .Navbar__Center {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .Navbar__Right {
+    flex: 0 0 auto;
+  }
+
+  .Navbar__SearchBar--desktop {
+    display: none !important;
+  }
+}
+
+.Navbar__BalanceIcon {
+  display: none;
+  align-items: center;
+  margin-right: 6px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+}
+
+@media (max-width: 767px) {
+  .Navbar__BalanceIcon {
+    display: inline-flex;
+  }
 }

@@ -7,10 +7,10 @@ export const Menu = () => {
 
   return (
     <div className="Menu">
-      <div className="Menu__Logo">
+      <div className="Menu__Logo Menu__Logo--desktop">
         <WinnieFavicon />
       </div>
-      <div className="Menu__Links">
+      <div className="Menu__Links Menu__Links--desktop">
         <Link className={`link link--small link__white ${location.pathname === '/' ? 'active' : ''}`} to="/">
           Swap
         </Link>
