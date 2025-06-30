@@ -126,6 +126,10 @@
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
+
+  &.j-end {
+    justify-content: flex-end;
+  }
 }
 
 .PoolView__ActionBtn {

@@ -9,6 +9,7 @@ import '../../../styles/pages/_poolViewPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
 import { usePositionManager, type UsePositionManagerDatas } from '../../../hooks/usePositionManager';
 import { usePositions } from '../../../hooks/usePositions';
+import { PositionFees } from '../../../components/PoolView/PositionFees';
 
 const PoolViewPage: React.FC = () => {
   const [config, setConfig] = useState<UsePositionManagerDatas>({})
@@ -30,8 +31,6 @@ const PoolViewPage: React.FC = () => {
     pm.reset()
     refetchPosition()
   }
-
-  console.log(pm)
 
   if (isLoading) {
     return (
@@ -81,34 +80,12 @@ const PoolViewPage: React.FC = () => {
           token1={pool?.token1}
         />
 
-        {/* Afficher les fees si il y en a */}
-        {/* {userPosition && (parseFloat(poolData.feesOwedUSD) > 0) && ( */}
-        {/*   <div className="PoolView__Fees"> */}
-        {/*     <h4>Unclaimed Fees</h4> */}
-        {/*     <div className="PoolView__StatRow"> */}
-        {/*       <span className="PoolView__StatLabel"> */}
-        {/*         {poolData.token0.symbol} fees */}
-        {/*       </span> */}
-        {/*       <span className="PoolView__StatValue"> */}
-        {/*         {poolData.feesOwed0} */}
-        {/*       </span> */}
-        {/*     </div> */}
-        {/*     <div className="PoolView__StatRow"> */}
-        {/*       <span className="PoolView__StatLabel"> */}
-        {/*         {poolData.token1.symbol} fees */}
-        {/*       </span> */}
-        {/*       <span className="PoolView__StatValue"> */}
-        {/*         {poolData.feesOwed1} */}
-        {/*       </span> */}
-        {/*     </div> */}
-        {/*     <div className="PoolView__StatRow"> */}
-        {/*       <span className="PoolView__StatLabel">Total fees (USD)</span> */}
-        {/*       <span className="PoolView__StatValue"> */}
-        {/*         ${poolData.feesOwedUSD} */}
-        {/*       </span> */}
-        {/*     </div> */}
-        {/*   </div> */}
-        {/* )} */}
+        <PositionFees
+          pm={pm}
+          token0={pool.token0}
+          token1={pool.token1}
+        />
+
       </div>
     </div>
   );

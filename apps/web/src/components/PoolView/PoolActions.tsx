@@ -29,12 +29,12 @@ const PoolActions = (
 
 
   useEffect(() => {
-    if (positionManager.addLiquidityReceipt || positionManager.claimReceipt || positionManager.withdrawReceipt) {
+    if (positionManager.addLiquidityReceipt || positionManager.withdrawReceipt) {
       updateConfig({})
       refetch()
       setMode("success")
     }
-  }, [positionManager.addLiquidityReceipt, positionManager.claimReceipt, positionManager.withdrawReceipt])
+  }, [positionManager.addLiquidityReceipt, positionManager.withdrawReceipt])
 
 
   if (!positionData || !positionManager) return <></>
@@ -59,7 +59,6 @@ const PoolActions = (
       <div className="PoolView__Actions">
         <button className="btn btn__main btn--small" onClick={() => setMode(mode === "idle" ? 'addLiquidity' : "idle")}>Add liquidity</button>
         <button className="btn btn__accent btn--small" onClick={() => setMode(mode === "idle" ? 'widthdraw' : "idle")} > Remove liquidity</button>
-        <button className={`btn btn__accent btn--small ${!positionManager.canClaim ? "btn__disabled" : ""}`} onClick={() => positionManager.claim()} >Claim</button>
       </div >
 
       {mode === 'addLiquidity' && (

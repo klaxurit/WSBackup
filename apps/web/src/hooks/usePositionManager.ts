@@ -256,7 +256,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       amount1Max: maxUint128,
     }],
     query: {
-      enabled: !!address && !!datas?.withdraw
+      enabled: !!address
     }
   })
   const handleClaim = async () => {
