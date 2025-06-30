@@ -2,11 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import {
   createChart,
   ColorType,
+  CandlestickSeries,
   type IChartApi,
   type UTCTimestamp,
   type CandlestickData,
 } from 'lightweight-charts';
-import { RoundedCandleSeries } from './RoundedCandleSeries';
 
 export interface ChartCandleProps {
   data: CandlestickData<UTCTimestamp>[];
@@ -36,12 +36,13 @@ export const ChartCandle: React.FC<ChartCandleProps> = ({
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
+    // Clean up the previous chart if it exists
     if (chartRef.current) {
       chartRef.current.remove();
       chartRef.current = null;
     }
 
-    // Chart creation
+    // Create the chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height,
@@ -68,17 +69,17 @@ export const ChartCandle: React.FC<ChartCandleProps> = ({
     });
     chartRef.current = chart;
 
-    const roundedSeries = new RoundedCandleSeries();
-    const customSeries = chart.addCustomSeries(roundedSeries, {
+    // Add the standard candlestick series (API v5)
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor,
       downColor,
+      borderUpColor: upColor,
+      borderDownColor: downColor,
       wickUpColor: upColor,
       wickDownColor: downColor,
-      radius: (barSpacing: number) => Math.max(2, barSpacing / 6),
-      priceLineColor: '#E39229',
     });
-    customSeries.setData(data);
-    seriesRef.current = customSeries;
+    candleSeries.setData(data || []);
+    seriesRef.current = candleSeries;
 
     function handleResize() {
       chart.resize(chartContainerRef.current!.clientWidth, height);
@@ -94,11 +95,11 @@ export const ChartCandle: React.FC<ChartCandleProps> = ({
   }, [data, height, upColor, downColor, backgroundColor]);
 
   return (
-    <div style={{ width: '100%', position: 'relative' }}>
+    <div style={{ width: '100%', position: 'relative', overflow: 'hidden', background: backgroundColor }}>
       {header && <div style={{ marginBottom: 8 }}>{header}</div>}
       <div
         ref={chartContainerRef}
-        style={{ width: '100%', height, minHeight: 200, background: backgroundColor, borderRadius: 12, position: 'relative' }}
+        style={{ width: '100%', height, minHeight: 200, background: backgroundColor, position: 'relative' }}
       />
     </div>
   );

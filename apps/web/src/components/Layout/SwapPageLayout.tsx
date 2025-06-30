@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { SwapBanner } from '../Common/SwapBanner';
 import SwapForm from '../SwapForm/SwapForm';
 import type { Address } from 'viem';
-import { DexScreenerChart } from '../Charts/DexScreenerChart';
+import ChartCandle from '../Charts/ChartCandle';
+import { usePoolHistory } from '../../hooks/usePoolHistory';
 
 interface SwapPageLayoutProps {
   className?: string;
@@ -21,6 +22,9 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
     setPoolAddress(address as Address | null);
   };
 
+  // Hook to fetch the selected pool's price history
+  const { data: candles = [], isLoading } = usePoolHistory(poolAddress);
+
   return (
     <div className={`swap-page-layout ${className}`}>
       <div className="swap-page-layout__banner">
@@ -28,7 +32,28 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
       </div>
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">
-          <DexScreenerChart poolAddress={poolAddress} />
+          {isLoading ? (
+            <div style={{ padding: 32 }}>Loading chart…</div>
+          ) : candles.length === 0 ? (
+            <div style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', background: '#181A20' }}>
+              <iframe
+                src="https://fr.tradingview.com/widgetembed/?symbol=BERAUSDC&interval=D&hidesidetoolbar=1&hidetoptoolbar=1&theme=dark&style=1&locale=en"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  background: 'transparent'
+                }}
+                allowFullScreen
+                title="Default TradingView Chart"
+                scrolling="no"
+              />
+            </div>
+          ) : (
+            <ChartCandle data={candles} height={340} />
+          )}
         </div>
         <div className="swap-page-layout__swap">
           <SwapForm

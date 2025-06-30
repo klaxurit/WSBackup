@@ -165,3 +165,89 @@
     display: inline-flex;
   }
 }
+
+.Navbar__Dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  min-width: 240px;
+  background: #232323;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  z-index: 100;
+  padding: 14px;
+  border: 1.5px solid #393939;
+}
+
+.Navbar__CopyButton {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+
+  svg {
+    transition: stroke 0.15s, fill 0.15s;
+    stroke: #fff;
+  }
+
+  &:hover {
+    color: $beryl-pure;
+  }
+}
+
+.Navbar__DropdownHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 15px;
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+
+.Navbar__DropdownCopyRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+
+  svg {
+    rect {
+      stroke: red;
+      display: block;
+    }
+  }
+}
+
+.Navbar__DropdownWalletName {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 14px;
+}
+
+.Navbar__DisconnectButton {
+  width: 100%;
+  background: #282828;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #3a3a3a;
+  }
+}
