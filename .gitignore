@@ -36,3 +36,5 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+packages/db/generated/client/edge.js
+packages/db/generated/client/index.js
