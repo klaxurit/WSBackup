@@ -11,12 +11,14 @@ const PoolActions = (
     config,
     updateConfig,
     refetch,
+    onOpenModal,
   }: {
     positionData?: PositionData,
     positionManager: ReturnType<typeof usePositionManager>,
     config: UsePositionManagerDatas,
     updateConfig: (config: UsePositionManagerDatas) => void
     refetch: () => void
+    onOpenModal?: (type: 'add' | 'remove') => void
   }) => {
   const [mode, setMode] = useState<string>('idle')
 
@@ -57,8 +59,8 @@ const PoolActions = (
   return (
     <>
       <div className="PoolView__Actions">
-        <button className="btn btn__main btn--small" onClick={() => setMode(mode === "idle" ? 'addLiquidity' : "idle")}>Add liquidity</button>
-        <button className="btn btn__accent btn--small" onClick={() => setMode(mode === "idle" ? 'widthdraw' : "idle")} > Remove liquidity</button>
+        <button className="btn btn__main btn--small" onClick={() => onOpenModal ? onOpenModal('add') : setMode(mode === "idle" ? 'addLiquidity' : "idle")}>Add liquidity</button>
+        <button className="btn btn__accent btn--small" onClick={() => onOpenModal ? onOpenModal('remove') : setMode(mode === "idle" ? 'widthdraw' : "idle")} > Remove liquidity</button>
       </div >
 
       {mode === 'addLiquidity' && (

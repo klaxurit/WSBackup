@@ -17,7 +17,7 @@
   flex-direction: column;
   align-items: center;
   border: 1px solid #232323;
-  margin-top: 90px;
+  margin-top: 18px;
 }
 
 .PoolView__Wrapper {
@@ -125,7 +125,6 @@
 .PoolView__Actions {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
 
   &.j-end {
     justify-content: flex-end;
@@ -254,5 +253,109 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+}
+
+.PoolView__Form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+
+  .PoolView__FormRow {
+    display: flex;
+  }
+}
+
+// Modal Add/Remove liquidity
+.PoolView__ModalOverlay {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s;
+}
+
+.PoolView__Modal {
+  position: relative;
+  background: #181818;
+  border-radius: 20px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
+  min-width: 340px;
+  max-width: 420px;
+  width: auto;
+  min-height: 180px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: modalPopIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.PoolView__ModalContent {
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.PoolView__ModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.PoolView__ModalTitle {
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.PoolView__ModalClose {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #232323;
+    color: #FFD056;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

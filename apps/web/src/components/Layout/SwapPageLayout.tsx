@@ -35,7 +35,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
           {isLoading ? (
             <div style={{ padding: 32 }}>Loading chart…</div>
           ) : candles.length === 0 ? (
-            <div style={{ width: '100%', height: 360, borderRadius: 12, overflow: 'hidden', background: '#181A20' }}>
+            <div style={{ width: '100%', height: 360, overflow: 'hidden', background: '#181A20' }}>
               <iframe
                 src="https://fr.tradingview.com/widgetembed/?symbol=BERAUSDC&interval=D&hidesidetoolbar=1&hidetoptoolbar=1&theme=dark&style=1&locale=en"
                 style={{
