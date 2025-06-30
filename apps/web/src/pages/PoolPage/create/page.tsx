@@ -10,6 +10,7 @@ import { Loader } from '../../../components/Loader/Loader';
 import { usePoolManager } from '../../../hooks/usePoolManager';
 import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput';
 import { useTokens } from '../../../hooks/useBerachainTokenList';
+import { useNavigate } from 'react-router-dom';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -19,8 +20,10 @@ const feeTiers = [
 ];
 
 const CreatePoolPage: React.FC = () => {
+  const navigate = useNavigate()
   const { address, isConnected } = useAccount();
   const [currentStep, setCurrentStep] = useState(1);
+
 
   // Step 1
   const [token0, setToken0] = useState<BerachainToken | null>(null);
@@ -59,7 +62,6 @@ const CreatePoolPage: React.FC = () => {
     maxPrice,
     initialPrice
   })
-  console.log(poolManager)
 
   const { insufficient0, insufficient1 } = useMemo(() => {
     return {
@@ -69,6 +71,23 @@ const CreatePoolPage: React.FC = () => {
   }, [balance0, balance1, poolManager])
 
   const buttonState = useMemo(() => {
+    // if (poolManager.createPoolReceipt?.status === "success") {
+    //   return {
+    //     text: "pool created, mint position",
+    //     action: () => {},
+    //     disabled: false,
+    //     loading: false,
+    //   }
+    // }
+    if (poolManager.mintPositionReceipt?.status === "success") {
+      return {
+        text: "View positions",
+        action: () => { navigate('/pools') },
+        disabled: false,
+        loading: false,
+      }
+    }
+
     if (poolManager.status === "idle") {
       return {
         text: "Select tokens",
@@ -250,7 +269,6 @@ const CreatePoolPage: React.FC = () => {
 
   const { data: tokens } = useTokens();
 
-  // Pré-sélectionner BERA comme token0 dès que la liste des tokens est chargée
   useEffect(() => {
     if (!token0 && tokens) {
       const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
@@ -453,6 +471,17 @@ const CreatePoolPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {(poolManager.createPoolReceipt?.status === "success" || poolManager.mintPositionReceipt?.status === "success") && (
+              <div className="PoolPage__CreateSection">
+                <h3 className="PoolPage__CreateSectionTitle">Transaction success</h3>
+                <a href={`https://beratrail.io/tx/${poolManager.mintPositionTxHash || poolManager.createPoolTxHash}`}>
+                  <p className="PoolPage__CreateSectionDesc">
+                    Transaction hash: {poolManager.mintPositionTxHash?.slice(0, 8) || poolManager.createPoolTxHash?.slice(0, 8)}...
+                  </p>
+                </a>
+              </div>
+            )}
 
             <div className="PoolPage__CreateFooter" style={{ justifyContent: 'space-between' }}>
               <button

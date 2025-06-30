@@ -53,7 +53,7 @@ export const usePoolManager = ({
    * Yes -> mint
    * No => Create pool and mint
    */
-  const { data: existingPoolAddress, isLoading: isCheckingPool, isFetched: existingPoolFetched } = useReadContract({
+  const { data: existingPoolAddress, isLoading: isCheckingPool, isFetched: existingPoolFetched, refetch: refetchPoolAddr } = useReadContract({
     address: CONTRACTS_ADDRESS.v3CoreFactory,
     abi: v3CoreFactoryContract,
     functionName: 'getPool',
@@ -63,7 +63,7 @@ export const usePoolManager = ({
     }
   })
 
-  const { data: poolData, isLoading: isGettingPoolData } = useReadContracts({
+  const { data: poolData, isLoading: isGettingPoolData, refetch: refetchPoolData } = useReadContracts({
     contracts: [
       {
         address: (existingPoolAddress as Address),
@@ -105,11 +105,12 @@ export const usePoolManager = ({
   const pool = useMemo(() => {
     try {
       if (poolAlreadyExist && poolData) {
+
+        if (poolData[0]?.status !== "success" || poolData[1]?.status !== "success") return null
+
         const sqrtPriceX96 = poolData[0]?.result?.[0]
         const tick = poolData[0]?.result?.[1]
         const liquidity = poolData[1]?.result
-
-        if (!sqrtPriceX96 || !tick || !liquidity) return null
 
         return new Pool(
           token0!,
@@ -287,7 +288,6 @@ export const usePoolManager = ({
   })
 
   useEffect(() => {
-    console.log("apprive Receipt", approveToken0Receipt, approveToken1Receipt)
     if (approveToken0Receipt) {
       refetchT0Allowance()
     }
@@ -299,8 +299,8 @@ export const usePoolManager = ({
   /*
    * MAIN FUNCTIONS
    */
-  const { data: createPoolTxHash, writeContract: createPool, isPending: waitCreatePool } = useWriteContract()
-  const { data: mintPositionTxHash, writeContract: mintPosition, isPending: waitMintPosition } = useWriteContract()
+  const { data: createPoolTxHash, writeContract: createPool, isPending: waitCreatePool, reset: resetCreatePool } = useWriteContract()
+  const { data: mintPositionTxHash, writeContract: mintPosition, isPending: waitMintPosition, reset: resetMint } = useWriteContract()
 
   const { data: createpoolConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.multicall2,
@@ -427,6 +427,13 @@ export const usePoolManager = ({
     waitingMintPositionReceipt
   ])
 
+  const reset = () => {
+    refetchPoolAddr()
+    refetchPoolData()
+    resetCreatePool()
+    resetMint()
+  }
+
   return {
     // PoolState
     status,
@@ -442,7 +449,10 @@ export const usePoolManager = ({
 
     createPool: handleCreatePool,
     mintPosition: handleMintPosition,
+    reset,
 
+    createPoolTxHash,
+    mintPositionTxHash,
     createPoolReceipt,
     mintPositionReceipt
   }
