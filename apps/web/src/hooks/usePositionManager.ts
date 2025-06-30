@@ -185,7 +185,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
    */
 
   // Deposite
-  const { data: addLiquidityTxHash, writeContract: addLiquidity, isPending: waitAddLiquidity } = useWriteContract()
+  const { data: addLiquidityTxHash, writeContract: addLiquidity, isPending: waitAddLiquidity, reset: addLiquidityReset } = useWriteContract()
   const { data: addLiquidityConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
@@ -215,7 +215,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   })
 
   // Withdraw
-  const { data: withdrawTxHash, writeContract: withdraw, isPending: waitWithdraw } = useWriteContract()
+  const { data: withdrawTxHash, writeContract: withdraw, isPending: waitWithdraw, reset: withdrawReset } = useWriteContract()
   const { data: withdrawConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
@@ -242,8 +242,9 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   const { data: withdrawReceipt, isLoading: waitWithdrawReceipt } = useWaitForTransactionReceipt({
     hash: withdrawTxHash
   })
+
   // Claim
-  const { data: claimTxHash, writeContract: claim, isPending: waitClaim } = useWriteContract()
+  const { data: claimTxHash, writeContract: claim, isPending: waitClaim, reset: claimReset } = useWriteContract()
   const { data: claimConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
@@ -265,6 +266,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   const { data: claimReceipt, isLoading: waitClaimReceipt } = useWaitForTransactionReceipt({
     hash: claimTxHash
   })
+
   /**
    * State Management
    */
@@ -312,6 +314,16 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     canAddLiquidity: !!addLiquidityConfig?.request,
     canWithdraw: !!withdrawConfig?.request,
     canClaim: !!claimConfig?.request,
+
+    reset: () => {
+      addLiquidityReset()
+      claimReset()
+      withdrawReset()
+    },
+
+    addLiquidityTxHash,
+    claimTxHash,
+    withdrawTxHash,
 
     addLiquidityReceipt,
     withdrawReceipt,

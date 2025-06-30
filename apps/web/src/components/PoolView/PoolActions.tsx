@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { usePositionManager, UsePositionManagerDatas } from '../../hooks/usePositionManager';
 import { LiquidityInput } from '../Inputs/LiquidityInput';
 import type { PositionData } from '../../hooks/usePositions';
@@ -9,12 +9,14 @@ const PoolActions = (
     positionData,
     positionManager,
     config,
-    updateConfig
+    updateConfig,
+    refetch,
   }: {
     positionData?: PositionData,
     positionManager: ReturnType<typeof usePositionManager>,
     config: UsePositionManagerDatas,
     updateConfig: (config: UsePositionManagerDatas) => void
+    refetch: () => void
   }) => {
   const [mode, setMode] = useState<string>('idle')
 
@@ -25,7 +27,32 @@ const PoolActions = (
     return null
   }, [positionManager.status])
 
+
+  useEffect(() => {
+    if (positionManager.addLiquidityReceipt || positionManager.claimReceipt || positionManager.withdrawReceipt) {
+      updateConfig({})
+      refetch()
+      setMode("success")
+    }
+  }, [positionManager.addLiquidityReceipt, positionManager.claimReceipt, positionManager.withdrawReceipt])
+
+
   if (!positionData || !positionManager) return <></>
+
+  if (mode === "success") {
+    const txHash = positionManager.addLiquidityTxHash || positionManager.claimTxHash || positionManager.withdrawTxHash
+    return (
+      <>
+        <div className="PoolView__Header">
+          <div className="PoolView__HeaderUSD">Transaction success</div>
+          <a href={`https://beratrail.io/tx/${txHash}`} target="_blank" className="PoolView__HeaderAddress">View in explorer</a>
+        </div>
+        <div className="PoolView__Actions">
+          <button className="btn btn__main btn--small" onClick={() => setMode("idle")}>Back</button>
+        </div >
+      </>
+    )
+  }
 
   return (
     <>

@@ -13,7 +13,7 @@ import { usePositions } from '../../../hooks/usePositions';
 const PoolViewPage: React.FC = () => {
   const [config, setConfig] = useState<UsePositionManagerDatas>({})
   const { tokenId } = useParams<{ tokenId: string }>();
-  const { getPosition, isLoading } = usePositions()
+  const { getPosition, isLoading, refetch: refetchPosition } = usePositions()
 
   const posData = useMemo(() => {
     if (!tokenId) return
@@ -24,6 +24,14 @@ const PoolViewPage: React.FC = () => {
 
   const pm = usePositionManager(posData, config)
   const { inRange, positionDetails } = pm
+
+
+  const reset = () => {
+    pm.reset()
+    refetchPosition()
+  }
+
+  console.log(pm)
 
   if (isLoading) {
     return (
@@ -56,6 +64,7 @@ const PoolViewPage: React.FC = () => {
         />
 
         <PoolActions
+          refetch={reset}
           positionData={posData}
           positionManager={pm}
           config={config}
