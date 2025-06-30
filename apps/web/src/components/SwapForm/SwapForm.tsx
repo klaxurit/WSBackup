@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, type ChangeEvent, useCallback } from "react";
+import React, { useMemo, useState, useEffect, type ChangeEvent, useCallback, useRef } from "react";
 import { ConnectButton } from '../Buttons/ConnectButton';
 import { FromInput } from '../Inputs/FromInput';
 import { SwapToInput } from '../Inputs/SwapToInput';
@@ -12,6 +12,7 @@ import { usePrice } from '../../hooks/usePrice';
 import { formatEther, parseEther } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import { useTokens } from '../../hooks/useBerachainTokenList';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -21,6 +22,7 @@ interface FormProps {
   isHomePage?: boolean;
   isSticky?: boolean; // New prop for sticky mode
   onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
+  initialFromToken?: BerachainToken | null;
 }
 
 const SwapForm: React.FC<FormProps> = React.memo(
@@ -31,14 +33,16 @@ const SwapForm: React.FC<FormProps> = React.memo(
     isHomePage,
     isSticky = false, // Default to false for compatibility
     onPoolChange,
+    initialFromToken,
   }) => {
     const { isConnected } = useAccount()
-    const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
+    const [fromToken, setFromToken] = useState<BerachainToken | null>(initialFromToken || null);
     const [toToken, setToToken] = useState<BerachainToken | null>(null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
     const [toAmount, setToAmount] = useState<bigint>(0n);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [paramOpen, setParamOpen] = useState<boolean>(false)
+    const paramBoxRef = useRef<HTMLDivElement>(null);
     const [slippageConfig, setSlippageConfig] = useState<{ real: number, display: string, isAuto: boolean }>({
       real: 0.05,
       display: "5",
@@ -48,6 +52,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
     const { data: priceFrom = 0 } = usePrice(fromToken);
     const { data: priceTo = 0 } = usePrice(toToken);
+    const { data: tokens } = useTokens();
 
     const swap = useSwap({
       tokenIn: fromToken?.address || zeroAddress,
@@ -160,6 +165,19 @@ const SwapForm: React.FC<FormProps> = React.memo(
       }
     }, [poolAddress, fromToken, toToken, onPoolChange]);
 
+    useEffect(() => {
+      if (!fromToken && tokens) {
+        const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+        if (bera) setFromToken(bera);
+      }
+    }, [tokens, fromToken]);
+
+    useEffect(() => {
+      if (initialFromToken && initialFromToken.address !== fromToken?.address) {
+        setFromToken(initialFromToken);
+      }
+    }, [initialFromToken]);
+
     const handleFromAmountChange = (amount: bigint) => {
       setEditing('from');
       setFromAmount(amount);
@@ -184,6 +202,18 @@ const SwapForm: React.FC<FormProps> = React.memo(
       customClassName || ''
     ].filter(Boolean).join(' ');
 
+    // Fermer le panneau settings si clic en dehors
+    useEffect(() => {
+      if (!paramOpen) return;
+      function handleClickOutside(event: MouseEvent) {
+        if (paramBoxRef.current && !paramBoxRef.current.contains(event.target as Node)) {
+          setParamOpen(false);
+        }
+      }
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [paramOpen]);
+
     return (
       <div className={formClasses}>
         <div className="Form__box">
@@ -192,7 +222,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               {!slippageConfig.isAuto ? slippageConfig.display : ""}
               <Nut />
             </button>
-            <div className={`ParamBox ${paramOpen ? "" : "ParamBox--hide"}`}>
+            <div ref={paramBoxRef} className={`ParamBox ${paramOpen ? "" : "ParamBox--hide"}`}>
               <div className="ParamBox__param">
                 <p>Max slippage</p>
                 <div className="ParamBox__slippageInput">

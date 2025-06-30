@@ -25,7 +25,7 @@ const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
   const [activeChartTab, setActiveChartTab] = useState<IntervalKey>('day');
 
-  // Hooks toujours en haut, jamais dans un if ou après un return
+  // Always call hooks at the top, never in a conditional or after a return
   const { data: tokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
@@ -44,17 +44,17 @@ const TokenPage: React.FC = () => {
     },
   });
 
-  // On calcule token même si tokens n'est pas encore chargé
+  // Compute token even if tokens are not yet loaded
   const token = useMemo(() => {
     if (!tokens || !tokenAddress) return null;
     return tokens.find((t: any) => t.address?.toLowerCase() === tokenAddress.toLowerCase());
   }, [tokens, tokenAddress]);
 
-  // Toujours appeler le hook, même si token est null
+  // Always call the hook, even if token is null
   const { data: coingeckoTokenData, isLoading: descLoading } = useCoingeckoTokenData(token?.coingeckoId);
 
-  // Toujours appeler le hook, même si pools/token ne sont pas encore chargés
-  // Fallback TVL depuis Coingecko si absente côté backend
+  // Always call the hook, even if pools/token are not yet loaded
+  // Fallback TVL from Coingecko if missing in backend
   const tvl = useMemo(() => {
     if (!pools || !token) return null;
     let total = 0;
@@ -69,20 +69,20 @@ const TokenPage: React.FC = () => {
         total += Number(pool.PoolStatistic[0].tvlUSD);
       }
     }
-    // Fallback Coingecko si TVL backend absente ou nulle
+    // Fallback to Coingecko if backend TVL is missing or zero
     if (total === 0 && coingeckoTokenData?.market_data?.total_value_locked_usd) {
       return coingeckoTokenData.market_data.total_value_locked_usd;
     }
     return total;
   }, [pools, token, coingeckoTokenData]);
 
-  // Ajout : récupération de la dernière statistique du token
+  // Addition: get the latest token statistic
   const stat = token?.Statistic?.[0];
   const totalSupply = token?.totalSupply ?? coingeckoTokenData?.total_supply ?? null;
 
-  // Market Cap : backend puis fallback CoinGecko
+  // Market Cap: backend then fallback to CoinGecko
   const marketCap = useMemo(() => {
-    // Si la stat backend contient marketCap (à adapter si le backend expose ce champ)
+    // If backend stat contains marketCap (adapt if backend exposes this field)
     if (stat?.marketCap && stat.marketCap > 0) return stat.marketCap;
     // Fallback CoinGecko
     if (coingeckoTokenData?.market_data?.market_cap?.usd && coingeckoTokenData.market_data.market_cap.usd > 0)
@@ -90,13 +90,13 @@ const TokenPage: React.FC = () => {
     return null;
   }, [stat, coingeckoTokenData]);
 
-  // FDV : calculé frontend (price * totalSupply), fallback N/A
+  // FDV: calculated frontend (price * totalSupply), fallback N/A
   const fdv = useMemo(() => {
     if (!stat || !totalSupply) return null;
     return stat.price * totalSupply;
   }, [stat, totalSupply]);
 
-  // Volume 1D : backend puis fallback CoinGecko
+  // 1D Volume: backend then fallback CoinGecko
   const volume1d = useMemo(() => {
     if (stat?.volume && stat.volume > 0) return stat.volume;
     if (coingeckoTokenData?.market_data?.total_volume?.usd && coingeckoTokenData.market_data.total_volume.usd > 0)
@@ -104,23 +104,23 @@ const TokenPage: React.FC = () => {
     return null;
   }, [stat, coingeckoTokenData]);
 
-  // --- Préparation pour graphique pool natif (future-proof) ---
-  // 1. Sélection de la pool la plus pertinente (ex: la plus liquide ou la plus utilisée)
+  // --- Preparation for native pool chart (future-proof) ---
+  // 1. Select the most relevant pool (e.g. the most liquid or most used)
   const bestPool = useMemo(() => {
     if (!pools || !token) return null;
-    // Exemple : la pool où le token est le plus présent (à adapter selon ta logique)
+    // Example: the pool where the token is most present (adapt as needed)
     return pools.find((pool: any) =>
       pool.token0?.address?.toLowerCase() === token.address?.toLowerCase() ||
       pool.token1?.address?.toLowerCase() === token.address?.toLowerCase()
     ) || null;
   }, [pools, token]);
 
-  // 2. Récupération de l'historique de prix de la pool (mock pour l'instant)
+  // 2. Fetch pool price history (mock for now)
   const { data: poolHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['pool-history', bestPool?.address],
     enabled: !!bestPool?.address,
     queryFn: async () => {
-      // À remplacer par ton endpoint réel
+      // Replace with your real endpoint
       // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools/${bestPool.address}/history`);
       // if (!resp.ok) return [];
       // return resp.json();
@@ -128,7 +128,7 @@ const TokenPage: React.FC = () => {
     }
   });
 
-  // 3. Mapping pour ChartCandle
+  // 3. Mapping for ChartCandle
   const chartPrices: CandlestickData<UTCTimestamp>[] = useMemo(() => {
     if (!poolHistory) return [];
     return poolHistory.map((candle: any) => ({
@@ -273,6 +273,7 @@ const TokenPage: React.FC = () => {
           <div className="Token__SwapForm">
             <SwapForm
               toggleSidebar={() => { }}
+              initialFromToken={token}
             />
           </div>
 
