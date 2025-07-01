@@ -21,7 +21,10 @@ function getWalletName() {
 
 // Icône Copy
 const CopyIcon = () => (
-  <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="5" y="5" width="8" height="8" rx="2" stroke="#fff" strokeWidth="1.5" /><rect x="3" y="3" width="8" height="8" rx="2" fill="#232323" stroke="#fff" strokeWidth="1.5" /></svg>
+  <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+    <rect x="5" y="5" width="8" height="8" rx="2" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+    <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
 );
 
 // Icône Logout
@@ -96,65 +99,21 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
           ) : 'Connect'}
         </button>
         {isConnected && dropdownOpen && (
-          <div className="Navbar__Dropdown" style={{
-            position: 'absolute',
-            top: '110%',
-            right: 0,
-            minWidth: 240,
-            background: '#232323',
-            borderRadius: 12,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
-            zIndex: 100,
-            padding: 14,
-            border: '1.5px solid #393939',
-          }}>
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontWeight: 600, fontSize: 15, wordBreak: 'break-all', marginBottom: 2 }}>
-                {beraname ? beraname : address}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, color: '#aaa' }}>{address}</span>
-                <button
-                  onClick={handleCopy}
-                  style={{
-                    marginLeft: 8,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#fff',
-                    padding: 4,
-                    borderRadius: 6,
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseOver={e => (e.currentTarget.style.background = '#333')}
-                  onMouseOut={e => (e.currentTarget.style.background = 'none')}
-                  title="Copy address"
-                >
-                  <CopyIcon />
-                </button>
-              </div>
+          <div className="Navbar__Dropdown">
+            <div className="Navbar__DropdownHeader">
+              <p className="Navbar__Address">{beraname ? beraname : formatAddress(address!)}</p>
+              <button
+                className="Navbar__CopyButton"
+                onClick={handleCopy}
+                title="Copier l'adresse"
+              >
+                <CopyIcon />
+              </button>
             </div>
-            <div style={{ fontSize: 13, color: '#aaa', marginBottom: 14 }}>{getWalletName()}</div>
+            <div className="Navbar__DropdownWalletName">{getWalletName()}</div>
             <button
+              className="Navbar__DisconnectButton"
               onClick={handleDisconnect}
-              style={{
-                width: '100%',
-                background: '#282828',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '10px 0',
-                fontWeight: 500,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                fontSize: 15,
-                transition: 'background 0.15s',
-              }}
-              onMouseOver={e => (e.currentTarget.style.background = '#3a3a3a')}
-              onMouseOut={e => (e.currentTarget.style.background = '#282828')}
               title="Disconnect"
             >
               <LogoutIcon /> Disconnect
