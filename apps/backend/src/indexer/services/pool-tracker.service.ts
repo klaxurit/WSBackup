@@ -88,29 +88,6 @@ export class PoolTrackerService {
     }
   }
 
-  private async getTokenSymbol(tokenAddress: string): Promise<string> {
-    try {
-      const tokenContract = getContract({
-        address: tokenAddress as `0x${string}`,
-        abi: [
-          {
-            name: 'symbol',
-            type: 'function',
-            stateMutability: 'view',
-            inputs: [],
-            outputs: [{ type: 'string' }],
-          },
-        ],
-        client: this.blockchainService.getPublicClient(),
-      });
-
-      return await tokenContract.read.symbol();
-    } catch (error) {
-      this.logger.warn(`Could not get symbol for token ${tokenAddress}`);
-      return 'UNKNOWN';
-    }
-  }
-
   async addPoolManually(poolAddress: Address): Promise<void> {
     try {
       // Check if pool already exists
@@ -183,6 +160,50 @@ export class PoolTrackerService {
     return {
       totalPoolsTracked: totalPools,
       swapsLast24h: recentSwaps,
+    };
+  }
+
+  async getPoolOnChainDatas(poolAddress: Address) {
+    const [slot0, liquidity, feeGrowthGlobal0X128, feeGrowthGlobal1X128] =
+      await this.blockchainService.getPublicClient().multicall({
+        contracts: [
+          {
+            address: poolAddress,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'slot0',
+          },
+          {
+            address: poolAddress,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'liquidity',
+          },
+          {
+            address: poolAddress,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'feeGrowthGlobal0X128',
+          },
+          {
+            address: poolAddress,
+            abi: UNISWAP_V3_POOL_ABI,
+            functionName: 'feeGrowthGlobal1X128',
+          },
+        ],
+      });
+
+    if (slot0?.status !== 'success' || liquidity?.status !== 'success')
+      return null;
+
+    return {
+      sqrtPriceX96: slot0.result[0],
+      tick: slot0.result[1],
+      // observationIndex: slot0.result?.[2],
+      // observationCardinality: slot0.result?.[3],
+      // observationCardinalityNext: slot0.result?.[4],
+      // feeProtocol: slot0.result?.[5],
+      // unlocked: slot0.result?.[6],
+      liquidity: liquidity.result,
+      // feeGrowthGlobal0X128: feeGrowthGlobal0X128.result,
+      // feeGrowthGlobal1X128: feeGrowthGlobal1X128.result,
     };
   }
 }

@@ -27,7 +27,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   private wsClient: PublicClient;
   private isConnected = false;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   async onModuleInit() {
     await this.initializeClients();
@@ -127,9 +127,8 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   // Subscribe to real-time events
   subscribeToSwapEvents(
     poolAddresses: Address[],
-    callback: (log: Log) => void,
+    callback: (log: Log) => any,
   ) {
-
     return this.publicClient.watchEvent({
       address: poolAddresses,
       event: parseAbiItem(

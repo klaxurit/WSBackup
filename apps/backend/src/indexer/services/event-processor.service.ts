@@ -11,7 +11,7 @@ export class EventProcessorService {
   constructor(
     private blockchainService: BlockchainService,
     private databaseService: DatabaseService,
-  ) { }
+  ) {}
 
   async processPoolEvents(
     poolAddress: Address,
@@ -53,9 +53,6 @@ export class EventProcessorService {
     try {
       const processedEvent = await this.transformSwapEvent(log);
       await this.saveSwapEvent(processedEvent);
-
-      // Update pool state
-      await this.updatePoolState(processedEvent);
     } catch (error) {
       this.logger.error('Error processing swap event:', error);
       // Don't throw to prevent subscription from stopping
