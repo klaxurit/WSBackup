@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { BlockchainService } from './blockchain.service';
 import { EventProcessorService } from './event-processor.service';
 import { PoolTrackerService } from './pool-tracker.service';
@@ -68,6 +67,14 @@ export class IndexerService implements OnModuleInit {
 
       // Start real-time subscription for confirmed blocks
       await this.startRealtimeIndexing();
+
+      // Start block processing
+      this.blockchainService.getPublicClient().watchBlockNumber({
+        onBlockNumber: (blockNumber) => {
+          this.processNewBlocks(blockNumber);
+          this.updatePoolStats();
+        },
+      });
     } catch (error) {
       this.logger.error('Failed to initialize indexer:', error);
 
@@ -94,13 +101,32 @@ export class IndexerService implements OnModuleInit {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async processNewBlocks() {
+  async updatePoolStats() {
+    const pools = await this.poolTracker.getAllTrackedPools();
+    for (const pool of pools) {
+      const datas = await this.poolTracker.getPoolOnChainDatas(
+        pool.address as Address,
+      );
+
+      if (!datas) continue;
+
+      await this.databaseService.pool.update({
+        where: { address: pool.address },
+        data: {
+          sqrtPriceX96: datas.sqrtPriceX96.toString(),
+          liquidity: datas.liquidity.toString(),
+          tick: datas.tick,
+        },
+      });
+    }
+  }
+
+  async processNewBlocks(currentBlock: bigint) {
     if (this.isRunning) return;
 
     try {
       this.isRunning = true;
-      const currentBlock = await this.blockchainService.getCurrentBlock();
+      // const currentBlock = await this.blockchainService.getCurrentBlock();
       const targetBlock = currentBlock - this.confirmations;
 
       if (targetBlock <= this.lastProcessedBlock) {

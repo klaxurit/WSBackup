@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DatabaseService } from 'src/database/database.service';
-import { JsonTokenDto } from '../dto/jsonToken.dto';
 import { Prisma } from '@repo/db';
 
 @Injectable()
