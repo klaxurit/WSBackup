@@ -209,6 +209,9 @@ importers:
       jsbi:
         specifier: 3.2.4
         version: 3.2.4
+      lightweight-charts:
+        specifier: ^5.0.7
+        version: 5.0.7
       react:
         specifier: ^19.1.0
         version: 19.1.0

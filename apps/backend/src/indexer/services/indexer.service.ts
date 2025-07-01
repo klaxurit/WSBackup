@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { BlockchainService } from './blockchain.service';
 import { EventProcessorService } from './event-processor.service';
 import { PoolTrackerService } from './pool-tracker.service';
