@@ -13,6 +13,7 @@ import { formatEther, parseEther } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
+import { Loader } from '../Loader/Loader';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -86,6 +87,10 @@ const SwapForm: React.FC<FormProps> = React.memo(
     };
     const handleCloseModal = () => {
       setShowModal(false);
+      if (swap.status === 'error') {
+        swap.reset();
+        swap.refresh();
+      }
     };
     const handleSwitchTokens = () => {
       setFromToken(toToken);
@@ -126,11 +131,16 @@ const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.status === "ready") return "Preview"
       if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
       if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
-      if (swap.status === "error") return swap.error
-      if (["loading-routes", "quoting"].includes(swap.status)) return "Loading"
+      if (swap.status === "error") {
+        if (fromToken && toToken && fromAmount > 0n && toAmount > 0n) {
+          return "Preview"
+        }
+        return "Error"
+      }
+      if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return swap.status.replace(/^./, swap.status[0].toUpperCase())
-    }, [swap.status, fromToken, toToken])
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount])
 
     useWatchBlockNumber({
       onBlockNumber() {
@@ -294,11 +304,11 @@ const SwapForm: React.FC<FormProps> = React.memo(
               />
             ) : (
               <button
-                className={`btn btn--large btn__${swap.status !== "ready" ? "disabled" : "main"}`}
+                className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
                 onClick={handleOpenModal}
-                disabled={swap.status !== "ready"}
+                disabled={swap.status !== "ready" && swap.status !== "error"}
               >
-                {btnText}
+                {btnText === null ? <Loader size="small" /> : btnText}
               </button>
             )}
           </div>

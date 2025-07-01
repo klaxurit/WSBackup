@@ -7,6 +7,7 @@ import { usePrice } from '../../hooks/usePrice';
 import { formatTokenAmount, formatUsdAmount } from '../../utils/format';
 import { getUsdAmount, getPoolFeesInBera } from '../../utils/transaction';
 import { Modal } from '../Common/Modal';
+import { Loader } from '../Loader/Loader';
 
 interface TransactionStatusModalProps {
   open: boolean;
@@ -61,6 +62,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     if (swap.status === "ready" && !swap.needsApproval) return "Swap"
     if (swap.status === "ready" && swap.needsApproval) return "Approve"
     if (["loading-routes", "quoting"].includes(swap.status)) return "Loading"
+    if (["approving"].includes(swap.status)) return null
     return swap.status.replace(/^./, swap.status[0].toUpperCase())
   }, [swap.status, swap.needsApproval])
 
@@ -84,9 +86,32 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     }
   };
 
+  const isLoadingStep = [
+    "loading-routes", "quoting", "approving", "confirming", "swapping"
+  ].includes(swap.status);
+  const isSuccess = swap.status === "success";
+  const isError = swap.status === "error";
+
+  const shouldShowButton = !isSuccess || (isSuccess && open);
+
   return (
     <Modal open={open} onClose={onClose} className="TransactionModal__box" overlayClassName="TransactionModal__overlay">
-      {(!inputToken || !outputToken) ? null : (
+      {isError ? (
+        <div className="TransactionModal__error">
+          <div className="TransactionModal__head" style={{ marginBottom: 16 }}>
+            <span className="TransactionModal__title">Transaction failed</span>
+            <button className="TransactionModal__close" onClick={onClose} aria-label="Close">
+              &#10005;
+            </button>
+          </div>
+          <div className="TransactionModal__errorMessage" style={{ marginBottom: 24 }}>
+            <p>The transaction was rejected or failed. Please try again or check your wallet.</p>
+          </div>
+          <button className="TransactionModal__swapBtn TransactionModal__swapBtn--error" onClick={onClose} style={{ marginTop: 8 }}>
+            Close
+          </button>
+        </div>
+      ) : (!inputToken || !outputToken) ? null : (
         <>
           <div className="TransactionModal__head">
             <span className="TransactionModal__title">You're swapping</span>
@@ -165,13 +190,15 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               )}
             </div>
           </div>
-          <button
-            className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready`}
-            onClick={handleSwap}
-            disabled={swap.status !== "ready"}
-          >
-            {btnText}
-          </button>
+          {shouldShowButton && (
+            <button
+              className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
+              onClick={handleSwap}
+              disabled={isLoadingStep || !['ready'].includes(swap.status)}
+            >
+              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
+            </button>
+          )}
         </>
       )}
     </Modal>

@@ -82,6 +82,18 @@
       stroke-width: 3;
     }
   }
+
+  &.smallLoader {
+    width: 28px;
+
+    .path {
+      stroke-width: 3.2;
+    }
+
+    .circular {
+      stroke-width: 3.2;
+    }
+  }
 }
 
 @keyframes rotate {
