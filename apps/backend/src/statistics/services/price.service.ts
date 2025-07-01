@@ -29,7 +29,7 @@ export class PriceService {
     });
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_MINUTE)
   async updateTokensPrice() {
     const tokens = await this.databaseService.token.findMany();
     const batches = this.chunkArray(tokens, 10);
