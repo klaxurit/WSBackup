@@ -4,7 +4,7 @@ import { PoolPriceService } from './services/poolPrice.service';
 import { Address } from 'viem';
 import { BlockchainService } from 'src/indexer/services/blockchain.service';
 import { POSITION_MANAGER_ABI } from 'src/indexer/constants/abis';
-import { BigNumber } from 'bignumber.js';
+import { DatabaseService } from 'src/database/database.service';
 
 @Controller('stats')
 export class StatisticsController {
@@ -15,6 +15,7 @@ export class StatisticsController {
     private readonly priceService: PriceService,
     private readonly poolService: PoolPriceService,
     private readonly blockchainService: BlockchainService,
+    private readonly databaseService: DatabaseService,
   ) {}
 
   @Get('/tokens')
@@ -108,5 +109,28 @@ export class StatisticsController {
       console.error("Can't address position balance", error);
       return [];
     }
+  }
+
+  @Get('/token/:address')
+  async getTokenPrice(@Param('address') address: Address) {
+    const priceHistory = await this.databaseService.tokenStats.findMany({
+      where: {
+        token: {
+          address,
+        },
+      },
+      select: {
+        price: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    return priceHistory.map((stat) => ({
+      price: stat.price,
+      timestamp: stat.createdAt.getTime(),
+    }));
   }
 }

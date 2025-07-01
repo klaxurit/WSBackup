@@ -14,7 +14,7 @@ export class PriceService {
     private readonly databaseService: DatabaseService,
     private readonly poolPrice: PoolPriceService,
     private readonly coingeckoService: CoinGeckoService,
-  ) { }
+  ) {}
 
   async getTokenStats() {
     return await this.databaseService.token.findMany({
@@ -36,12 +36,20 @@ export class PriceService {
 
     for (const batch of batches) {
       const promises = batch.map(async (token) => {
-        const volume = await this.calculateVolume24h(token)
+        const volume = await this.calculateVolume24h(token);
         const currentPrice = await this.getTokenPrice(token);
 
         if (currentPrice) {
-          const oneHourEvolution = await this.getPriceVariation(token, 1, currentPrice);
-          const oneDayEvolution = await this.getPriceVariation(token, 24, currentPrice);
+          const oneHourEvolution = await this.getPriceVariation(
+            token,
+            1,
+            currentPrice,
+          );
+          const oneDayEvolution = await this.getPriceVariation(
+            token,
+            24,
+            currentPrice,
+          );
 
           await this.databaseService.tokenStats.create({
             data: {
@@ -49,7 +57,7 @@ export class PriceService {
               price: currentPrice,
               oneHourEvolution: oneHourEvolution || 0,
               oneDayEvolution: oneDayEvolution || 0,
-              volume: volume || 0
+              volume: volume || 0,
             },
           });
         }
@@ -61,9 +69,7 @@ export class PriceService {
     }
   }
 
-  async getTokenPrice(
-    token: Token,
-  ): Promise<number | null> {
+  async getTokenPrice(token: Token): Promise<number | null> {
     this.logger.debug('Looking price of ' + token.symbol);
 
     let currentPrice: number | null = null;
@@ -96,9 +102,7 @@ export class PriceService {
     return currentPrice;
   }
 
-  async getMultipleTokensPrices(
-    tokens: Token[],
-  ): Promise<Map<string, number>> {
+  async getMultipleTokensPrices(tokens: Token[]): Promise<Map<string, number>> {
     const results = new Map<string, number>();
 
     const batches = this.chunkArray(tokens, 10);
@@ -165,9 +169,13 @@ export class PriceService {
     return null;
   }
 
-  private async getPriceVariation(token: Token, hour: number, currentPrice: number): Promise<number | null> {
-    const xHourAgo = new Date()
-    xHourAgo.setHours(xHourAgo.getHours() - hour)
+  private async getPriceVariation(
+    token: Token,
+    hour: number,
+    currentPrice: number,
+  ): Promise<number | null> {
+    const xHourAgo = new Date();
+    xHourAgo.setHours(xHourAgo.getHours() - hour);
 
     const prevStat = await this.databaseService.token.findMany({
       where: { id: token.id },
@@ -175,20 +183,29 @@ export class PriceService {
         Statistic: {
           where: {
             createdAt: {
-              lte: xHourAgo
-            }
+              lte: xHourAgo,
+            },
           },
           orderBy: {
-            createdAt: 'desc'
+            createdAt: 'desc',
           },
-          take: 1
-        }
-      }
-    })
+          take: 1,
+        },
+      },
+    });
 
-    if (!prevStat || prevStat.length === 0 || prevStat[0].Statistic.length === 0) return null
+    if (
+      !prevStat ||
+      prevStat.length === 0 ||
+      prevStat[0].Statistic.length === 0
+    )
+      return null;
 
-    return ((currentPrice - prevStat[0].Statistic[0].price) / prevStat[0].Statistic[0].price) * 100
+    return (
+      ((currentPrice - prevStat[0].Statistic[0].price) /
+        prevStat[0].Statistic[0].price) *
+      100
+    );
   }
 
   private async calculateVolume24h(token: Token): Promise<number | null> {
@@ -197,7 +214,7 @@ export class PriceService {
 
     const tokenWithSwaps = await this.databaseService.token.findUnique({
       where: {
-        address: token.address
+        address: token.address,
       },
       include: {
         poolsAsToken0: {
@@ -205,42 +222,44 @@ export class PriceService {
             swaps: {
               where: {
                 createdAt: {
-                  gte: oneDayAgo
-                }
-              }
-            }
-          }
+                  gte: oneDayAgo,
+                },
+              },
+            },
+          },
         },
         poolsAsToken1: {
           include: {
             swaps: {
               where: {
                 createdAt: {
-                  gte: oneDayAgo
-                }
-              }
-            }
-          }
-        }
-      }
+                  gte: oneDayAgo,
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
-    if (!tokenWithSwaps) return null
+    if (!tokenWithSwaps) return null;
 
     const totalAsToken0 = tokenWithSwaps.poolsAsToken0.reduce((total, pool) => {
       return pool.swaps.reduce((swapVol, swap) => {
-        return total + swapVol + Math.abs(parseInt(swap.amount0))
-      }, 0)
+        return total + swapVol + Math.abs(parseInt(swap.amount0));
+      }, 0);
     }, 0);
     const totalAsToken1 = tokenWithSwaps.poolsAsToken1.reduce((total, pool) => {
-      return total + pool.swaps.reduce((swapVol, swap) => {
-        return swapVol + Math.abs(parseInt(swap.amount1))
-      }, 0)
+      return (
+        total +
+        pool.swaps.reduce((swapVol, swap) => {
+          return swapVol + Math.abs(parseInt(swap.amount1));
+        }, 0)
+      );
     }, 0);
 
-    return totalAsToken0 + totalAsToken1
+    return totalAsToken0 + totalAsToken1;
   }
-
 
   private chunkArray<T>(array: T[], size: number): T[][] {
     const chunks: T[][] = [];
