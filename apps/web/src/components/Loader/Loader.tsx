@@ -3,16 +3,18 @@ import '../../styles/components/common/_loader.scss';
 const sizeClassMap = {
   desktop: 'desktopLoader',
   mobile: 'mobileLoader',
+  small: 'smallLoader',
   panel: 'panelLoader',
   mini: 'miniLoader',
 };
 
-type LoaderSize = 'desktop' | 'mobile' | 'panel' | 'mini';
+type LoaderSize = 'desktop' | 'mobile' | 'panel' | 'mini' | 'small';
 
 export const Loader = ({
   className = '',
   size = 'desktop',
-}: { className?: string; size?: LoaderSize }) => {
+  color = '#FFD056',
+}: { className?: string; size?: LoaderSize; color?: string }) => {
   const sizeClass = sizeClassMap[size] || '';
   const combinedClassName = ['Loader', sizeClass, className].filter(Boolean).join(' ');
 
@@ -25,7 +27,7 @@ export const Loader = ({
           cy="50"
           r="20"
           fill="none"
-          stroke="#FFD056"
+          stroke={color}
           strokeLinecap="round"
         />
         <circle
@@ -34,6 +36,7 @@ export const Loader = ({
           cy="50"
           r="20"
           fill="none"
+          stroke={color}
           strokeLinecap="round"
         />
       </svg>

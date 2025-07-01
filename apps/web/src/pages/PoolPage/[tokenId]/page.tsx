@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import PoolHeader from '../../../components/PoolView/PoolHeader';
 import PoolInfo from '../../../components/PoolView/PoolInfo';
@@ -18,7 +18,8 @@ const PoolViewPage: React.FC = () => {
   const [config, setConfig] = useState<UsePositionManagerDatas>({})
   const { tokenId } = useParams<{ tokenId: string }>();
   const { getPosition, isLoading, refetch: refetchPosition } = usePositions()
-  const [modalType, setModalType] = useState<null | 'add' | 'remove'>(null);
+  const [modalType, setModalType] = useState<null | 'add' | 'remove' | 'success'>(null);
+  const [lastTxHash, setLastTxHash] = useState<string | null>(null);
 
   const posData = useMemo(() => {
     if (!tokenId) return
@@ -30,6 +31,16 @@ const PoolViewPage: React.FC = () => {
   const pm = usePositionManager(posData, config)
   const { inRange, positionDetails } = pm
 
+  // Gestion succès transaction
+  useEffect(() => {
+    if (pm.addLiquidityReceipt) {
+      setModalType('success');
+      setLastTxHash(pm.addLiquidityTxHash || null);
+    } else if (pm.withdrawReceipt) {
+      setModalType('success');
+      setLastTxHash(pm.withdrawTxHash || null);
+    }
+  }, [pm.addLiquidityReceipt, pm.withdrawReceipt]);
 
   const reset = () => {
     pm.reset()
@@ -76,6 +87,7 @@ const PoolViewPage: React.FC = () => {
           config={config}
           updateConfig={setConfig}
           onOpenModal={openModal}
+          reset={modalType === 'success'}
         />
 
         <PoolStats
@@ -149,6 +161,21 @@ const PoolViewPage: React.FC = () => {
                 </button>
               </div>
             </>
+          )}
+          {modalType === 'success' && (
+            <div className="PoolView__Success">
+              <div className="PoolView__SuccessTitle">Transaction success</div>
+              {lastTxHash && (
+                <a
+                  className="PoolView__SuccessLink"
+                  href={`https://beratrail.io/tx/${lastTxHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View in explorer
+                </a>
+              )}
+            </div>
           )}
         </div>
       </Modal>

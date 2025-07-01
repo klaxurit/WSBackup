@@ -475,10 +475,16 @@ export const useSwap = (params: SwapParams) => {
       }, {
         onSuccess: () => {
           refetchAllowance()
+        },
+        onError: (error) => {
+          setState(prev => ({
+            ...prev,
+            status: "error",
+            error: error instanceof Error ? error.message : 'Approve failed'
+          }))
         }
       })
     } catch (error) {
-      console.error('Approve failed', error)
       setState(prev => ({
         ...prev,
         status: "error",
@@ -491,11 +497,18 @@ export const useSwap = (params: SwapParams) => {
   const swap = useCallback(async () => {
     if (!state.selectedRoute || !address || needsApproval || !swapConfig) return
 
+    setState(prev => ({ ...prev, status: 'swapping' }))
     try {
-      setState(prev => ({ ...prev, status: 'swapping' }))
-      executeSwap(swapConfig.request)
+      executeSwap(swapConfig.request, {
+        onError: (error) => {
+          setState(prev => ({
+            ...prev,
+            status: "error",
+            error: error instanceof Error ? error.message : 'Swap failed'
+          }))
+        }
+      })
     } catch (error) {
-      console.error('Swap failed', error)
       setState(prev => ({
         ...prev,
         status: "error",

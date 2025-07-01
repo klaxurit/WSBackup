@@ -12,6 +12,7 @@ const PoolActions = (
     updateConfig,
     refetch,
     onOpenModal,
+    reset = false,
   }: {
     positionData?: PositionData,
     positionManager: ReturnType<typeof usePositionManager>,
@@ -19,6 +20,7 @@ const PoolActions = (
     updateConfig: (config: UsePositionManagerDatas) => void
     refetch: () => void
     onOpenModal?: (type: 'add' | 'remove') => void
+    reset?: boolean
   }) => {
   const [mode, setMode] = useState<string>('idle')
 
@@ -38,22 +40,14 @@ const PoolActions = (
     }
   }, [positionManager.addLiquidityReceipt, positionManager.withdrawReceipt])
 
+  useEffect(() => {
+    if (reset) setMode('idle');
+  }, [reset]);
 
   if (!positionData || !positionManager) return <></>
 
   if (mode === "success") {
-    const txHash = positionManager.addLiquidityTxHash || positionManager.claimTxHash || positionManager.withdrawTxHash
-    return (
-      <>
-        <div className="PoolView__Header">
-          <div className="PoolView__HeaderUSD">Transaction success</div>
-          <a href={`https://beratrail.io/tx/${txHash}`} target="_blank" className="PoolView__HeaderAddress">View in explorer</a>
-        </div>
-        <div className="PoolView__Actions">
-          <button className="btn btn__main btn--small" onClick={() => setMode("idle")}>Back</button>
-        </div >
-      </>
-    )
+    return null;
   }
 
   return (

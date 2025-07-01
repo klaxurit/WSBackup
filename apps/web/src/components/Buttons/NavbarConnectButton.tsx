@@ -130,7 +130,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
             <WinnieFavicon />
           </span>
           {isLoading ? (
-            <Loader />
+            <Loader size='mini'/>
           ) : (
             balance?.value !== 0n ? `${parseFloat(formatEther(balance!.value)).toFixed(4)} BERA` : "0 BERA"
           )}

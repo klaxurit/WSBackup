@@ -186,7 +186,6 @@
   }
 }
 
-
 .TransactionModal__swapBtn {
   width: 100%;
   margin-top: 8px;
@@ -205,22 +204,36 @@
     opacity: 0.6;
     cursor: not-allowed;
   }
-}
 
-.TransactionModal__swapBtn--loading {
-  background: $onyx-medium;
-  color: $beryl-pure;
-  cursor: wait;
-}
+  &.TransactionModal__swapBtn--loading {
+    background: $beryl-pure;
+    color: $onyx-blacker-bis;
+    border: none;
+    box-shadow: none;
+    transition: background 0.18s, color 0.18s;
+  }
 
-.TransactionModal__swapBtn--success {
-  background: $success-pure;
-  color: $white;
+  &.TransactionModal__swapBtn--success {
+    background: $beryl-pure;
+    color: $onyx-black;
+    border: 2px solid $beryl-pure;
+    box-shadow: 0 0 0 2px rgba($beryl-pure, 0.08);
+    transition: background 0.18s, color 0.18s;
+  }
 }
 
 .TransactionModal__swapBtn--error {
   background: $error-pure;
   color: $white;
+}
+
+.TransactionModal__swapBtn.btn__disabled {
+  background: $onyx-darker !important;
+  color: $onyx-medium !important;
+  cursor: not-allowed !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 480px) {

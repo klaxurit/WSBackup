@@ -8,10 +8,6 @@ const Navbar = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const toggleSidebar = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
   return (
     <nav className="Navbar">
       <div className="Navbar__Content">
@@ -35,7 +31,7 @@ const Navbar = () => {
         </div>
         <div className="Navbar__Right">
           <div className="Navbar__ConnectButton">
-            <NavbarConnectButton onClick={toggleSidebar} />
+            <NavbarConnectButton />
           </div>
         </div>
         <MobileMenuModal
