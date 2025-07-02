@@ -1,48 +1,45 @@
 import {
   Injectable,
   Logger,
-  OnModuleInit,
   OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  PublicClient,
   createPublicClient,
   http,
-  PublicClient,
-  parseAbiItem,
-  decodeEventLog,
-  Log,
-  Address,
   AbiEvent,
+  Address,
+  Log,
+  parseAbiItem,
 } from 'viem';
 import { berachain } from 'viem/chains';
-import { UNISWAP_V3_POOL_ABI } from '../constants/abis';
-
-import { DecodedSwapEvent } from '../types/events.types';
 
 @Injectable()
 export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BlockchainService.name);
   private publicClient: PublicClient;
-  private wsClient: PublicClient;
-  private isConnected = false;
+  private isConnected: boolean = false;
 
-  constructor(private configService: ConfigService) { }
+  constructor(private config: ConfigService) { }
 
+  // Init connection
   async onModuleInit() {
-    await this.initializeClients();
+    await this.initializeClient();
   }
 
+  // Set isConnected false
   onModuleDestroy() {
-    // Cleanup connections
     this.isConnected = false;
   }
 
-  private async initializeClients() {
+  // Connect to Berachain
+  private async initializeClient() {
     try {
       this.publicClient = createPublicClient({
         chain: berachain,
-        transport: http(this.configService.get<string>('BERACHAIN_RPC_URL')),
+        transport: http(this.config.get<string>('BERACHAIN_RPC_URL')),
         batch: {
           multicall: true,
         },
@@ -58,17 +55,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async getCurrentBlock(): Promise<bigint> {
-    return await this.publicClient.getBlockNumber();
-  }
-
-  async getBlock(blockNumber: bigint) {
-    return await this.publicClient.getBlock({
-      blockNumber,
-      includeTransactions: false,
-    });
-  }
-
+  // Return all logs from bunch of blocks
   async getLogs(params: {
     fromBlock: bigint;
     toBlock: bigint;
@@ -83,6 +70,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  // Return all swap event from bunch of blocks
   async getSwapEvents(
     poolAddress: Address,
     fromBlock: bigint,
@@ -100,35 +88,8 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     return logs;
   }
 
-  decodeSwapEvent(log: Log): DecodedSwapEvent {
-    try {
-      const decoded = decodeEventLog({
-        abi: UNISWAP_V3_POOL_ABI,
-        data: log.data,
-        topics: log.topics,
-        eventName: 'Swap',
-      });
-
-      return {
-        sender: decoded.args.sender,
-        recipient: decoded.args.recipient,
-        amount0: decoded.args.amount0,
-        amount1: decoded.args.amount1,
-        sqrtPriceX96: decoded.args.sqrtPriceX96,
-        liquidity: decoded.args.liquidity,
-        tick: decoded.args.tick,
-      };
-    } catch (error) {
-      this.logger.error(`Failed to decode swap event:`, error);
-      throw error;
-    }
-  }
-
   // Subscribe to real-time events
-  subscribeToSwapEvents(
-    poolAddresses: Address[],
-    callback: (log: Log) => any,
-  ) {
+  subscribeToSwapEvents(poolAddresses: Address[], callback: (log: Log) => any) {
     return this.publicClient.watchEvent({
       address: poolAddresses,
       event: parseAbiItem(
@@ -140,11 +101,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  getPublicClient(): PublicClient {
+  get client(): PublicClient {
     return this.publicClient;
-  }
-
-  isHealthy(): boolean {
-    return this.isConnected;
   }
 }

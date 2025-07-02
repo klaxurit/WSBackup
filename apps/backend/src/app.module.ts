@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import indexerConfig from './indexer/config/indexer.config';
 import { IndexerModule } from './indexer/indexer.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
+import { CoingeckoModule } from './coingecko/coingecko.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { StatisticsModule } from './statistics/statistics.module';
     }),
     IndexerModule,
     StatisticsModule,
+    BlockchainModule,
+    CoingeckoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
