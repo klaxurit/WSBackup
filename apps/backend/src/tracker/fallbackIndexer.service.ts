@@ -4,6 +4,7 @@ import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { DatabaseService } from 'src/database/database.service';
 import { PoolTracker } from './poolTracker.service';
 import { Address, parseAbi } from 'viem';
+import { SwapTrackerService } from './swapTracker.service';
 
 @Injectable()
 export class FallbackIndexerService implements OnModuleInit {
@@ -20,6 +21,7 @@ export class FallbackIndexerService implements OnModuleInit {
     private readonly config: ConfigService,
     private readonly blockchain: BlockchainService,
     private readonly poolTracker: PoolTracker,
+    private readonly swapTracker: SwapTrackerService,
   ) {
     this.batchSize = BigInt(
       this.config.get<string>('INDEXER_BATCH_SIZE', '10000'),
@@ -50,8 +52,7 @@ export class FallbackIndexerService implements OnModuleInit {
         });
       }
 
-      // this.lastProcessedBlock = indexerState.lastBlock;
-      this.lastProcessedBlock = 4700000n;
+      this.lastProcessedBlock = indexerState.lastBlock;
       this.logger.log(
         `🚀 Indexer initialized - Last block: ${this.lastProcessedBlock}`,
       );
@@ -95,6 +96,7 @@ export class FallbackIndexerService implements OnModuleInit {
           'event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)',
           'event Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount,uint256 amount0, uint256 amount1)',
           'event Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)',
+          'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
         ]),
       });
 
@@ -107,6 +109,9 @@ export class FallbackIndexerService implements OnModuleInit {
         }
         if (log.eventName === 'Burn') {
           await this.poolTracker.handlePositionBurn(log);
+        }
+        if (log.eventName === 'Swap') {
+          await this.swapTracker.handleNewSwap(log);
         }
       }
 

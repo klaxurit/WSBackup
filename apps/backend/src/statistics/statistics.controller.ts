@@ -2,9 +2,9 @@ import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { PriceService } from './services/price.service';
 import { PoolPriceService } from './services/poolPrice.service';
 import { Address } from 'viem';
-import { BlockchainService } from 'src/indexer/services/blockchain.service';
-import { POSITION_MANAGER_ABI } from 'src/indexer/constants/abis';
 import { DatabaseService } from 'src/database/database.service';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { V3_POSITION_MANAGER_ABI } from 'src/blockchain/abis/V3_POSITION_MANAGER_ABI';
 
 @Controller('stats')
 export class StatisticsController {
@@ -45,14 +45,12 @@ export class StatisticsController {
   @Get('/positions/:address')
   async getAddressPositions(@Param('address') address: Address) {
     try {
-      const balance = await this.blockchainService
-        .getPublicClient()
-        .readContract({
-          address: this.positionManagerAddress,
-          abi: POSITION_MANAGER_ABI,
-          functionName: 'balanceOf',
-          args: [address],
-        });
+      const balance = await this.blockchainService.client.readContract({
+        address: this.positionManagerAddress,
+        abi: V3_POSITION_MANAGER_ABI,
+        functionName: 'balanceOf',
+        args: [address],
+      });
 
       if (!balance) throw new Error('balance requested but undefined');
       if (balance === 0n) return [];
@@ -60,25 +58,21 @@ export class StatisticsController {
       const positionsWithPool = await Promise.all(
         Array.from({ length: Number(balance) }, (_, index) => index).map(
           async (i) => {
-            const tokenId = await this.blockchainService
-              .getPublicClient()
-              .readContract({
-                address: this.positionManagerAddress,
-                abi: POSITION_MANAGER_ABI,
-                functionName: 'tokenOfOwnerByIndex',
-                args: [address, BigInt(i)],
-              });
+            const tokenId = await this.blockchainService.client.readContract({
+              address: this.positionManagerAddress,
+              abi: V3_POSITION_MANAGER_ABI,
+              functionName: 'tokenOfOwnerByIndex',
+              args: [address, BigInt(i)],
+            });
 
             if (!tokenId) return null;
 
-            const position = await this.blockchainService
-              .getPublicClient()
-              .readContract({
-                address: this.positionManagerAddress,
-                abi: POSITION_MANAGER_ABI,
-                functionName: 'positions',
-                args: [tokenId],
-              });
+            const position = await this.blockchainService.client.readContract({
+              address: this.positionManagerAddress,
+              abi: V3_POSITION_MANAGER_ABI,
+              functionName: 'positions',
+              args: [tokenId],
+            });
 
             if (!position) return null;
 

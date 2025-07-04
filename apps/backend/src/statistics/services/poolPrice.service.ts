@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CoinGeckoService } from './coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
 import {
   PoolWithSwap,
@@ -7,11 +6,12 @@ import {
   SwapWithPool,
 } from '../types/tokenPrices';
 import { BigNumber } from 'bignumber.js';
-import { BlockchainService } from 'src/indexer/services/blockchain.service';
 import { Pool } from '@repo/db';
-import { UNISWAP_V3_POOL_ABI } from 'src/indexer/constants/abis';
 import { Address, formatUnits } from 'viem';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { CoinGeckoService } from 'src/coingecko/coingecko.service';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { V3_POOL_ABI } from 'src/blockchain/abis/V3_POOL_ABI';
 
 @Injectable()
 export class PoolPriceService {
@@ -223,7 +223,6 @@ export class PoolPriceService {
 
       const isToken0 =
         token0.address.toLowerCase() === tokenAddress.toLowerCase();
-      const targetToken = isToken0 ? token0 : token1;
       const referenceToken = isToken0 ? token1 : token0;
 
       const amount0 = new BigNumber(swap.amount0);
@@ -430,23 +429,22 @@ export class PoolPriceService {
 
     if (token0Stat.length === 0 || token1Stat.length === 0) return null;
 
-    const [slot0, liquidity, fee] = await this.blockchainService
-      .getPublicClient()
-      .multicall({
+    const [slot0, liquidity, fee] =
+      await this.blockchainService.client.multicall({
         contracts: [
           {
             address: pool.address as Address,
-            abi: UNISWAP_V3_POOL_ABI,
+            abi: V3_POOL_ABI,
             functionName: 'slot0',
           },
           {
             address: pool.address as Address,
-            abi: UNISWAP_V3_POOL_ABI,
+            abi: V3_POOL_ABI,
             functionName: 'liquidity',
           },
           {
             address: pool.address as Address,
-            abi: UNISWAP_V3_POOL_ABI,
+            abi: V3_POOL_ABI,
             functionName: 'fee',
           },
         ],

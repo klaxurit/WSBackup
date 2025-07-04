@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { CoinGeckoService } from './coingecko.service';
 import { PoolPriceService } from './poolPrice.service';
 import { Token } from '@repo/db';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 
 @Injectable()
 export class PriceService {
   private readonly logger = new Logger(PriceService.name);
-  private readonly DEFAULT_CACHE_DURATION = 5;
 
   constructor(
     private readonly databaseService: DatabaseService,

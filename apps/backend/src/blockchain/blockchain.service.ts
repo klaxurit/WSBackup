@@ -51,37 +51,6 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // Return all swap event from bunch of blocks
-  // async getSwapEvents(
-  //   poolAddress: Address,
-  //   fromBlock: bigint,
-  //   toBlock: bigint,
-  // ): Promise<Log[]> {
-  //   const logs = await this.getLogs({
-  //     fromBlock,
-  //     toBlock,
-  //     addresses: [poolAddress],
-  //     event: parseAbiItem(
-  //       'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
-  //     ),
-  //   });
-  //
-  //   return logs;
-  // }
-  //
-  // // Subscribe to real-time events
-  // subscribeToSwapEvents(poolAddresses: Address[], callback: (log: Log) => any) {
-  //   return this.publicClient.watchEvent({
-  //     address: poolAddresses,
-  //     event: parseAbiItem(
-  //       'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
-  //     ),
-  //     onLogs: (logs) => {
-  //       logs.forEach((log) => callback(log as Log));
-  //     },
-  //   });
-  // }
-
   get client(): PublicClient {
     return this.publicClient;
   }
