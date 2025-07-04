@@ -91,7 +91,7 @@ export class PoolTracker implements OnModuleInit {
 
       // Check if pool already exists
       const existingPool = await this.db.pool.findUnique({
-        where: { address: log.address },
+        where: { address: decoded.args.pool },
       });
 
       if (existingPool) {
@@ -114,7 +114,7 @@ export class PoolTracker implements OnModuleInit {
       // Create pool record
       const pool = await this.db.pool.create({
         data: {
-          address: log.address.toLowerCase(),
+          address: decoded.args.pool.toLowerCase(),
           token0Id: token0.id,
           token1Id: token1.id,
           fee: Number(decoded.args.fee),
@@ -123,7 +123,7 @@ export class PoolTracker implements OnModuleInit {
       });
 
       this.initPoolTracker(pool);
-      this.logger.log(`🆕 New pool tracked: ${log.address}`);
+      this.logger.log(`🆕 New pool tracked: ${decoded.args.pool}`);
     } catch (error) {
       this.logger.error('Error processing PoolCreated event:', error);
     }
