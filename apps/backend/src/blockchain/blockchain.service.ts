@@ -9,10 +9,6 @@ import {
   PublicClient,
   createPublicClient,
   http,
-  AbiEvent,
-  Address,
-  Log,
-  parseAbiItem,
 } from 'viem';
 import { berachain } from 'viem/chains';
 
@@ -55,51 +51,36 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // Return all logs from bunch of blocks
-  async getLogs(params: {
-    fromBlock: bigint;
-    toBlock: bigint;
-    addresses?: Address[];
-    event: AbiEvent;
-  }): Promise<Log[]> {
-    return await this.publicClient.getLogs({
-      fromBlock: params.fromBlock,
-      toBlock: params.toBlock,
-      address: params.addresses,
-      event: params.event,
-    });
-  }
-
   // Return all swap event from bunch of blocks
-  async getSwapEvents(
-    poolAddress: Address,
-    fromBlock: bigint,
-    toBlock: bigint,
-  ): Promise<Log[]> {
-    const logs = await this.getLogs({
-      fromBlock,
-      toBlock,
-      addresses: [poolAddress],
-      event: parseAbiItem(
-        'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
-      ),
-    });
-
-    return logs;
-  }
-
-  // Subscribe to real-time events
-  subscribeToSwapEvents(poolAddresses: Address[], callback: (log: Log) => any) {
-    return this.publicClient.watchEvent({
-      address: poolAddresses,
-      event: parseAbiItem(
-        'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
-      ),
-      onLogs: (logs) => {
-        logs.forEach((log) => callback(log as Log));
-      },
-    });
-  }
+  // async getSwapEvents(
+  //   poolAddress: Address,
+  //   fromBlock: bigint,
+  //   toBlock: bigint,
+  // ): Promise<Log[]> {
+  //   const logs = await this.getLogs({
+  //     fromBlock,
+  //     toBlock,
+  //     addresses: [poolAddress],
+  //     event: parseAbiItem(
+  //       'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
+  //     ),
+  //   });
+  //
+  //   return logs;
+  // }
+  //
+  // // Subscribe to real-time events
+  // subscribeToSwapEvents(poolAddresses: Address[], callback: (log: Log) => any) {
+  //   return this.publicClient.watchEvent({
+  //     address: poolAddresses,
+  //     event: parseAbiItem(
+  //       'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
+  //     ),
+  //     onLogs: (logs) => {
+  //       logs.forEach((log) => callback(log as Log));
+  //     },
+  //   });
+  // }
 
   get client(): PublicClient {
     return this.publicClient;
