@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { DatabaseService } from 'src/database/database.service';
@@ -7,7 +12,7 @@ import { Address, parseAbi } from 'viem';
 import { SwapTrackerService } from './swapTracker.service';
 
 @Injectable()
-export class FallbackIndexerService implements OnModuleInit {
+export class FallbackIndexerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(FallbackIndexerService.name);
   private batchSize: bigint;
   private confirmations: bigint;
@@ -15,6 +20,8 @@ export class FallbackIndexerService implements OnModuleInit {
   private isRunning = false;
   private lastProcessedBlock = 0n;
   private factoryAddr: Address;
+
+  private indexer: NodeJS.Timeout;
 
   constructor(
     private readonly db: DatabaseService,
@@ -57,11 +64,9 @@ export class FallbackIndexerService implements OnModuleInit {
         `🚀 Indexer initialized - Last block: ${this.lastProcessedBlock}`,
       );
 
-      this.blockchain.client.watchBlockNumber({
-        onBlockNumber: (blockNumber) => {
-          this.processNewBlocks(blockNumber);
-        },
-      });
+      this.indexer = setInterval(() => {
+        this.processNewBlocks();
+      }, 1000 * 10);
     } catch (error) {
       this.logger.error('Failed to initialize indexer:', error);
 
@@ -69,11 +74,18 @@ export class FallbackIndexerService implements OnModuleInit {
     }
   }
 
-  private async processNewBlocks(currentBlock: bigint) {
+  onModuleDestroy() {
+    clearInterval(this.indexer);
+  }
+
+  private async processNewBlocks() {
     if (this.isRunning) return;
 
     try {
       this.isRunning = true;
+
+      const currentBlock = await this.blockchain.client.getBlockNumber();
+
       const pools = await this.db.pool.findMany();
       const poolsAddr = pools.map((p) => p.address as Address);
 
