@@ -57,7 +57,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     return (
       <div className={`Inputs__To To`}>
         <div className="From__Label">
-          <p>Sell</p>
+          <p>Buy</p>
         </div>
         <div className="From__AmountsAndChain">
           <div className="From__Amounts" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>

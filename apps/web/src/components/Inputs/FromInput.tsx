@@ -103,7 +103,7 @@ export const FromInput: React.FC<FromInputProps> = (
     >
       {showLabel && (
         <div className="From__Label">
-          <p>Buy</p>
+          <p>Sell</p>
         </div>
       )}
       <div className="From__AmountsAndChain">
