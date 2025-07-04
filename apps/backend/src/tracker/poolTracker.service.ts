@@ -112,7 +112,7 @@ export class PoolTracker implements OnModuleInit {
       }
 
       // Create pool record
-      await this.db.pool.create({
+      const pool = await this.db.pool.create({
         data: {
           address: log.address.toLowerCase(),
           token0Id: token0.id,
@@ -122,6 +122,7 @@ export class PoolTracker implements OnModuleInit {
         },
       });
 
+      this.initPoolTracker(pool);
       this.logger.log(`🆕 New pool tracked: ${log.address}`);
     } catch (error) {
       this.logger.error('Error processing PoolCreated event:', error);
