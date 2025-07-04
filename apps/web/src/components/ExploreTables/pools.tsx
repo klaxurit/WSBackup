@@ -3,16 +3,22 @@ import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatEther } from "viem";
 
-export const PoolsTable = () => {
-  const { data: pools = [], isLoading } = useQuery({
+interface PoolsTableProps {
+  data?: any[];
+  isLoading?: boolean;
+}
+
+export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
+  const query = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`)
       if (!resp.ok) return []
-
       return resp.json()
     }
-  })
+  });
+  const pools = data ?? query.data ?? [];
+  const loading = isLoading ?? query.isLoading;
 
   const columns: TableColumn[] = [
     {
@@ -31,8 +37,8 @@ export const PoolsTable = () => {
       label: 'Pool', key: 'pool', render: (row) => (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-            {row.token0.logoUri ? <img src={row.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={row.token0.symbol} />}
-            {row.token1.logoUri ? <img src={row.token1.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> : <FallbackImg content={row.token1.symbol} />}
+            {row.token0.logoUri ? <img src={row.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={row.token0.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />}
+            {row.token1.logoUri ? <img src={row.token1.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> : <FallbackImg content={row.token1.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />}
           </span>
           <span style={{ fontWeight: 600 }}>{row.pool}</span>
         </span>
@@ -74,7 +80,7 @@ export const PoolsTable = () => {
     <Table
       columns={columns}
       data={pools}
-      isLoading={isLoading}
+      isLoading={loading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"

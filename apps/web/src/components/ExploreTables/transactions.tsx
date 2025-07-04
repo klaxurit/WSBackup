@@ -3,13 +3,17 @@ import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatEther } from "viem";
 
-export const TransactionsTable = () => {
-  const { data: txs = [], isLoading } = useQuery({
+interface TransactionsTableProps {
+  data?: any[];
+  isLoading?: boolean;
+}
+
+export const TransactionsTable = ({ data, isLoading }: TransactionsTableProps) => {
+  const query = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`)
       if (!resp.ok) return []
-
       return resp.json()
     },
     select: (data) => {
@@ -35,7 +39,9 @@ export const TransactionsTable = () => {
         }
       })
     }
-  })
+  });
+  const txs = data ?? query.data ?? [];
+  const loading = isLoading ?? query.isLoading;
 
   const txColumns: TableColumn[] = [
     {
@@ -58,9 +64,9 @@ export const TransactionsTable = () => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           Swap
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} />}
+          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} />}
           for
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} />}
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} />}
         </span>
       ),
     },
@@ -73,7 +79,7 @@ export const TransactionsTable = () => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
           {formatEther(row.amountIn)}
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} />}
+          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
         </span>
       ),
     },
@@ -83,7 +89,7 @@ export const TransactionsTable = () => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
           {formatEther(BigInt(row.amountOut) * -1n)}
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} />}
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
         </span>
       ),
     },
@@ -108,7 +114,7 @@ export const TransactionsTable = () => {
     <Table
       columns={txColumns}
       data={txs}
-      isLoading={isLoading}
+      isLoading={loading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"

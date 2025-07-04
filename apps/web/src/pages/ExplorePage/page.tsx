@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
+import { useQuery } from '@tanstack/react-query';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
@@ -11,8 +12,88 @@ const TABS = [
 ];
 
 const ExplorePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('tokens');
+  const [activeTab, setActiveTab] = useState<'tokens' | 'pools' | 'transactions'>('tokens');
   const [search, setSearch] = useState('');
+
+  // Récupération des données pour chaque tableau
+  const { data: tokens = [], isLoading: tokensLoading } = useQuery({
+    queryKey: ['tokens'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
+      if (!resp.ok) return [];
+      return resp.json();
+    }
+  });
+
+  const { data: pools = [], isLoading: poolsLoading } = useQuery({
+    queryKey: ['pools'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
+      if (!resp.ok) return [];
+      return resp.json();
+    }
+  });
+
+  const { data: txs = [], isLoading: txsLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
+      if (!resp.ok) return [];
+      return resp.json();
+    },
+    select: (data) => {
+      return data.map((s: any) => {
+        if (s.amount0 > 0n) {
+          // A -> B
+          return {
+            ...s,
+            tokenIn: s.pool.token0,
+            tokenOut: s.pool.token1,
+            amountIn: s.amount0,
+            amountOut: s.amount1,
+          }
+        } else {
+          // B -> A
+          return {
+            ...s,
+            tokenIn: s.pool.token1,
+            tokenOut: s.pool.token0,
+            amountIn: s.amount1,
+            amountOut: s.amount0,
+          }
+        }
+      })
+    }
+  });
+
+  // Filtrage contextuel selon l'onglet actif
+  const filteredTokens = useMemo(() => {
+    if (!search) return tokens;
+    return tokens.filter((token: any) =>
+      token.name.toLowerCase().includes(search.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(search.toLowerCase()) ||
+      token.address.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, tokens]);
+
+  const filteredPools = useMemo(() => {
+    if (!search) return pools;
+    return pools.filter((pool: any) =>
+      (pool.pool && pool.pool.toLowerCase().includes(search.toLowerCase())) ||
+      (pool.address && pool.address.toLowerCase().includes(search.toLowerCase())) ||
+      (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(search.toLowerCase())) ||
+      (pool.token1?.symbol && pool.token1.symbol.toLowerCase().includes(search.toLowerCase()))
+    );
+  }, [search, pools]);
+
+  const filteredTxs = useMemo(() => {
+    if (!search) return txs;
+    return txs.filter((tx: any) =>
+      (tx.recipient && tx.recipient.toLowerCase().includes(search.toLowerCase())) ||
+      (tx.tokenIn?.symbol && tx.tokenIn.symbol.toLowerCase().includes(search.toLowerCase())) ||
+      (tx.tokenOut?.symbol && tx.tokenOut.symbol.toLowerCase().includes(search.toLowerCase()))
+    );
+  }, [search, txs]);
 
   return (
     <div className="ExplorePage">
@@ -22,7 +103,7 @@ const ExplorePage: React.FC = () => {
             <button
               key={tab.key}
               className={activeTab === tab.key ? 'Table__FilterBtn active' : 'Table__FilterBtn'}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => setActiveTab(tab.key as 'tokens' | 'pools' | 'transactions')}
               type="button"
             >
               {tab.label}
@@ -33,11 +114,12 @@ const ExplorePage: React.FC = () => {
           searchValue={search}
           setSearchValue={setSearch}
           mode="compact"
+          activeTab={TABS.find(t => t.key === activeTab)?.label}
         />
       </div>
-      {activeTab === 'tokens' && <TokensTable />}
-      {activeTab === 'pools' && <PoolsTable />}
-      {activeTab === 'transactions' && <TransactionsTable />}
+      {activeTab === 'tokens' && <TokensTable data={filteredTokens} isLoading={tokensLoading} />}
+      {activeTab === 'pools' && <PoolsTable data={filteredPools} isLoading={poolsLoading} />}
+      {activeTab === 'transactions' && <TransactionsTable data={filteredTxs} isLoading={txsLoading} />}
     </div>
   );
 };

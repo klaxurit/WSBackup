@@ -1,6 +1,24 @@
-export const FallbackImg = ({ content }: { content: string }) => {
+export const FallbackImg = ({
+  content,
+  className,
+  style,
+  width = 32,
+  height = 32,
+}: {
+  content: string,
+  className?: string,
+  style?: React.CSSProperties,
+  width?: number,
+  height?: number,
+}) => {
   return (
-    <svg width={32} height={32} viewBox="0 0 100 100" className="rounded-full">
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 100 100"
+      className={className}
+      style={style}
+    >
       <circle cx="50" cy="50" r="50" fill="#000000" />
       <text
         x="50"

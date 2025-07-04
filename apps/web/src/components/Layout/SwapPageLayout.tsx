@@ -4,7 +4,7 @@ import SwapForm from '../SwapForm/SwapForm';
 import type { Address } from 'viem';
 import LineChart from '../Charts/LineChart';
 import { useQuery } from '@tanstack/react-query';
-import {  DEFAULT_TOKEN } from '../../utils/lineChart';
+import { DEFAULT_TOKEN } from '../../utils/lineChart';
 import { getTokenLineChartData } from '../../utils/tokenLineChartData';
 
 interface SwapPageLayoutProps {
@@ -12,7 +12,6 @@ interface SwapPageLayoutProps {
   onToggleSidebar: () => void;
 }
 
-// Hook pour charger l'historique de prix d'un token (endpoint /stats/token/:address)
 function useTokenLineChart(tokenAddress?: string | null) {
   return useQuery({
     queryKey: ['token-line-chart', tokenAddress],
@@ -30,7 +29,6 @@ function useTokenLineChart(tokenAddress?: string | null) {
   });
 }
 
-// Formatter de prix pour Lightweight Charts (2 décimales, sans symbole)
 const priceFormatter = (price: number) => price.toFixed(2);
 
 export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({

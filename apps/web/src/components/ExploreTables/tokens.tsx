@@ -3,16 +3,22 @@ import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
 
-export const TokensTable = () => {
-  const { data: tokens = [], isLoading } = useQuery({
+interface TokensTableProps {
+  data?: any[];
+  isLoading?: boolean;
+}
+
+export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
+  const query = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`)
       if (!resp.ok) return []
-
       return resp.json()
     }
-  })
+  });
+  const tokens = data ?? query.data ?? [];
+  const loading = isLoading ?? query.isLoading;
 
   const columns: TableColumn[] = [
     {
@@ -34,7 +40,9 @@ export const TokensTable = () => {
       render: (row) => (
         <span className="TokensTable__NameCell">
           <span className="TokensTable__LogoWrapper">
-            {row.logoUri ? <img src={row.logoUri} className="TokensTable__Logo" /> : <FallbackImg content={row.symbol} />}
+            {row.logoUri
+              ? <img src={row.logoUri} className="TokensTable__Logo" />
+              : <FallbackImg content={row.symbol} className="TokensTable__Logo" />}
           </span>
           <Link
             to={`/tokens/${row.address}`}
@@ -79,7 +87,7 @@ export const TokensTable = () => {
     <Table
       columns={columns}
       data={tokens}
-      isLoading={isLoading}
+      isLoading={loading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
