@@ -43,12 +43,12 @@ export const useWallet = () => {
             // Redux sera synchronisé automatiquement par le useEffect
           },
           onError: (error) => {
-            dispatch(setError(error instanceof Error ? error.message : 'Erreur de connexion'));
+            dispatch(setError(error instanceof Error ? error.message : 'Connection error'));
           }
         }
       );
     } catch (err) {
-      dispatch(setError(err instanceof Error ? err.message : 'Erreur de connexion'));
+      dispatch(setError(err instanceof Error ? err.message : 'Connection error'));
     }
   }, [connect, dispatch]);
 
@@ -56,7 +56,7 @@ export const useWallet = () => {
     try {
       wagmiDisconnect();
     } catch (err) {
-      dispatch(setError(err instanceof Error ? err.message : 'Erreur de déconnexion'));
+      dispatch(setError(err instanceof Error ? err.message : 'Disconnection error'));
     }
   }, [wagmiDisconnect, dispatch]);
 

@@ -2,12 +2,11 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SwapForm from '../../components/SwapForm/SwapForm';
-import ChartCandle from '../../components/Charts/ChartCandle';
-import type { UTCTimestamp, CandlestickData } from 'lightweight-charts';
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
 import { useCoingeckoTokenData } from '../../hooks/useCoingeckoData';
 import { formatNumber } from '../../utils/formatNumber';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
+import LineChart from '../../components/Charts/LineChart';
 
 const INTERVAL_KEYS = ['hour', 'day', 'week', 'month', 'year'] as const;
 type IntervalKey = typeof INTERVAL_KEYS[number];
@@ -104,41 +103,78 @@ const TokenPage: React.FC = () => {
     return null;
   }, [stat, coingeckoTokenData]);
 
-  // --- Preparation for native pool chart (future-proof) ---
-  // 1. Select the most relevant pool (e.g. the most liquid or most used)
-  const bestPool = useMemo(() => {
-    if (!pools || !token) return null;
-    // Example: the pool where the token is most present (adapt as needed)
-    return pools.find((pool: any) =>
-      pool.token0?.address?.toLowerCase() === token.address?.toLowerCase() ||
-      pool.token1?.address?.toLowerCase() === token.address?.toLowerCase()
-    ) || null;
-  }, [pools, token]);
+  // Hook pour charger l'historique de prix d'un token (endpoint /stats/token/:address)
+  function useTokenLineChart(tokenAddress?: string | null) {
+    return useQuery({
+      queryKey: ['token-line-chart', tokenAddress],
+      enabled: !!tokenAddress,
+      queryFn: async () => {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/token/${tokenAddress}`);
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        return data.map((d: any) => ({
+          time: Math.floor(d.timestamp / 1000) as import('lightweight-charts').UTCTimestamp,
+          value: d.price,
+        }));
+      },
+      staleTime: 60 * 1000,
+    });
+  }
 
-  // 2. Fetch pool price history (mock for now)
-  const { data: poolHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ['pool-history', bestPool?.address],
-    enabled: !!bestPool?.address,
-    queryFn: async () => {
-      // Replace with your real endpoint
-      // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools/${bestPool.address}/history`);
-      // if (!resp.ok) return [];
-      // return resp.json();
-      return [];
-    }
-  });
-
-  // 3. Mapping for ChartCandle
-  const chartPrices: CandlestickData<UTCTimestamp>[] = useMemo(() => {
-    if (!poolHistory) return [];
-    return poolHistory.map((candle: any) => ({
-      time: Math.floor(candle.timestamp / 1000) as UTCTimestamp,
-      open: Number(candle.open),
-      high: Number(candle.high),
-      low: Number(candle.low),
-      close: Number(candle.close),
+  // Fonctions utilitaires pour nettoyer et normaliser les données (identiques à SwapPageLayout)
+  const cleanLineData = (data: { time: number, value: number }[]) => {
+    const sorted = [...data].sort((a, b) => a.time - b.time);
+    return sorted
+      .filter((point, i, arr) => i === 0 || point.time !== arr[i - 1].time)
+      .map(point => ({
+        time: point.time as import('lightweight-charts').UTCTimestamp,
+        value: point.value,
+      }));
+  };
+  const filterOutliers = (data: { time: number, value: number }[]) => {
+    if (data.length < 3) return data;
+    const values = data.map(d => d.value).sort((a, b) => a - b);
+    const median = values[Math.floor(values.length / 2)];
+    return data
+      .filter(d => d.value < median * 1e6 && d.value > median / 1e6)
+      .map(point => ({
+        time: point.time as import('lightweight-charts').UTCTimestamp,
+        value: point.value,
+      }));
+  };
+  const shouldNormalize = (data: { value: number }[]) => {
+    if (!data.length) return false;
+    const sample = data.slice(0, 10);
+    const bigValues = sample.filter(d => Math.abs(d.value) > 1e6).length;
+    return bigValues > sample.length / 2;
+  };
+  const normalizeLineData = (data: { time: number, value: number }[], decimals?: number) => {
+    if (!decimals) return data;
+    return data.map(point => ({
+      time: point.time as import('lightweight-charts').UTCTimestamp,
+      value: point.value / Math.pow(10, decimals),
     }));
-  }, [poolHistory]);
+  };
+  const LWC_MIN = -90071992547409.91;
+  const LWC_MAX = 90071992547409.91;
+  const filterLWCBounds = (data: { time: number, value: number }[]) =>
+    data
+      .filter(d => d.value >= LWC_MIN && d.value <= LWC_MAX)
+      .map(point => ({
+        time: point.time as import('lightweight-charts').UTCTimestamp,
+        value: point.value,
+      }));
+  const priceFormatter = (price: number) => price.toFixed(2);
+
+  // --- Chart historique du token ---
+  const { data: lineData = [], isLoading: lineLoading, error: lineError } = useTokenLineChart(token?.address);
+  const fromTokenDecimals = token?.decimals;
+  const filteredData = filterOutliers(lineData);
+  const needNormalization = shouldNormalize(filteredData);
+  const normalizedData = needNormalization && fromTokenDecimals
+    ? normalizeLineData(filteredData, fromTokenDecimals)
+    : filteredData;
+  const chartData = filterLWCBounds(cleanLineData(normalizedData));
 
   if (tokensLoading) {
     return <div style={{ padding: 32 }}>Loading token data...</div>;
@@ -202,26 +238,30 @@ const TokenPage: React.FC = () => {
 
           {/* Chart natif pool (future-proof, prêt à brancher backend) */}
           <div className="Token__Chart" style={{ minHeight: 340 }}>
-            <ChartCandle
-              data={chartPrices}
-              height={340}
-              header={
-                historyLoading ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <span style={{ fontWeight: 700, fontSize: 22 }}>Loading…</span>
-                  </div>
-                ) : chartPrices.length > 0 ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <span style={{ fontWeight: 700, fontSize: 22 }}>
-                      ${chartPrices[chartPrices.length - 1].close.toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                    </span>
-                    <span style={{ color: '#aaa', fontSize: 14 }}>{new Date(chartPrices[chartPrices.length - 1].time * 1000).toLocaleString()}</span>
-                  </div>
-                ) : (
-                  <div style={{ fontWeight: 700, fontSize: 22 }}>No data</div>
-                )
-              }
-            />
+            {lineLoading ? (
+              <div style={{ padding: 32 }}>Loading chart…</div>
+            ) : lineError ? (
+              <div style={{ padding: 32, color: 'red' }}>Error loading chart</div>
+            ) : chartData.length === 0 ? (
+              <div style={{ width: '100%', height: 340, overflow: 'hidden', background: '#181A20' }}>
+                <iframe
+                  src="https://fr.tradingview.com/widgetembed/?symbol=BERAUSDC&interval=D&hidesidetoolbar=1&hidetoptoolbar=1&theme=dark&style=1&locale=en"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: 'transparent'
+                  }}
+                  allowFullScreen
+                  title="Default TradingView Chart"
+                  scrolling="no"
+                />
+              </div>
+            ) : (
+              <LineChart data={chartData} height={340} priceFormatter={priceFormatter} />
+            )}
           </div>
 
           {/* Interval tabs (modern switch) */}

@@ -27,7 +27,7 @@ export const fetchNFTBackgrounds = async (limit: number = 50): Promise<{ url: st
     );
 
     if (!nftsResponse.ok) {
-      throw new Error(`Erreur API OpenSea (NFTs): ${nftsResponse.status}`);
+      throw new Error(`OpenSea API error (NFTs): ${nftsResponse.status}`);
     }
 
     const nftsData: OpenSeaResponse = await nftsResponse.json();
@@ -41,7 +41,7 @@ export const fetchNFTBackgrounds = async (limit: number = 50): Promise<{ url: st
       name: `NFT #${nft.identifier}`
     }));
   } catch (error) {
-    console.error('Erreur lors de la récupération des backgrounds:', error);
+    console.error('Error fetching backgrounds:', error);
     return [];
   }
 };

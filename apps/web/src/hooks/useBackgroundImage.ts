@@ -20,7 +20,7 @@ export const useBackgroundImage = () => {
         const backgrounds = await fetchNFTBackgrounds();
         setAvailableBackgrounds(backgrounds);
       } catch (error) {
-        console.error('Erreur lors du chargement des backgrounds:', error);
+        console.error('Error loading backgrounds:', error);
       } finally {
         setIsLoading(false);
       }
@@ -71,11 +71,11 @@ export const useBackgroundImage = () => {
         setPreloadCount(count => count + 1);
       };
       img.onerror = (error) => {
-        console.error('Erreur lors du chargement de l\'image de fond:', error);
+        console.error('Error loading background image:', error);
         setIsLoading(false);
       };
     } catch (error) {
-      console.error('Erreur lors du changement de background:', error);
+      console.error('Error changing background:', error);
       setIsLoading(false);
     }
   }, [preloadCount, resetBackground]);

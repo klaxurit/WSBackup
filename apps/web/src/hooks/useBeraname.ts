@@ -28,7 +28,7 @@ export const useBeraname = (address?: string) => {
 
       setBeraname(name ? name.replace('.bera', '.🐻⛓️') : null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Erreur inconnue'));
+      setError(err instanceof Error ? err : new Error('Unknown error'));
       setBeraname(null);
     } finally {
       setIsLoading(false);

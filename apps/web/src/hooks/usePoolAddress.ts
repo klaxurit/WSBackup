@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useReadContract } from 'wagmi';
 import { type Address } from 'viem';
 import { v3CoreFactoryContract } from '../config/abis/v3CoreFactoryContractABI';
@@ -8,13 +8,19 @@ const FACTORY_ADDRESS = '0x76fD9D07d5e4D889CAbED96884F15f7ebdcd6B63' as const;
 export const usePoolAddress = (tokenA?: Address, tokenB?: Address, fee: number = 3000) => {
   const [poolAddress, setPoolAddress] = useState<Address | null>(null);
 
+  // Normalisation de l'ordre des tokens (Uniswap convention)
+  const [token0, token1] = useMemo(() => {
+    if (!tokenA || !tokenB) return [undefined, undefined];
+    return [tokenA, tokenB].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  }, [tokenA, tokenB]);
+
   const { data: pool, isError } = useReadContract({
     address: FACTORY_ADDRESS,
     abi: v3CoreFactoryContract,
     functionName: 'getPool',
-    args: tokenA && tokenB ? [tokenA, tokenB, fee] : undefined,
+    args: token0 && token1 ? [token0, token1, fee] : undefined,
     query: {
-      enabled: !!tokenA && !!tokenB
+      enabled: !!token0 && !!token1
     }
   });
 
