@@ -129,33 +129,84 @@ export class PoolTracker implements OnModuleInit {
     }
   }
 
-  async handlePositionMint(log: Log, pool?: Pool) {
+  async handlePositionMint(log: Log, pool?: Pool | null) {
     this.logger.log('🆕 New position minted');
     try {
-      const decoded = decodeEventLog({
-        eventName: 'Mint',
-        abi: V3_POOL_ABI,
-        data: log.data,
-        topics: log.topics,
-      });
-      console.log('Position mint log:', decoded);
+      if (!pool) {
+        pool = await this.db.pool.findUnique({
+          where: { address: log.address },
+        });
+      }
+
+      if (!pool) return;
+
+      await this.updatePoolDatas(pool);
+      // const decoded = decodeEventLog({
+      //   eventName: 'Mint',
+      //   abi: V3_POOL_ABI,
+      //   data: log.data,
+      //   topics: log.topics,
+      // });
+      // console.log('Position mint log:', decoded, log);
     } catch (error) {
       this.logger.error('Error processing posiiton mint event:', error);
     }
   }
 
-  async handlePositionBurn(log: Log, pool?: Pool) {
+  async handlePositionBurn(log: Log, pool?: Pool | null) {
     this.logger.log('🗑️ Position burned');
     try {
-      const decoded = decodeEventLog({
-        eventName: 'Burn',
-        abi: V3_POOL_ABI,
-        data: log.data,
-        topics: log.topics,
-      });
-      console.log('Position burn log:', decoded);
+      if (!pool) {
+        pool = await this.db.pool.findUnique({
+          where: { address: log.address },
+        });
+      }
+
+      if (!pool) return;
+
+      await this.updatePoolDatas(pool);
+      // const decoded = decodeEventLog({
+      //   eventName: 'Burn',
+      //   abi: V3_POOL_ABI,
+      //   data: log.data,
+      //   topics: log.topics,
+      // });
+      // console.log('Position burn log:', decoded);
+      if (pool) {
+        await this.updatePoolDatas(pool);
+      }
     } catch (error) {
       this.logger.error('Error processing posiiton burn event:', error);
     }
+  }
+
+  private async updatePoolDatas(pool: Pool) {
+    const [slot0, liquidity] = await this.blockchain.client.multicall({
+      contracts: [
+        {
+          address: pool.address as Address,
+          abi: V3_POOL_ABI,
+          functionName: 'slot0',
+        },
+        {
+          address: pool.address as Address,
+          abi: V3_POOL_ABI,
+          functionName: 'liquidity',
+        },
+      ],
+    });
+
+    const sqrtPriceX96 = slot0.result![0];
+    const poolLiquidity = liquidity.result;
+
+    if (!sqrtPriceX96 || !poolLiquidity) return null;
+
+    await this.db.pool.update({
+      where: { id: pool.id },
+      data: {
+        sqrtPriceX96: sqrtPriceX96.toString(),
+        liquidity: poolLiquidity.toString(),
+      },
+    });
   }
 }

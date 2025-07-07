@@ -4,10 +4,14 @@ import { PoolPriceService } from './poolPrice.service';
 import { Token } from '@repo/db';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
+import { PoolWithTokens } from '../types/tokenPrices';
+import { BigNumber } from 'bignumber.js';
 
 @Injectable()
 export class PriceService {
   private readonly logger = new Logger(PriceService.name);
+
+  private cachedTokens: Map<string, number> = new Map();
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -30,109 +34,85 @@ export class PriceService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async updateTokensPrice() {
+    this.cachedTokens = new Map();
+
     const tokens = await this.databaseService.token.findMany();
-    const batches = this.chunkArray(tokens, 10);
 
-    for (const batch of batches) {
-      const promises = batch.map(async (token) => {
-        const volume = await this.calculateVolume24h(token);
-        const currentPrice = await this.getTokenPrice(token);
+    // First update all token with coingeckoId
+    const tokenWithCoinGecko = tokens.filter((t) => !!t.coingeckoId);
+    await this.updateWithCoingecko(tokenWithCoinGecko);
 
-        if (currentPrice) {
-          const oneHourEvolution = await this.getPriceVariation(
-            token,
-            1,
-            currentPrice,
-          );
-          const oneDayEvolution = await this.getPriceVariation(
-            token,
-            24,
-            currentPrice,
-          );
+    // For other get price using pool
+    const otherTokens = tokens.filter((t) => !t.coingeckoId);
+    otherTokens.forEach(async (token) => {
+      const currentPrice = await this.getPriceFromPools(token);
+      if (currentPrice) {
+        console.log(`${token.symbol} ->  ${currentPrice}`);
+        this.cachedTokens.set(token.address, currentPrice);
+      }
+    });
 
-          await this.databaseService.tokenStats.create({
-            data: {
-              tokenId: token.id,
-              price: currentPrice,
-              oneHourEvolution: oneHourEvolution || 0,
-              oneDayEvolution: oneDayEvolution || 0,
-              volume: volume || 0,
-            },
-          });
-        }
-
-        return { token };
-      });
-
-      await Promise.all(promises);
-    }
+    //   const promises = batch.map(async (token) => {
+    //     const volume = await this.calculateVolume24h(token);
+    //     const currentPrice = await this.getTokenPrice(token);
+    //
+    //     if (currentPrice) {
+    //       const oneHourEvolution = await this.getPriceVariation(
+    //         token,
+    //         1,
+    //         currentPrice,
+    //       );
+    //       const oneDayEvolution = await this.getPriceVariation(
+    //         token,
+    //         24,
+    //         currentPrice,
+    //       );
+    //
+    //       await this.databaseService.tokenStats.create({
+    //         data: {
+    //           token: { connect: { id: token.id } },
+    //           price: currentPrice || 0,
+    //           oneHourEvolution: oneHourEvolution || 0,
+    //           oneDayEvolution: oneDayEvolution || 0,
+    //           volume: volume || 0,
+    //         },
+    //       });
+    //     }
+    //
+    //     return { token };
+    //   });
+    console.log(this.cachedTokens);
   }
 
-  async getTokenPrice(token: Token): Promise<number | null> {
-    this.logger.debug('Looking price of ' + token.symbol);
+  async updateWithCoingecko(tokens: Token[]) {
+    this.logger.log(`Update ${tokens.length} tokens with CoinGecko`);
+    const ids = tokens.map((t) => t.coingeckoId).join(',');
 
-    let currentPrice: number | null = null;
-    if (token?.coingeckoId) {
-      try {
-        currentPrice = await this.coingeckoService.getTokenData(
-          token.coingeckoId,
-        );
-        this.logger.debug('Coingecko price: ', currentPrice);
-      } catch (error) {
-        this.logger.error(
-          `Coingecko error for ${token.symbol}:`,
-          error.message,
-        );
+    const prices = await this.coingeckoService.getMultiTokensData(ids);
+    if (!prices) return;
+
+    tokens.forEach((t) => {
+      const price = prices[t.coingeckoId!];
+      if (price) {
+        this.cachedTokens.set(t.address, price.usd);
       }
-    }
-
-    if (!currentPrice) {
-      try {
-        currentPrice = await this.getPriceFromPools(token);
-        this.logger.debug('Pools price ', currentPrice);
-      } catch (error) {
-        this.logger.error(
-          `calculation error for ${token.symbol}:`,
-          error.message,
-        );
-      }
-    }
-
-    return currentPrice;
-  }
-
-  async getMultipleTokensPrices(tokens: Token[]): Promise<Map<string, number>> {
-    const results = new Map<string, number>();
-
-    const batches = this.chunkArray(tokens, 10);
-
-    for (const batch of batches) {
-      const promises = batch.map((token) =>
-        this.getTokenPrice(token)
-          .then((price) => ({ address: token.address, price }))
-          .catch((error) => {
-            this.logger.error(`Error for ${token.symbol}:`, error);
-            return { address: token.address, price: null };
-          }),
-      );
-
-      const batchResults = await Promise.all(promises);
-      batchResults.forEach(({ address, price }) => {
-        if (price) {
-          results.set(address, price);
-        }
-      });
-    }
-
-    return results;
+    });
   }
 
   private async getPriceFromPools(token: Token): Promise<number | null> {
+    // Find a pool with thie token and one of the cachedTokens
+    const cachedTokensAddr = Array.from(this.cachedTokens.keys());
     const pools = await this.databaseService.pool.findMany({
       where: {
         OR: [
-          { token0: { address: token.address } },
-          { token1: { address: token.address } },
+          {
+            token0: { address: token.address },
+            token1: { address: { in: cachedTokensAddr } },
+          },
+          {
+            token0: { address: { in: cachedTokensAddr } },
+            token1: { address: token.address },
+          },
         ],
       },
       include: {
@@ -149,23 +129,16 @@ export class PriceService {
       return null;
     }
 
+    let price: number | null = null;
     for (const pool of pools) {
-      try {
-        const price = await this.poolPrice.calculateTokenPrice(
-          token.address,
-          pool,
-        );
+      price = await this.calculateTokenPrice(token.address, pool);
 
-        if (price) {
-          return price;
-        }
-      } catch (error) {
-        this.logger.error(`calculation error for pool ${pool.address}:`, error);
-        continue;
+      if (price) {
+        break;
       }
     }
 
-    return null;
+    return price;
   }
 
   private async getPriceVariation(
@@ -260,11 +233,163 @@ export class PriceService {
     return totalAsToken0 + totalAsToken1;
   }
 
-  private chunkArray<T>(array: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
+  private calculateTokenPrice(
+    tokenAddress: string,
+    pool: PoolWithTokens,
+  ): number | null {
+    try {
+      const { token0, token1 } = pool;
+
+      if (!pool.sqrtPriceX96) throw new Error('No sqrtPriceX96 for this pool');
+
+      const isToken0 =
+        token0.address.toLowerCase() === tokenAddress.toLowerCase();
+      const targetToken = isToken0 ? token0 : token1;
+      const referenceToken = isToken0 ? token1 : token0;
+
+      const referencePrice = this.cachedTokens.get(referenceToken.address);
+
+      if (!referencePrice) {
+        throw new Error('Token not in cachedTokens...');
+        // referencePrice = await this.findReferencePriceRecursively(
+        //   referenceToken.address,
+        //   2,
+        // );
+      }
+
+      const price = this.calculatePriceFromSqrtPriceX96(
+        pool.sqrtPriceX96,
+        targetToken.decimals,
+        referenceToken.decimals,
+        isToken0,
+      );
+
+      const calculatedPrice = price * referencePrice;
+
+      this.logger.debug(
+        `Price calculate for ${targetToken.symbol}: ${calculatedPrice} USD (with ${referenceToken.symbol} @ ${referencePrice})`,
+      );
+
+      return calculatedPrice;
+    } catch (error) {
+      this.logger.error(
+        `Error can't calculate price for ${pool.address}:`,
+        error,
+      );
+      return null;
     }
-    return chunks;
   }
+
+  private calculatePriceFromSqrtPriceX96(
+    sqrtPriceX96: string,
+    decimals0: number,
+    decimals1: number,
+    isToken0: boolean,
+  ): number {
+    try {
+      const sqrtPrice = new BigNumber(sqrtPriceX96);
+      const Q96 = new BigNumber(2).pow(96);
+      // price = (sqrtPriceX96 / 2^96)^2
+      const price = sqrtPrice.dividedBy(Q96).pow(2);
+      // price_adjusted = price * 10^(decimals0 - decimals1)
+      const decimalAdjustment = new BigNumber(10).pow(decimals0 - decimals1);
+      const adjustedPrice = price.multipliedBy(decimalAdjustment);
+
+      if (isToken0) {
+        return adjustedPrice.toNumber();
+      } else {
+        return new BigNumber(1).dividedBy(adjustedPrice).toNumber();
+      }
+    } catch (error) {
+      this.logger.error(`Erreur calcul sqrtPriceX96:`, error);
+      return 0;
+    }
+  }
+
+  // private async findReferencePriceRecursively(
+  //   tokenAddress: string,
+  //   maxDepth: number,
+  //   visited: Set<string> = new Set(),
+  // ): Promise<number | null> {
+  //   if (maxDepth <= 0 || visited.has(tokenAddress)) {
+  //     return null;
+  //   }
+  //
+  //   visited.add(tokenAddress);
+  //
+  //   try {
+  //     const pools = await this.databaseService.pool.findMany({
+  //       where: {
+  //         OR: [
+  //           { token0: { address: tokenAddress } },
+  //           { token1: { address: tokenAddress } },
+  //         ],
+  //       },
+  //       include: {
+  //         token0: true,
+  //         token1: true,
+  //       },
+  //       orderBy: {
+  //         liquidity: 'desc',
+  //       },
+  //       take: 5,
+  //     });
+  //
+  //     for (const pool of pools) {
+  //       const { token0, token1 } = pool;
+  //       const otherToken =
+  //         token0.address.toLowerCase() === tokenAddress.toLowerCase()
+  //           ? token1
+  //           : token0;
+  //
+  //       if (otherToken.coingeckoId) {
+  //         const otherTokenPrice = await this.coinGeckoService.getTokenData(
+  //           otherToken.coingeckoId,
+  //         );
+  //         if (otherTokenPrice) {
+  //           const isToken0 =
+  //             token0.address.toLowerCase() === tokenAddress.toLowerCase();
+  //           const priceRatio = this.calculatePriceFromSqrtPriceX96(
+  //             pool.sqrtPriceX96 || '0',
+  //             token0.decimals,
+  //             token1.decimals,
+  //             isToken0,
+  //           );
+  //
+  //           return priceRatio * otherTokenPrice;
+  //         }
+  //       }
+  //
+  //       if (maxDepth > 1) {
+  //         const recursivePrice = await this.findReferencePriceRecursively(
+  //           otherToken.address,
+  //           maxDepth - 1,
+  //           new Set(visited),
+  //         );
+  //
+  //         if (recursivePrice) {
+  //           const isToken0 =
+  //             token0.address.toLowerCase() === tokenAddress.toLowerCase();
+  //           const priceRatio = this.calculatePriceFromSqrtPriceX96(
+  //             pool.sqrtPriceX96 || '0',
+  //             token0.decimals,
+  //             token1.decimals,
+  //             isToken0,
+  //           );
+  //
+  //           return priceRatio * recursivePrice;
+  //         }
+  //       }
+  //     }
+  //
+  //     return null;
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `Error find recursive price for ${tokenAddress}:`,
+  //       error,
+  //     );
+  //
+  //     return null;
+  //   }
+  // }
 }

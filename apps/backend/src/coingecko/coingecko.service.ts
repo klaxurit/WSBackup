@@ -15,7 +15,7 @@ export class CoinGeckoService {
   private readonly baseUrl =
     'https://coingecko-api.stakelab.zone/price?vs_currencies=usd';
 
-  constructor(private readonly http: HttpService) { }
+  constructor(private readonly http: HttpService) {}
 
   // Fetch all tokens data
   // Param coingeckoId: string; list of all coingeckoId separate by comma.
@@ -38,6 +38,29 @@ export class CoinGeckoService {
       return response.data[coingeckoId].usd;
     } catch (error: any) {
       this.logger.error(`CoinGecko error for ${coingeckoId}:`, error?.message);
+      if (error?.response?.status === 429) {
+        this.logger.warn('Coingecko Rate limit reached');
+      }
+
+      return null;
+    }
+  }
+
+  async getMultiTokensData(ids: string): Promise<CoinGeckoResponse | null> {
+    try {
+      const url = `${this.baseUrl}&symbols=${ids}`;
+      const response = await firstValueFrom(
+        this.http.get(url, {
+          timeout: 10000,
+        }),
+      );
+
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        `CoinGecko error for when call multi tokens:`,
+        error?.message,
+      );
       if (error?.response?.status === 429) {
         this.logger.warn('Coingecko Rate limit reached');
       }
