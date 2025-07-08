@@ -440,7 +440,7 @@ export class PriceService {
     } catch (error) {
       this.logger.error(
         `Error calculating price for pool ${pool.address}:`,
-        error,
+        error?.message,
       );
       return null;
     }

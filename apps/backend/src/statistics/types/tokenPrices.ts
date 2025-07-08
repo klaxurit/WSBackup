@@ -64,6 +64,13 @@ export type PoolWithSwap = Prisma.PoolGetPayload<{
     swaps: true;
   };
 }>;
+export type PoolWithTokensAndSwap = Prisma.PoolGetPayload<{
+  include: {
+    token0: true;
+    token1: true;
+    swaps: true;
+  };
+}>;
 export type SwapWithPool = Prisma.SwapGetPayload<{
   include: {
     pool: true;

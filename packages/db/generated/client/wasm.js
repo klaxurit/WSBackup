@@ -186,6 +186,8 @@ exports.Prisma.PoolStatisticScalarFieldEnum = {
   tvlUSD: 'tvlUSD',
   volOneDay: 'volOneDay',
   volOneMonth: 'volOneMonth',
+  impermanentLoss: 'impermanentLoss',
+  healthScore: 'healthScore',
   createdAt: 'createdAt'
 };
 

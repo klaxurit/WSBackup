@@ -86,12 +86,14 @@ model TokenStatistic {
 }
 
 model PoolStatistic {
-  id          String   @id @default(cuid())
-  poolId      String
-  pool        Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
-  apr         Float
-  tvlUSD      Float
-  volOneDay   String
-  volOneMonth String
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  poolId          String
+  pool            Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  apr             Float
+  tvlUSD          Float
+  volOneDay       String
+  volOneMonth     String
+  impermanentLoss Float
+  healthScore     Int
+  createdAt       DateTime @default(now())
 }

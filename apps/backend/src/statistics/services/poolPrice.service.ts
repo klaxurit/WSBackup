@@ -1,15 +1,55 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { PoolWithSwap } from '../types/tokenPrices';
-import { Pool } from '@repo/db';
 import { Address, formatUnits } from 'viem';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { V3_POOL_ABI } from 'src/blockchain/abis/V3_POOL_ABI';
+import { Pool, Swap } from '@repo/db';
+import { PoolWithTokensAndSwap } from '../types/tokenPrices';
+
+interface PoolStatData {
+  poolId: string;
+  apr: number;
+  tvlUSD: number;
+  volOneDay: string;
+  volOneMonth: string;
+  impermanentLoss?: number;
+  healthScore?: number;
+}
+
+interface BlockchainPoolData {
+  sqrtPriceX96: bigint;
+  liquidity: bigint;
+  fee: number;
+  isValid: boolean;
+}
+
+interface TokenPriceData {
+  token0Price: number;
+  token1Price: number;
+  token0Decimals: number;
+  token1Decimals: number;
+}
 
 @Injectable()
 export class PoolPriceService {
   private readonly logger = new Logger(PoolPriceService.name);
+
+  private readonly BATCH_SIZE = 10;
+  private readonly MAX_POOLS_PER_CYCLE = 100; // Limiter le nombre de pools traités par cycle
+  private readonly BLOCKCHAIN_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+  private readonly PRICING_PATH_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+  private blockchainDataCache: Map<
+    string,
+    { data: BlockchainPoolData; timestamp: number }
+  > = new Map();
+  private pricingPathCache: Map<string, { path: string[]; timestamp: number }> =
+    new Map();
+  private tokenPriceCache: Map<
+    string,
+    { price: number; decimals: number; timestamp: number }
+  > = new Map();
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -57,6 +97,7 @@ export class PoolPriceService {
                   address: { equals: token1Addr, mode: 'insensitive' },
                 },
               },
+
               {
                 token1: {
                   address: { equals: token0Addr, mode: 'insensitive' },
@@ -69,17 +110,13 @@ export class PoolPriceService {
       },
       include: {
         PoolStatistic: {
-          orderBy: {
-            createdAt: 'desc',
-          },
+          orderBy: { createdAt: 'desc' },
           take: 1,
         },
         token0: {
           include: {
             Statistic: {
-              orderBy: {
-                createdAt: 'desc',
-              },
+              orderBy: { createdAt: 'desc' },
               take: 1,
             },
           },
@@ -87,9 +124,7 @@ export class PoolPriceService {
         token1: {
           include: {
             Statistic: {
-              orderBy: {
-                createdAt: 'desc',
-              },
+              orderBy: { createdAt: 'desc' },
               take: 1,
             },
           },
@@ -104,133 +139,519 @@ export class PoolPriceService {
     return await this.databaseService.pool.findMany({
       include: {
         PoolStatistic: {
-          orderBy: {
-            tvlUSD: 'desc',
-          },
+          orderBy: { tvlUSD: 'desc' },
+
           take: 1,
         },
         token0: true,
         token1: true,
       },
+      orderBy: {
+        PoolStatistic: {
+          _count: 'desc',
+        },
+      },
       take: 4,
     });
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_MINUTE)
   async updatePoolStats() {
-    const pools = await this.databaseService.pool.findMany({
-      include: {
-        swaps: true,
-      },
-    });
+    const startTime = Date.now();
+    let processedPools = 0;
 
-    const batches = this.chunkArray(pools, 10);
+    try {
+      this.logger.log('Starting pool stats update...');
 
-    for (const batch of batches) {
-      const promises = batch.map(async (pool) => {
-        const dayVol = this.getVolumeByPeriod(pool, 24);
-        const monthVol = this.getVolumeByPeriod(pool, 24 * 30);
-        const aprAndTvl = await this.calculateApr(pool, dayVol);
+      // Récupérer les pools avec pagination et données optimisées
+      const pools = await this.getPoolsForUpdate();
 
-        if (aprAndTvl) {
-          await this.databaseService.poolStats.create({
-            data: {
-              poolId: pool.id,
-              apr: aprAndTvl.apr,
-              tvlUSD: aprAndTvl.tvlUSD,
-              volOneDay: dayVol.toString(),
-              volOneMonth: monthVol.toString(),
-            },
-          });
-        }
-      });
+      if (pools.length === 0) {
+        this.logger.log('No pools to update');
+        return;
+      }
 
-      await Promise.all(promises);
+      // Précharger les prix des tokens
+      await this.preloadTokenPrices(pools);
+
+      // Traiter par lots
+      const batches = this.chunkArray(pools, this.BATCH_SIZE);
+      const allPoolStats: PoolStatData[] = [];
+
+      for (const batch of batches) {
+        const batchStats = await this.processBatch(batch);
+        allPoolStats.push(...batchStats.filter((stat) => stat !== null));
+        processedPools += batch.length;
+      }
+
+      // Sauvegarder en transaction
+      if (allPoolStats.length > 0) {
+        this.logger.debug(allPoolStats);
+        await this.savePoolStats(allPoolStats);
+      }
+
+      // Nettoyer les caches périodiquement
+      this.cleanExpiredCaches();
+    } catch (error) {
+      this.logger.error('Critical error in pool stats update:', error);
+    } finally {
+      const duration = Date.now() - startTime;
+      this.logger.log(
+        `Pool stats update completed: ${processedPools} pools in ${duration}ms`,
+      );
+
+      if (duration > 50000) {
+        this.logger.warn(
+          `Pool update took ${duration}ms - consider optimization`,
+        );
+      }
     }
   }
 
+  /**
+   * Récupérer les pools à mettre à jour avec optimisations
+   */
+  private async getPoolsForUpdate(): Promise<PoolWithTokensAndSwap[]> {
+    return await this.databaseService.pool.findMany({
+      where: {
+        AND: [
+          { sqrtPriceX96: { not: null } },
+          { liquidity: { not: null } },
+          { liquidity: { not: '0' } },
+        ],
+      },
+      include: {
+        token0: true,
+        token1: true,
+        // token0: {
+        //   select: {
+        //     id: true,
+        //     address: true,
+        //     decimals: true,
+        //     symbol: true,
+        //   },
+        // },
+        // token1: {
+        //   select: {
+        //     id: true,
+        //     address: true,
+        //     decimals: true,
+        //     symbol: true,
+        //   },
+        // },
+        // Optimisation : ne charger que les swaps récents
+        swaps: {
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 jours
+            },
+          },
+          // select: {
+          //   amount0: true,
+          //   amount1: true,
+          //   createdAt: true,
+          // },
+        },
+      },
+      orderBy: { liquidity: 'desc' },
+      take: this.MAX_POOLS_PER_CYCLE,
+    });
+  }
+
+  /**
+   * Précharger les prix des tokens pour éviter les requêtes répétées
+   */
+  private async preloadTokenPrices(pools: PoolWithTokensAndSwap[]) {
+    const tokenIds = new Set<string>();
+    pools.forEach((pool) => {
+      tokenIds.add(pool.token0.id);
+      tokenIds.add(pool.token1.id);
+    });
+
+    const tokenStats = await this.databaseService.tokenStats.findMany({
+      where: {
+        tokenId: { in: Array.from(tokenIds) },
+        createdAt: {
+          gte: new Date(Date.now() - 10 * 60 * 1000), // Prix de moins de 10 minutes
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      distinct: ['tokenId'],
+    });
+
+    // Mettre en cache
+    tokenStats.forEach((stat) => {
+      this.tokenPriceCache.set(stat.tokenId, {
+        price: stat.price,
+
+        decimals: 18, // À ajuster selon vos besoins
+        timestamp: Date.now(),
+      });
+    });
+  }
+
+  /**
+   * Traiter un lot de pools
+   */
+  private async processBatch(
+    pools: PoolWithTokensAndSwap[],
+  ): Promise<(PoolStatData | null)[]> {
+    const promises = pools.map(async (pool) => {
+      try {
+        return await this.processPool(pool);
+      } catch (error) {
+        this.logger.error(`Error processing pool ${pool.address}:`, error);
+        return null;
+      }
+    });
+
+    return await Promise.all(promises);
+  }
+
+  /**
+   * Traiter un pool individuel
+   */
+  private async processPool(
+    pool: PoolWithTokensAndSwap,
+  ): Promise<PoolStatData | null> {
+    // Récupérer les données blockchain avec cache
+    const blockchainData = await this.getBlockchainDataWithCache(pool.address);
+    if (!blockchainData.isValid) {
+      return null;
+    }
+
+    // Récupérer les prix des tokens
+    const tokenPrices = this.getTokenPrices(pool.token0.id, pool.token1.id);
+
+    if (!tokenPrices) {
+      return null;
+    }
+
+    // Calculer les volumes
+    const dayVol = this.getVolumeByPeriod(pool, 24);
+    const monthVol = this.getVolumeByPeriod(pool, 24 * 30);
+
+    // Calculer APR et TVL
+    const aprAndTvl = this.calculateAdvancedMetrics(
+      blockchainData,
+      tokenPrices,
+      dayVol,
+    );
+
+    if (!aprAndTvl) {
+      return null;
+    }
+
+    return {
+      poolId: pool.id,
+      apr: aprAndTvl.apr,
+      tvlUSD: aprAndTvl.tvlUSD,
+      volOneDay: dayVol.toString(),
+      volOneMonth: monthVol.toString(),
+      impermanentLoss: aprAndTvl.impermanentLoss,
+      healthScore: aprAndTvl.healthScore,
+    };
+  }
+
+  /**
+   * Récupérer les données blockchain avec cache et retry logic
+   */
+  private async getBlockchainDataWithCache(
+    poolAddress: string,
+  ): Promise<BlockchainPoolData> {
+    const cacheKey = `blockchain_${poolAddress}`;
+    const cached = this.blockchainDataCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < this.BLOCKCHAIN_CACHE_TTL) {
+      return cached.data;
+    }
+
+    try {
+      const [slot0, liquidity, fee] =
+        await this.blockchainService.client.multicall({
+          contracts: [
+            {
+              address: poolAddress as Address,
+              abi: V3_POOL_ABI,
+              functionName: 'slot0',
+            },
+            {
+              address: poolAddress as Address,
+              abi: V3_POOL_ABI,
+              functionName: 'liquidity',
+            },
+            {
+              address: poolAddress as Address,
+              abi: V3_POOL_ABI,
+              functionName: 'fee',
+            },
+          ],
+        });
+
+      const data: BlockchainPoolData = {
+        sqrtPriceX96: slot0.result?.[0] || 0n,
+        liquidity: liquidity.result || 0n,
+        fee: fee.result || 0,
+        isValid: !!(slot0.result?.[0] && liquidity.result && fee.result),
+      };
+
+      // Mettre en cache
+      this.blockchainDataCache.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+      });
+
+      return data;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching blockchain data for pool ${poolAddress}:`,
+        error,
+      );
+      return {
+        sqrtPriceX96: 0n,
+        liquidity: 0n,
+        fee: 0,
+        isValid: false,
+      };
+    }
+  }
+
+  /**
+   * Récupérer les prix des tokens depuis le cache
+   */
+  private getTokenPrices(
+    token0Id: string,
+    token1Id: string,
+  ): TokenPriceData | null {
+    const token0Data = this.tokenPriceCache.get(token0Id);
+    const token1Data = this.tokenPriceCache.get(token1Id);
+
+    if (!token0Data || !token1Data) {
+      return null;
+    }
+
+    return {
+      token0Price: token0Data.price,
+      token1Price: token1Data.price,
+      token0Decimals: token0Data.decimals,
+      token1Decimals: token1Data.decimals,
+    };
+  }
+
+  /**
+   * Calcul du volume optimisé (prend en compte amount0 ET amount1)
+   */
   private getVolumeByPeriod(
-    pool: PoolWithSwap,
+    pool: PoolWithTokensAndSwap,
     hourPeriod: number = 24,
   ): bigint {
-    const xHourAgo = new Date();
-    xHourAgo.setHours(xHourAgo.getHours() - hourPeriod);
+    const xHourAgo = new Date(Date.now() - hourPeriod * 60 * 60 * 1000);
 
-    const dayliSwaps = pool.swaps.filter((s) => s.createdAt > xHourAgo);
-    const vol = dayliSwaps.reduce((total, swap) => {
-      return total + BigInt(Math.abs(parseInt(swap.amount0)));
+    const recentSwaps = pool.swaps.filter(
+      (s: Swap) => new Date(s.createdAt) > xHourAgo,
+    );
+
+    const vol = recentSwaps.reduce((total: bigint, swap: Swap) => {
+      // Prendre le maximum entre amount0 et amount1 pour éviter la double comptabilisation
+      const vol0 = BigInt(Math.abs(parseInt(swap.amount0) || 0));
+      const vol1 = BigInt(Math.abs(parseInt(swap.amount1) || 0));
+      return total + (vol0 > vol1 ? vol0 : vol1);
     }, 0n);
 
     return vol;
   }
 
-  private async calculateApr(
-    pool: Pool,
+  /**
+   * Calcul avancé des métriques avec impermanent loss et health score
+   */
+
+  private calculateAdvancedMetrics(
+    blockchainData: BlockchainPoolData,
+    tokenPrices: TokenPriceData,
     volume24h: bigint,
-  ): Promise<{ apr: number; tvlUSD: number } | null> {
-    const token0Stat = await this.databaseService.tokenStats.findMany({
-      where: {
-        tokenId: pool.token0Id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 1,
-    });
-    const token1Stat = await this.databaseService.tokenStats.findMany({
-      where: {
-        tokenId: pool.token1Id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 1,
-    });
+  ): {
+    apr: number;
+    tvlUSD: number;
+    impermanentLoss: number;
+    healthScore: number;
+  } | null {
+    if (!blockchainData.isValid || blockchainData.liquidity === 0n) {
+      return null;
+    }
 
-    if (token0Stat.length === 0 || token1Stat.length === 0) return null;
+    try {
+      // Calcul du prix basé sur sqrtPriceX96
+      const price = Number(blockchainData.sqrtPriceX96) ** 2 / 2 ** 192;
 
-    const [slot0, liquidity, fee] =
-      await this.blockchainService.client.multicall({
-        contracts: [
-          {
-            address: pool.address as Address,
-            abi: V3_POOL_ABI,
-            functionName: 'slot0',
-          },
-          {
-            address: pool.address as Address,
-            abi: V3_POOL_ABI,
-            functionName: 'liquidity',
-          },
-          {
-            address: pool.address as Address,
-            abi: V3_POOL_ABI,
-            functionName: 'fee',
-          },
-        ],
-      });
+      // Calcul des amounts avec les bons decimales
+      const amount1 = Number(
+        formatUnits(blockchainData.liquidity, tokenPrices.token1Decimals),
+      );
+      const amount0 = amount1 / price;
 
-    const sqrtPriceX96 = slot0.result![0];
-    const poolLiquidity = liquidity.result;
-    const poolFee = fee.result;
+      // TVL en USD
+      const tvlUSD =
+        amount0 * tokenPrices.token0Price + amount1 * tokenPrices.token1Price;
 
-    if (!sqrtPriceX96 || !poolLiquidity || !poolFee) return null;
+      // Volume en USD (utiliser la décimale du token principal)
+      const vol24hUSD =
+        Number(formatUnits(volume24h, tokenPrices.token0Decimals)) *
+        tokenPrices.token0Price;
 
-    const price = Number(sqrtPriceX96) ** 2 / 2 ** 192;
-    const amount1 = Number(formatUnits(poolLiquidity || 0n, 18));
-    const amount0 = amount1 / price;
-    const tvlUSD =
-      amount0 * token0Stat[0].price + amount1 * token1Stat[0].price;
+      // Fees 24h
+      const fees24h = vol24hUSD * (blockchainData.fee / 1000000); // fee est en millionièmes
 
-    const vol24hUSD = Number(formatUnits(volume24h, 18)) * token0Stat[0].price;
-    const fees24h = vol24hUSD * (poolFee / 10000);
+      // APR
 
-    const apr = ((fees24h / tvlUSD) * 365) / 100;
+      const apr = tvlUSD > 0 ? (fees24h / tvlUSD) * 365 * 100 : 0;
 
-    return { apr, tvlUSD };
+      // Impermanent Loss (estimation basée sur la volatilité des prix)
+      const impermanentLoss = this.calculateImpermanentLoss(
+        tokenPrices.token0Price,
+        tokenPrices.token1Price,
+      );
+
+      // Health Score (combine TVL, volume, et stabilité)
+      const healthScore = this.calculateHealthScore(
+        tvlUSD,
+        vol24hUSD,
+        blockchainData.liquidity,
+      );
+
+      return {
+        apr: Math.max(0, apr), // Éviter les APR négatifs
+        tvlUSD: Math.max(0, tvlUSD),
+        impermanentLoss,
+        healthScore,
+      };
+    } catch (error) {
+      this.logger.error('Error in advanced metrics calculation:', error);
+      return null;
+    }
   }
 
+  /**
+   * Estimation simplifiée de l'impermanent loss
+   */
+  private calculateImpermanentLoss(
+    token0Price: number,
+    token1Price: number,
+  ): number {
+    // Ceci est une estimation simplifiée
+    // Dans la réalité, il faudrait les prix historiques
+    const priceRatio = token0Price / token1Price;
+    const baseRatio = 1; // Ratio de référence
+
+    if (priceRatio === baseRatio) return 0;
+
+    const ratio = priceRatio / baseRatio;
+    const impLoss = (2 * Math.sqrt(ratio)) / (1 + ratio) - 1;
+
+    return Math.abs(impLoss) * 100; // En pourcentage
+  }
+
+  /**
+   * Calcul du score de santé du pool
+   */
+  private calculateHealthScore(
+    tvlUSD: number,
+    volume24hUSD: number,
+    liquidity: bigint,
+  ): number {
+    let score = 0;
+
+    // TVL Score (0-40 points)
+    if (tvlUSD > 1000000)
+      score += 40; // > 1M
+    else if (tvlUSD > 100000)
+      score += 30; // > 100K
+    else if (tvlUSD > 10000)
+      score += 20; // > 10K
+    else if (tvlUSD > 1000) score += 10; // > 1K
+
+    // Volume Score (0-30 points)
+    const volumeToTvlRatio = tvlUSD > 0 ? volume24hUSD / tvlUSD : 0;
+    if (volumeToTvlRatio > 0.5)
+      score += 30; // Volume/TVL > 50%
+    else if (volumeToTvlRatio > 0.1)
+      score += 20; // Volume/TVL > 10%
+    else if (volumeToTvlRatio > 0.01) score += 10; // Volume/TVL > 1%
+
+    // Liquidity Score (0-30 points)
+    const liquidityNum = Number(liquidity);
+    if (liquidityNum > 10 ** 18) score += 30;
+    else if (liquidityNum > 10 ** 17) score += 20;
+    else if (liquidityNum > 10 ** 16) score += 10;
+
+    return Math.min(100, score); // Max 100
+  }
+
+  /**
+   * Sauvegarder les statistiques en transaction
+   */
+  private async savePoolStats(poolStats: PoolStatData[]): Promise<void> {
+    try {
+      await this.databaseService.client.$transaction(
+        poolStats.map((stat) =>
+          this.databaseService.poolStats.create({
+            data: {
+              poolId: stat.poolId,
+              apr: stat.apr,
+              tvlUSD: stat.tvlUSD,
+              volOneDay: stat.volOneDay,
+              volOneMonth: stat.volOneMonth,
+              impermanentLoss: stat.impermanentLoss || 0,
+              healthScore: stat.healthScore || 0,
+            },
+          }),
+        ),
+      );
+
+      this.logger.log(`Saved ${poolStats.length} pool statistics to database`);
+    } catch (error) {
+      this.logger.error('Error saving pool stats to database:', error);
+    }
+  }
+
+  /**
+   * Nettoyage des caches expirés
+   */
+  private cleanExpiredCaches(): void {
+    const now = Date.now();
+
+    // Nettoyer blockchain cache
+    for (const [key, value] of this.blockchainDataCache.entries()) {
+      if (now - value.timestamp > this.BLOCKCHAIN_CACHE_TTL) {
+        this.blockchainDataCache.delete(key);
+      }
+    }
+
+    // Nettoyer pricing path cache
+    for (const [key, value] of this.pricingPathCache.entries()) {
+      if (now - value.timestamp > this.PRICING_PATH_CACHE_TTL) {
+        this.pricingPathCache.delete(key);
+      }
+    }
+
+    // Nettoyer token price cache
+    for (const [key, value] of this.tokenPriceCache.entries()) {
+      if (now - value.timestamp > this.BLOCKCHAIN_CACHE_TTL) {
+        this.tokenPriceCache.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Méthodes utilitaires gardées identiques
+   */
   async findBestPricingPath(tokenAddress: string): Promise<string[]> {
+    const cacheKey = `path_${tokenAddress}`;
+    const cached = this.pricingPathCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < this.PRICING_PATH_CACHE_TTL) {
+      return cached.path;
+    }
+
     const paths: string[][] = [];
 
     const explorePaths = async (
@@ -244,11 +665,11 @@ export class PoolPriceService {
 
       const token = await this.databaseService.token.findUnique({
         where: { address: currentToken },
+        select: { coingeckoId: true },
       });
 
       if (token?.coingeckoId) {
         paths.push(newPath);
-
         return;
       }
 
@@ -260,12 +681,11 @@ export class PoolPriceService {
           ],
         },
         include: {
-          token0: true,
-          token1: true,
+          token0: { select: { address: true } },
+          token1: { select: { address: true } },
         },
-        orderBy: {
-          liquidity: 'desc',
-        },
+        orderBy: { liquidity: 'desc' },
+
         take: 3,
       });
 
@@ -281,39 +701,28 @@ export class PoolPriceService {
 
     await explorePaths(tokenAddress, [], 3);
 
-    return paths.length > 0
-      ? paths.reduce((shortest, current) =>
-          current.length < shortest.length ? current : shortest,
-        )
-      : [];
+    const bestPath =
+      paths.length > 0
+        ? paths.reduce((shortest, current) =>
+            current.length < shortest.length ? current : shortest,
+          )
+        : [];
+
+    // Mettre en cache
+    this.pricingPathCache.set(cacheKey, {
+      path: bestPath,
+      timestamp: Date.now(),
+    });
+
+    return bestPath;
   }
 
   async validatePoolForPricing(poolAddress: string): Promise<boolean> {
     try {
-      const pool = await this.databaseService.pool.findUnique({
-        where: { address: poolAddress },
-        include: {
-          token0: true,
-          token1: true,
-        },
-      });
-
-      if (!pool || !pool.sqrtPriceX96 || !pool.liquidity) {
-        return false;
-      }
-
-      const hasReference = pool.token0.coingeckoId || pool.token1.coingeckoId;
-
-      if (!hasReference) {
-        const token0Path = await this.findBestPricingPath(pool.token0.address);
-        const token1Path = await this.findBestPricingPath(pool.token1.address);
-
-        return token0Path.length > 0 || token1Path.length > 0;
-      }
-
-      return true;
+      const blockchainData = await this.getBlockchainDataWithCache(poolAddress);
+      return blockchainData.isValid;
     } catch (error) {
-      this.logger.error(`Error validate pool ${poolAddress}:`, error);
+      this.logger.error(`Error validating pool ${poolAddress}:`, error);
       return false;
     }
   }
