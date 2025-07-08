@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react"
 import { erc20Abi, formatUnits, maxUint128, type Address } from "viem"
 import { Pool, Position } from "@uniswap/v3-sdk"
-import { berachainBepolia } from "wagmi/chains"
+import { currentChain } from "../config/wagmi"
 import { Token } from "@uniswap/sdk-core"
 import type { PositionData } from "./usePositions"
 import { useAccount, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
@@ -36,8 +36,8 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
 
     try {
       return new Pool(
-        new Token(berachainBepolia.id, pool.token0.address, pool.token0.decimals, pool.token0.symbol, pool.token0.name),
-        new Token(berachainBepolia.id, pool.token1.address, pool.token1.decimals, pool.token1.symbol, pool.token1.name),
+        new Token(currentChain.id, pool.token0.address, pool.token0.decimals, pool.token0.symbol, pool.token0.name),
+        new Token(currentChain.id, pool.token1.address, pool.token1.decimals, pool.token1.symbol, pool.token1.name),
         pool.fee,
         pool.sqrtPriceX96 || "0",
         pool.liquidity || "0",
