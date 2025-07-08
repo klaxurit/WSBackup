@@ -1,5 +1,4 @@
 import { Prisma } from '@repo/db';
-import { CoinGeckoService } from '../services/coingecko.service';
 
 export interface TokenPriceData {
   currentPrice: number;
@@ -62,9 +61,16 @@ export type PoolWithTokens = Prisma.PoolGetPayload<{
 }>;
 export type PoolWithSwap = Prisma.PoolGetPayload<{
   include: {
-    swaps: true
-  }
-}>
+    swaps: true;
+  };
+}>;
+export type PoolWithTokensAndSwap = Prisma.PoolGetPayload<{
+  include: {
+    token0: true;
+    token1: true;
+    swaps: true;
+  };
+}>;
 export type SwapWithPool = Prisma.SwapGetPayload<{
   include: {
     pool: true;
