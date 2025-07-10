@@ -42,6 +42,23 @@ export class StatisticsController {
     return await this.poolService.getOnePoolStat(token0, token1, fee);
   }
 
+  @Get('/swaps')
+  async getSwapHistory() {
+    return await this.databaseService.swap.findMany({
+      include: {
+        pool: {
+          include: {
+            token0: true,
+            token1: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   @Get('/positions/:address')
   async getAddressPositions(@Param('address') address: Address) {
     try {
