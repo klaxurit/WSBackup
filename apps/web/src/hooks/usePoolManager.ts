@@ -28,7 +28,9 @@ interface usePositionManagerParams {
 
 const parseToken = (bt: BerachainToken | null): Token | null => {
   if (!bt) return null
-  return new Token(berachainBepolia.id, bt.address, bt.decimals, bt.symbol, bt.name)
+  // use wBera instead Bera
+  const addr = (bt.address === zeroAddress) ? "0x6969696969696969696969696969696969696969" : bt.address
+  return new Token(berachainBepolia.id, addr, bt.decimals, bt.symbol, bt.name)
 }
 
 export const usePoolManager = ({
@@ -45,6 +47,10 @@ export const usePoolManager = ({
 
   const token0 = useMemo(() => (parseToken(btoken0)), [btoken0])
   const token1 = useMemo(() => (parseToken(btoken1)), [btoken1])
+
+  const isToken0Bera = useMemo(() => btoken0?.address === zeroAddress, [btoken0])
+  const isToken1Bera = useMemo(() => btoken1?.address === zeroAddress, [btoken1])
+  const needsWrapping = useMemo(() => isToken0Bera || isToken1Bera, [isToken0Bera, isToken1Bera])
 
   const { data: currentPrice = 0 } = usePrice(btoken0)
 
@@ -217,6 +223,12 @@ export const usePoolManager = ({
     }
   }, [pool, tickLower, tickUpper, inputAmount, inputToken])
 
+  const beraAmountToWrap = useMemo(() => {
+    if (isToken0Bera) return prices.amount0
+    if (isToken1Bera) return prices.amount1
+    return 0n
+  }, [isToken0Bera, isToken1Bera, prices])
+
   /*
    * CHECK ALLOWANCE
    */
@@ -297,10 +309,28 @@ export const usePoolManager = ({
   }, [approveToken0Receipt, approveToken1Receipt, refetchT0Allowance, refetchT1Allowance])
 
   /*
+   * CHECK WBERA BALANCE (pour savoir si l'utilisateur a déjà wrappé)
+   */
+  const { data: wberaBalance = 0n, refetch: refetchWberaBalance } = useReadContract({
+    address: "0x6969696969696969696969696969696969696969",
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address && needsWrapping
+    }
+  })
+  const needsWBERAWrapping = useMemo(() => {
+    if (!needsWrapping) return false
+    return wberaBalance < beraAmountToWrap
+  }, [needsWrapping, wberaBalance, beraAmountToWrap])
+
+  /*
    * MAIN FUNCTIONS
    */
   const { data: createPoolTxHash, writeContract: createPool, isPending: waitCreatePool, reset: resetCreatePool } = useWriteContract()
   const { data: mintPositionTxHash, writeContract: mintPosition, isPending: waitMintPosition, reset: resetMint } = useWriteContract()
+  const { data: wrapTxHash, writeContract: wrap, isPending: waitWrap, reset: resetWrap } = useWriteContract()
 
   const { data: createpoolConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.multicall2,
@@ -347,6 +377,7 @@ export const usePoolManager = ({
       if (!pool || !tickUpper || !tickLower || !prices || !address) return undefined
 
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
+
       return [{
         token0: (pool.token0.address as Address),
         token1: (pool.token1.address as Address),
@@ -362,7 +393,22 @@ export const usePoolManager = ({
       }]
     })(),
     query: {
-      enabled: !!pool && !!prices?.position && !!address
+      enabled: !!pool && !!prices?.position && !!address && !needsWBERAWrapping
+    }
+  })
+  const { data: wrapWBeraConfig } = useSimulateContract({
+    address: "0x6969696969696969696969696969696969696969",
+    abi: [{
+      name: 'deposit',
+      type: 'function',
+      inputs: [],
+      outputs: [],
+      stateMutability: 'payable'
+    }],
+    functionName: 'deposit',
+    value: beraAmountToWrap,
+    query: {
+      enabled: needsWBERAWrapping && beraAmountToWrap > 0n
     }
   })
 
@@ -371,8 +417,15 @@ export const usePoolManager = ({
     createPool(createpoolConfig.request)
   }
   const handleMintPosition = async () => {
+    console.log("ici", mintPositionConfig)
     if (!mintPositionConfig?.request) return
     mintPosition(mintPositionConfig.request)
+  }
+  const handleWrap = async () => {
+    if (!wrapWBeraConfig?.request) return
+    await wrap(wrapWBeraConfig.request)
+
+    refetchWberaBalance()
   }
 
   const { data: createPoolReceipt, isLoading: waitingCreatePoolReceipt } = useWaitForTransactionReceipt({
@@ -380,6 +433,9 @@ export const usePoolManager = ({
   })
   const { data: mintPositionReceipt, isLoading: waitingMintPositionReceipt } = useWaitForTransactionReceipt({
     hash: mintPositionTxHash
+  })
+  const { data: wrapReceipt, isLoading: waitingWrapReceipt } = useWaitForTransactionReceipt({
+    hash: wrapTxHash
   })
 
   const status = useMemo(() => {
@@ -390,8 +446,8 @@ export const usePoolManager = ({
 
     if (isApprovingToken0 || isApprovingToken1) return "waitUserApprovement"
     if (waitingT0ApproveReceipt || waitingT1ApproveReceipt) return "waitApprovementReceipt"
-    if (waitCreatePool || waitMintPosition) return "waitMainUserSign"
-    if (waitingCreatePoolReceipt || waitingMintPositionReceipt) return "waitMainReceipt"
+    if (waitCreatePool || waitMintPosition || waitWrap) return "waitMainUserSign"
+    if (waitingCreatePoolReceipt || waitingMintPositionReceipt || waitingWrapReceipt) return "waitMainReceipt"
 
     if (!poolAlreadyExist && initialPrice === 0n) {
       return 'waitInitialAmount'
@@ -403,6 +459,7 @@ export const usePoolManager = ({
 
     if (token0NeedApproval) return "needT0Approve"
     if (token1NeedApproval) return "needT1Approve"
+    if (needsWBERAWrapping) return "needWrap"
 
     return poolAlreadyExist ? 'readyMintPosition' : 'readyCreatePosition'
   }, [
@@ -423,8 +480,11 @@ export const usePoolManager = ({
     waitingT1ApproveReceipt,
     waitCreatePool,
     waitMintPosition,
+    waitWrap,
     waitingCreatePoolReceipt,
-    waitingMintPositionReceipt
+    waitingMintPositionReceipt,
+    waitingWrapReceipt,
+    needsWBERAWrapping
   ])
 
   const reset = () => {
@@ -432,6 +492,7 @@ export const usePoolManager = ({
     refetchPoolData()
     resetCreatePool()
     resetMint()
+    resetWrap()
   }
 
   return {
@@ -449,11 +510,13 @@ export const usePoolManager = ({
 
     createPool: handleCreatePool,
     mintPosition: handleMintPosition,
+    wrap: handleWrap,
     reset,
 
     createPoolTxHash,
     mintPositionTxHash,
     createPoolReceipt,
-    mintPositionReceipt
+    mintPositionReceipt,
+    wrapReceipt
   }
 }
