@@ -287,19 +287,17 @@ const CreatePoolPage: React.FC = () => {
   const { selectedToken0, selectedToken1 } = useMemo(() => {
     const selectedToken0 = poolManager?.pool?.token0.address === token0?.address
       ? token0
-      : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0.address === "0x0000000000000000000000000000000000000000")
+      : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0?.address === "0x0000000000000000000000000000000000000000")
         ? token0
         : token1
     const selectedToken1 = poolManager?.pool?.token1.address === token1?.address
       ? token1
-      : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1.address === "0x0000000000000000000000000000000000000000")
+      : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1?.address === "0x0000000000000000000000000000000000000000")
         ? token1
         : token0
 
     return { selectedToken0, selectedToken1 }
   }, [token0, poolManager?.pool, token1])
-
-  console.log(poolManager)
 
   return (
     <div className="PoolPage PoolPage--create">

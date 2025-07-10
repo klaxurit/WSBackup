@@ -38,7 +38,7 @@ interface TokenInfo {
   name?: string;
 }
 
-interface PoolInfo {
+export interface PoolInfo {
   token0: Address;
   token1: Address;
   fee: number;
@@ -46,7 +46,7 @@ interface PoolInfo {
   sqrtPriceX96: bigint;
 }
 
-interface SingleRoute {
+export interface SingleRoute {
   path: TokenInfo[]
   fees: number[]
   pools: PoolInfo[]
@@ -61,7 +61,7 @@ interface TransactionData {
   args: any[]
   value: bigint
 }
-interface OptimizedRoute {
+export interface OptimizedRoute {
   type: 'single' | 'split'
   totalQuote: bigint
   totalGasEstimate: bigint

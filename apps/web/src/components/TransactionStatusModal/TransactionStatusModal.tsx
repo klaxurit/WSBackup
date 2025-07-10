@@ -42,7 +42,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     return (usdValueOut * +formatEther(quote.amountOut)).toFixed(2)
   }, [usdValueOut, quote])
 
-  const poolFeesInBera = useMemo(() => getPoolFeesInBera(swap.selectedRoute), [swap.selectedRoute]);
+  const poolFeesInBera = useMemo(() => getPoolFeesInBera(swap.optimizedRoute), [swap.optimizedRoute]);
   const poolFeesUsd = useMemo(() => getUsdAmount(usdValueIn, BigInt(poolFeesInBera)), [usdValueIn, poolFeesInBera]);
   const gasFeesUsd = useMemo(() => {
     if (!usdValueIn) return 0;
