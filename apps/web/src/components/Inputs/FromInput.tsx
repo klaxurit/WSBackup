@@ -92,8 +92,11 @@ export const FromInput: React.FC<FromInputProps> = (
 
   const setMax = () => {
     if (inputRef.current) {
-      inputRef.current.value = formatEther(balance?.value || 0n)
-      onAmountChange(balance?.value || 0n)
+      const val = selectedToken?.address === zeroAddress
+        ? (balance?.value || 0n) * 99n / 100n
+        : balance?.value
+      inputRef.current.value = formatEther(val || 0n)
+      onAmountChange(val || 0n)
     }
   }
 
