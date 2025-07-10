@@ -73,6 +73,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setToToken(null);
       }
       setFromToken(token);
+      swap?.refresh()
     }, [toToken]);
 
     const handleToTokenSelect = useCallback((token: BerachainToken) => {
@@ -80,6 +81,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setFromToken(null);
       }
       setToToken(token);
+      swap?.refresh()
     }, [fromToken]);
 
     const handleOpenModal = () => {
