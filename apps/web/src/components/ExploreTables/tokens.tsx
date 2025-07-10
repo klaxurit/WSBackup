@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
+import { formatUnits } from "viem";
 
 interface TokensTableProps {
   data?: any[];
@@ -77,7 +78,7 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
     {
       label: 'Volume', key: 'volume', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `${row.Statistic[0].volume.toFixed(2)}`
+          ? `${parseFloat(formatUnits(row.Statistic[0].volume, row.decimals)).toFixed(4)}`
           : '-'
       }
     },

@@ -62,14 +62,14 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: 'Vol. 1d', key: 'vol1d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
-          ? `$${parseInt(row.PoolStatistic[0].volOneDay).toFixed(2)}`
+          ? `$${parseFloat(formatEther(row.PoolStatistic[0].volOneDay)).toFixed(4)}`
           : "-"
       }
     },
     {
       label: 'Vol. 30d', key: 'vol30d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneMonth !== "0"
-          ? `$${parseInt(formatEther(BigInt(row.PoolStatistic[0].volOneMonth))).toFixed(2)}`
+          ? `$${parseFloat(formatEther(BigInt(row.PoolStatistic[0].volOneMonth))).toFixed(4)}`
           : "-"
       }
     },
