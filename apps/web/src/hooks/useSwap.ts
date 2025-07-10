@@ -657,7 +657,7 @@ export const useSwap = (params: SwapParams) => {
     functionName: 'allowance',
     args: address && state?.optimizedRoute?.transactionData?.to ? [address, state.optimizedRoute.transactionData.to] : undefined,
     query: {
-      enabled: !!address && !!tokenIn && state.status === "ready",
+      enabled: !!address && !!tokenIn && ["error", "ready"].includes(state.status),
       refetchInterval: 2000
     }
   })
@@ -726,7 +726,7 @@ export const useSwap = (params: SwapParams) => {
     functionName: state.optimizedRoute?.transactionData?.functionName,
     args: state.optimizedRoute?.transactionData?.args,
     query: {
-      enabled: !!state.optimizedRoute?.transactionData && !!address && !needsApproval && state.status === "ready"
+      enabled: !!state.optimizedRoute?.transactionData && !!address && !needsApproval && ["error", "ready"].includes(state.status)
     },
     value: state.optimizedRoute?.transactionData?.value || 0n
   })
