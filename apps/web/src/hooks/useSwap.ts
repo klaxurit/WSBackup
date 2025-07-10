@@ -643,7 +643,8 @@ export const useSwap = (params: SwapParams) => {
     functionName: 'allowance',
     args: address && state?.optimizedRoute?.transactionData?.to ? [address, state.optimizedRoute.transactionData.to] : undefined,
     query: {
-      enabled: !!address && !!tokenIn && state.status === "ready"
+      enabled: !!address && !!tokenIn && state.status === "ready",
+      refetchInterval: 2000
     }
   })
   const needsApproval = useMemo(() => {
