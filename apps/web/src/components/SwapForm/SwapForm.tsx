@@ -73,7 +73,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setToToken(null);
       }
       setFromToken(token);
-      swap?.refresh()
     }, [toToken]);
 
     const handleToTokenSelect = useCallback((token: BerachainToken) => {
@@ -81,7 +80,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setFromToken(null);
       }
       setToToken(token);
-      swap?.refresh()
     }, [fromToken]);
 
     const handleOpenModal = () => {
@@ -91,7 +89,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setShowModal(false);
       if (swap.status === 'error') {
         swap.reset();
-        swap.refresh();
       }
     };
     const handleSwitchTokens = () => {
@@ -137,7 +134,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
         if (fromToken && toToken && fromAmount > 0n && toAmount > 0n) {
           return "Preview"
         }
-        return "Error"
+        return swap?.error || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 

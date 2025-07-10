@@ -84,9 +84,23 @@ interface SwapState {
   txHash?: Hex
 }
 
+const WBERA: Address = "0x6969696969696969696969696969696969696969"
+
+const parseParams = (params: SwapParams) => {
+  return {
+    ...params,
+    tokenIn: params.tokenIn === zeroAddress
+      ? WBERA
+      : params.tokenIn,
+    tokenOut: params.tokenOut === zeroAddress
+      ? WBERA
+      : params.tokenOut,
+  }
+}
+
 export const useSwap = (params: SwapParams) => {
   const queryClient = useQueryClient()
-  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient } = params
+  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient } = parseParams(params)
   const { address } = useAccount()
   const publicClient = usePublicClient()
 
@@ -418,7 +432,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: "exactInputSingle",
           args: [params],
-          value: tokenIn === zeroAddress ? amountIn : 0n
+          value: tokenIn === WBERA ? amountIn : 0n
         }
       } else {
         // Multi-hop
@@ -440,7 +454,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: 'exactInput',
           args: [params],
-          value: tokenIn === zeroAddress ? amountIn : 0n
+          value: tokenIn === WBERA ? amountIn : 0n
         }
       }
     } else {
@@ -486,7 +500,7 @@ export const useSwap = (params: SwapParams) => {
           )
         }
 
-        if (tokenIn === zeroAddress) {
+        if (tokenIn === WBERA) {
           totalValue += splitRoute.amount
         }
       }
@@ -713,7 +727,8 @@ export const useSwap = (params: SwapParams) => {
     args: state.optimizedRoute?.transactionData?.args,
     query: {
       enabled: !!state.optimizedRoute?.transactionData && !!address && !needsApproval && state.status === "ready"
-    }
+    },
+    value: state.optimizedRoute?.transactionData?.value || 0n
   })
 
   const swap = useCallback(async () => {
