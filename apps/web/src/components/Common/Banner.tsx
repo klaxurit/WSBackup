@@ -16,6 +16,9 @@ export const Banner: React.FC<BannerProps> = ({
   image,
   imageAlt = 'Banner image',
 }) => {
+  function truncate(str: string, max: number) {
+    return str.length > max ? str.slice(0, max) + '…' : str;
+  }
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       {/* Mascotte/image qui dépasse au-dessus de la bannière */}
@@ -44,7 +47,7 @@ export const Banner: React.FC<BannerProps> = ({
         {/* Contenu texte */}
         <div className="swap-banner__content">
           <div className="swap-banner__text">
-            {title && <h1 className="swap-banner__title">{title}</h1>}
+            {title && <h1 className="swap-banner__title" title={title}>{truncate(title, 17)}</h1>}
             {subtitle && <h5 className="swap-banner__subtitle">{subtitle}</h5>}
           </div>
         </div>

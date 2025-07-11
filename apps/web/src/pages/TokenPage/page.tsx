@@ -210,7 +210,11 @@ const TokenPage: React.FC = () => {
                       <div className="Token__Logo Token__Logo--placeholder">{token.symbol[0]}</div>
                     )}
                     {/* Full name */}
-                    <span className="Token__Name">{token.name}</span>
+                    {token.name && (
+                      <span className="Token__Name" title={token.name}>
+                        {token.name.length > 10 ? token.name.slice(0, 14) + '…' : token.name}
+                      </span>
+                    )}
                     {/* Ticker */}
                     <span className="Token__Ticker">{token.symbol}</span>
                   </div>
