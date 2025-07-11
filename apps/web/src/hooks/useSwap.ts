@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { erc20Abi, formatUnits, zeroAddress, type Address, type Hex } from "viem"
+import { encodePacked, erc20Abi, formatUnits, parseEther, zeroAddress, type Address, type Hex } from "viem"
 import { useAccount, usePublicClient, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { calculatePriceImpact, calculateSlippageAmount, encodePath } from "../utils/swap"
+import { useQueryClient } from "@tanstack/react-query"
+
+import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
+
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI"
+import { UniversalRouteABI } from "../config/abis/UniversalRouteABI"
+import { SwapRouteV2ABI } from "../config/abis/swapRouter"
 import { PoolABI } from "../config/abis/poolABI"
 import { QuoterV2ABI } from "../config/abis/QuoterV2"
-import { calculatePriceImpact, calculateSlippageAmount, encodePath } from "../utils/swap"
-import { SwapRouteV2ABI } from "../config/abis/swapRouter"
-import { useQueryClient } from "@tanstack/react-query"
-import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
 
 const COMMON_BASES: Address[] = [
   '0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce', // HONEY
@@ -16,6 +19,8 @@ const COMMON_BASES: Address[] = [
 ]
 
 const FEE_TIERS = [100, 500, 3000, 10000]
+
+const ORDER_SPLIT_THRESHOLD = parseEther('100')
 
 interface SwapParams {
   tokenIn: Address
@@ -33,7 +38,7 @@ interface TokenInfo {
   name?: string;
 }
 
-interface PoolInfo {
+export interface PoolInfo {
   token0: Address;
   token1: Address;
   fee: number;
@@ -41,45 +46,86 @@ interface PoolInfo {
   sqrtPriceX96: bigint;
 }
 
-interface Route {
+export interface SingleRoute {
   path: TokenInfo[]
   fees: number[]
   pools: PoolInfo[]
   quote: bigint
-  quoteFormatted: string
-  priceImpact: number
   gasEstimate: bigint
 }
 
+interface TransactionData {
+  to: Address
+  functionName: string
+  abi: any
+  args: any[]
+  value: bigint
+}
+export interface OptimizedRoute {
+  type: 'single' | 'split'
+  totalQuote: bigint
+  totalGasEstimate: bigint
+  quoteFormatted: string
+  priceImpact: number
+  routes: Array<{
+    route: SingleRoute
+    percentage: number
+    amount: bigint
+    quote: bigint
+  }>
+  transactionData: TransactionData | null
+}
+
 interface SwapState {
-  status: 'idle' | 'loading-routes' | 'quoting' | 'ready' | 'approving' | 'swapping' | 'success' | 'error'
+  status: 'idle' | 'loading-routes' | 'quoting' | 'optimizing' | 'ready' | 'approving' | 'swapping' | 'success' | 'error'
   error?: string
-  routes: Route[]
-  selectedRoute: Route | null
+  routes: SingleRoute[]
+  optimizedRoute: OptimizedRoute | null
   txHash?: Hex
 }
 
-interface Route {
-  rawQuote: number
-  estimatedGasCost: number
-  priceImpact: number
-  executionProbability: number
+const WBERA: Address = "0x6969696969696969696969696969696969696969"
+
+const parseParams = (params: SwapParams) => {
+  return {
+    ...params,
+    tokenIn: params.tokenIn === zeroAddress
+      ? WBERA
+      : params.tokenIn,
+    tokenOut: params.tokenOut === zeroAddress
+      ? WBERA
+      : params.tokenOut,
+  }
 }
 
 export const useSwap = (params: SwapParams) => {
   const queryClient = useQueryClient()
-  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient } = params
-
+  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient } = parseParams(params)
   const { address } = useAccount()
   const publicClient = usePublicClient()
 
   const [state, setState] = useState<SwapState>({
     status: 'idle',
     routes: [],
-    selectedRoute: null
+    optimizedRoute: null
   })
-  const [tokenCache, setTokenCache] = useState<Map<Address, TokenInfo>>(new Map())
 
+  const [tokenCache, setTokenCache] = useState<Map<Address, TokenInfo>>(() => {
+    const defaultTokens = new Map<Address, TokenInfo>()
+    defaultTokens.set(
+      "0x0000000000000000000000000000000000000000",
+      {
+        address: "0x0000000000000000000000000000000000000000",
+        symbol: "BERA",
+        decimals: 18,
+        name: "Bera"
+      })
+    return defaultTokens
+  })
+
+  /**
+   * Fetch datas onChain
+   */
   const getTokenInfo = useCallback(async (tokenAddress: Address): Promise<TokenInfo> => {
     if (tokenCache.has(tokenAddress)) {
       return tokenCache.get(tokenAddress)!
@@ -169,6 +215,9 @@ export const useSwap = (params: SwapParams) => {
     }
   }, [publicClient])
 
+  /**
+   * Swap path finder and optimization
+   */
   const findRoutes = useCallback(async (
     tokenA: Address,
     tokenB: Address,
@@ -288,6 +337,235 @@ export const useSwap = (params: SwapParams) => {
     }
   }, [publicClient])
 
+  const testOrderSplitting = useCallback(async (
+    routes: SingleRoute[],
+    amountIn: bigint
+  ): Promise<OptimizedRoute[]> => {
+    if (routes.length < 2 || amountIn < ORDER_SPLIT_THRESHOLD) {
+      return []
+    }
+
+    const splitRoutes: OptimizedRoute[] = []
+    const topRoutes = routes.slice(0, 3)
+
+    const distributions = [
+      [70, 30], [60, 40], [50, 50], [80, 20], [40, 60]
+    ]
+
+    for (const dist of distributions) {
+      if (topRoutes.length < 2) break
+
+      const amount1 = (amountIn * BigInt(dist[0])) / 100n
+      const amount2 = (amountIn * BigInt(dist[1])) / 100n
+
+      const [quote1, quote2] = await Promise.all([
+        quoteRoute(
+          topRoutes[0].path.map(t => t.address),
+          topRoutes[0].fees,
+          amount1
+        ),
+        quoteRoute(
+          topRoutes[1].path.map(t => t.address),
+          topRoutes[1].fees,
+          amount2
+        )
+      ])
+
+      if (quote1 && quote2) {
+        const totalQuote = quote1.quote + quote2.quote
+        const totalGas = quote1.gasEstimate + quote2.gasEstimate
+
+        splitRoutes.push({
+          type: "split",
+          totalQuote,
+          totalGasEstimate: totalGas,
+          quoteFormatted: formatUnits(totalQuote, topRoutes[0].path[topRoutes[0].path.length - 1].decimals),
+          priceImpact: calculatePriceImpact(amountIn, totalQuote, topRoutes[0].pools[0]?.sqrtPriceX96 || 1n),
+          routes: [
+            {
+              route: topRoutes[0],
+              percentage: dist[0],
+              amount: amount1,
+              quote: quote1.quote
+            },
+            {
+              route: topRoutes[1],
+              percentage: dist[1],
+              amount: amount2,
+              quote: quote2.quote
+            }
+          ],
+          transactionData: null
+        })
+      }
+    }
+
+    return splitRoutes
+  }, [quoteRoute])
+
+  const generateTransactionData = useCallback(async (
+    route: OptimizedRoute
+  ): Promise<TransactionData> => {
+    if (!address) throw new Error('No address')
+
+    const deadlineTS = BigInt(Math.floor(Date.now() / 1000) + deadline * 60)
+
+    if (route.type === "single") {
+      // simple Tx with SwapRouter02
+      const singleRoute = route.routes[0].route
+      const amountOutMinimum = calculateSlippageAmount(route.totalQuote, slippageTolerance)
+
+      if (singleRoute.path.length === 2) {
+        // Single hop
+        const params = {
+          tokenIn: singleRoute.path[0].address,
+          tokenOut: singleRoute.path[1].address,
+          fee: singleRoute.fees[0],
+          recipient: recipient || address,
+          amountIn,
+          amountOutMinimum,
+          sqrtPriceLimitX96: 0n
+        }
+
+        return {
+          to: CONTRACTS_ADDRESS.swapRouter02,
+          abi: SwapRouteV2ABI,
+          functionName: "exactInputSingle",
+          args: [params],
+          value: tokenIn === WBERA ? amountIn : 0n
+        }
+      } else {
+        // Multi-hop
+        const path = encodePath(
+          singleRoute.path.map(t => t.address),
+          singleRoute.fees
+        )
+
+        const params = {
+          path,
+          recipient: recipient || address,
+          deadline: deadlineTS,
+          amountIn,
+          amountOutMinimum
+        }
+
+        return {
+          to: CONTRACTS_ADDRESS.swapRouter02,
+          abi: SwapRouteV2ABI,
+          functionName: 'exactInput',
+          args: [params],
+          value: tokenIn === WBERA ? amountIn : 0n
+        }
+      }
+    } else {
+      // Complexe tx via UniversalRouter (multicall)
+      const commands: Hex[] = []
+      const inputs: Hex[] = []
+      let totalValue = 0n
+
+      for (const splitRoute of route.routes) {
+        const amountOutMinimum = calculateSlippageAmount(splitRoute.quote, slippageTolerance)
+
+        if (splitRoute.route.path.length === 2) {
+          commands.push('0x00')
+
+          const swapData = encodePacked(
+            ['address', 'address', 'uint24', 'address'],
+            [
+              splitRoute.route.path[0].address,
+              splitRoute.route.path[1].address,
+              splitRoute.route.fees[0],
+              recipient || address
+            ]
+          )
+
+          inputs.push(
+            encodePacked(
+              ['address', 'uint256', 'uint256', 'bytes'],
+              [recipient || address, splitRoute.amount, amountOutMinimum, swapData]
+            )
+          )
+        } else {
+          commands.push('0x00')
+          const path = encodePath(
+            splitRoute.route.path.map(t => t.address),
+            splitRoute.route.fees
+          )
+
+          inputs.push(
+            encodePacked(
+              ['address', 'uint256', 'uint256', 'bytes'],
+              [recipient || address, splitRoute.amount, amountOutMinimum, path]
+            )
+          )
+        }
+
+        if (tokenIn === WBERA) {
+          totalValue += splitRoute.amount
+        }
+      }
+
+      return {
+        to: CONTRACTS_ADDRESS.universalRouter,
+        abi: UniversalRouteABI,
+        functionName: 'execute',
+        args: [commands, inputs, deadlineTS],
+        value: totalValue
+      }
+    }
+  }, [address, deadline, slippageTolerance, recipient, tokenIn, amountIn])
+
+  const optimizeRoutes = useCallback(async (routes: SingleRoute[]) => {
+    if (routes.length === 0) return null
+
+    setState(prev => ({ ...prev, status: 'optimizing' }))
+
+    try {
+      // 1. Create simple route (best classic route)
+      const bestSingleRoute = routes[0]
+      const tokenOutInfo = await getTokenInfo(bestSingleRoute.path[bestSingleRoute.path.length - 1].address)
+
+      const singleOptimized: OptimizedRoute = {
+        type: "single",
+        totalQuote: bestSingleRoute.quote,
+        totalGasEstimate: bestSingleRoute.gasEstimate,
+        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo.decimals),
+        priceImpact: calculatePriceImpact(amountIn, bestSingleRoute.quote, bestSingleRoute.pools[0]?.sqrtPriceX96 || 1n),
+        routes: [{
+          route: bestSingleRoute,
+          percentage: 100,
+          amount: amountIn,
+          quote: bestSingleRoute.quote
+        }],
+        transactionData: null
+      }
+
+      // 2. Test split routes
+      const splitOptions = await testOrderSplitting(routes, amountIn)
+
+      // 3. Compare all options
+      const allOptions = [singleOptimized, ...splitOptions]
+
+      const gasPrice = 1000000000n // 1gwei
+      const bestOption = allOptions.reduce((best, current) => {
+        const bestNet = best.totalQuote - (best.totalGasEstimate * gasPrice)
+        const currentNet = current.totalQuote - (current.totalGasEstimate * gasPrice)
+        return currentNet > bestNet ? current : best
+      })
+
+      // 4. Generate transactionData
+      bestOption.transactionData = await generateTransactionData(bestOption)
+
+      return bestOption
+    } catch (error) {
+      console.error('Route optimization failed', error)
+      return null
+    }
+  }, [amountIn, testOrderSplitting, generateTransactionData, getTokenInfo])
+
+  /**
+   * Main function to fetch routes
+   */
   const loadRoutes = useCallback(async () => {
     if (!tokenIn || !tokenOut || !amountIn || amountIn === 0n) return
     if (!["ready", "idle"].includes(state.status)) return
@@ -295,11 +573,7 @@ export const useSwap = (params: SwapParams) => {
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
 
     try {
-      // Get token decimals
-      // const tokenInInfo = await getTokenInfo(tokenIn)
-      const tokenOutInfo = await getTokenInfo(tokenOut)
-
-      // Find all possible routes
+      // 1. Find all possible routes
       const possibleRoutes = await findRoutes(tokenIn, tokenOut)
       if (possibleRoutes.length === 0) {
         throw new Error('No routes found')
@@ -307,7 +581,7 @@ export const useSwap = (params: SwapParams) => {
 
       setState(prev => ({ ...prev, status: 'quoting' }))
 
-      // Quote all routes in parallel
+      // 2. Quote all routes in parallel
       const quotedRoutes = await Promise.all(
         possibleRoutes.map(async (route) => {
           const quoteResult = await quoteRoute(route.tokens, route.fees, amountIn)
@@ -328,24 +602,19 @@ export const useSwap = (params: SwapParams) => {
             route.tokens.map(token => getTokenInfo(token))
           )
 
-          const spotPrice = pools[0]?.sqrtPriceX96 || 1n
-          const priceImpact = calculatePriceImpact(amountIn, quoteResult.quote, spotPrice)
-
           return {
             path: pathTokenInfo,
             fees: route.fees,
             pools,
             quote: quoteResult.quote,
-            quoteFormatted: formatUnits(quoteResult.quote, tokenOutInfo.decimals),
-            priceImpact,
             gasEstimate: quoteResult.gasEstimate
-          } as Route
+          } as SingleRoute
         })
       )
 
       // Filter out failed quotes and sort by output amount
       const validRoutes = quotedRoutes
-        .filter((route): route is Route => route !== null && route.quote > 0n)
+        .filter((route): route is SingleRoute => route !== null && route.quote > 0n)
         .sort((a, b) => {
           const aNet = a.quote - a.gasEstimate
           const bNet = b.quote - b.gasEstimate
@@ -356,12 +625,19 @@ export const useSwap = (params: SwapParams) => {
         throw new Error('No valid quotes found')
       }
 
+      // 3. Optimize routes
+      const optimizedRoute = await optimizeRoutes(validRoutes)
+      if (!optimizedRoute) {
+        throw new Error('Route optimization failed')
+      }
+
       setState({
         status: "ready",
         routes: validRoutes,
-        selectedRoute: validRoutes[0],
+        optimizedRoute,
         error: undefined
       })
+
     } catch (error) {
       console.error('Failed to load routes', error)
       setState(prev => ({
@@ -370,26 +646,24 @@ export const useSwap = (params: SwapParams) => {
         error: error instanceof Error ? error.message : 'Failed to find routes'
       }))
     }
-  }, [tokenIn, tokenOut, amountIn, getTokenInfo, findRoutes, quoteRoute, checkPoolExists, getPoolInfo])
+  }, [tokenIn, tokenOut, amountIn, findRoutes, quoteRoute, checkPoolExists, getPoolInfo, optimizeRoutes])
 
-  // Load routes when inputes change
-  useEffect(() => {
-    loadRoutes()
-  }, [loadRoutes])
-
-  // Token approval
+  /**
+   * Token approval
+   */
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: tokenIn,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: address ? [address, CONTRACTS_ADDRESS.swapRouter02] : undefined,
+    args: address && state?.optimizedRoute?.transactionData?.to ? [address, state.optimizedRoute.transactionData.to] : undefined,
     query: {
-      enabled: !!address && !!tokenIn && state.status === "ready"
+      enabled: !!address && !!tokenIn && ["error", "ready"].includes(state.status),
+      refetchInterval: 2000
     }
   })
   const needsApproval = useMemo(() => {
-    return !!state.selectedRoute && allowance !== undefined && allowance < amountIn
-  }, [state.selectedRoute, allowance, amountIn])
+    return !!state.optimizedRoute && allowance !== undefined && allowance < amountIn
+  }, [state.optimizedRoute, allowance, amountIn])
 
   const {
     writeContract: executeApprove,
@@ -400,69 +674,10 @@ export const useSwap = (params: SwapParams) => {
     hash: approveTx
   })
 
-  // Swap Simulation
-  const { data: swapConfig } = useSimulateContract({
-    address: CONTRACTS_ADDRESS.swapRouter02,
-    abi: SwapRouteV2ABI,
-    functionName: state.selectedRoute?.path.length === 2 ? 'exactInputSingle' : 'exactInput',
-    args: (() => {
-      if (!state.selectedRoute || !address) return undefined
-
-      const amountOutMinimum = calculateSlippageAmount(state.selectedRoute.quote, slippageTolerance)
-      const deadlineTS = Math.floor(Date.now() / 1000) + deadline * 60;
-
-      if (state.selectedRoute.path.length === 2) {
-        return [{
-          tokenIn: state.selectedRoute.path[0].address,
-          tokenOut: state.selectedRoute.path[1].address,
-          fee: state.selectedRoute.fees[0],
-          recipient: recipient || address,
-          amountIn,
-          amountOutMinimum,
-          sqrtPriceLimitX96: 0n
-        }]
-      } else {
-        const path = encodePath(
-          state.selectedRoute.path.map(t => t.address),
-          state.selectedRoute.fees
-        )
-        return [{
-          path,
-          recipient: recipient || address,
-          deadline: BigInt(deadlineTS),
-          amountIn,
-          amountOutMinimum
-        }]
-      }
-    })(),
-    query: {
-      enabled: !!state.selectedRoute && !!address && !needsApproval && state.status === "ready"
-    }
-  })
-
-  const {
-    writeContract: executeSwap,
-    data: swapTx,
-    isPending: isSwapping
-  } = useWriteContract()
-  const { isLoading: isSwapTxPending, isSuccess: isSwapSuccess } = useWaitForTransactionReceipt({
-    hash: swapTx
-  })
-
-  // uodate state based on transaction status
-  useEffect(() => {
-    if (isApproving || isApprovingTxPending) {
-      setState(prev => ({ ...prev, status: 'approving' }))
-    } else if (isSwapping || isSwapTxPending) {
-      setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
-    } else if (isSwapSuccess) {
-      setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
-      queryClient.invalidateQueries({ queryKey: ["balance"] })
-    }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient])
-
   const approve = useCallback(async () => {
-    if (!state.selectedRoute || !address || !needsApproval) return
+    if (!state.optimizedRoute || !address || !needsApproval) return
+
+    const approvalTarget = state.optimizedRoute.transactionData?.to || CONTRACTS_ADDRESS.swapRouter02
 
     setState(prev => ({ ...prev, status: 'approving' }))
 
@@ -471,7 +686,7 @@ export const useSwap = (params: SwapParams) => {
         address: tokenIn,
         abi: erc20Abi,
         functionName: "approve",
-        args: [CONTRACTS_ADDRESS.swapRouter02, 2n ** 256n - 1n], // Max approval
+        args: [approvalTarget, 2n ** 256n - 1n], // Max approval
       }, {
         onSuccess: () => {
           refetchAllowance()
@@ -491,13 +706,36 @@ export const useSwap = (params: SwapParams) => {
         error: error instanceof Error ? error.message : 'Approve failed'
       }))
     }
-  }, [tokenIn, state.selectedRoute, address, needsApproval, executeApprove])
+  }, [tokenIn, state.optimizedRoute, address, needsApproval, executeApprove])
 
-  // Main Swap function
+  /**
+    * Swap
+    */
+  const {
+    writeContract: executeSwap,
+    data: swapTx,
+    isPending: isSwapping
+  } = useWriteContract()
+  const { isLoading: isSwapTxPending, isSuccess: isSwapSuccess } = useWaitForTransactionReceipt({
+    hash: swapTx
+  })
+
+  const { data: swapConfig } = useSimulateContract({
+    address: state.optimizedRoute?.transactionData?.to,
+    abi: state.optimizedRoute?.transactionData?.abi,
+    functionName: state.optimizedRoute?.transactionData?.functionName,
+    args: state.optimizedRoute?.transactionData?.args,
+    query: {
+      enabled: !!state.optimizedRoute?.transactionData && !!address && !needsApproval && ["error", "ready"].includes(state.status)
+    },
+    value: state.optimizedRoute?.transactionData?.value || 0n
+  })
+
   const swap = useCallback(async () => {
-    if (!state.selectedRoute || !address || needsApproval || !swapConfig) return
+    if (!swapConfig?.request || !address || needsApproval) return
 
     setState(prev => ({ ...prev, status: 'swapping' }))
+
     try {
       executeSwap(swapConfig.request, {
         onError: (error) => {
@@ -515,57 +753,66 @@ export const useSwap = (params: SwapParams) => {
         error: error instanceof Error ? error.message : 'Swap failed'
       }))
     }
-  }, [state.selectedRoute, address, needsApproval, swapConfig, executeSwap])
+  }, [address, needsApproval, executeSwap, swapConfig])
 
-
-  // select a different route
-  const selectRoute = useCallback((route: Route) => {
-    setState(prev => ({ ...prev, selectedRoute: route }))
-  }, [])
-
-  // Refresh quote
+  /**
+   * Utils
+   */
   const refresh = useCallback(() => {
     loadRoutes()
   }, [loadRoutes])
-
   const reset = () => {
     setState({
       status: "idle",
       routes: [],
-      selectedRoute: null
+      optimizedRoute: null
     })
   }
-
+  // Load routes when inputes change
+  useEffect(() => {
+    loadRoutes()
+  }, [loadRoutes])
+  // Update swap state
+  useEffect(() => {
+    if (isApproving || isApprovingTxPending) {
+      setState(prev => ({ ...prev, status: 'approving' }))
+    } else if (isSwapping || isSwapTxPending) {
+      setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
+    } else if (isSwapSuccess) {
+      setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
+      queryClient.invalidateQueries({ queryKey: ["balance"] })
+    }
+  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient])
 
   return {
     status: state.status,
     error: state.error,
     routes: state.routes,
-    selectedRoute: state.selectedRoute,
+    optimizedRoute: state.optimizedRoute,
     txhash: state.txHash,
     slippageTolerance: slippageTolerance,
 
     needsApproval,
-    isLoading: ['loading-routes', 'quoting', 'approving', 'swapping'].includes(state.status),
-    isReady: state.status === "ready" && !!swapConfig,
+    isLoading: ['loading-routes', 'quoting', 'optimizing', 'approving', 'swapping'].includes(state.status),
+    isReady: state.status === "ready" && !!state.optimizedRoute?.transactionData,
 
-    quote: state.selectedRoute ? {
-      amountOut: state.selectedRoute.quote,
-      amountOutFormatted: state.selectedRoute.quoteFormatted,
-      amountOutMinimum: state.selectedRoute ? calculateSlippageAmount(state.selectedRoute.quote, slippageTolerance) : 0n,
-      amountOutMinimumFormatted: state.selectedRoute ?
-        formatUnits(
-          calculateSlippageAmount(state.selectedRoute.quote, slippageTolerance),
-          state.selectedRoute.path[state.selectedRoute.path.length - 1].decimals
-        ) : "0",
-      priceImpact: state.selectedRoute.priceImpact,
-      path: state.selectedRoute.path.map(t => `${t.symbol}`).join(' -> '),
-      gasEstimate: state.selectedRoute.gasEstimate,
+    quote: state.optimizedRoute ? {
+      amountOut: state.optimizedRoute.totalQuote,
+      amountOutFormatted: state.optimizedRoute.quoteFormatted,
+      amountOutMinimum: calculateSlippageAmount(state.optimizedRoute.totalQuote, slippageTolerance),
+      priceImpact: state.optimizedRoute.priceImpact,
+      gasEstimate: state.optimizedRoute.totalGasEstimate,
+      routeType: state.optimizedRoute.type,
+      routeDetails: state.optimizedRoute.type === 'split'
+        ? `Split: ${state.optimizedRoute.routes.map(r => `${r.percentage}%`).join(' + ')}`
+        : `Single: ${state.optimizedRoute.routes[0].route.path.map(t => t.symbol).join(' → ')}`,
+      potentialSavings: state.routes.length > 0 && state.optimizedRoute.type === 'split'
+        ? state.optimizedRoute.totalQuote - state.routes[0].quote
+        : 0n
     } : null,
 
     swap,
     approve,
-    selectRoute,
     refresh,
     reset
   }

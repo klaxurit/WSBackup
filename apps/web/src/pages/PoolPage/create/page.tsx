@@ -140,6 +140,14 @@ const CreatePoolPage: React.FC = () => {
         loading: false
       };
     }
+    if (poolManager.status === "needWrap") {
+      return {
+        text: `Wrap Bera`,
+        action: poolManager?.wrap,
+        disabled: false,
+        loading: false
+      };
+    }
     if (poolManager.status === "waitUserApprovement") {
       return {
         text: `Waiting user's approvement`,
@@ -275,6 +283,21 @@ const CreatePoolPage: React.FC = () => {
       if (bera) setToken0(bera);
     }
   }, [tokens, token0]);
+
+  const { selectedToken0, selectedToken1 } = useMemo(() => {
+    const selectedToken0 = poolManager?.pool?.token0.address === token0?.address
+      ? token0
+      : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0?.address === "0x0000000000000000000000000000000000000000")
+        ? token0
+        : token1
+    const selectedToken1 = poolManager?.pool?.token1.address === token1?.address
+      ? token1
+      : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1?.address === "0x0000000000000000000000000000000000000000")
+        ? token1
+        : token0
+
+    return { selectedToken0, selectedToken1 }
+  }, [token0, poolManager?.pool, token1])
 
   return (
     <div className="PoolPage PoolPage--create">
@@ -452,7 +475,7 @@ const CreatePoolPage: React.FC = () => {
               <div className="PoolPage__LiquidityInputs">
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={poolManager?.pool?.token0.address === token0?.address ? token0 : token1}
+                    selectedToken={selectedToken0}
                     onAmountChange={handleAmount0Change}
                     value={poolManager.amount0}
                     isOverBalance={insufficient0 || false}
@@ -462,7 +485,7 @@ const CreatePoolPage: React.FC = () => {
 
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={poolManager?.pool?.token1.address === token1?.address ? token1 : token0}
+                    selectedToken={selectedToken1}
                     onAmountChange={handleAmount1Change}
                     value={poolManager.amount1}
                     isOverBalance={insufficient0 || false}

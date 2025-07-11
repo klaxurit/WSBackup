@@ -1,4 +1,4 @@
-export const UNISWAP_V3_POOL_ABI = [
+export const V3_POOL_ABI = [
   {
     inputs: [],
     stateMutability: 'nonpayable',
@@ -6,6 +6,7 @@ export const UNISWAP_V3_POOL_ABI = [
   },
   {
     anonymous: false,
+
     inputs: [
       {
         indexed: true,
@@ -43,6 +44,7 @@ export const UNISWAP_V3_POOL_ABI = [
         indexed: false,
         internalType: 'uint256',
         name: 'amount1',
+
         type: 'uint256',
       },
     ],
@@ -62,6 +64,7 @@ export const UNISWAP_V3_POOL_ABI = [
         indexed: false,
         internalType: 'address',
         name: 'recipient',
+
         type: 'address',
       },
 
@@ -89,7 +92,6 @@ export const UNISWAP_V3_POOL_ABI = [
       },
       {
         indexed: false,
-
         internalType: 'uint128',
         name: 'amount1',
         type: 'uint128',
@@ -117,6 +119,7 @@ export const UNISWAP_V3_POOL_ABI = [
         indexed: false,
         internalType: 'uint128',
         name: 'amount0',
+
         type: 'uint128',
       },
       {
@@ -127,7 +130,6 @@ export const UNISWAP_V3_POOL_ABI = [
       },
     ],
     name: 'CollectProtocol',
-
     type: 'event',
   },
   {
@@ -135,6 +137,7 @@ export const UNISWAP_V3_POOL_ABI = [
     inputs: [
       {
         indexed: true,
+
         internalType: 'address',
         name: 'sender',
         type: 'address',
@@ -306,7 +309,6 @@ export const UNISWAP_V3_POOL_ABI = [
       },
       {
         indexed: true,
-
         internalType: 'address',
         name: 'recipient',
         type: 'address',
@@ -448,6 +450,7 @@ export const UNISWAP_V3_POOL_ABI = [
       },
     ],
     name: 'collectProtocol',
+
     outputs: [
       {
         internalType: 'uint128',
@@ -491,6 +494,7 @@ export const UNISWAP_V3_POOL_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+
   {
     inputs: [],
     name: 'feeGrowthGlobal0X128',
@@ -526,7 +530,6 @@ export const UNISWAP_V3_POOL_ABI = [
 
         type: 'address',
       },
-
       {
         internalType: 'uint256',
         name: 'amount0',
@@ -545,7 +548,9 @@ export const UNISWAP_V3_POOL_ABI = [
     ],
     name: 'flash',
     outputs: [],
+
     stateMutability: 'nonpayable',
+
     type: 'function',
   },
   {
@@ -651,6 +656,7 @@ export const UNISWAP_V3_POOL_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
+
   {
     inputs: [
       {
@@ -659,7 +665,6 @@ export const UNISWAP_V3_POOL_ABI = [
         type: 'uint256',
       },
     ],
-
     name: 'observations',
     outputs: [
       {
@@ -670,7 +675,6 @@ export const UNISWAP_V3_POOL_ABI = [
       {
         internalType: 'int56',
         name: 'tickCumulative',
-
         type: 'int56',
       },
 
@@ -706,11 +710,9 @@ export const UNISWAP_V3_POOL_ABI = [
       {
         internalType: 'uint160[]',
         name: 'secondsPerLiquidityCumulativeX128s',
-
         type: 'uint160[]',
       },
     ],
-
     stateMutability: 'view',
     type: 'function',
   },
@@ -844,7 +846,6 @@ export const UNISWAP_V3_POOL_ABI = [
     inputs: [
       {
         internalType: 'int24',
-
         name: 'tickLower',
 
         type: 'int24',
@@ -864,7 +865,6 @@ export const UNISWAP_V3_POOL_ABI = [
 
         type: 'int56',
       },
-
       {
         internalType: 'uint160',
         name: 'secondsPerLiquidityInsideX128',
@@ -1042,53 +1042,3 @@ export const UNISWAP_V3_POOL_ABI = [
     type: 'function',
   },
 ] as const;
-
-export const UNISWAP_V3_FACTORY_ABI = [
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, name: 'token0', type: 'address' },
-      { indexed: true, name: 'token1', type: 'address' },
-      { indexed: true, name: 'fee', type: 'uint24' },
-      { indexed: false, name: 'tickSpacing', type: 'int24' },
-      { indexed: false, name: 'pool', type: 'address' },
-    ],
-    name: 'PoolCreated',
-
-    type: 'event',
-  },
-] as const;
-
-export const POSITION_MANAGER_ABI = [
-  {
-    name: 'balanceOf',
-    type: 'function',
-    inputs: [{ type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    name: 'tokenOfOwnerByIndex',
-    type: 'function',
-    inputs: [{ type: 'address' }, { type: 'uint256' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    name: 'positions',
-    type: 'function',
-    inputs: [{ type: 'uint256' }],
-    outputs: [
-      { name: 'nonce', type: 'uint96' },
-      { name: 'operator', type: 'address' },
-      { name: 'token0', type: 'address' },
-      { name: 'token1', type: 'address' },
-      { name: 'fee', type: 'uint24' },
-      { name: 'tickLower', type: 'int24' },
-      { name: 'tickUpper', type: 'int24' },
-      { name: 'liquidity', type: 'uint128' },
-      { name: 'feeGrowthInside0LastX128', type: 'uint256' },
-      { name: 'feeGrowthInside1LastX128', type: 'uint256' },
-      { name: 'tokensOwed0', type: 'uint128' },
-      { name: 'tokensOwed1', type: 'uint128' },
-    ],
-  },
-];

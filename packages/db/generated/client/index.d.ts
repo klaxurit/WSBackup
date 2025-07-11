@@ -6499,11 +6499,15 @@ export namespace Prisma {
   export type PoolStatisticAvgAggregateOutputType = {
     apr: number | null
     tvlUSD: number | null
+    impermanentLoss: number | null
+    healthScore: number | null
   }
 
   export type PoolStatisticSumAggregateOutputType = {
     apr: number | null
     tvlUSD: number | null
+    impermanentLoss: number | null
+    healthScore: number | null
   }
 
   export type PoolStatisticMinAggregateOutputType = {
@@ -6513,6 +6517,8 @@ export namespace Prisma {
     tvlUSD: number | null
     volOneDay: string | null
     volOneMonth: string | null
+    impermanentLoss: number | null
+    healthScore: number | null
     createdAt: Date | null
   }
 
@@ -6523,6 +6529,8 @@ export namespace Prisma {
     tvlUSD: number | null
     volOneDay: string | null
     volOneMonth: string | null
+    impermanentLoss: number | null
+    healthScore: number | null
     createdAt: Date | null
   }
 
@@ -6533,6 +6541,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: number
     volOneMonth: number
+    impermanentLoss: number
+    healthScore: number
     createdAt: number
     _all: number
   }
@@ -6541,11 +6551,15 @@ export namespace Prisma {
   export type PoolStatisticAvgAggregateInputType = {
     apr?: true
     tvlUSD?: true
+    impermanentLoss?: true
+    healthScore?: true
   }
 
   export type PoolStatisticSumAggregateInputType = {
     apr?: true
     tvlUSD?: true
+    impermanentLoss?: true
+    healthScore?: true
   }
 
   export type PoolStatisticMinAggregateInputType = {
@@ -6555,6 +6569,8 @@ export namespace Prisma {
     tvlUSD?: true
     volOneDay?: true
     volOneMonth?: true
+    impermanentLoss?: true
+    healthScore?: true
     createdAt?: true
   }
 
@@ -6565,6 +6581,8 @@ export namespace Prisma {
     tvlUSD?: true
     volOneDay?: true
     volOneMonth?: true
+    impermanentLoss?: true
+    healthScore?: true
     createdAt?: true
   }
 
@@ -6575,6 +6593,8 @@ export namespace Prisma {
     tvlUSD?: true
     volOneDay?: true
     volOneMonth?: true
+    impermanentLoss?: true
+    healthScore?: true
     createdAt?: true
     _all?: true
   }
@@ -6672,6 +6692,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt: Date
     _count: PoolStatisticCountAggregateOutputType | null
     _avg: PoolStatisticAvgAggregateOutputType | null
@@ -6701,6 +6723,8 @@ export namespace Prisma {
     tvlUSD?: boolean
     volOneDay?: boolean
     volOneMonth?: boolean
+    impermanentLoss?: boolean
+    healthScore?: boolean
     createdAt?: boolean
     pool?: boolean | PoolDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["poolStatistic"]>
@@ -6712,6 +6736,8 @@ export namespace Prisma {
     tvlUSD?: boolean
     volOneDay?: boolean
     volOneMonth?: boolean
+    impermanentLoss?: boolean
+    healthScore?: boolean
     createdAt?: boolean
     pool?: boolean | PoolDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["poolStatistic"]>
@@ -6723,6 +6749,8 @@ export namespace Prisma {
     tvlUSD?: boolean
     volOneDay?: boolean
     volOneMonth?: boolean
+    impermanentLoss?: boolean
+    healthScore?: boolean
     createdAt?: boolean
   }
 
@@ -6745,6 +6773,8 @@ export namespace Prisma {
       tvlUSD: number
       volOneDay: string
       volOneMonth: string
+      impermanentLoss: number
+      healthScore: number
       createdAt: Date
     }, ExtArgs["result"]["poolStatistic"]>
     composites: {}
@@ -7146,6 +7176,8 @@ export namespace Prisma {
     readonly tvlUSD: FieldRef<"PoolStatistic", 'Float'>
     readonly volOneDay: FieldRef<"PoolStatistic", 'String'>
     readonly volOneMonth: FieldRef<"PoolStatistic", 'String'>
+    readonly impermanentLoss: FieldRef<"PoolStatistic", 'Float'>
+    readonly healthScore: FieldRef<"PoolStatistic", 'Int'>
     readonly createdAt: FieldRef<"PoolStatistic", 'DateTime'>
   }
     
@@ -7572,6 +7604,8 @@ export namespace Prisma {
     tvlUSD: 'tvlUSD',
     volOneDay: 'volOneDay',
     volOneMonth: 'volOneMonth',
+    impermanentLoss: 'impermanentLoss',
+    healthScore: 'healthScore',
     createdAt: 'createdAt'
   };
 
@@ -8073,6 +8107,8 @@ export namespace Prisma {
     tvlUSD?: FloatFilter<"PoolStatistic"> | number
     volOneDay?: StringFilter<"PoolStatistic"> | string
     volOneMonth?: StringFilter<"PoolStatistic"> | string
+    impermanentLoss?: FloatFilter<"PoolStatistic"> | number
+    healthScore?: IntFilter<"PoolStatistic"> | number
     createdAt?: DateTimeFilter<"PoolStatistic"> | Date | string
     pool?: XOR<PoolRelationFilter, PoolWhereInput>
   }
@@ -8084,6 +8120,8 @@ export namespace Prisma {
     tvlUSD?: SortOrder
     volOneDay?: SortOrder
     volOneMonth?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
     createdAt?: SortOrder
     pool?: PoolOrderByWithRelationInput
   }
@@ -8098,6 +8136,8 @@ export namespace Prisma {
     tvlUSD?: FloatFilter<"PoolStatistic"> | number
     volOneDay?: StringFilter<"PoolStatistic"> | string
     volOneMonth?: StringFilter<"PoolStatistic"> | string
+    impermanentLoss?: FloatFilter<"PoolStatistic"> | number
+    healthScore?: IntFilter<"PoolStatistic"> | number
     createdAt?: DateTimeFilter<"PoolStatistic"> | Date | string
     pool?: XOR<PoolRelationFilter, PoolWhereInput>
   }, "id">
@@ -8109,6 +8149,8 @@ export namespace Prisma {
     tvlUSD?: SortOrder
     volOneDay?: SortOrder
     volOneMonth?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
     createdAt?: SortOrder
     _count?: PoolStatisticCountOrderByAggregateInput
     _avg?: PoolStatisticAvgOrderByAggregateInput
@@ -8127,6 +8169,8 @@ export namespace Prisma {
     tvlUSD?: FloatWithAggregatesFilter<"PoolStatistic"> | number
     volOneDay?: StringWithAggregatesFilter<"PoolStatistic"> | string
     volOneMonth?: StringWithAggregatesFilter<"PoolStatistic"> | string
+    impermanentLoss?: FloatWithAggregatesFilter<"PoolStatistic"> | number
+    healthScore?: IntWithAggregatesFilter<"PoolStatistic"> | number
     createdAt?: DateTimeWithAggregatesFilter<"PoolStatistic"> | Date | string
   }
 
@@ -8551,6 +8595,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt?: Date | string
     pool: PoolCreateNestedOneWithoutPoolStatisticInput
   }
@@ -8562,6 +8608,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt?: Date | string
   }
 
@@ -8571,6 +8619,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pool?: PoolUpdateOneRequiredWithoutPoolStatisticNestedInput
   }
@@ -8582,6 +8632,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8592,6 +8644,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt?: Date | string
   }
 
@@ -8601,6 +8655,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8611,6 +8667,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -9109,12 +9167,16 @@ export namespace Prisma {
     tvlUSD?: SortOrder
     volOneDay?: SortOrder
     volOneMonth?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
     createdAt?: SortOrder
   }
 
   export type PoolStatisticAvgOrderByAggregateInput = {
     apr?: SortOrder
     tvlUSD?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
   }
 
   export type PoolStatisticMaxOrderByAggregateInput = {
@@ -9124,6 +9186,8 @@ export namespace Prisma {
     tvlUSD?: SortOrder
     volOneDay?: SortOrder
     volOneMonth?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -9134,12 +9198,16 @@ export namespace Prisma {
     tvlUSD?: SortOrder
     volOneDay?: SortOrder
     volOneMonth?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
     createdAt?: SortOrder
   }
 
   export type PoolStatisticSumOrderByAggregateInput = {
     apr?: SortOrder
     tvlUSD?: SortOrder
+    impermanentLoss?: SortOrder
+    healthScore?: SortOrder
   }
 
   export type TokenCreateNestedOneWithoutPoolsAsToken0Input = {
@@ -9791,6 +9859,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt?: Date | string
   }
 
@@ -9800,6 +9870,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt?: Date | string
   }
 
@@ -9949,6 +10021,8 @@ export namespace Prisma {
     tvlUSD?: FloatFilter<"PoolStatistic"> | number
     volOneDay?: StringFilter<"PoolStatistic"> | string
     volOneMonth?: StringFilter<"PoolStatistic"> | string
+    impermanentLoss?: FloatFilter<"PoolStatistic"> | number
+    healthScore?: IntFilter<"PoolStatistic"> | number
     createdAt?: DateTimeFilter<"PoolStatistic"> | Date | string
   }
 
@@ -10367,6 +10441,8 @@ export namespace Prisma {
     tvlUSD: number
     volOneDay: string
     volOneMonth: string
+    impermanentLoss: number
+    healthScore: number
     createdAt?: Date | string
   }
 
@@ -10424,6 +10500,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -10433,6 +10511,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -10442,6 +10522,8 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
     volOneDay?: StringFieldUpdateOperationsInput | string
     volOneMonth?: StringFieldUpdateOperationsInput | string
+    impermanentLoss?: FloatFieldUpdateOperationsInput | number
+    healthScore?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
