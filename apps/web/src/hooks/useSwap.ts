@@ -781,8 +781,12 @@ export const useSwap = (params: SwapParams) => {
     } else if (isSwapSuccess) {
       setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
       queryClient.invalidateQueries({ queryKey: ["balance"] })
+    } else if (swapConfig?.request) {
+      setState(prev => ({ ...prev, status: 'ready' }))
+    } else {
+      setState(prev => ({ ...prev, status: 'idle' }))
     }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient])
+  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig])
 
   return {
     status: state.status,
