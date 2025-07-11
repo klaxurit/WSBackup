@@ -8,7 +8,10 @@
 
   &__banner {
     width: 100%;
-    margin-bottom: 2rem;
+    margin-bottom: 0rem;
+    @media (min-width: 768px) {
+      margin-bottom: 2rem;
+    }
   }
 
   .dexscreener-chart {

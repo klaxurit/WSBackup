@@ -99,8 +99,12 @@
   justify-content: flex-start;
   background: linear-gradient(90deg, #181a1b 60%, $beryl-016 100%);
   border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;
   padding: 0 40px;
+
+  // Ajoute un padding-top pour garantir une hauteur même si le contenu est petit
+  padding-top: 32px;
+  padding-bottom: 32px;
 
   .swap-banner__content {
     flex: 1 1 0;
@@ -160,9 +164,31 @@
     }
   }
 
+  .swap-banner__winnie {
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    // L'image fait la hauteur de la bannière + dépassement
+    height: calc(100% + 40px);
+    pointer-events: none;
+    // Décale l'image vers le haut pour qu'elle dépasse
+    transform: translateY(0px);
+
+    img {
+      height: 100%;
+      width: auto;
+      max-width: 320px;
+      min-width: 120px;
+      object-fit: contain;
+      display: block;
+      user-select: none;
+    }
+  }
+
   @media (max-width: 900px) {
-    flex-direction: column;
-    align-items: flex-start;
     padding: 24px 12px;
     min-height: 140px;
 
@@ -181,10 +207,22 @@
       max-width: 100%;
       padding: 16px 0;
     }
+
+    .swap-banner__winnie {
+      height: calc(100% + 24px);
+      transform: translateY(0px);
+
+      img {
+        max-width: 280px;
+        min-width: 80px;
+      }
+    }
   }
 
   @media (max-width: 600px) {
     min-height: 100px;
+    padding-top: 12px;
+    padding-bottom: 12px;
 
     .swap-banner__title {
       font-size: 1.5rem;
@@ -192,6 +230,16 @@
 
     .swap-banner__subtitle {
       font-size: 1rem;
+    }
+
+    .swap-banner__winnie {
+      height: calc(100% + 12px);
+      transform: translateY(3px);
+
+      img {
+        max-width: 150px;
+        min-width: 50px;
+      }
     }
   }
 }

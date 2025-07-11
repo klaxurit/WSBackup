@@ -1,5 +1,6 @@
 import React from 'react';
 import { BackgroundSVG } from '../SVGs/BackgroundSVG';
+import winnieHii from '../../assets/winnie_hii.png';
 
 interface SwapBannerProps {
   title?: string;
@@ -22,6 +23,9 @@ export const SwapBanner: React.FC<SwapBannerProps> = ({
       </div>
       <div className="swap-banner__bg-svg">
         <BackgroundSVG />
+      </div>
+      <div className="swap-banner__winnie">
+        <img src={winnieHii} alt="Winnie dit bonjour" />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatEther } from "viem";
+import { TokenPairLogos } from '../Common/TokenPairLogos';
 
 interface PoolsTableProps {
   data?: any[];
@@ -36,10 +37,7 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: 'Pool', key: 'pool', render: (row) => (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-            {row.token0.logoUri ? <img src={row.token0.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} /> : <FallbackImg content={row.token0.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />}
-            {row.token1.logoUri ? <img src={row.token1.logoUri} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} /> : <FallbackImg content={row.token1.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />}
-          </span>
+          <TokenPairLogos token0={row.token0} token1={row.token1} />
           <span style={{ fontWeight: 600 }}>{row.pool}</span>
         </span>
       )
