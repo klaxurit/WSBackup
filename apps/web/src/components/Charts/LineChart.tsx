@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { createChart, ColorType, AreaSeries, type IChartApi, type Time, createTextWatermark } from 'lightweight-charts';
 import type { LineChartPoint } from '../../types/chart';
 
@@ -10,7 +10,7 @@ export interface LineChartProps {
   priceFormatter?: (price: number) => string;
   onIntervalChange?: (interval: string) => void;
   availableIntervals?: string[];
-  activeFilterColor?: string; 
+  activeFilterColor?: string;
 }
 
 const BERYL_PURE = '#E39229';
@@ -33,6 +33,18 @@ export const LineChart: React.FC<LineChartProps> = ({
   const seriesRef = useRef<any>(null);
   const [selectedInterval, setSelectedInterval] = useState('1H');
   const [legend] = useState<{ time: Time | null, value: number | null }>({ time: null, value: null });
+
+  // Détection de l'intervalle "fake"
+  const isFakeInterval = !['1H', '1D'].includes(selectedInterval);
+
+  // Génération d'un fake dataset pour les intervalles non supportés
+  const fakeData = useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    return Array.from({ length: 30 }, (_, i) => ({
+      time: now - (30 - i) * 3600,
+      value: 100 + Math.sin(i / 5) * 10 + Math.random() * 5,
+    }));
+  }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -92,10 +104,10 @@ export const LineChart: React.FC<LineChartProps> = ({
         formatter: priceFormatter || ((p: number) => p.toFixed(2)),
       },
     });
-    areaSeries.setData(data as any || []);
+    areaSeries.setData(isFakeInterval ? fakeData : (data as any || []));
     chart.timeScale().fitContent();
     seriesRef.current = areaSeries;
-  }, [data, height, backgroundColor, lineColor, priceFormatter]);
+  }, [data, height, backgroundColor, lineColor, priceFormatter, isFakeInterval, fakeData]);
 
   // Gestion du changement d'intervalle
   const handleIntervalChange = (interval: string) => {
@@ -142,8 +154,53 @@ export const LineChart: React.FC<LineChartProps> = ({
       )}
       <div
         ref={chartContainerRef}
-        style={{ width: '100%', height, minHeight: 150, background: backgroundColor, position: 'relative', overflow: 'hidden' }}
+        style={{
+          width: '100%',
+          height,
+          minHeight: 150,
+          background: backgroundColor,
+          position: 'relative',
+          overflow: 'hidden',
+          pointerEvents: isFakeInterval ? 'none' : 'auto',
+        }}
       />
+      {/* Overlay de carde pour les intervalles non supportés */}
+      {isFakeInterval && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: height,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(24, 26, 32, 0.97)',
+              borderRadius: 16,
+              boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)',
+              padding: '24px',
+              maxWidth: 420,
+              width: '90%',
+              textAlign: 'left',
+              color: '#fff',
+              fontSize: 16,
+              fontWeight: 500,
+              lineHeight: 1.5,
+              border: '1px solid #23242a',
+              pointerEvents: 'auto',
+            }}
+          >
+            These chart numbers aren’t real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.
+          </div>
+        </div>
+      )}
     </div>
   );
 };

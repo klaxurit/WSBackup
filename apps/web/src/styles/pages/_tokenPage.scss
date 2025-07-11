@@ -1,10 +1,13 @@
 @use "../utils" as *;
 
 .Token {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 100vh;
+  padding: 0 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    min-height: 80vh;
 
   @media (max-width: 600px) {
     padding: 8px;

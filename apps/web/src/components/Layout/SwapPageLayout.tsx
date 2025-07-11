@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { SwapBanner } from '../Common/SwapBanner';
+import { Banner } from '../Common/Banner';
+import winnieHii from '../../assets/winnie_hii.png';
 import SwapForm from '../SwapForm/SwapForm';
 import type { Address } from 'viem';
 import LineChart from '../Charts/LineChart';
@@ -63,7 +64,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   return (
     <div className={`swap-page-layout ${className}`}>
       <div className="swap-page-layout__banner">
-        <SwapBanner />
+        <Banner title="Swap" subtitle="Where winners trade" image={winnieHii} imageAlt="Winnie dit bonjour" />
       </div>
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">

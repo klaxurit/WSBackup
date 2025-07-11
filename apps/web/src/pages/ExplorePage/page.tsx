@@ -4,6 +4,7 @@ import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
 import { useQuery } from '@tanstack/react-query';
+import { Banner } from '../../components/Common/Banner';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
@@ -97,6 +98,7 @@ const ExplorePage: React.FC = () => {
 
   return (
     <div className="ExplorePage">
+      <Banner title="Explore" subtitle="Discover tokens, pools and transactions" />
       <div className="ExplorePage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="ExplorePage__Tabs" style={{ display: 'flex', gap: 8 }}>
           {TABS.map(tab => (

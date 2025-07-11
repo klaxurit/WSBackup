@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
-import { FallbackImg } from "../utils/FallbackImg";
 import { formatEther } from "viem";
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 

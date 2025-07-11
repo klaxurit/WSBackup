@@ -8,6 +8,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 2rem 0 0 0;
+
+  @media (max-width: 768px) {
+    margin: 1rem 0 0.5rem 0;
+  }
 
   &__background {
     position: absolute;
@@ -16,6 +21,7 @@
     height: 100%;
     z-index: 0;
     pointer-events: none;
+    object-fit: cover;
 
     svg {
       width: 100%;
@@ -97,14 +103,11 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(90deg, #181a1b 60%, $beryl-016 100%);
   border-radius: 20px;
   overflow: visible;
   padding: 0 40px;
 
-  // Ajoute un padding-top pour garantir une hauteur même si le contenu est petit
-  padding-top: 32px;
-  padding-bottom: 32px;
+
 
   .swap-banner__content {
     flex: 1 1 0;
@@ -131,15 +134,28 @@
     font-weight: 700;
     letter-spacing: 1.5px;
     margin-bottom: 0.5rem;
-    text-shadow: none;
+    text-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.45),
+      0 0 2px #000,
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
   }
 
   .swap-banner__subtitle {
     color: $beryl-medium;
     font-size: 1.2rem;
-    font-weight: 400;
+    font-weight: 600;
     opacity: 0.85;
     margin-top: 0;
+    text-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.45),
+      0 0 2px #000,
+      1px 1px 0 #000,
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000;
   }
 
   .swap-banner__bg-svg {
