@@ -9,7 +9,7 @@ declare module 'wagmi' {
 
 // const berachainApiUrl = import.meta.env.VITE_BERACHAIN_API_URL;
 //
-export const currentChain = import.meta.env.NODE_ENV === "production"
+export const currentChain = import.meta.env.VITE_NODE_ENV === "production"
   ? berachain
   : berachainBepolia
 
