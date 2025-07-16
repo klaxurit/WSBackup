@@ -147,6 +147,7 @@
   &__slippageInput {
     width: 50%;
     display: flex;
+    gap: 2px;
     align-items: center;
     justify-content: space-between;
     border: 1px solid #504F4C;
@@ -179,6 +180,7 @@
     p {
       color: #8a8984;
       margin: 0;
+      font-size: 12px;
     }
   }
 

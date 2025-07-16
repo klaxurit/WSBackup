@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SwapForm from '../../components/SwapForm/SwapForm';
@@ -9,23 +9,8 @@ import { TokenTransactionsTable } from '../../components/Table/TokenTransactions
 import LineChart from '../../components/Charts/LineChart';
 import Banner from '../../components/Common/Banner';
 
-const INTERVAL_KEYS = ['hour', 'day', 'week', 'month', 'year'] as const;
-type IntervalKey = typeof INTERVAL_KEYS[number];
-
-
-const INTERVALS = [
-  { label: '1H', key: 'hour' },
-  { label: '1D', key: 'day' },
-  { label: '1W', key: 'week' },
-  { label: '1M', key: 'month' },
-  { label: '1Y', key: 'year' },
-] as const;
-
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
-  const [activeChartTab, setActiveChartTab] = useState<IntervalKey>('day');
-
-  // Always call hooks at the top, never in a conditional or after a return
   const { data: tokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
@@ -270,15 +255,6 @@ const TokenPage: React.FC = () => {
             )}
           </div>
 
-          {/* Interval tabs (modern switch) */}
-          <div className="Token__ChartControls">
-            <SwitchTabs
-              intervals={INTERVALS}
-              activeKey={activeChartTab}
-              onChange={setActiveChartTab}
-            />
-          </div>
-
           <div className="Token__DetailSection">
             <h2 className="Token__DetailSectionTitle">Statistics</h2>
             <div className="Token__StatsCarousel">
@@ -373,62 +349,5 @@ const TokenPage: React.FC = () => {
     </div>
   );
 };
-
-// New SwitchTabs component
-function SwitchTabs({ intervals, activeKey, onChange }: { intervals: typeof INTERVALS, activeKey: IntervalKey, onChange: (k: IntervalKey) => void }) {
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [sliderStyle, setSliderStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
-
-  useEffect(() => {
-    const idx = intervals.findIndex(i => i.key === activeKey);
-    const el = tabRefs.current[idx];
-    if (el) {
-      const parent = el.parentElement as HTMLElement;
-      const parentRect = parent.getBoundingClientRect();
-      const rect = el.getBoundingClientRect();
-      setSliderStyle({ left: rect.left - parentRect.left, width: rect.width });
-    }
-  }, [activeKey, intervals]);
-
-  // Recalculate on resize
-  useEffect(() => {
-    const handleResize = () => {
-      const idx = intervals.findIndex(i => i.key === activeKey);
-      const el = tabRefs.current[idx];
-      if (el) {
-        const parent = el.parentElement as HTMLElement;
-        const parentRect = parent.getBoundingClientRect();
-        const rect = el.getBoundingClientRect();
-        setSliderStyle({ left: rect.left - parentRect.left, width: rect.width });
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [activeKey, intervals]);
-
-  return (
-    <div className="Token__SwitchTabs">
-      <div
-        className="Token__SwitchSlider"
-        style={{
-          left: sliderStyle.left,
-          width: sliderStyle.width,
-        }}
-      />
-      {intervals.map((interval, idx) => (
-        <button
-          key={interval.key}
-          className={`Token__SwitchTab${activeKey === interval.key ? ' active' : ''}`}
-          onClick={() => onChange(interval.key as IntervalKey)}
-          type="button"
-          ref={el => { tabRefs.current[idx] = el; }}
-          style={{ zIndex: 2 }}
-        >
-          {interval.label}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export default TokenPage;
