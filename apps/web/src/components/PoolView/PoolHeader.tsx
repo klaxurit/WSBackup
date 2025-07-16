@@ -5,14 +5,14 @@ interface PoolHeaderProps {
   usdValue: string;
 }
 
-const PoolHeader: React.FC<PoolHeaderProps> = ({ address, usdValue }) => (
+const PoolHeader: React.FC<PoolHeaderProps> = ({ address }) => (
   <div className="PoolView__Header">
     <div className="PoolView__HeaderTitle">Your position</div>
     <div className="PoolView__HeaderAddress">
       {address.slice(0, 6)}...{address.slice(-4)}
     </div>
-    <div className="PoolView__HeaderUSD">Value</div>
-    <div className="PoolView__HeaderValue">{usdValue}</div>
+    {/* <div className="PoolView__HeaderUSD">Value</div> */}
+    {/* <div className="PoolView__HeaderValue">{usdValue}</div> */}
   </div>
 );
 
