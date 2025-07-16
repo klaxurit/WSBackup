@@ -118,7 +118,7 @@ export class PoolTracker implements OnModuleInit {
           token0Id: token0.id,
           token1Id: token1.id,
           fee: Number(decoded.args.fee),
-          tick: Number(decoded.args.tickSpacing),
+          tick: 0,
         },
       });
 
@@ -197,6 +197,7 @@ export class PoolTracker implements OnModuleInit {
     });
 
     const sqrtPriceX96 = slot0.result![0];
+    const tick = slot0.result![1];
     const poolLiquidity = liquidity.result;
 
     if (!sqrtPriceX96 || !poolLiquidity) return null;
@@ -206,6 +207,7 @@ export class PoolTracker implements OnModuleInit {
       data: {
         sqrtPriceX96: sqrtPriceX96.toString(),
         liquidity: poolLiquidity.toString(),
+        tick: Number(tick),
       },
     });
   }

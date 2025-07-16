@@ -16,10 +16,16 @@
   height: calc(100vh - 208px);
   position: relative;
   z-index: 1;
-  // padding: 80px 40px 40px 40px;
   padding-top: 80px;
   box-sizing: border-box;
   overflow-x: hidden;
+
+  &__ConnectBtn {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   &--sticky {
     max-width: 100%;
@@ -147,6 +153,7 @@
   &__slippageInput {
     width: 50%;
     display: flex;
+    gap: 2px;
     align-items: center;
     justify-content: space-between;
     border: 1px solid #504F4C;
@@ -179,6 +186,7 @@
     p {
       color: #8a8984;
       margin: 0;
+      font-size: 12px;
     }
   }
 
