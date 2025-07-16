@@ -422,15 +422,16 @@ export const usePoolManager = ({
     createPool(createpoolConfig.request)
   }
   const handleMintPosition = async () => {
-    console.log("ici", mintPositionConfig)
     if (!mintPositionConfig?.request) return
     mintPosition(mintPositionConfig.request)
   }
-  const handleWrap = async () => {
+  const handleWrap = () => {
     if (!wrapWBeraConfig?.request) return
-    await wrap(wrapWBeraConfig.request)
-
-    refetchWberaBalance()
+    wrap(wrapWBeraConfig.request, {
+      onSettled: () => {
+        refetchWberaBalance()
+      }
+    })
   }
 
   const { data: createPoolReceipt, isLoading: waitingCreatePoolReceipt } = useWaitForTransactionReceipt({
