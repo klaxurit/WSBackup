@@ -34,7 +34,7 @@ export const useWallet = () => {
   const connectWallet = useCallback(async (connectorId: 'injected' | 'walletConnect') => {
     try {
       const connector = connectorId === 'injected' ? injected() : walletConnect({
-        projectId: '3fcc6bba6f1de962d911bb5b5c3dba68'
+        projectId: 'f5f6f0d2a4bb55b22ce05e9e92a4e95e'
       });
       connect(
         { connector, chainId: berachainBepolia.id },

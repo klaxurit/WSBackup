@@ -302,13 +302,16 @@ const SwapForm: React.FC<FormProps> = React.memo(
                 secondaryColor={secondaryColor}
               />
             ) : (
-              <button
-                className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
-                onClick={handleOpenModal}
-                disabled={swap.status !== "ready" && swap.status !== "error"}
-              >
-                {btnText === null ? <Loader size="small" /> : btnText}
-              </button>
+              <div className="Form__ConnectBtn">
+                <button
+                  className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
+                  onClick={handleOpenModal}
+                  disabled={swap.status !== "ready" && swap.status !== "error"}
+                >
+                  {btnText === null ? <Loader size="small" /> : btnText}
+                </button>
+              
+              </div>
             )}
           </div>
         </div>
