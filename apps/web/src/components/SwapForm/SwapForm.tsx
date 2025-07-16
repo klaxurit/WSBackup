@@ -237,7 +237,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
                 <div className="ParamBox__slippageInput">
                   <button
                     className={slippageConfig.isAuto ? "active" : ""}
-                    onClick={() => setSlippageConfig({ real: 0.05, display: "5%", isAuto: true })}
+                    onClick={() => setSlippageConfig({ real: 0.05, display: "5", isAuto: true })}
                   >
                     Auto
                   </button>

@@ -9,9 +9,16 @@ import PoolPage from './pages/PoolPage/page'
 import CreatePoolPage from './pages/PoolPage/create/page'
 import PoolViewPage from './pages/PoolPage/[tokenId]/page'
 import { useState } from 'react'
+import { useReconnect } from 'wagmi';
+import { useEffect } from 'react';
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const { reconnect } = useReconnect();
+
+  useEffect(() => {
+    reconnect();
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
