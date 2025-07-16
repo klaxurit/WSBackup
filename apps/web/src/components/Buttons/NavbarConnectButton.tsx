@@ -75,7 +75,9 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
 
   const handleConnect = useCallback(() => {
     if (isMobile()) {
-      setConnectorMenuOpen(true);
+      connect('walletConnect').catch((err: any) => {
+        setError(err?.message || 'Connection error with WalletConnect');
+      });
     } else {
       connect('injected').catch((err: any) => {
         setError(err?.message || 'Connection error with Injected wallet');

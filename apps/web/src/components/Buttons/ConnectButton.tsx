@@ -31,7 +31,9 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   const handleConnect = useCallback(() => {
     if (isMobile()) {
-      setConnectorMenuOpen(true);
+      connect('walletConnect').catch((err: any) => {
+        setError(err?.message || 'Connection error with WalletConnect');
+      });
     } else {
       connect('injected').catch((err: any) => {
         setError(err?.message || 'Connection error with Injected wallet');
@@ -82,7 +84,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   if (secondaryColor) style.backgroundColor = secondaryColor;
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
       <button
         className={className}
         onClick={handleConnect}
