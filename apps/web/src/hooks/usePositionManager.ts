@@ -171,7 +171,6 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   })
 
   useEffect(() => {
-    console.log("apprive Receipt", approveToken0Receipt, approveToken1Receipt)
     if (approveToken0Receipt) {
       refetchT0Allowance()
     }
