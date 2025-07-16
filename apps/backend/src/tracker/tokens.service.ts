@@ -1,16 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@repo/db';
 
 @Injectable()
-export class TokensTrackerService {
+export class TokensTrackerService implements OnModuleInit {
   private readonly logger = new Logger(TokensTrackerService.name);
-  network = 'bepolia';
+  network = 'mainnet';
   tokensRepo = `https://raw.githubusercontent.com/berachain/metadata/main/src/tokens/${this.network}.json`;
   isRunning = false;
 
-  constructor(private readonly databaseService: DatabaseService) { }
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async fetchTokens() {
     const resp = await fetch(this.tokensRepo);
@@ -73,5 +73,9 @@ export class TokensTrackerService {
     await this.fetchTokens();
 
     this.isRunning = false;
+  }
+
+  async onModuleInit() {
+    await this.autoUpdate();
   }
 }
