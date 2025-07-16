@@ -10,10 +10,10 @@ import type { BerachainToken } from "./useBerachainTokenList";
 
 import { computePoolAddress, encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, Position, TICK_SPACINGS, TickMath } from "@uniswap/v3-sdk"
 import { Token } from "@uniswap/sdk-core"
-import { berachainBepolia } from "viem/chains";
 import JSBI from "jsbi";
 import { getInitialSqrtPriceX96, priceToTick } from "../utils/positionManager";
 import { MultiCall2ABI } from "../config/abis/Multicall2ABI";
+import { currentChain } from "../config/wagmi";
 
 interface usePositionManagerParams {
   btoken0: BerachainToken | null
@@ -30,7 +30,7 @@ const parseToken = (bt: BerachainToken | null): Token | null => {
   if (!bt) return null
   // use wBera instead Bera
   const addr = (bt.address === zeroAddress) ? "0x6969696969696969696969696969696969696969" : bt.address
-  return new Token(berachainBepolia.id, addr, bt.decimals, bt.symbol, bt.name)
+  return new Token(currentChain.id, addr, bt.decimals, bt.symbol, bt.name)
 }
 
 export const usePoolManager = ({
@@ -266,6 +266,7 @@ export const usePoolManager = ({
     abi: erc20Abi,
     functionName: 'approve',
     args: [CONTRACTS_ADDRESS.positionManager, prices.amount0 * 105n / 100n],
+    chainId: currentChain.id,
     query: {
       enabled: !!token0 && token0NeedApproval
     }
@@ -275,6 +276,7 @@ export const usePoolManager = ({
     abi: erc20Abi,
     functionName: 'approve',
     args: [CONTRACTS_ADDRESS.positionManager, prices.amount1 * 105n / 100n],
+    chainId: currentChain.id,
     query: {
       enabled: !!token1 && token1NeedApproval
     }
@@ -365,6 +367,7 @@ export const usePoolManager = ({
 
       return [calls]
     })(),
+    chainId: currentChain.id,
     query: {
       enabled: !!pool
     }
@@ -392,6 +395,7 @@ export const usePoolManager = ({
         deadline
       }]
     })(),
+    chainId: currentChain.id,
     query: {
       enabled: !!pool && !!prices?.position && !!address && !needsWBERAWrapping
     }
@@ -407,6 +411,7 @@ export const usePoolManager = ({
     }],
     functionName: 'deposit',
     value: beraAmountToWrap,
+    chainId: currentChain.id,
     query: {
       enabled: needsWBERAWrapping && beraAmountToWrap > 0n
     }
