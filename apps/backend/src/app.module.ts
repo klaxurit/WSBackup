@@ -8,6 +8,7 @@ import { TrackerModule } from './tracker/tracker.module';
 import { StatisticsModule } from './statistics/statistics.module';
 
 import appConfig from './app.config';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import appConfig from './app.config';
     CoingeckoModule,
     TrackerModule,
     StatisticsModule,
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

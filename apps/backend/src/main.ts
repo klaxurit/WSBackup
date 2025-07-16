@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 const allowedOrigins = [
+  /\.winnieswap\.com$/,
+  'https://www.winnieswap.com',
   'https://winnieswap.com',
   'http://localhost:5173',
   /\.winnieswap\.pages\.dev$/,
