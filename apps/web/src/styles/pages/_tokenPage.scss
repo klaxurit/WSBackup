@@ -253,7 +253,7 @@
 
   &__Chart {
     position: relative;
-    height: 400px;
+    height: 376px;
     border-radius: 16px;
 
     @media (max-width: 768px) {
@@ -578,6 +578,12 @@
 .Token__InfoShowMore:hover {
   color: #fff;
   opacity: 1;
+}
+
+.Token__DetailSection{
+  @media (max-width: 600px) {
+    margin-top: 24px;
+  }
 }
 
 .Token__Chart,
