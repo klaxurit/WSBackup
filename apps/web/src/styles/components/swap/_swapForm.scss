@@ -125,6 +125,22 @@
 
     button {
       width: 100%;
+      background-image: url('/src/assets/bear_button.svg');
+      background-size: 100%;
+      background-position: 30px -4px;
+      background-repeat: no-repeat;
+      &:hover {
+        background-image: url('/src/assets/bear_btn_hover.svg');
+        background-size: 100%;
+        background-position: 30px -4px;
+        background-repeat: no-repeat;
+      }
+      &:active {
+        background-image: url('/src/assets/bear_btn_click.svg');
+        background-size: 100%;
+        background-position: 30px -4px;
+        background-repeat: no-repeat;
+      }
     }
   }
 }
