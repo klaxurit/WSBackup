@@ -82,6 +82,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
                 dominantColor={dominantColor}
                 secondaryColor={secondaryColor}
                 isHomePage={isHomePage}
+                onlyPoolToken={true}
               />
             </div>
           </div>

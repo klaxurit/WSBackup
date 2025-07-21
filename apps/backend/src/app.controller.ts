@@ -17,6 +17,20 @@ export class AppController {
 
   @Get('/tokens')
   async getTokens(): Promise<Token[]> {
-    return await this.db.token.findMany();
+    const tokens = await this.db.token.findMany({
+      include: {
+        _count: {
+          select: {
+            poolsAsToken0: true,
+            poolsAsToken1: true,
+          },
+        },
+      },
+    });
+
+    return tokens.map(({ _count, ...token }) => ({
+      ...token,
+      inPool: _count.poolsAsToken0 > 0 || _count.poolsAsToken1 > 0,
+    }));
   }
 }
