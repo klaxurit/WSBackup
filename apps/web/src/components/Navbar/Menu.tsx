@@ -7,9 +7,9 @@ export const Menu = () => {
 
   return (
     <div className="Menu">
-      <div className="Menu__Logo Menu__Logo--desktop">
+      <Link to="/" className="Menu__Logo Menu__Logo--desktop">
         <WinnieFavicon />
-      </div>
+      </Link>
       <div className="Menu__Links Menu__Links--desktop">
         <Link className={`link link--small link__white ${location.pathname === '/' ? 'active' : ''}`} to="/">
           Swap
@@ -18,7 +18,7 @@ export const Menu = () => {
           Explore
         </Link>
         <Link className={`link link--small link__white ${location.pathname === '/pools' ? 'active' : ''}`} to="/pools">
-          Pools
+          My Positions
         </Link>
       </div>
     </div>
