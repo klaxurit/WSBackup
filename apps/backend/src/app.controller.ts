@@ -25,12 +25,22 @@ export class AppController {
             poolsAsToken1: true,
           },
         },
+        Statistic: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            price: true,
+          },
+        },
       },
     });
 
-    return tokens.map(({ _count, ...token }) => ({
+    return tokens.map(({ _count, Statistic, ...token }) => ({
       ...token,
       inPool: _count.poolsAsToken0 > 0 || _count.poolsAsToken1 > 0,
+      lastPrice: Statistic.length > 0 ? Statistic[0].price : 0,
     }));
   }
 }

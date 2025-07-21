@@ -14,7 +14,8 @@ export interface BerachainToken {
   inPool: boolean;
   website?: string;
   twitter?: string;
-  description: string;
+  description?: string;
+  lastPrice: number;
 }
 
 export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
