@@ -15,6 +15,6 @@ import { SwapTrackerService } from './swapTracker.service';
     TokensTrackerService,
     SwapTrackerService,
   ],
-  exports: [],
+  exports: [FallbackIndexerService],
 })
 export class TrackerModule {}
