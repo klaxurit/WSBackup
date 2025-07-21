@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SwapForm from '../../components/SwapForm/SwapForm';
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
@@ -175,9 +175,9 @@ const TokenPage: React.FC = () => {
     <div className="Token">
       <Banner title={bannerTitle} subtitle={bannerSubtitle} imageAlt={token.symbol} />
       <div className="Token__Breadcrumbs">
-        <span className="Token__BreadcrumbsLink">Explore</span>
+        <Link to="/explore" className="Token__BreadcrumbsLink">Explore</Link>
         <ExplorerChevronIcon />
-        <span className="Token__BreadcrumbsLink">Tokens</span>
+        <Link to="/explore?tab=tokens" className="Token__BreadcrumbsLink">Tokens</Link>
         <ExplorerChevronIcon />
         <span className="Token__BreadcrumbsLink__3">{token.symbol}</span>
       </div>
