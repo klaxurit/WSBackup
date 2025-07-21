@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Pool } from '@repo/db';
 import { V3_FACTORY_ABI } from 'src/blockchain/abis/V3_FACTORY_ABI';
@@ -6,6 +12,7 @@ import { V3_POOL_ABI } from 'src/blockchain/abis/V3_POOL_ABI';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { DatabaseService } from 'src/database/database.service';
 import { Address, decodeEventLog, Log, parseAbiItem, zeroAddress } from 'viem';
+import { SwapTrackerService } from './swapTracker.service';
 
 /**
  * Track:
@@ -35,6 +42,8 @@ export class PoolTracker implements OnModuleInit {
     private config: ConfigService,
     private db: DatabaseService,
     private blockchain: BlockchainService,
+    @Inject(forwardRef(() => SwapTrackerService))
+    private swapTracker: SwapTrackerService,
   ) {}
 
   async onModuleInit() {
@@ -124,6 +133,7 @@ export class PoolTracker implements OnModuleInit {
 
       this.initPoolTracker(pool);
       this.logger.log(`🆕 New pool tracked: ${decoded.args.pool}`);
+      this.swapTracker.trackNewPool(pool);
     } catch (error) {
       this.logger.error('Error processing PoolCreated event:', error);
     }
@@ -164,7 +174,6 @@ export class PoolTracker implements OnModuleInit {
 
       if (!pool) return;
 
-      await this.updatePoolDatas(pool);
       // const decoded = decodeEventLog({
       //   eventName: 'Burn',
       //   abi: V3_POOL_ABI,
@@ -172,15 +181,13 @@ export class PoolTracker implements OnModuleInit {
       //   topics: log.topics,
       // });
       // console.log('Position burn log:', decoded);
-      if (pool) {
-        await this.updatePoolDatas(pool);
-      }
+      await this.updatePoolDatas(pool);
     } catch (error) {
       this.logger.error('Error processing posiiton burn event:', error);
     }
   }
 
-  private async updatePoolDatas(pool: Pool) {
+  async updatePoolDatas(pool: Pool) {
     const [slot0, liquidity] = await this.blockchain.client.multicall({
       contracts: [
         {
