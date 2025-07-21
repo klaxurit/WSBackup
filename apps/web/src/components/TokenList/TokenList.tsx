@@ -3,12 +3,14 @@ import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
 import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
 import { Modal } from '../Common/Modal';
+import { zeroAddress } from "viem";
 
 interface NetworksListProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (token: BerachainToken) => void;
   selectedToken?: BerachainToken | null;
+  onlyPoolToken: boolean
 }
 
 export const TokenList = ({
@@ -16,6 +18,7 @@ export const TokenList = ({
   onClose,
   onSelect,
   selectedToken,
+  onlyPoolToken
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
   const { data: tokens = [] } = useTokens()
@@ -26,12 +29,13 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
-    if (searchValue === "") return tokens;
-    return tokens.filter((token) =>
+    const onlyPoolOrAllTokens = tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+    if (searchValue === "") return onlyPoolOrAllTokens;
+    return onlyPoolOrAllTokens.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchValue.toLowerCase())
     );
-  }, [searchValue, tokens]);
+  }, [searchValue, tokens, onlyPoolToken]);
 
   return (
     <Modal open={isOpen} onClose={onClose} className="Modal" overlayClassName="NetworksList">

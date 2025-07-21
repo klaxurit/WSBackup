@@ -15,6 +15,7 @@ interface NetworkSelectorProps {
   isHomePage?: boolean;
   onForceOpen?: () => void;
   forceListOpen?: boolean;
+  onlyPoolToken: boolean
 }
 
 const TokenSelector: React.FC<NetworkSelectorProps> = ({
@@ -23,6 +24,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   onToggleNetworkList,
   onForceOpen,
   forceListOpen,
+  onlyPoolToken
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
@@ -102,6 +104,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
           onClose={handleNetworksListToggle}
           onSelect={handleTokenSelect}
           selectedToken={selectedToken || preSelected}
+          onlyPoolToken={onlyPoolToken}
         />
       )}
     </>

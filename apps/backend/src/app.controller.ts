@@ -17,6 +17,30 @@ export class AppController {
 
   @Get('/tokens')
   async getTokens(): Promise<Token[]> {
-    return await this.db.token.findMany();
+    const tokens = await this.db.token.findMany({
+      include: {
+        _count: {
+          select: {
+            poolsAsToken0: true,
+            poolsAsToken1: true,
+          },
+        },
+        Statistic: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            price: true,
+          },
+        },
+      },
+    });
+
+    return tokens.map(({ _count, Statistic, ...token }) => ({
+      ...token,
+      inPool: _count.poolsAsToken0 > 0 || _count.poolsAsToken1 > 0,
+      lastPrice: Statistic.length > 0 ? Statistic[0].price : 0,
+    }));
   }
 }

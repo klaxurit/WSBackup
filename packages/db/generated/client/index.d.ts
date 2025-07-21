@@ -4447,6 +4447,9 @@ export namespace Prisma {
     decimals: number | null
     logoUri: string | null
     coingeckoId: string | null
+    website: string | null
+    twitter: string | null
+    description: string | null
   }
 
   export type TokenMaxAggregateOutputType = {
@@ -4457,6 +4460,9 @@ export namespace Prisma {
     decimals: number | null
     logoUri: string | null
     coingeckoId: string | null
+    website: string | null
+    twitter: string | null
+    description: string | null
   }
 
   export type TokenCountAggregateOutputType = {
@@ -4468,6 +4474,9 @@ export namespace Prisma {
     logoUri: number
     coingeckoId: number
     tags: number
+    website: number
+    twitter: number
+    description: number
     _all: number
   }
 
@@ -4488,6 +4497,9 @@ export namespace Prisma {
     decimals?: true
     logoUri?: true
     coingeckoId?: true
+    website?: true
+    twitter?: true
+    description?: true
   }
 
   export type TokenMaxAggregateInputType = {
@@ -4498,6 +4510,9 @@ export namespace Prisma {
     decimals?: true
     logoUri?: true
     coingeckoId?: true
+    website?: true
+    twitter?: true
+    description?: true
   }
 
   export type TokenCountAggregateInputType = {
@@ -4509,6 +4524,9 @@ export namespace Prisma {
     logoUri?: true
     coingeckoId?: true
     tags?: true
+    website?: true
+    twitter?: true
+    description?: true
     _all?: true
   }
 
@@ -4607,6 +4625,9 @@ export namespace Prisma {
     logoUri: string | null
     coingeckoId: string | null
     tags: string[]
+    website: string | null
+    twitter: string | null
+    description: string | null
     _count: TokenCountAggregateOutputType | null
     _avg: TokenAvgAggregateOutputType | null
     _sum: TokenSumAggregateOutputType | null
@@ -4637,6 +4658,9 @@ export namespace Prisma {
     logoUri?: boolean
     coingeckoId?: boolean
     tags?: boolean
+    website?: boolean
+    twitter?: boolean
+    description?: boolean
     poolsAsToken0?: boolean | Token$poolsAsToken0Args<ExtArgs>
     poolsAsToken1?: boolean | Token$poolsAsToken1Args<ExtArgs>
     Statistic?: boolean | Token$StatisticArgs<ExtArgs>
@@ -4652,6 +4676,9 @@ export namespace Prisma {
     logoUri?: boolean
     coingeckoId?: boolean
     tags?: boolean
+    website?: boolean
+    twitter?: boolean
+    description?: boolean
   }, ExtArgs["result"]["token"]>
 
   export type TokenSelectScalar = {
@@ -4663,6 +4690,9 @@ export namespace Prisma {
     logoUri?: boolean
     coingeckoId?: boolean
     tags?: boolean
+    website?: boolean
+    twitter?: boolean
+    description?: boolean
   }
 
   export type TokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4689,6 +4719,9 @@ export namespace Prisma {
       logoUri: string | null
       coingeckoId: string | null
       tags: string[]
+      website: string | null
+      twitter: string | null
+      description: string | null
     }, ExtArgs["result"]["token"]>
     composites: {}
   }
@@ -5093,6 +5126,9 @@ export namespace Prisma {
     readonly logoUri: FieldRef<"Token", 'String'>
     readonly coingeckoId: FieldRef<"Token", 'String'>
     readonly tags: FieldRef<"Token", 'String[]'>
+    readonly website: FieldRef<"Token", 'String'>
+    readonly twitter: FieldRef<"Token", 'String'>
+    readonly description: FieldRef<"Token", 'String'>
   }
     
 
@@ -7578,7 +7614,10 @@ export namespace Prisma {
     decimals: 'decimals',
     logoUri: 'logoUri',
     coingeckoId: 'coingeckoId',
-    tags: 'tags'
+    tags: 'tags',
+    website: 'website',
+    twitter: 'twitter',
+    description: 'description'
   };
 
   export type TokenScalarFieldEnum = (typeof TokenScalarFieldEnum)[keyof typeof TokenScalarFieldEnum]
@@ -7964,6 +8003,9 @@ export namespace Prisma {
     logoUri?: StringNullableFilter<"Token"> | string | null
     coingeckoId?: StringNullableFilter<"Token"> | string | null
     tags?: StringNullableListFilter<"Token">
+    website?: StringNullableFilter<"Token"> | string | null
+    twitter?: StringNullableFilter<"Token"> | string | null
+    description?: StringNullableFilter<"Token"> | string | null
     poolsAsToken0?: PoolListRelationFilter
     poolsAsToken1?: PoolListRelationFilter
     Statistic?: TokenStatisticListRelationFilter
@@ -7978,6 +8020,9 @@ export namespace Prisma {
     logoUri?: SortOrderInput | SortOrder
     coingeckoId?: SortOrderInput | SortOrder
     tags?: SortOrder
+    website?: SortOrderInput | SortOrder
+    twitter?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
     poolsAsToken0?: PoolOrderByRelationAggregateInput
     poolsAsToken1?: PoolOrderByRelationAggregateInput
     Statistic?: TokenStatisticOrderByRelationAggregateInput
@@ -7995,6 +8040,9 @@ export namespace Prisma {
     logoUri?: StringNullableFilter<"Token"> | string | null
     coingeckoId?: StringNullableFilter<"Token"> | string | null
     tags?: StringNullableListFilter<"Token">
+    website?: StringNullableFilter<"Token"> | string | null
+    twitter?: StringNullableFilter<"Token"> | string | null
+    description?: StringNullableFilter<"Token"> | string | null
     poolsAsToken0?: PoolListRelationFilter
     poolsAsToken1?: PoolListRelationFilter
     Statistic?: TokenStatisticListRelationFilter
@@ -8009,6 +8057,9 @@ export namespace Prisma {
     logoUri?: SortOrderInput | SortOrder
     coingeckoId?: SortOrderInput | SortOrder
     tags?: SortOrder
+    website?: SortOrderInput | SortOrder
+    twitter?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
     _count?: TokenCountOrderByAggregateInput
     _avg?: TokenAvgOrderByAggregateInput
     _max?: TokenMaxOrderByAggregateInput
@@ -8028,6 +8079,9 @@ export namespace Prisma {
     logoUri?: StringNullableWithAggregatesFilter<"Token"> | string | null
     coingeckoId?: StringNullableWithAggregatesFilter<"Token"> | string | null
     tags?: StringNullableListFilter<"Token">
+    website?: StringNullableWithAggregatesFilter<"Token"> | string | null
+    twitter?: StringNullableWithAggregatesFilter<"Token"> | string | null
+    description?: StringNullableWithAggregatesFilter<"Token"> | string | null
   }
 
   export type TokenStatisticWhereInput = {
@@ -8440,6 +8494,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
@@ -8454,6 +8511,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
@@ -8468,6 +8528,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
@@ -8482,6 +8545,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
@@ -8496,6 +8562,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
   }
 
   export type TokenUpdateManyMutationInput = {
@@ -8507,6 +8576,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TokenUncheckedUpdateManyInput = {
@@ -8518,6 +8590,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TokenStatisticCreateInput = {
@@ -9059,6 +9134,9 @@ export namespace Prisma {
     logoUri?: SortOrder
     coingeckoId?: SortOrder
     tags?: SortOrder
+    website?: SortOrder
+    twitter?: SortOrder
+    description?: SortOrder
   }
 
   export type TokenAvgOrderByAggregateInput = {
@@ -9073,6 +9151,9 @@ export namespace Prisma {
     decimals?: SortOrder
     logoUri?: SortOrder
     coingeckoId?: SortOrder
+    website?: SortOrder
+    twitter?: SortOrder
+    description?: SortOrder
   }
 
   export type TokenMinOrderByAggregateInput = {
@@ -9083,6 +9164,9 @@ export namespace Prisma {
     decimals?: SortOrder
     logoUri?: SortOrder
     coingeckoId?: SortOrder
+    website?: SortOrder
+    twitter?: SortOrder
+    description?: SortOrder
   }
 
   export type TokenSumOrderByAggregateInput = {
@@ -9758,6 +9842,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
   }
@@ -9771,6 +9858,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
   }
@@ -9789,6 +9879,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
     Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
   }
@@ -9802,6 +9895,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
     Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
   }
@@ -9905,6 +10001,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
   }
@@ -9918,6 +10017,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
   }
@@ -9942,6 +10044,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
     Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
   }
@@ -9955,6 +10060,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
     Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
   }
@@ -10288,6 +10396,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
   }
@@ -10301,6 +10412,9 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
     poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
   }
@@ -10330,6 +10444,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
   }
@@ -10343,6 +10460,9 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
   }

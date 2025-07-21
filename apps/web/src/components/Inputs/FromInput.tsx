@@ -143,6 +143,7 @@ export const FromInput: React.FC<FromInputProps> = (
               onSelect={onTokenSelect}
               onForceOpen={onInputClick}
               forceListOpen={isListOpen}
+              onlyPoolToken={true}
             />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import type { Address } from 'viem';
+import { type Address } from 'viem';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 export interface BerachainToken {
@@ -11,6 +11,11 @@ export interface BerachainToken {
   logoUri?: string;
   isVerified: boolean;
   coingeckoId?: string | null;
+  inPool: boolean;
+  website?: string;
+  twitter?: string;
+  description?: string;
+  lastPrice: number;
 }
 
 export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
@@ -24,7 +29,7 @@ export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
       }
 
       const result = await response.json()
-      return result.map((t: any): BerachainToken => ({ ...t, isVerified: t.isVerified === 1 }))
+      return result
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false

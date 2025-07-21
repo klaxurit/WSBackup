@@ -210,13 +210,17 @@ const TokenPage: React.FC = () => {
                       <ExplorerIcon />
                     </a>
                     {/* Project website */}
-                    <a href={token.website || '#'} target="_blank" rel="noopener noreferrer" title="Project website" className="Token__IconLink">
-                      <WebsiteIcon />
-                    </a>
+                    {token.website && (
+                      <a href={token.website} target="_blank" rel="noopener noreferrer" title="Project website" className="Token__IconLink">
+                        <WebsiteIcon />
+                      </a>
+                    )}
                     {/* Project Twitter */}
-                    <a href={token.twitter || '#'} target="_blank" rel="noopener noreferrer" title="Project Twitter" className="Token__IconLink">
-                      <TwitterIcon />
-                    </a>
+                    {token.twitter && (
+                      <a href={`https://x.com/${token.twitter}`} target="_blank" rel="noopener noreferrer" title="Project Twitter" className="Token__IconLink">
+                        <TwitterIcon />
+                      </a>
+                    )}
                     {/* Share */}
                     <a href="#" onClick={e => { e.preventDefault(); navigator.clipboard.writeText(window.location.href); }} title="Share this page" aria-label="Share this page" className="Token__IconLink">
                       <ShareIcon />
@@ -313,36 +317,36 @@ const TokenPage: React.FC = () => {
                 <ExplorerIcon />
                 <span>Explorer</span>
               </a>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={token.website || '#'}
-                className="Token__InfoLink"
-              >
-                {/* Website Icon */}
-                <WebsiteIcon />
-                <span>Website</span>
-              </a>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={token.twitter || '#'}
-                className="Token__InfoLink"
-              >
-                {/* Twitter Icon */}
-                <TwitterIcon />
-              </a>
-            </div>
-            {/* Token description (Coingecko) */}
-            <div className="Token__InfoDescription">
-              {descLoading ? (
-                <p>Loading description…</p>
-              ) : coingeckoTokenData?.description ? (
-                <p>{coingeckoTokenData.description}</p>
-              ) : (
-                <p>No description available.</p>
+              {token.website && (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={token.website}
+                  className="Token__InfoLink"
+                >
+                  {/* Website Icon */}
+                  <WebsiteIcon />
+                  <span>Website</span>
+                </a>
+              )}
+              {token.twitter && (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://x.com/${token.twitter}`}
+                  className="Token__InfoLink"
+                >
+                  {/* Twitter Icon */}
+                  <TwitterIcon />
+                </a>
               )}
             </div>
+            {/* Token description (Coingecko) */}
+            {token.description && (
+              <div className="Token__InfoDescription">
+                <p>{token.description}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
