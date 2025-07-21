@@ -36,7 +36,7 @@ const TokenPage: React.FC = () => {
   }, [tokens, tokenAddress]);
 
   // Always call the hook, even if token is null
-  const { data: coingeckoTokenData, isLoading: descLoading } = useCoingeckoTokenData(token?.coingeckoId);
+  const { data: coingeckoTokenData } = useCoingeckoTokenData(token?.coingeckoId);
 
   // Always call the hook, even if pools/token are not yet loaded
   // Fallback TVL from Coingecko if missing in backend
