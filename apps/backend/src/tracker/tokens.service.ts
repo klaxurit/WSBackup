@@ -10,7 +10,7 @@ export class TokensTrackerService implements OnModuleInit {
   tokensRepo = `https://raw.githubusercontent.com/berachain/metadata/main/src/tokens/${this.network}.json`;
   isRunning = false;
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async fetchTokens() {
     const resp = await fetch(this.tokensRepo);
@@ -33,6 +33,10 @@ export class TokensTrackerService implements OnModuleInit {
             tags: token.tags,
             logoUri: token.logoURI,
             coingeckoId: token.extensions?.coingeckoId,
+            website: token.website,
+            twitter: token.twitter,
+            description: token.description
+
           },
           update: {
             name: token.name,
@@ -41,6 +45,9 @@ export class TokensTrackerService implements OnModuleInit {
             tags: token.tags,
             logoUri: token.logoURI,
             coingeckoId: token.extensions?.coingeckoId,
+            website: token.website,
+            twitter: token.twitter,
+            description: token.description
           },
         });
       }

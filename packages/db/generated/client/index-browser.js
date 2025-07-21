@@ -166,7 +166,10 @@ exports.Prisma.TokenScalarFieldEnum = {
   decimals: 'decimals',
   logoUri: 'logoUri',
   coingeckoId: 'coingeckoId',
-  tags: 'tags'
+  tags: 'tags',
+  website: 'website',
+  twitter: 'twitter',
+  description: 'description'
 };
 
 exports.Prisma.TokenStatisticScalarFieldEnum = {

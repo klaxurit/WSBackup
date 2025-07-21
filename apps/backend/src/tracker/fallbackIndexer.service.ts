@@ -141,4 +141,66 @@ export class FallbackIndexerService implements OnModuleInit, OnModuleDestroy {
       this.isRunning = false;
     }
   }
+  async reIndex(startBlock = 4700000n) {
+    while (this.isRunning) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    try {
+      this.isRunning = true;
+
+      let isFinish = false;
+      const batchSize = 10000n;
+      let lastBlock = startBlock;
+
+      while (!isFinish) {
+        const currentBlock =
+          (await this.blockchain.client.getBlockNumber()) - this.confirmations;
+        const pools = await this.db.pool.findMany();
+        const poolsAddr = pools.map((p) => p.address as Address);
+
+        const fromBlock = lastBlock + 1n;
+        const toBlock =
+          fromBlock + batchSize > currentBlock
+            ? currentBlock
+            : fromBlock + batchSize;
+
+        this.logger.log(`🔄 Reindex blocks ${fromBlock} to ${toBlock}`);
+        const logs = await this.blockchain.client.getLogs({
+          fromBlock,
+          toBlock,
+          address: [...poolsAddr, this.factoryAddr],
+          events: parseAbi([
+            'event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, int24 tickSpacing, address pool)',
+            'event Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount,uint256 amount0, uint256 amount1)',
+            'event Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1)',
+            'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
+          ]),
+        });
+
+        for (const log of logs) {
+          if (log.eventName === 'PoolCreated') {
+            await this.poolTracker.handleNewPool(log);
+          }
+          if (log.eventName === 'Mint') {
+            await this.poolTracker.handlePositionMint(log);
+          }
+          if (log.eventName === 'Burn') {
+            await this.poolTracker.handlePositionBurn(log);
+          }
+          if (log.eventName === 'Swap') {
+            await this.swapTracker.handleNewSwap(log);
+          }
+        }
+
+        lastBlock = toBlock;
+        isFinish = lastBlock >= currentBlock;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      this.logger.error('Error when indexing Blocks:', error);
+    } finally {
+      this.isRunning = false;
+    }
+  }
 }

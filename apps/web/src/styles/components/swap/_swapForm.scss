@@ -123,9 +123,27 @@
     width: 100%;
     display: flex;
 
-    button {
-      width: 100%;
+button {
+    width: 100%;
+    background-image: url('/src/assets/paw_background_large.svg');
+    background-size: 100% 100%; // couvre 100% en largeur ET en hauteur
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &:hover {
+      background-image: url('/src/assets/paw_bg_large_hover.svg');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
     }
+
+    &:active {
+      background-image: url('/src/assets/paw_bg_large_click.svg');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  }
   }
 }
 

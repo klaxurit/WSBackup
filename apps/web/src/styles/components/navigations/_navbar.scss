@@ -34,6 +34,25 @@
     align-items: center;
     color: white;
     border: none;
+    button {
+      background-image: url('/src/assets/bear_button.svg');
+      background-size: 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      &:hover {
+        background-image: url('/src/assets/bear_btn_hover.svg');
+        background-size: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+    
+      &:active {
+        background-image: url('/src/assets/bear_btn_click.svg');
+        background-size: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+    }
   }
 
   &__BalanceButton {
@@ -47,6 +66,24 @@
     justify-content: center;
     font-weight: 600;
     font-size: 14px;
+    position: relative; // Pour positionner les oreilles si besoin
+    padding-left: 8px;
+    padding-right: 8px;
+
+    .ear {
+      width: 28px; // Ajuste la taille selon ton besoin
+      height: auto;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .left-ear {
+      margin-right: 4px;
+    }
+
+    .right-ear {
+      margin-left: 4px;
+    }
   }
 }
 
@@ -249,5 +286,93 @@
 
   &:hover {
     background: #3a3a3a;
+  }
+}
+
+.Navbar__BalanceButtonWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .ear {
+    position: absolute;
+    top: -12px; // Ajuste la hauteur pour que l’oreille soit posée sur le bouton
+    width: 24px; // Ajuste la taille selon besoin
+    height: auto;
+    z-index: 2;
+    pointer-events: none; // Pour ne pas gêner le clic sur le bouton
+  }
+
+  .left-ear {
+    transform: rotate(-14deg);
+    left: -12.5px; // Ajuste pour coller à gauche du bouton
+  }
+
+  .right-ear {
+    transform: rotate(12deg);
+    right: -12px; // Ajuste pour coller à droite du bouton
+  }
+
+  &:hover .ear.left-ear {
+    animation: wiggle-left 0.5s;
+  }
+
+  &:hover .ear.right-ear {
+    animation: wiggle-right 0.5s;
+  }
+}
+
+// Animation pour l’oreille gauche
+@keyframes wiggle-left {
+  0% {
+    transform: rotate(-14deg);
+  }
+
+  20% {
+    transform: rotate(-24deg) scale(1.08);
+  }
+
+  40% {
+    transform: rotate(-8deg) scale(1.05);
+  }
+
+  60% {
+    transform: rotate(-18deg) scale(1.1);
+  }
+
+  80% {
+    transform: rotate(-10deg) scale(1.03);
+  }
+
+  100% {
+    transform: rotate(-14deg);
+  }
+}
+
+// Animation pour l’oreille droite
+@keyframes wiggle-right {
+  0% {
+    transform: rotate(12deg);
+  }
+
+  20% {
+    transform: rotate(22deg) scale(1.08);
+  }
+
+  40% {
+    transform: rotate(6deg) scale(1.05);
+  }
+
+  60% {
+    transform: rotate(18deg) scale(1.1);
+  }
+
+  80% {
+    transform: rotate(10deg) scale(1.03);
+  }
+
+  100% {
+    transform: rotate(12deg);
   }
 }

@@ -1,0 +1,33 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Pattern pour répéter les empreintes -->
+    <pattern id="pawPattern" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <!-- Empreinte de patte 1 -->
+      <g opacity="0.4">
+        <!-- Coussinet principal -->
+        <ellipse cx="15" cy="22" rx="4.5" ry="4" fill="#8B4513" transform="rotate(-15 15 22)"/>
+        
+        <!-- Orteils -->
+        <ellipse cx="9" cy="14" rx="1.8" ry="2.5" fill="#8B4513" transform="rotate(-25 9 14)"/>
+        <ellipse cx="13" cy="12" rx="1.8" ry="2.5" fill="#8B4513" transform="rotate(-8 13 12)"/>
+        <ellipse cx="17" cy="12" rx="1.8" ry="2.5" fill="#8B4513" transform="rotate(8 17 12)"/>
+        <ellipse cx="21" cy="14" rx="1.8" ry="2.5" fill="#8B4513" transform="rotate(25 21 14)"/>
+      </g>
+      
+      <!-- Empreinte de patte 2 (plus petite, décalée) -->
+      <g opacity="0.38">
+        <!-- Coussinet principal -->
+        <ellipse cx="5" cy="8" rx="3" ry="2.5" fill="#8B4513" transform="rotate(20 5 8)"/>
+        
+        <!-- Orteils -->
+        <ellipse cx="2" cy="4" rx="1.2" ry="1.8" fill="#8B4513" transform="rotate(10 2 4)"/>
+        <ellipse cx="4" cy="3" rx="1.2" ry="1.8" fill="#8B4513" transform="rotate(25 4 3)"/>
+        <ellipse cx="6" cy="3" rx="1.2" ry="1.8" fill="#8B4513" transform="rotate(35 6 3)"/>
+        <ellipse cx="8" cy="4" rx="1.2" ry="1.8" fill="#8B4513" transform="rotate(45 8 4)"/>
+      </g>
+    </pattern>
+  </defs>
+  
+  <!-- Application du motif sur toute la surface -->
+  <rect x="0" y="0" width="100" height="100" fill="url(#pawPattern)"/>
+</svg>

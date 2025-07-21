@@ -11,7 +11,7 @@ interface TokensTableProps {
 
 export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
   const query = useQuery({
-    queryKey: ['tokens'],
+    queryKey: ['tokensStats'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`)
       if (!resp.ok) return []

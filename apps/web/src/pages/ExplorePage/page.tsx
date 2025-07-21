@@ -5,6 +5,7 @@ import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
 import { useQuery } from '@tanstack/react-query';
 import { Banner } from '../../components/Common/Banner';
+import { useLocation } from 'react-router-dom';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
@@ -13,7 +14,13 @@ const TABS = [
 ];
 
 const ExplorePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'tokens' | 'pools' | 'transactions'>('tokens');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialTab = queryParams.get('tab') || 'tokens';
+
+  const [activeTab, setActiveTab] = useState<'tokens' | 'pools' | 'transactions'>(
+    TABS.some(t => t.key === initialTab) ? initialTab as 'tokens' | 'pools' | 'transactions' : 'tokens'
+  );
   const [search, setSearch] = useState('');
 
   // Récupération des données pour chaque tableau

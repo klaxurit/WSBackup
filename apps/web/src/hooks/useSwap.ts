@@ -178,7 +178,7 @@ export const useSwap = (params: SwapParams) => {
     }
   }, [publicClient])
 
-  const getPoolInfo = useCallback(async (poolAddress: Address): Promise<PoolInfo | null> => {
+  const getPoolInfo = useCallback(async (poolAddress: Address, fee: number): Promise<PoolInfo | null> => {
     try {
       const [slot0Result, liquidity, token0, token1] = await Promise.all([
         publicClient.readContract({
@@ -206,7 +206,7 @@ export const useSwap = (params: SwapParams) => {
       return {
         token0: (token0 as Address),
         token1: (token1 as Address),
-        fee: 3000,
+        fee,
         liquidity: liquidity as bigint,
         sqrtPriceX96: (slot0Result as any)[0]
       }
@@ -380,7 +380,13 @@ export const useSwap = (params: SwapParams) => {
           totalQuote,
           totalGasEstimate: totalGas,
           quoteFormatted: formatUnits(totalQuote, topRoutes[0].path[topRoutes[0].path.length - 1].decimals),
-          priceImpact: calculatePriceImpact(amountIn, totalQuote, topRoutes[0].pools[0]?.sqrtPriceX96 || 1n),
+          priceImpact: calculatePriceImpact(
+            amountIn,
+            totalQuote,
+            topRoutes[0].pools[0]?.sqrtPriceX96 || 1n,
+            topRoutes[0].path[0].decimals,
+            topRoutes[0].path[topRoutes[0].path.length - 1].decimals
+          ),
           routes: [
             {
               route: topRoutes[0],
@@ -530,7 +536,13 @@ export const useSwap = (params: SwapParams) => {
         totalQuote: bestSingleRoute.quote,
         totalGasEstimate: bestSingleRoute.gasEstimate,
         quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo.decimals),
-        priceImpact: calculatePriceImpact(amountIn, bestSingleRoute.quote, bestSingleRoute.pools[0]?.sqrtPriceX96 || 1n),
+        priceImpact: calculatePriceImpact(
+          amountIn,
+          bestSingleRoute.quote,
+          bestSingleRoute.pools[0]?.sqrtPriceX96 || 1n,
+          bestSingleRoute.path[0].decimals,
+          bestSingleRoute.path[bestSingleRoute.path.length - 1].decimals
+        ),
         routes: [{
           route: bestSingleRoute,
           percentage: 100,
@@ -592,7 +604,7 @@ export const useSwap = (params: SwapParams) => {
           for (let i = 0; i < route.fees.length; i++) {
             const poolAddress = await checkPoolExists(route.tokens[i], route.tokens[i + 1], route.fees[i])
             if (poolAddress) {
-              const poolInfo = await getPoolInfo(poolAddress)
+              const poolInfo = await getPoolInfo(poolAddress, route.fees[i])
               if (poolInfo) pools.push(poolInfo)
             }
           }

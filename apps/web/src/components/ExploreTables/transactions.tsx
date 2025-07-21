@@ -55,7 +55,13 @@ export const TransactionsTable = ({ data, isLoading }: TransactionsTableProps) =
         if (diffMin < 1) return 'Just now';
         if (diffMin < 60) return `${diffMin} min ago`;
         const diffH = Math.floor(diffMin / 60);
-        return `${diffH}h ago`;
+        if (diffH < 24) return `${diffH}h ago`;
+        const diffD = Math.floor(diffH / 24);
+        if (diffD < 30) return `${diffD}d ago`;
+        const diffM = Math.floor(diffD / 30);
+        if (diffM < 12) return `${diffM}m ago`;
+        const diffY = Math.floor(diffM / 12);
+        return `${diffY}y ago`;
       },
     },
     {

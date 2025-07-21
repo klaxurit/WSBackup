@@ -72,6 +72,9 @@ model Token {
   poolsAsToken0 Pool[]           @relation("PoolToken0")
   poolsAsToken1 Pool[]           @relation("PoolToken1")
   Statistic     TokenStatistic[]
+  website       String?
+  twitter       String?
+  description   String?
 }
 
 model TokenStatistic {

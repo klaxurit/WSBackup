@@ -1,10 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Loader } from '../Loader/Loader';
 import { formatEther, zeroAddress } from 'viem';
 import { useAccount, useBalance } from 'wagmi';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
-import { usePrice } from '../../hooks/usePrice';
 
 interface NetworkItemProps {
   token: BerachainToken;
@@ -14,7 +13,7 @@ interface NetworkItemProps {
   loading?: boolean;
 }
 
-const baseExplorer = import.meta.env.NODE_ENV === "production"
+const baseExplorer = import.meta.env.VITE_NODE_ENV === "production"
   ? "https://berascan.com/token/"
   : "https://bepolia.beratrail.io/token/"
 
@@ -25,15 +24,10 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
 }) => {
   const { address } = useAccount()
   const [displayFallback, setDisplayFallback] = useState<boolean>(false)
-  const { data: balance, isLoading: balanceLoading } = useBalance({
+  const { data: balance, isLoading: isLoading } = useBalance({
     address,
     token: token.address === zeroAddress ? undefined : (token.address as `0x${string}`)
   })
-  const { data: usdValue, isLoading: priceLoading } = usePrice(token)
-
-  const isLoading = useMemo(() => {
-    return balanceLoading || priceLoading
-  }, [balanceLoading, priceLoading])
 
   return (
     <div
@@ -67,26 +61,27 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         </div>
       </div>
       <div className="Modal__ItemBalanceContainer">
-        <span className="Modal__ItemPrice">
-          {isLoading
-            ? <Loader size="mini" />
-            : (
-              balance && balance.value !== 0n && usdValue && usdValue !== 0
-                ? `$${(usdValue * +formatEther(balance.value)).toFixed(2)}`
-                : ''
-            )
-          }
-        </span>
-        <span className="Modal__ItemBalance">
-          {isLoading
-            ? <Loader size="mini" />
-            : (
-              balance && balance.value !== 0n
-                ? `${parseFloat(formatEther(balance.value)).toFixed(4)}`
-                : ''
-            )
-          }
-        </span>
+        {isLoading
+          ? (
+            <span className="Modal__ItemPrice">
+              <Loader size="mini" />
+            </span>
+          ) : (
+            <>
+              <span className="Modal__ItemPrice">
+                {balance && balance.value !== 0n && token.lastPrice && token.lastPrice !== 0
+                  ? `$${(token.lastPrice * +formatEther(balance.value)).toFixed(2)}`
+                  : ''
+                }
+              </span>
+              <span className="Modal__ItemBalance">
+                {balance && balance.value !== 0n
+                  ? `${parseFloat(formatEther(balance.value)).toFixed(4)}`
+                  : ''
+                }
+              </span>
+            </>
+          )}
       </div>
     </div>
   );

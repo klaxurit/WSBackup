@@ -2,12 +2,26 @@
 
 .Token {
   padding: 0 1rem;
-    max-width: 1400px;
-    margin: 0 auto;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 80vh;
+
+  &__InfoLinks {
     display: flex;
-    flex-direction: column;
-    gap: 32px;
-    min-height: 80vh;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    a {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+  }
 
   @media (max-width: 600px) {
     padding: 8px;
@@ -18,10 +32,13 @@
   &__Breadcrumbs {
     display: flex;
     align-items: center;
-    margin-bottom: 24px;
     gap: 8px;
     color: #8A8984;
     font-size: 14px;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
 
     &Link {
       color: #8A8984;
@@ -170,11 +187,11 @@
       height: 28px;
       font-size: 15px;
     }
-  }
 
-  &__Logo--placeholder {
-    color: #888;
-    font-size: 18px;
+    &--placeholder {
+      color: #888;
+      font-size: 18px;
+    }
   }
 
   &__Name {
@@ -212,14 +229,14 @@
     height: 32px;
     transition: opacity 0.15s;
     opacity: 0.8;
-  }
 
-  &__IconLink:hover {
-    opacity: 1;
+    &:hover {
+      opacity: 1;
 
-    svg {
-      path {
-        fill: rgb(227, 146, 41);
+      svg {
+        path {
+          fill: rgb(227, 146, 41);
+        }
       }
     }
   }
@@ -253,7 +270,7 @@
 
   &__Chart {
     position: relative;
-    height: 400px;
+    height: 376px;
     border-radius: 16px;
 
     @media (max-width: 768px) {
@@ -298,19 +315,14 @@
   }
 
   &__DetailSection {
+    @media (max-width: 600px) {
+      margin-top: 24px;
+    }
+
     &Title {
       color: #fff;
       font-size: 20px;
       margin-bottom: 16px;
-    }
-
-    @media (max-width: 600px) {
-      width: 100%;
-      min-width: 0;
-      max-width: 100%;
-      border-radius: 10px;
-      padding-left: 12px;
-      padding-right: 12px;
     }
   }
 
@@ -460,11 +472,11 @@
       min-width: 0;
       font-size: 12px;
     }
-  }
 
-  &__SwitchTab.active {
-    color: #222;
-    font-weight: 700;
+    &.active {
+      color: #222;
+      font-weight: 700;
+    }
   }
 
   &__SwitchSlider {
@@ -478,118 +490,118 @@
     box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.06);
     width: 34px;
   }
-}
 
-// === Section Informations Token ===
-.Token__InfoSection {
-  padding: 20px 20px 16px 20px;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  @media (max-width: 600px) {
-    padding: 12px 0 8px 0;
-    border-radius: 10px;
-  }
-}
-
-.Token__InfoSectionTitle {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-}
-
-.Token__InfoLinks {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-
-  @media (max-width: 600px) {
+  // === Section Informations Token ===
+  &__InfoSection {
+    padding: 20px 20px 16px 20px;
+    border-radius: 16px;
+    display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      padding: 12px 0 8px 0;
+      border-radius: 10px;
+    }
+
+    &Title {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+    }
+
+    &Links {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+
+      @media (max-width: 600px) {
+        flex-direction: column;
+        gap: 6px;
+      }
+    }
+
+    &Link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 7px 10px 7px 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0.85;
+      box-shadow: 0 1px 2px 0 rgba(80, 80, 80, 0.04);
+      width: max-content;
+
+      @media (max-width: 600px) {
+        width: 100%;
+        justify-content: flex-start;
+        font-size: 14px;
+        padding: 7px 10px;
+      }
+
+      &:hover {
+        background: rgba(227, 146, 41, 0.13);
+        color: #e39229;
+        opacity: 1;
+
+        svg path {
+          fill: #e39229;
+        }
+      }
+    }
+
+    &Description {
+      color: #e0e0e0;
+      font-size: 15px;
+      line-height: 1.7;
+      margin: 0;
+      white-space: pre-line;
+      word-break: break-word;
+      position: relative;
+
+      @media (max-width: 600px) {
+        font-size: 14px;
+      }
+    }
+
+    &ShowMore {
+      background: none;
+      border: none;
+      color: #e39229;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      padding: 0;
+      transition: color 0.15s;
+      opacity: 0.85;
+
+      &:hover {
+        color: #fff;
+        opacity: 1;
+      }
+    }
   }
-}
 
-.Token__InfoLink {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 7px 10px 7px 10px;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s, opacity 0.15s;
-  opacity: 0.85;
-  box-shadow: 0 1px 2px 0 rgba(80, 80, 80, 0.04);
-  width: max-content;
-
-  @media (max-width: 600px) {
-    width: 100%;
-    justify-content: flex-start;
-    font-size: 14px;
-    padding: 7px 10px;
-  }
-}
-
-.Token__InfoLink:hover {
-  background: rgba(227, 146, 41, 0.13);
-  color: #e39229;
-  opacity: 1;
-
-  svg path {
-    fill: #e39229;
-  }
-}
-
-.Token__InfoDescription {
-  color: #e0e0e0;
-  font-size: 15px;
-  line-height: 1.7;
-  margin: 0;
-  white-space: pre-line;
-  word-break: break-word;
-  position: relative;
-
-  @media (max-width: 600px) {
-    font-size: 14px;
-  }
-}
-
-.Token__InfoShowMore {
-  background: none;
-  border: none;
-  color: #e39229;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 6px;
-  padding: 0;
-  transition: color 0.15s;
-  opacity: 0.85;
-}
-
-.Token__InfoShowMore:hover {
-  color: #fff;
-  opacity: 1;
-}
-
-.Token__Chart,
-.Token__DetailSection,
-.Token__InfoSection,
-.Token__Transactions {
-  @media (max-width: 600px) {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    border-radius: 10px;
-    padding-left: 12px;
-    padding-right: 12px;
+  &__Chart,
+  &__DetailSection,
+  &__InfoSection,
+  &__Transactions {
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
   }
 }

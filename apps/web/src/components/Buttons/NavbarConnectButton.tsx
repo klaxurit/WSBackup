@@ -5,10 +5,15 @@ import { Loader } from '../Loader/Loader';
 import { useAccount, useBalance } from 'wagmi';
 import { formatEther } from 'viem';
 import { WinnieFavicon } from '../SVGs/LogoSVGs';
+import earLeft from '../../assets/ear_left.png';
+import earRight from '../../assets/ear_right.png';
+import bearButtonBg from '../../assets/bear_button.svg';
 
 interface NavbarConnectButtonProps {
   onClick?: () => void;
   customClassName?: string;
+  showLeftEar?: boolean;
+  showRightEar?: boolean;
 }
 
 function isMobile() {
@@ -37,6 +42,8 @@ const LogoutIcon = () => (
 export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   onClick,
   customClassName = '',
+  showLeftEar = false,
+  showRightEar = false,
 }) => {
   const { connect, disconnect, isConnecting } = useWallet();
   const { isConnected, address } = useAccount();
@@ -166,19 +173,37 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
         )}
       </div>
       {isConnected && (
-        <button
-          className="Navbar__BalanceButton btn btn--small btn__disabled"
-          disabled
-        >
-          <span className="Navbar__BalanceIcon">
-            <WinnieFavicon />
-          </span>
-          {isLoading ? (
-            <Loader size='mini' />
-          ) : (
-            balance?.value !== 0n ? `${parseFloat(formatEther(balance!.value)).toFixed(4)} BERA` : "0 BERA"
+        <div className="Navbar__BalanceButtonWrapper">
+          {!showLeftEar && (
+            <img src={earLeft} alt="Oreille gauche" className="ear left-ear" />
           )}
-        </button>
+          <button
+            className="Navbar__BalanceButton btn btn--small btn__disabled"
+            disabled
+            style={{
+              backgroundImage: `url(${bearButtonBg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }}
+          >
+            <span className="Navbar__BalanceIcon">
+              <WinnieFavicon />
+            </span>
+            {isLoading ? (
+              <Loader size='mini' />
+            ) : (
+              balance && balance.value !== undefined
+                ? (balance.value !== 0n
+                  ? `${parseFloat(formatEther(balance.value)).toFixed(4)} BERA`
+                  : "0 BERA")
+                : "—"
+            )}
+          </button>
+          {!showRightEar && (
+            <img src={earRight} alt="Oreille droite" className="ear right-ear" />
+          )}
+        </div>
       )}
     </div>
   );

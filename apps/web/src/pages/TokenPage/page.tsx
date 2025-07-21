@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SwapForm from '../../components/SwapForm/SwapForm';
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
@@ -36,7 +36,7 @@ const TokenPage: React.FC = () => {
   }, [tokens, tokenAddress]);
 
   // Always call the hook, even if token is null
-  const { data: coingeckoTokenData, isLoading: descLoading } = useCoingeckoTokenData(token?.coingeckoId);
+  const { data: coingeckoTokenData } = useCoingeckoTokenData(token?.coingeckoId);
 
   // Always call the hook, even if pools/token are not yet loaded
   // Fallback TVL from Coingecko if missing in backend
@@ -175,9 +175,9 @@ const TokenPage: React.FC = () => {
     <div className="Token">
       <Banner title={bannerTitle} subtitle={bannerSubtitle} imageAlt={token.symbol} />
       <div className="Token__Breadcrumbs">
-        <span className="Token__BreadcrumbsLink">Explore</span>
+        <Link to="/explore" className="Token__BreadcrumbsLink">Explore</Link>
         <ExplorerChevronIcon />
-        <span className="Token__BreadcrumbsLink">Tokens</span>
+        <Link to="/explore?tab=tokens" className="Token__BreadcrumbsLink">Tokens</Link>
         <ExplorerChevronIcon />
         <span className="Token__BreadcrumbsLink__3">{token.symbol}</span>
       </div>
@@ -210,13 +210,17 @@ const TokenPage: React.FC = () => {
                       <ExplorerIcon />
                     </a>
                     {/* Project website */}
-                    <a href={token.website || '#'} target="_blank" rel="noopener noreferrer" title="Project website" className="Token__IconLink">
-                      <WebsiteIcon />
-                    </a>
+                    {token.website && (
+                      <a href={token.website} target="_blank" rel="noopener noreferrer" title="Project website" className="Token__IconLink">
+                        <WebsiteIcon />
+                      </a>
+                    )}
                     {/* Project Twitter */}
-                    <a href={token.twitter || '#'} target="_blank" rel="noopener noreferrer" title="Project Twitter" className="Token__IconLink">
-                      <TwitterIcon />
-                    </a>
+                    {token.twitter && (
+                      <a href={`https://x.com/${token.twitter}`} target="_blank" rel="noopener noreferrer" title="Project Twitter" className="Token__IconLink">
+                        <TwitterIcon />
+                      </a>
+                    )}
                     {/* Share */}
                     <a href="#" onClick={e => { e.preventDefault(); navigator.clipboard.writeText(window.location.href); }} title="Share this page" aria-label="Share this page" className="Token__IconLink">
                       <ShareIcon />
@@ -313,36 +317,36 @@ const TokenPage: React.FC = () => {
                 <ExplorerIcon />
                 <span>Explorer</span>
               </a>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={token.website || '#'}
-                className="Token__InfoLink"
-              >
-                {/* Website Icon */}
-                <WebsiteIcon />
-                <span>Website</span>
-              </a>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={token.twitter || '#'}
-                className="Token__InfoLink"
-              >
-                {/* Twitter Icon */}
-                <TwitterIcon />
-              </a>
-            </div>
-            {/* Token description (Coingecko) */}
-            <div className="Token__InfoDescription">
-              {descLoading ? (
-                <p>Loading description…</p>
-              ) : coingeckoTokenData?.description ? (
-                <p>{coingeckoTokenData.description}</p>
-              ) : (
-                <p>No description available.</p>
+              {token.website && (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={token.website}
+                  className="Token__InfoLink"
+                >
+                  {/* Website Icon */}
+                  <WebsiteIcon />
+                  <span>Website</span>
+                </a>
+              )}
+              {token.twitter && (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://x.com/${token.twitter}`}
+                  className="Token__InfoLink"
+                >
+                  {/* Twitter Icon */}
+                  <TwitterIcon />
+                </a>
               )}
             </div>
+            {/* Token description (Coingecko) */}
+            {token.description && (
+              <div className="Token__InfoDescription">
+                <p>{token.description}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
