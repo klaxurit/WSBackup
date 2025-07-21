@@ -3,7 +3,6 @@ import { AppService } from './app.service';
 import { Token } from '@repo/db';
 import { DatabaseService } from './database/database.service';
 import { FallbackIndexerService } from './tracker/fallbackIndexer.service';
-import { start } from 'repl';
 
 @Controller()
 export class AppController {
