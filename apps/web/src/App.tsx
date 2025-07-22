@@ -5,12 +5,13 @@ import { SwapPageLayout } from './components/Layout/SwapPageLayout'
 import { WalletConnect } from './components/WalletConnect/WalletConnect'
 import TokenPage from './pages/TokenPage/page'
 import ExplorePage from './pages/ExplorePage/page'
-import PoolPage from './pages/PoolPage/page'
-import CreatePoolPage from './pages/PoolPage/create/page'
-import PoolViewPage from './pages/PoolPage/[tokenId]/page'
+import PoolPage from './pages/PositionPage/page'
+import CreatePoolPage from './pages/PositionPage/create/page'
+import PoolViewPage from './pages/PositionPage/[tokenId]/page'
 import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
+import PoolDetailPage from './pages/PoolPage/page'
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -45,6 +46,7 @@ function App() {
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />
+            <Route path="/pool/:poolAddress" element={<PoolDetailPage />} />
           </Routes>
         </main>
       </div>

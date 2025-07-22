@@ -26,8 +26,13 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: '#', key: 'index', render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link className={`Table__Address`} to="/pools/create">
-            {row.token0.symbol + '/' + row.token1.symbol}
+          <Link
+            to={`/pool/${row.address}`}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            <span className={`Table__Address`}>
+              {row.token0.symbol + '/' + row.token1.symbol}
+            </span>
           </Link>
           <a
             href={`https://beratrail.io/address/${row.address}`}

@@ -4,7 +4,7 @@ import PoolHeader from '../../../components/PoolView/PoolHeader';
 import PoolInfo from '../../../components/PoolView/PoolInfo';
 import PoolActions from '../../../components/PoolView/PoolActions';
 import PoolStats from '../../../components/PoolView/PoolStats';
-import '../../../styles/pages/_poolsPage.scss';
+import '../../../styles/pages/_positionPage.scss';
 import '../../../styles/pages/_poolViewPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
 import { usePositionManager, type UsePositionManagerDatas } from '../../../hooks/usePositionManager';

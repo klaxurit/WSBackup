@@ -1,112 +1,276 @@
-import React from 'react';
-import Table from '../../components/Table/Table';
-import type { TableColumn } from '../../components/Table/Table';
-import { Link } from 'react-router-dom';
-import '../../styles/pages/_poolsPage.scss';
+import React, { useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useAccount } from 'wagmi';
-import { usePositions } from '../../hooks/usePositions';
-import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
+import SwapForm from '../../components/SwapForm/SwapForm';
+import { ExplorerChevronIcon, ExplorerIcon } from '../../components/SVGs';
+import { formatNumber } from '../../utils/formatNumber';
+import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTable';
+import LineChart from '../../components/Charts/LineChart';
 import { Banner } from '../../components/Common/Banner';
+import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 
-const columns: TableColumn[] = [
-  { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.nftTokenId) },
-  {
-    label: 'Pair',
-    key: 'pair',
-    render: (row) => (
-      <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <TokenPairLogos token0={row.pool.token0} token1={row.pool.token1} />
-          {row.pool.token0.symbol} / {row.pool.token1.symbol}
-        </span>
-      </Link>
-    ),
-  },
-  { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.position.fee / 10000}%`) },
-  {
-    label: 'Pool APR', key: 'apr', render: (row) => {
-      return row.pool.PoolStatistic.length > 0 && row.pool.PoolStatistic[0].apr !== 0
-        ? `${row.pool.PoolStatistic[0].apr}%`
-        : "-"
-    }
-  },
-  {
-    label: '', key: 'actions', render: (row) => (
-      <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-        <button className="PoolPage__ManageBtn">Manage</button>
-      </Link>
-    )
-  },
-];
+interface Pool {
+  id: string;
+  address: string;
+  fee: number;
+  liquidity: string;
+  sqrtPriceX96: string;
+  token0: {
+    id: string;
+    address: string;
+    symbol: string;
+    name: string;
+    logoUri?: string;
+    decimals: number;
+  };
+  token1: {
+    id: string;
+    address: string;
+    symbol: string;
+    name: string;
+    logoUri?: string;
+    decimals: number;
+  };
+  PoolStatistic: Array<{
+    id: string;
+    tvlUSD: string;
+    volOneDay: string;
+    volOneMonth: string;
+    apr: number;
+    createdAt: string;
+  }>;
+}
 
-const PoolPage: React.FC = () => {
-  const { isConnected } = useAccount()
-  const { positions, isLoading } = usePositions()
-  const { data: topPools = [] } = useQuery({
-    queryKey: ['topPools'],
+const PoolDetailPage: React.FC = () => {
+  const { poolAddress } = useParams<{ poolAddress: string }>();
+
+  const { data: pools, isLoading: poolsLoading } = useQuery({
+    queryKey: ['pools'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/topPools`)
-      if (!resp.ok) return []
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
+      if (!resp.ok) return [];
+      return resp.json();
+    },
+  });
 
-      return resp.json()
-    }
-  })
+  // Find the specific pool
+  const pool: Pool | null = useMemo(() => {
+    if (!pools || !poolAddress) return null;
+    return pools.find((p: Pool) => p.address?.toLowerCase() === poolAddress.toLowerCase()) || null;
+  }, [pools, poolAddress]);
+
+  // Pool chart data query
+  const { data: chartData = [], isLoading: chartLoading } = useQuery({
+    queryKey: ['pool-chart', poolAddress],
+    enabled: !!poolAddress,
+    queryFn: async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}`);
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      return data.map((d: any) => ({
+        time: Math.floor(d.timestamp / 1000),
+        value: d.price,
+      }));
+    },
+    staleTime: 60 * 1000,
+  });
+
+  if (poolsLoading) {
+    return <div style={{ padding: 32 }}>Loading pool data...</div>;
+  }
+
+  if (!pool) {
+    return <div style={{ padding: 32 }}>Pool not found.</div>;
+  }
+
+  const bannerTitle = `${pool.token0.symbol}/${pool.token1.symbol}`;
+  const bannerSubtitle = `${(pool.fee / 10000)}% Fee Pool`;
+
+  // Latest statistics
+  const stat = pool.PoolStatistic?.[0];
+  const tvl = stat?.tvlUSD ? Number(stat.tvlUSD) : null;
+  const volume1d = stat?.volOneDay ? Number(stat.volOneDay) : null;
+  const volume30d = stat?.volOneMonth ? Number(stat.volOneMonth) : null;
+  const apr = stat?.apr || null;
 
   return (
-    <div className="PoolPage">
-      <Banner title="Pools" subtitle="View your positions or create new ones" />
-      <div className="PoolPage__ContentWrapper">
-        {/* Left Section (70%) */}
-        <div className="PoolPage__Left">
-          <div className="PoolPage__Header">
-            <h2 className="PoolPage__Title">Your positions</h2>
-            {isConnected && <Link className="PoolPage__NewBtn" to="/pools/create">New</Link>}
-          </div>
-          {isConnected
-            ? isLoading
-              ? (
-                <div className="PoolPage__TableWrapper">
-                  <p>Loading</p>
-                </div>
-              )
-              : (
-                <>
-                  <div className="PoolPage__TableWrapper">
-                    <Table
-                      columns={columns}
-                      data={positions}
-                      tableClassName="PoolPage__Table"
-                      wrapperClassName="PoolPage__TableWrapper"
-                      scrollClassName="PoolPage__TableScroll"
-                      emptyMessage="No positions found"
+    <div className="Pool">
+      <Banner
+        title={bannerTitle}
+        subtitle={bannerSubtitle}
+        imageAlt={`${pool.token0.symbol}/${pool.token1.symbol}`}
+      />
+
+      <div className="Pool__Breadcrumbs">
+        <Link to="/explore" className="Pool__BreadcrumbsLink">Explore</Link>
+        <ExplorerChevronIcon />
+        <Link to="/explore?tab=pools" className="Pool__BreadcrumbsLink">Pools</Link>
+        <ExplorerChevronIcon />
+        <span className="Pool__BreadcrumbsLink__3">
+          {pool.token0.symbol}/{pool.token1.symbol}
+        </span>
+        <span className="Pool__BreadcrumbsAddress">
+          {pool.address.slice(0, 6) + '...' + pool.address.slice(-4)}
+        </span>
+      </div>
+
+      <div className="Pool__Content">
+        <div className="Pool__Left">
+          <div className="Pool__ChartHead">
+            <div className="Pool__ChartHeadTop">
+              <div className="Pool__SectionHead">
+                <div className="Pool__SectionHeadTitle">
+                  <div className="Pool__SectionHeadTitleLeft">
+                    <TokenPairLogos
+                      token0={pool.token0}
+                      token1={pool.token1}
+                      size={32}
                     />
+                    <span className="Pool__Name" title={`${pool.token0.name}/${pool.token1.name}`}>
+                      {pool.token0.symbol}/{pool.token1.symbol}
+                    </span>
+                    <span className="Pool__Fee">{(pool.fee / 10000)}%</span>
                   </div>
-                  {/* <button className="PoolPage__ClosedBtn">View closed positions</button> */}
-                </>
-              )
-            : (
-              <div className="PoolPage__TableWrapper">
-                <p>Connect your wallet</p>
+
+                  <div className="Pool__SectionHeadTitleRight">
+                    <a
+                      href={pool.address ? `https://beratrail.io/address/${pool.address}` : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="Pool__IconLink"
+                      title="View on Explorer"
+                    >
+                      <ExplorerIcon />
+                    </a>
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
+
+          {/* Chart Section */}
+          <div className="Pool__Chart">
+            {chartLoading ? (
+              <div style={{ padding: 32 }}>Loading chart...</div>
+            ) : (
+              <LineChart
+                data={chartData}
+                height={400}
+                priceFormatter={(price: number) => `$${price.toFixed(6)}`}
+              />
             )}
-        </div>
-        {/* Right Section (30%) */}
-        <div className="PoolPage__Right">
-          <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
-          <div className="PoolPage__TopList">
-            {topPools.map((pool: any) => (
-              <div className="PoolPage__TopCard" key={pool.id}>
-                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <TokenPairLogos token0={pool.token0} token1={pool.token1} />
-                  {pool.token0.symbol} / {pool.token1.symbol} <span className="PoolPage__TopVersion">v3</span>
-                </div>
-                <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
-                <div className="PoolPage__TopApr">
-                  {pool.PoolStatistic[0]?.apr || '0'}% APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
-                </div>
+          </div>
+
+          {/* Statistics Section */}
+          <div className="Pool__Statistics">
+            <h3 className="Pool__StatisticsTitle">Pool Statistics</h3>
+            <div className="Pool__StatCards">
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">TVL</h4>
+                <p className="Pool__StatCardLabel">
+                  {tvl === null || isNaN(tvl) ? 'N/A' : formatNumber(tvl, { currency: true })}
+                </p>
               </div>
-            ))}
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">APR</h4>
+                <p className="Pool__StatCardLabel">
+                  {apr === null || isNaN(apr) ? 'N/A' : `${apr.toFixed(2)}%`}
+                </p>
+              </div>
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">24h Volume</h4>
+                <p className="Pool__StatCardLabel">
+                  {volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d, { currency: true })}
+                </p>
+              </div>
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">30d Volume</h4>
+                <p className="Pool__StatCardLabel">
+                  {volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d, { currency: true })}
+                </p>
+              </div>
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">Liquidity</h4>
+                <p className="Pool__StatCardLabel">
+                  {pool.liquidity ? formatNumber(Number(pool.liquidity), { currency: false }) : 'N/A'}
+                </p>
+              </div>
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">Fee Tier</h4>
+                <p className="Pool__StatCardLabel">
+                  {(pool.fee / 10000)}%
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Transactions Table */}
+          <div className="Pool__Transactions">
+            <PoolTransactionsTable poolAddress={pool.address} />
+          </div>
+        </div>
+
+        <div className="Pool__Right">
+          <div className="Pool__SwapForm">
+            <SwapForm
+              toggleSidebar={() => { }}
+              initialFromToken={pool.token0 as any}
+            />
+          </div>
+
+          {/* Pool Information Section */}
+          <div className="Pool__InfoSection">
+            <h3 className="Pool__InfoSectionTitle">Pool Information</h3>
+            <div className="Pool__InfoLinks">
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={pool.address ? `https://beratrail.io/address/${pool.address}` : '#'}
+                className="Pool__InfoLink"
+              >
+                <ExplorerIcon />
+                <span>View on Explorer</span>
+              </a>
+            </div>
+
+            <div className="Pool__InfoDetails">
+              <div className="Pool__InfoRow">
+                <span className="Pool__InfoLabel">Pool Address:</span>
+                <span className="Pool__InfoValue">
+                  {pool.address.slice(0, 8) + '...' + pool.address.slice(-8)}
+                </span>
+              </div>
+              <div className="Pool__InfoRow">
+                <span className="Pool__InfoLabel">Token 0:</span>
+                <span className="Pool__InfoValue">
+                  <div className="Pool__TokenInfo">
+                    {pool.token0.logoUri && (
+                      <img
+                        src={pool.token0.logoUri}
+                        alt={pool.token0.symbol}
+                        className="Pool__TokenLogo"
+                      />
+                    )}
+                    {pool.token0.symbol}
+                  </div>
+                </span>
+              </div>
+              <div className="Pool__InfoRow">
+                <span className="Pool__InfoLabel">Token 1:</span>
+                <span className="Pool__InfoValue">
+                  <div className="Pool__TokenInfo">
+                    {pool.token1.logoUri && (
+                      <img
+                        src={pool.token1.logoUri}
+                        alt={pool.token1.symbol}
+                        className="Pool__TokenLogo"
+                      />
+                    )}
+                    {pool.token1.symbol}
+                  </div>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -114,4 +278,4 @@ const PoolPage: React.FC = () => {
   );
 };
 
-export default PoolPage; 
+export default PoolDetailPage;
