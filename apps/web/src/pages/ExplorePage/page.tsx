@@ -76,8 +76,9 @@ const ExplorePage: React.FC = () => {
 
   // Filtrage contextuel selon l'onglet actif
   const filteredTokens = useMemo(() => {
-    if (!search) return tokens;
-    return tokens.filter((token: any) =>
+    const inPoolTokens = tokens.filter(t => t.inPool)
+    if (!search) return inPoolTokens
+    return inPoolTokens.filter((token: any) =>
       token.name.toLowerCase().includes(search.toLowerCase()) ||
       token.symbol.toLowerCase().includes(search.toLowerCase()) ||
       token.address.toLowerCase().includes(search.toLowerCase())
