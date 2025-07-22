@@ -3,7 +3,7 @@ import Table, { type TableColumn } from "../Table/Table"
 import { formatEther } from "viem";
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface PoolsTableProps {
   data?: any[];
