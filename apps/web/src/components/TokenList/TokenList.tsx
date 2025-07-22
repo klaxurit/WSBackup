@@ -29,7 +29,9 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
-    const onlyPoolOrAllTokens = tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+    const onlyPoolOrAllTokens = onlyPoolToken
+      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokens
     if (searchValue === "") return onlyPoolOrAllTokens;
     return onlyPoolOrAllTokens.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
