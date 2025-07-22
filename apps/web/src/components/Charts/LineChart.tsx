@@ -11,6 +11,8 @@ export interface LineChartProps {
   onIntervalChange?: (interval: string) => void;
   availableIntervals?: string[];
   activeFilterColor?: string;
+  showNoDataOverlay?: boolean;
+  noDataMessage?: string;
 }
 
 const BERYL_PURE = '#E39229';
@@ -27,6 +29,8 @@ export const LineChart: React.FC<LineChartProps> = ({
   onIntervalChange,
   availableIntervals = defaultIntervals,
   activeFilterColor = BERYL_PURE,
+  showNoDataOverlay = false, // NOUVEAU
+  noDataMessage = "No data available for this selection.",
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -36,6 +40,11 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   // Détection de l'intervalle "fake"
   const isFakeInterval = !['1H', '1D'].includes(selectedInterval);
+  const shouldShowOverlay = showNoDataOverlay || isFakeInterval;
+  const overlayMessage = showNoDataOverlay
+    ? noDataMessage
+    : "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.";
+
 
   // Génération d'un fake dataset pour les intervalles non supportés
   const fakeData = useMemo(() => {
@@ -147,7 +156,7 @@ export const LineChart: React.FC<LineChartProps> = ({
         ))}
       </div>
       {/* Légende dynamique */}
-      {legend.value !== null && (
+      {legend.value !== null && !shouldShowOverlay && (
         <div style={{ position: 'absolute', top: 8, right: 16, background: '#181A20', color: '#fff', borderRadius: 4, padding: '4px 12px', fontSize: 14, zIndex: 2, opacity: 0.95 }}>
           <span>Value: <b>{legend.value}</b></span>
         </div>
@@ -165,7 +174,7 @@ export const LineChart: React.FC<LineChartProps> = ({
         }}
       />
       {/* Overlay de carde pour les intervalles non supportés */}
-      {isFakeInterval && (
+      {shouldShowOverlay && (
         <div
           style={{
             position: 'absolute',
@@ -197,7 +206,7 @@ export const LineChart: React.FC<LineChartProps> = ({
               pointerEvents: 'auto',
             }}
           >
-            These chart numbers aren’t real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.
+            {overlayMessage}
           </div>
         </div>
       )}

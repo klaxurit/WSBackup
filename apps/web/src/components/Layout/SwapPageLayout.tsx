@@ -1,3 +1,5 @@
+// SwapPageLayout.tsx - Modifications à apporter
+
 import React, { useState } from 'react';
 import { Banner } from '../Common/Banner';
 import winnieHii from '../../assets/winnie_hii.png';
@@ -7,6 +9,8 @@ import LineChart from '../Charts/LineChart';
 import { useQuery } from '@tanstack/react-query';
 import { DEFAULT_TOKEN } from '../../utils/lineChart';
 import { getTokenLineChartData } from '../../utils/tokenLineChartData';
+// NOUVEAU IMPORT :
+import { shouldShowNoDataOverlay } from '../../utils/chartDataValidation';
 
 interface SwapPageLayoutProps {
   className?: string;
@@ -41,6 +45,9 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   const [fromToken, setFromToken] = useState<any>(null);
   const [interval, setInterval] = useState<'1H' | '1D' | '1W' | '1M' | 'MAX'>('1D');
 
+  // NOUVEAU STATE :
+  const [selectedInterval, setSelectedInterval] = useState('1H');
+
   const handlePoolChange = (
     address: string | null,
     fromTokenObj?: any
@@ -52,6 +59,8 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
   const handleIntervalChange = (interval: string) => {
     setInterval(interval as '1H' | '1D' | '1W' | '1M' | 'MAX');
+    // NOUVEAU :
+    setSelectedInterval(interval);
   };
 
   // Hook pour récupérer les données du line chart (token from)
@@ -60,6 +69,30 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
   const chartData = getTokenLineChartData(lineData, fromToken?.decimals, interval);
   const defaultChartData = getTokenLineChartData(defaultLineData, undefined, interval);
+
+  // NOUVELLES LOGIQUES D'OVERLAY :
+  const showOverlayForSelectedPool = shouldShowNoDataOverlay(
+    lineData,
+    selectedInterval,
+    !!poolAddress // hasPoolData
+  );
+
+  const showOverlayForDefault = shouldShowNoDataOverlay(
+    defaultLineData,
+    selectedInterval,
+    false // pas de pool spécifique pour le défaut
+  );
+
+  // Messages personnalisés
+  const getNoDataMessage = (hasData: boolean, interval: string, isPoolSelected: boolean) => {
+    if (!hasData) {
+      return isPoolSelected
+        ? "No data available for this token pair. Select a different pool or try again later."
+        : "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.";
+    }
+
+    return `Not enough data available for ${interval} interval. We need more historical data to display this timeframe.`;
+  };
 
   return (
     <div className={`swap-page-layout ${className}`}>
@@ -73,29 +106,15 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
               <div style={{ padding: 32 }}>Loading chart…</div>
             ) : lineError ? (
               <div style={{ padding: 32, color: 'red' }}>Error loading chart</div>
-            ) : lineData.length === 0 ? (
-              <div style={{ width: '100%', height: 360, overflow: 'hidden', background: '#181A20' }}>
-                <iframe
-                  src="https://fr.tradingview.com/widgetembed/?symbol=BERAUSDC&interval=D&hidesidetoolbar=1&hidetoptoolbar=1&theme=dark&style=1&locale=en"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    outline: 'none',
-                    boxShadow: 'none',
-                    background: 'transparent'
-                  }}
-                  allowFullScreen
-                  title="Default TradingView Chart"
-                  scrolling="no"
-                />
-              </div>
             ) : (
+              // NOUVEAU CODE - Remplace l'iframe
               <LineChart
                 data={chartData}
                 height={340}
                 priceFormatter={priceFormatter}
                 onIntervalChange={handleIntervalChange}
+                showNoDataOverlay={showOverlayForSelectedPool}
+                noDataMessage={getNoDataMessage(lineData.length > 0, selectedInterval, true)}
               />
             )
           ) : (
@@ -103,29 +122,15 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
               <div style={{ padding: 32 }}>Loading chart…</div>
             ) : defaultError ? (
               <div style={{ padding: 32, color: 'red' }}>Error loading default chart</div>
-            ) : defaultLineData.length === 0 ? (
-              <div style={{ width: '100%', height: 360, overflow: 'hidden', background: '#181A20' }}>
-                <iframe
-                  src="https://fr.tradingview.com/widgetembed/?symbol=BERAUSDC&interval=D&hidesidetoolbar=1&hidetoptoolbar=1&theme=dark&style=1&locale=en"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    outline: 'none',
-                    boxShadow: 'none',
-                    background: 'transparent'
-                  }}
-                  allowFullScreen
-                  title="Default TradingView Chart"
-                  scrolling="no"
-                />
-              </div>
             ) : (
+              // NOUVEAU CODE - Remplace l'iframe
               <LineChart
                 data={defaultChartData}
                 height={340}
                 priceFormatter={priceFormatter}
                 onIntervalChange={handleIntervalChange}
+                showNoDataOverlay={showOverlayForDefault}
+                noDataMessage={getNoDataMessage(defaultLineData.length > 0, selectedInterval, false)}
               />
             )
           )}
