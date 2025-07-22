@@ -19,6 +19,10 @@ interface TokenWithStats extends Token {
     price: number;
     createdAt: Date;
   }>;
+  _count: {
+    poolsAsToken1: number;
+    poolsAsToken0: number;
+  };
 }
 
 @Injectable()
@@ -67,14 +71,25 @@ export class PriceService {
             orderBy: { createdAt: 'desc' },
             take: 2,
           },
+          _count: {
+            select: {
+              poolsAsToken1: true,
+              poolsAsToken0: true,
+            },
+          },
         },
       });
 
-      await this.buildTokenPoolsMap(tokens);
+      // Retirer les tokens qui ne sont pas dans une pool
+      const tokensInPool = tokens.filter((t) => {
+        return t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0;
+      });
+
+      await this.buildTokenPoolsMap(tokensInPool);
 
       // Séparer les tokens par source de prix
       const [tokensWithCoinGecko, tokensWithoutCoinGecko] =
-        this.partitionTokens(tokens);
+        this.partitionTokens(tokensInPool);
 
       // 1. Première étape : tokens avec CoinGecko (prix de référence)
       if (tokensWithCoinGecko.length > 0) {
@@ -85,15 +100,14 @@ export class PriceService {
       await this.resolveTokenDependencies(tokensWithoutCoinGecko);
 
       // 3. Calcul des statistiques (volume, évolutions) pour tous les tokens
-
-      await this.calculateTokenStatistics(tokens);
+      await this.calculateTokenStatistics(tokensInPool);
 
       // 4. Sauvegarde en base
       await this.saveCachedTokens();
 
       processedTokens = this.cachedTokens.size;
       this.logger.log(
-        `Price update completed: ${processedTokens}/${tokens.length} tokens`,
+        `Price update completed: ${processedTokens}/${tokensInPool.length} tokens`,
       );
     } catch (error) {
       this.logger.error('Critical error in price update:', error);
