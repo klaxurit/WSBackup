@@ -6,9 +6,10 @@ import { FallbackIndexerService } from './fallbackIndexer.service';
 import { PoolTracker } from './poolTracker.service';
 import { TokensTrackerService } from './tokens.service';
 import { SwapTrackerService } from './swapTracker.service';
+import { CoingeckoModule } from 'src/coingecko/coingecko.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, BlockchainModule],
+  imports: [ConfigModule, DatabaseModule, BlockchainModule, CoingeckoModule],
   providers: [
     FallbackIndexerService,
     PoolTracker,

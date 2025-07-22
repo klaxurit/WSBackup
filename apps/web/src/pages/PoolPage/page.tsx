@@ -27,7 +27,7 @@ const columns: TableColumn[] = [
   {
     label: 'Pool APR', key: 'apr', render: (row) => {
       return row.pool.PoolStatistic.length > 0 && row.pool.PoolStatistic[0].apr !== 0
-        ? `$${parseInt(row.pool.PoolStatistic[0].apr).toFixed(2)}`
+        ? `${row.pool.PoolStatistic[0].apr}%`
         : "-"
     }
   },
@@ -103,7 +103,7 @@ const PoolPage: React.FC = () => {
                 </div>
                 <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
                 <div className="PoolPage__TopApr">
-                  {pool.PoolStatistic[0]?.apr || '0%'} APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
+                  {pool.PoolStatistic[0]?.apr || '0'}% APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
                 </div>
               </div>
             ))}

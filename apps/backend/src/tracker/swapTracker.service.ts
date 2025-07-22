@@ -1,8 +1,16 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
+import { Pool } from '@repo/db';
 import { V3_POOL_ABI } from 'src/blockchain/abis/V3_POOL_ABI';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { DatabaseService } from 'src/database/database.service';
 import { Address, decodeEventLog, Log, parseAbiItem } from 'viem';
+import { PoolTracker } from './poolTracker.service';
 
 @Injectable()
 export class SwapTrackerService implements OnModuleInit {
@@ -11,6 +19,8 @@ export class SwapTrackerService implements OnModuleInit {
   constructor(
     private readonly db: DatabaseService,
     private readonly blockchain: BlockchainService,
+    @Inject(forwardRef(() => PoolTracker))
+    private readonly poolTracker: PoolTracker,
   ) {}
 
   async onModuleInit() {
@@ -34,6 +44,21 @@ export class SwapTrackerService implements OnModuleInit {
     this.logger.log(
       `📡 Subscribed to ${pools.length} pools for real-time swap events`,
     );
+  }
+
+  trackNewPool(pool: Pool) {
+    this.blockchain.client.watchEvent({
+      address: pool.address as Address,
+      event: parseAbiItem(
+        'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
+      ),
+      onLogs: (logs: Log[]) => {
+        for (const log of logs) {
+          this.handleNewSwap(log);
+        }
+      },
+    });
+    this.logger.log(`📡 Subscribed to the pool for real-time swap events`);
   }
 
   async handleNewSwap(log: Log) {
@@ -86,6 +111,7 @@ export class SwapTrackerService implements OnModuleInit {
         },
       });
 
+      await this.poolTracker.updatePoolDatas(existingPool);
       this.logger.log(`🆕 New swap saved`);
     } catch (error) {
       this.logger.error(`Error when save a new swap.`, error);
