@@ -5,7 +5,7 @@ import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
 import { type Address } from 'viem';
 import { ConnectButton } from '../../../components/Buttons/ConnectButton';
-import '../../../styles/pages/_poolsPage.scss';
+import '../../../styles/pages/_positionPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
 import { usePoolManager } from '../../../hooks/usePoolManager';
 import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput';

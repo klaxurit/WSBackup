@@ -1,0 +1,387 @@
+@use "../utils" as *;
+
+.Pool {
+  padding: 0 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 80vh;
+
+  @media (max-width: 600px) {
+    padding: 8px;
+    min-width: 0;
+    gap: 0;
+  }
+
+  &__Breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8A8984;
+    font-size: 14px;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
+
+    &Link {
+      color: #8A8984;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        color: #fff;
+      }
+
+      &__3 {
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+
+    &Address {
+      color: #8A8984;
+      font-size: 12px;
+      margin-left: 8px;
+      padding: 2px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+  }
+
+  &__Content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 600px) {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+  }
+
+  &__Left {
+    border-radius: 16px;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding: 0;
+    }
+  }
+
+  &__Right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding: 0;
+    }
+  }
+
+  &__ChartHead {
+    margin-bottom: 12px;
+
+    &Top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+  }
+
+  &__SectionHead {
+    width: 100%;
+
+    &Title {
+      margin: 0;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      height: 40px;
+      min-height: 40px;
+      width: 100%;
+
+      @media (max-width: 600px) {
+        font-size: 18px;
+      }
+    }
+
+    &TitleLeft {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 40px;
+    }
+
+    &TitleRight {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 40px;
+    }
+  }
+
+  &__Name {
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    white-space: nowrap;
+
+    @media (max-width: 600px) {
+      font-size: 18px;
+    }
+  }
+
+  &__Fee {
+    color: #E39229;
+    font-weight: 600;
+    font-size: 16px;
+    margin-left: 8px;
+    line-height: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    background: rgba(227, 146, 41, 0.15);
+    border-radius: 20px;
+  }
+
+  &__IconLink {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    transition: opacity 0.15s;
+    opacity: 0.8;
+
+    &:hover {
+      opacity: 1;
+
+      svg {
+        path {
+          fill: rgb(227, 146, 41);
+        }
+      }
+    }
+  }
+
+  &__Chart {
+    margin-bottom: 32px;
+    overflow: hidden;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
+  }
+
+  &__Statistics {
+    margin-bottom: 32px;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
+
+    &Title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+
+      @media (max-width: 600px) {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+    }
+  }
+
+  &__StatCards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+  }
+
+  &__StatCard {
+
+    &Title {
+      font-size: 14px;
+      color: #8A8984;
+      margin-bottom: 8px;
+      font-weight: 500;
+
+      @media (max-width: 600px) {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+    }
+
+    &Label {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+
+      @media (max-width: 600px) {
+        font-size: 16px;
+      }
+    }
+  }
+
+  &__Transactions {
+    margin-bottom: 32px;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
+  }
+
+  &__TransactionsSection {
+    &Title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+
+      @media (max-width: 600px) {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+    }
+  }
+
+
+  &__InfoSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      gap: 12px;
+    }
+
+    &Title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+
+      @media (max-width: 600px) {
+        font-size: 16px;
+      }
+    }
+  }
+
+  &__InfoLinks {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #8A8984;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.15s;
+
+      &:hover {
+        color: #fff;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.8;
+      }
+    }
+  }
+
+  &__InfoDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .Form {
+    height: calc(100vh - 277px) !important;
+  }
+
+  &__InfoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+  }
+
+  &__InfoLabel {
+    font-size: 14px;
+    color: #8A8984;
+    font-weight: 500;
+  }
+
+  &__InfoValue {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 600;
+    text-align: right;
+
+    @media (max-width: 600px) {
+      text-align: left;
+    }
+  }
+
+  &__TokenInfo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__TokenLogo {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}

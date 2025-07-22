@@ -299,6 +299,8 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
 
   return {
     status,
+    token0NeedApproval,
+    token1NeedApproval,
 
     inRange,
     positionDetails,

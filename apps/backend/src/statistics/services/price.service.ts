@@ -43,7 +43,7 @@ export class PriceService {
   ) {}
 
   async getTokenStats() {
-    return await this.databaseService.token.findMany({
+    const tokens = await this.databaseService.token.findMany({
       include: {
         Statistic: {
           orderBy: {
@@ -51,8 +51,19 @@ export class PriceService {
           },
           take: 1,
         },
+        _count: {
+          select: {
+            poolsAsToken1: true,
+            poolsAsToken0: true,
+          },
+        },
       },
     });
+
+    return tokens.map((t) => ({
+      ...t,
+      inPool: t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0,
+    }));
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

@@ -68,4 +68,33 @@ export class CoinGeckoService {
       return null;
     }
   }
+
+  async getTokenDetails(
+    id: string,
+  ): Promise<{ website: string; description: string; twitter: string } | null> {
+    try {
+      const url = `https://api.coingecko.com/api/v3/coins/${id}`;
+      const response = await firstValueFrom(
+        this.http.get(url, {
+          timeout: 10000,
+        }),
+      );
+
+      return {
+        website: response.data?.links.homepage[0],
+        description: response.data?.description.en,
+        twitter: response.data?.links.twitter_screen_name,
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `CoinGecko error for when call tokens details:`,
+        error?.message,
+      );
+      if (error?.response?.status === 429) {
+        this.logger.warn('Coingecko Rate limit reached');
+      }
+
+      return null;
+    }
+  }
 }

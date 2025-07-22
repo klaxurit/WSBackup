@@ -237,25 +237,14 @@ const TokenPage: React.FC = () => {
               <div style={{ padding: 32 }}>Loading chart…</div>
             ) : lineError ? (
               <div style={{ padding: 32, color: 'red' }}>Error loading chart</div>
-            ) : chartData.length === 0 ? (
-              <div style={{ width: '100%', height: 340, overflow: 'hidden', background: '#181A20' }}>
-                <iframe
-                  src="https://fr.tradingview.com/widgetembed/?symbol=BERAUSDC&interval=D&hidesidetoolbar=1&hidetoptoolbar=1&theme=dark&style=1&locale=en"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    outline: 'none',
-                    boxShadow: 'none',
-                    background: 'transparent'
-                  }}
-                  allowFullScreen
-                  title="Default TradingView Chart"
-                  scrolling="no"
-                />
-              </div>
             ) : (
-              <LineChart data={chartData} height={340} priceFormatter={priceFormatter} />
+              <LineChart
+                data={chartData.length === 0 ? [] : chartData}
+                height={340}
+                priceFormatter={priceFormatter}
+                showNoDataOverlay={chartData.length === 0}
+                noDataMessage="These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon."
+              />
             )}
           </div>
 

@@ -77,7 +77,18 @@ export const TransactionsTable = ({ data, isLoading }: TransactionsTableProps) =
       ),
     },
     {
-      label: 'USD', key: 'usd'
+      label: 'USD', key: 'usd',
+      render: (row) => {
+        if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
+
+        const amount = (parseFloat(formatEther(row.amountIn)) * row.tokenIn.Statistic[0].price)
+        if (amount < 0.01) return "<$0.01"
+        return (
+          <span>
+            ${amount.toFixed(2)}
+          </span>
+        )
+      },
     },
     {
       label: 'Token amount (sent)',
