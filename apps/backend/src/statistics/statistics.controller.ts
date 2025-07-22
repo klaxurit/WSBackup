@@ -56,6 +56,7 @@ export class StatisticsController {
       orderBy: {
         createdAt: 'desc',
       },
+      take: 100,
     });
   }
 
