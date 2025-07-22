@@ -4,7 +4,7 @@ import { Address, formatUnits } from 'viem';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { V3_POOL_ABI } from 'src/blockchain/abis/V3_POOL_ABI';
-import { Pool, Swap } from '@repo/db';
+import { Swap } from '@repo/db';
 import { PoolWithTokensAndSwap } from '../types/tokenPrices';
 
 interface PoolStatData {

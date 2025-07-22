@@ -48,8 +48,32 @@ export class StatisticsController {
       include: {
         pool: {
           include: {
-            token0: true,
-            token1: true,
+            token0: {
+              include: {
+                Statistic: {
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                  select: {
+                    price: true,
+                  },
+                },
+              },
+            },
+            token1: {
+              include: {
+                Statistic: {
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                  select: {
+                    price: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
