@@ -50,6 +50,36 @@ const PoolViewPage: React.FC = () => {
   const openModal = (type: 'add' | 'remove') => setModalType(type);
   const closeModal = () => setModalType(null);
 
+  const addLiquidityBtn = useMemo(() => {
+    if (pm.token0NeedApproval) {
+      return {
+        isDisabled: false,
+        onClick: () => pm.approveToken0(),
+        text: `Approve ${pool?.token0.symbol}`
+      }
+    }
+    if (pm.token1NeedApproval) {
+      return {
+        isDisabled: false,
+        onClick: () => pm.approveToken1(),
+        text: `Approve ${pool?.token1.symbol}`
+      }
+    }
+    if (pm.canAddLiquidity) {
+      return {
+        isDisabled: false,
+        onClick: () => pm.addLiquidity(),
+        text: "Add liquidity"
+      }
+    }
+
+    return {
+      isDisabled: true,
+      onClick: () => { },
+      text: "Wait amount"
+    }
+  }, [pm, pool])
+
   if (isLoading) {
     return (
       <div className="PoolView__Wrapper">
@@ -107,6 +137,7 @@ const PoolViewPage: React.FC = () => {
         />
 
       </div>
+
       <Modal open={!!modalType} onClose={closeModal} className="PoolView__Modal" overlayClassName="PoolView__ModalOverlay">
         <div className="PoolView__ModalHeader">
           <span className="PoolView__ModalTitle">Manage liquidity</span>
@@ -133,12 +164,12 @@ const PoolViewPage: React.FC = () => {
                   isOverBalance={false}
                 />
                 <button
-                  className={`btn btn__main btn--large${!pm.canAddLiquidity ? ' btn__disabled' : ''}`}
+                  className={`btn btn__main btn--large${addLiquidityBtn.isDisabled ? ' btn__disabled' : ''}`}
                   type="button"
-                  disabled={!pm.canAddLiquidity}
-                  onClick={() => { pm.addLiquidity(); closeModal(); }}
+                  disabled={addLiquidityBtn.isDisabled}
+                  onClick={addLiquidityBtn.onClick}
                 >
-                  Add liquidity
+                  {addLiquidityBtn.text}
                 </button>
               </div>
             </>
@@ -155,7 +186,7 @@ const PoolViewPage: React.FC = () => {
                   className={`btn btn__main btn--large${!pm.canWithdraw ? ' btn__disabled' : ''}`}
                   type="button"
                   disabled={!pm.canWithdraw}
-                  onClick={() => { pm.withdraw(); closeModal(); }}
+                  onClick={() => { pm.withdraw() }}
                 >
                   Remove liquidity
                 </button>
