@@ -333,8 +333,60 @@
     gap: 12px;
   }
 
+  &__TokenDetails {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  &__TokenAddressContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    a {
+      line-height: 11px;
+    }
+  }
+
+  &__ExplorerButton {
+    &:hover {
+      svg {
+        path {
+          stroke: $beryl-pure;
+        }
+      }
+    }
+  }
+
+  &__CopyButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 11px;
+
+    &:hover {
+      color: $beryl-pure;
+    }
+  }
+  
+  &__ExplorerButton {
+    color: #8A8984;
+    text-decoration: none;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  &__TokenInfoDetailed {
+    display: flex;
+    gap: 8px;
+  }
+
   .Form {
     height: calc(100vh - 277px) !important;
+    padding-top: 0;
   }
 
   &__InfoRow {
@@ -365,11 +417,7 @@
     font-size: 14px;
     color: #fff;
     font-weight: 600;
-    text-align: right;
-
-    @media (max-width: 600px) {
-      text-align: left;
-    }
+    width: 100%;
   }
 
   &__TokenInfo {

@@ -1,13 +1,15 @@
-import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import SwapForm from '../../components/SwapForm/SwapForm';
-import { ExplorerChevronIcon, ExplorerIcon } from '../../components/SVGs';
-import { formatNumber } from '../../utils/formatNumber';
-import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTable';
+import React, { useMemo } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import LineChart from '../../components/Charts/LineChart';
 import { Banner } from '../../components/Common/Banner';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
+import { ExplorerChevronIcon, ExplorerIcon } from '../../components/SVGs';
+import { CopyIcon } from '../../components/SVGs/ProductSVGs';
+import SwapForm from '../../components/SwapForm/SwapForm';
+import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTable';
+import { formatNumber } from '../../utils/formatNumber';
+import { FallbackImg } from '../../components/utils/FallbackImg';
 
 interface Pool {
   id: string;
@@ -131,18 +133,6 @@ const PoolDetailPage: React.FC = () => {
                     </span>
                     <span className="Pool__Fee">{(pool.fee / 10000)}%</span>
                   </div>
-
-                  <div className="Pool__SectionHeadTitleRight">
-                    <a
-                      href={pool.address ? `https://beratrail.io/address/${pool.address}` : '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="Pool__IconLink"
-                      title="View on Explorer"
-                    >
-                      <ExplorerIcon />
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
@@ -235,38 +225,72 @@ const PoolDetailPage: React.FC = () => {
 
             <div className="Pool__InfoDetails">
               <div className="Pool__InfoRow">
-                <span className="Pool__InfoLabel">Pool Address:</span>
                 <span className="Pool__InfoValue">
-                  {pool.address.slice(0, 8) + '...' + pool.address.slice(-8)}
-                </span>
-              </div>
-              <div className="Pool__InfoRow">
-                <span className="Pool__InfoLabel">Token 0:</span>
-                <span className="Pool__InfoValue">
-                  <div className="Pool__TokenInfo">
-                    {pool.token0.logoUri && (
-                      <img
-                        src={pool.token0.logoUri}
-                        alt={pool.token0.symbol}
-                        className="Pool__TokenLogo"
-                      />
+                  <div className="Pool__TokenInfoDetailed">
+                    {pool.token1.logoUri ? (
+                      <img src={pool.token0.logoUri} />
+                    ) : (
+                      <FallbackImg content={pool.token0.symbol} />
                     )}
-                    {pool.token0.symbol}
+                    <div className="Pool__TokenDetails">
+                      <span className="Pool__TokenSymbol">{pool.token0.symbol}</span>
+                      <div className="Pool__TokenAddressContainer">
+                        <span className="Pool__TokenAddress">
+                          {pool.token0.address.slice(0, 6) + '...' + pool.token0.address.slice(-4)}
+                        </span>
+                        <button
+                          className="Pool__CopyButton Pool__CopyButton--small"
+                          onClick={() => navigator.clipboard.writeText(pool.token0.address)}
+                          title="Copy token address"
+                        >
+                          <CopyIcon/>
+                        </button>
+                        <a
+                          href={`https://beratrail.io/address/${pool.token0.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="Pool__ExplorerButton Pool__ExplorerButton--small"
+                          title="View token on Explorer"
+                        >
+                          <ExplorerIcon />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </span>
               </div>
               <div className="Pool__InfoRow">
-                <span className="Pool__InfoLabel">Token 1:</span>
                 <span className="Pool__InfoValue">
-                  <div className="Pool__TokenInfo">
-                    {pool.token1.logoUri && (
-                      <img
-                        src={pool.token1.logoUri}
-                        alt={pool.token1.symbol}
-                        className="Pool__TokenLogo"
-                      />
+                  <div className="Pool__TokenInfoDetailed">
+                    {pool.token1.logoUri ? (
+                      <img src={pool.token1.logoUri} />
+                    ) : (
+                      <FallbackImg content={pool.token1.symbol} />
                     )}
-                    {pool.token1.symbol}
+                    <div className="Pool__TokenDetails">
+                      <span className="Pool__TokenSymbol">{pool.token1.symbol}</span>
+                      <div className="Pool__TokenAddressContainer">
+                        <span className="Pool__TokenAddress">
+                          {pool.token1.address.slice(0, 6) + '...' + pool.token1.address.slice(-4)}
+                        </span>
+                        <button
+                          className="Pool__CopyButton Pool__CopyButton--small"
+                          onClick={() => navigator.clipboard.writeText(pool.token1.address)}
+                          title="Copy token address"
+                        >
+                          <CopyIcon/>
+                        </button>
+                        <a
+                          href={`https://beratrail.io/address/${pool.token1.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="Pool__ExplorerButton Pool__ExplorerButton--small"
+                          title="View token on Explorer"
+                        >
+                          <ExplorerIcon />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </span>
               </div>
