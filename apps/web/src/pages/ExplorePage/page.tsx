@@ -45,7 +45,7 @@ const ExplorePage: React.FC = () => {
   const { data: txs = [], isLoading: txsLoading } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
       if (!resp.ok) return [];
       return resp.json();
     },
