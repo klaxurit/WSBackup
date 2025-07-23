@@ -65,7 +65,7 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: 'Pool APR', key: 'apr', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].apr !== 0
-          ? `${row.PoolStatistic[0].apr}%`
+          ? `${row.PoolStatistic[0].apr.toFixed(2)}%`
           : "-"
       }
     },

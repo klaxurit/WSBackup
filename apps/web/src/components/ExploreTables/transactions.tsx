@@ -86,27 +86,44 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
       ),
     },
     {
-      label: 'USD', key: 'usd'
+      label: 'USD', key: 'usd',
+      render: (row) => {
+        if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
+
+        const amount = (parseFloat(formatEther(row.amountIn)) * row.tokenIn.Statistic[0].price)
+        if (amount < 0.01) return "<0.01$"
+        return (
+          <span>
+            ${amount.toFixed(2)}
+          </span>
+        )
+      },
     },
     {
       label: 'Token amount (sent)',
       key: 'amount1',
-      render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(row.amountIn)}
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
-        </span>
-      ),
+      render: (row) => {
+        const amount = parseFloat(formatEther(row.amountIn))
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+          </span>
+        )
+      },
     },
     {
       label: 'Token amount (received)',
       key: 'amount2',
-      render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(BigInt(row.amountOut) * -1n)}
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
-        </span>
-      ),
+      render: (row) => {
+        const amount = parseFloat(formatEther(BigInt(row.amountOut) * -1n))
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+          </span>
+        )
+      },
     },
     {
       label: 'Wallet',
