@@ -3,12 +3,21 @@ import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatEther } from "viem";
 
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  itemsPerPage: number;
+  totalItems: number;
+}
+
 interface TransactionsTableProps {
   data?: any[];
   isLoading?: boolean;
+  pagination?: PaginationProps;
 }
 
-export const TransactionsTable = ({ data, isLoading }: TransactionsTableProps) => {
+export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsTableProps) => {
   const query = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
@@ -77,18 +86,7 @@ export const TransactionsTable = ({ data, isLoading }: TransactionsTableProps) =
       ),
     },
     {
-      label: 'USD', key: 'usd',
-      render: (row) => {
-        if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
-
-        const amount = (parseFloat(formatEther(row.amountIn)) * row.tokenIn.Statistic[0].price)
-        if (amount < 0.01) return "<$0.01"
-        return (
-          <span>
-            ${amount.toFixed(2)}
-          </span>
-        )
-      },
+      label: 'USD', key: 'usd'
     },
     {
       label: 'Token amount (sent)',
@@ -135,6 +133,7 @@ export const TransactionsTable = ({ data, isLoading }: TransactionsTableProps) =
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
+      pagination={pagination}
     />
   )
 }

@@ -1,0 +1,102 @@
+@use "../../utils" as *;
+
+.Table__Pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid #232323;
+  background: rgba(255, 255, 255, 0.03); // Même background que le wrapper
+  border-radius: 0 0 16px 16px;
+  margin: 0; // Pas de marge pour coller parfaitement
+}
+
+.Table__PaginationInfo {
+  color: #aaa;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.Table__PaginationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Table__PaginationBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e0e0e0;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.24);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #666;
+  }
+
+  &--active {
+    background: rgba(227, 146, 41, 0.2);
+    border-color: rgba(227, 146, 41, 0.4);
+    color: #e39229;
+    font-weight: 600;
+
+    &:hover {
+      background: rgba(227, 146, 41, 0.3);
+      border-color: rgba(227, 146, 41, 0.6);
+    }
+  }
+
+  &--dots {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: default;
+    padding: 8px 4px;
+
+    &:hover {
+      background: none;
+      border: none;
+      color: #666;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .Table__Pagination {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .Table__PaginationInfo {
+    font-size: 13px;
+  }
+
+  .Table__PaginationBtn {
+    font-size: 13px;
+    padding: 6px 10px;
+    min-width: 36px;
+  }
+
+  .Table__PaginationControls {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
