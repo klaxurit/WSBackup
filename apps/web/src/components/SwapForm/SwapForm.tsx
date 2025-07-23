@@ -21,9 +21,10 @@ interface FormProps {
   secondaryColor?: string;
   customClassName?: string;
   isHomePage?: boolean;
-  isSticky?: boolean; // New prop for sticky mode
+  isSticky?: boolean;
   onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
   initialFromToken?: BerachainToken | null;
+  initialToToken?: BerachainToken | null;
 }
 
 const SwapForm: React.FC<FormProps> = React.memo(
@@ -32,13 +33,14 @@ const SwapForm: React.FC<FormProps> = React.memo(
     secondaryColor,
     customClassName,
     isHomePage,
-    isSticky = false, // Default to false for compatibility
+    isSticky = false,
     onPoolChange,
     initialFromToken,
+    initialToToken
   }) => {
     const { isConnected } = useAccount()
     const [fromToken, setFromToken] = useState<BerachainToken | null>(initialFromToken || null);
-    const [toToken, setToToken] = useState<BerachainToken | null>(null);
+    const [toToken, setToToken] = useState<BerachainToken | null>(initialToToken || null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
     const [toAmount, setToAmount] = useState<bigint>(0n);
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -196,6 +198,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setFromToken(initialFromToken);
       }
     }, [initialFromToken]);
+
+    useEffect(() => {
+      if (initialToToken && initialToToken.address !== toToken?.address) {
+        setToToken(initialToToken);
+      }
+    }, [initialToToken]);
 
     const handleFromAmountChange = (amount: bigint) => {
       setEditing('from');

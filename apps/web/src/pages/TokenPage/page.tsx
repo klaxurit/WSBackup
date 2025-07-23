@@ -7,7 +7,6 @@ import { useCoingeckoTokenData } from '../../hooks/useCoingeckoData';
 import { formatNumber } from '../../utils/formatNumber';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
 import LineChart from '../../components/Charts/LineChart';
-import Banner from '../../components/Common/Banner';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
@@ -168,12 +167,9 @@ const TokenPage: React.FC = () => {
   if (!token) {
     return <div style={{ padding: 32 }}>Token not found.</div>;
   }
-  const bannerTitle = token.name || token.symbol;
-  const bannerSubtitle = token.symbol ? `${token.symbol}` : '';
 
   return (
     <div className="Token">
-      <Banner title={bannerTitle} subtitle={bannerSubtitle} imageAlt={token.symbol} />
       <div className="Token__Breadcrumbs">
         <Link to="/explore" className="Token__BreadcrumbsLink">Explore</Link>
         <ExplorerChevronIcon />

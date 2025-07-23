@@ -1,7 +1,7 @@
 @use "../utils" as *;
 
 .Pool {
-  padding: 0 1rem;
+  padding: 1rem 1rem;
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
@@ -13,6 +13,40 @@
     padding: 8px;
     min-width: 0;
     gap: 0;
+  }
+
+  &__AddLiquidityBtn {
+    background-image: url('/src/assets/bear_button.svg');
+      background-size: 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+    
+      &:hover {
+        background-image: url('/src/assets/bear_btn_hover.svg');
+        background-size: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+    
+      &:active {
+        background-image: url('/src/assets/bear_btn_click.svg');
+        background-size: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+  }
+
+  &__BreadcrumbsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
   }
 
   &__Breadcrumbs {

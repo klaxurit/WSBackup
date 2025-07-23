@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import LineChart from '../../components/Charts/LineChart';
-import { Banner } from '../../components/Common/Banner';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerChevronIcon, ExplorerIcon } from '../../components/SVGs';
 import { CopyIcon } from '../../components/SVGs/ProductSVGs';
@@ -85,9 +84,6 @@ const PoolDetailPage: React.FC = () => {
     return <div style={{ padding: 32 }}>Pool not found.</div>;
   }
 
-  const bannerTitle = `${pool.token0.symbol}/${pool.token1.symbol}`;
-  const bannerSubtitle = `${(pool.fee / 10000)}% Fee Pool`;
-
   // Latest statistics
   const stat = pool.PoolStatistic?.[0];
   const tvl = stat?.tvlUSD ? Number(stat.tvlUSD) : null;
@@ -97,23 +93,26 @@ const PoolDetailPage: React.FC = () => {
 
   return (
     <div className="Pool">
-      <Banner
-        title={bannerTitle}
-        subtitle={bannerSubtitle}
-        imageAlt={`${pool.token0.symbol}/${pool.token1.symbol}`}
-      />
+      <div className="Pool__BreadcrumbsContainer">
+        <div className="Pool__Breadcrumbs">
+          <Link to="/explore" className="Pool__BreadcrumbsLink">Explore</Link>
+          <ExplorerChevronIcon />
+          <Link to="/explore?tab=pools" className="Pool__BreadcrumbsLink">Pools</Link>
+          <ExplorerChevronIcon />
+          <span className="Pool__BreadcrumbsLink__3">
+            {pool.token0.symbol}/{pool.token1.symbol}
+          </span>
+          <span className="Pool__BreadcrumbsAddress">
+            {pool.address.slice(0, 6) + '...' + pool.address.slice(-4)}
+          </span>
+        </div>
 
-      <div className="Pool__Breadcrumbs">
-        <Link to="/explore" className="Pool__BreadcrumbsLink">Explore</Link>
-        <ExplorerChevronIcon />
-        <Link to="/explore?tab=pools" className="Pool__BreadcrumbsLink">Pools</Link>
-        <ExplorerChevronIcon />
-        <span className="Pool__BreadcrumbsLink__3">
-          {pool.token0.symbol}/{pool.token1.symbol}
-        </span>
-        <span className="Pool__BreadcrumbsAddress">
-          {pool.address.slice(0, 6) + '...' + pool.address.slice(-4)}
-        </span>
+        <Link
+          to={`/pools/create?token0=${pool.token0.address}&token1=${pool.token1.address}&fee=${pool.fee}`}
+          className="Pool__AddLiquidityBtn btn btn--small btn__accent"
+        >
+          + Add Liquidity
+        </Link>
       </div>
 
       <div className="Pool__Content">
@@ -205,6 +204,7 @@ const PoolDetailPage: React.FC = () => {
             <SwapForm
               toggleSidebar={() => { }}
               initialFromToken={pool.token0 as any}
+              initialToToken={pool.token1 as any}
             />
           </div>
 
