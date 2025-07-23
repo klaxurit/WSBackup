@@ -11,6 +11,7 @@ import { usePoolManager } from '../../../hooks/usePoolManager';
 import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput';
 import { useTokens } from '../../../hooks/useBerachainTokenList';
 import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -21,6 +22,7 @@ const feeTiers = [
 
 const CreatePoolPage: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams();
   const { address, isConnected } = useAccount();
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -278,11 +280,48 @@ const CreatePoolPage: React.FC = () => {
   const { data: tokens } = useTokens();
 
   useEffect(() => {
-    if (!token0 && tokens) {
+    if (!tokens) return;
+
+    const token0Address = searchParams.get('token0');
+    const token1Address = searchParams.get('token1');
+    const feeParam = searchParams.get('fee');
+
+    // Pré-remplir token0 si spécifié dans l'URL
+    if (token0Address && !token0) {
+      const foundToken0 = tokens.find(
+        (t) => t.address.toLowerCase() === token0Address.toLowerCase()
+      );
+      if (foundToken0) {
+        setToken0(foundToken0);
+      }
+    }
+
+    // Pré-remplir token1 si spécifié dans l'URL
+    if (token1Address && !token1) {
+      const foundToken1 = tokens.find(
+        (t) => t.address.toLowerCase() === token1Address.toLowerCase()
+      );
+      if (foundToken1) {
+        setToken1(foundToken1);
+      }
+    }
+
+    // Pré-remplir le fee si spécifié dans l'URL
+    if (feeParam && !isNaN(Number(feeParam))) {
+      const feeValue = Number(feeParam);
+      const foundFeeTier = feeTiers.find((tier) => tier.fee === feeValue);
+      if (foundFeeTier) {
+        setFee(feeValue);
+      }
+    }
+  }, [tokens, searchParams, token0, token1]);
+
+  useEffect(() => {
+    if (!token0 && tokens && !searchParams.get('token0')) {
       const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
       if (bera) setToken0(bera);
     }
-  }, [tokens, token0]);
+  }, [tokens, token0, searchParams]);
 
   const { selectedToken0, selectedToken1 } = useMemo(() => {
     const selectedToken0 = poolManager?.pool?.token0.address === token0?.address
