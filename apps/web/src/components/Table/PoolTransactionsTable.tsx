@@ -42,7 +42,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
     queryKey: ['pool-transactions', poolAddress],
     enabled: !!poolAddress,
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
       if (!resp.ok) return [];
       const allSwaps = await resp.json();
 
@@ -150,36 +150,23 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
     {
       label: 'Token amount (sent)',
       key: 'amountIn',
-      render: (row: Transaction) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(BigInt(row.amountIn))}
-          {row.tokenIn.logoUri ? (
-            <img
-              src={row.tokenIn.logoUri}
-              style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }}
-              alt={row.tokenIn.symbol}
-            />
-          ) : (
-            <FallbackImg content={row.tokenIn.symbol} />
-          )}
-        </span>
-      ),
+      render: (row) => {
+        const amount = parseFloat(formatEther(row.amountIn))
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+          </span>
+        )
+      },
     },
     {
       label: 'Token amount (received)',
       key: 'amountOut',
-      render: (row: Transaction) => (
+      render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(BigInt(row.amountOut))}
-          {row.tokenOut.logoUri ? (
-            <img
-              src={row.tokenOut.logoUri}
-              style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }}
-              alt={row.tokenOut.symbol}
-            />
-          ) : (
-            <FallbackImg content={row.tokenOut.symbol} />
-          )}
+          {formatEther(BigInt(row.amountOut) * -1n)}
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} />}
         </span>
       ),
     },

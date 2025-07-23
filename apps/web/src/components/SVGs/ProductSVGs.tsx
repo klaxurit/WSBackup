@@ -49,6 +49,13 @@ export const Magnifier = () => (
   </svg>
 );
 
+export const CopyIcon = () => (
+  <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+    <rect x="5" y="5" width="8" height="8" rx="2" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+    <rect x="3" y="3" width="8" height="8" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+);
+
 export const Nut = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
     <path d="M9.5 7.99999C9.5 8.82841 8.82843 9.49999 8 9.49999C7.17157 9.49999 6.5 8.82841 6.5 7.99999C6.5 7.17156 7.17157 6.49999 8 6.49999C8.82843 6.49999 9.5 7.17156 9.5 7.99999Z" stroke="#8A8984" strokeWidth="1.6" />

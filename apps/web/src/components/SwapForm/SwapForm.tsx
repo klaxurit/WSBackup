@@ -21,9 +21,10 @@ interface FormProps {
   secondaryColor?: string;
   customClassName?: string;
   isHomePage?: boolean;
-  isSticky?: boolean; // New prop for sticky mode
+  isSticky?: boolean;
   onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
   initialFromToken?: BerachainToken | null;
+  initialToToken?: BerachainToken | null;
 }
 
 const SwapForm: React.FC<FormProps> = React.memo(
@@ -32,13 +33,14 @@ const SwapForm: React.FC<FormProps> = React.memo(
     secondaryColor,
     customClassName,
     isHomePage,
-    isSticky = false, // Default to false for compatibility
+    isSticky = false,
     onPoolChange,
     initialFromToken,
+    initialToToken
   }) => {
     const { isConnected } = useAccount()
     const [fromToken, setFromToken] = useState<BerachainToken | null>(initialFromToken || null);
-    const [toToken, setToToken] = useState<BerachainToken | null>(null);
+    const [toToken, setToToken] = useState<BerachainToken | null>(initialToToken || null);
     const [fromAmount, setFromAmount] = useState<bigint>(0n);
     const [toAmount, setToAmount] = useState<bigint>(0n);
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -82,9 +84,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(token);
     }, [fromToken]);
 
-    const handleOpenModal = () => {
-      setShowModal(true);
-    };
     const handleCloseModal = () => {
       setShowModal(false);
       if (swap.status === 'error') {
@@ -134,12 +133,25 @@ const SwapForm: React.FC<FormProps> = React.memo(
         if (fromToken && toToken && fromAmount > 0n && toAmount > 0n) {
           return "Preview"
         }
+        if (swap.isWrap) return "Wrap"
+        if (swap.isUnWrap) return "Unwrap"
+
         return swap?.error || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return swap.status.replace(/^./, swap.status[0].toUpperCase())
     }, [swap.status, fromToken, toToken, fromAmount, toAmount])
+
+    const handleBtnClick = async () => {
+      if (swap.isWrap) {
+        await swap.wrap()
+      } else if (swap.isUnWrap) {
+        await swap.unwrap()
+      } else {
+        setShowModal(true);
+      }
+    }
 
     useWatchBlockNumber({
       onBlockNumber() {
@@ -186,6 +198,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
         setFromToken(initialFromToken);
       }
     }, [initialFromToken]);
+
+    useEffect(() => {
+      if (initialToToken && initialToToken.address !== toToken?.address) {
+        setToToken(initialToToken);
+      }
+    }, [initialToToken]);
 
     const handleFromAmountChange = (amount: bigint) => {
       setEditing('from');
@@ -305,12 +323,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
               <div className="Form__ConnectBtn">
                 <button
                   className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
-                  onClick={handleOpenModal}
+                  onClick={handleBtnClick}
                   disabled={swap.status !== "ready" && swap.status !== "error"}
                 >
                   {btnText === null ? <Loader size="small" /> : btnText}
                 </button>
-              
+
               </div>
             )}
           </div>

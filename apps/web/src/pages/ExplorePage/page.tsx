@@ -13,6 +13,8 @@ const TABS = [
   { key: 'transactions', label: 'Transactions' },
 ];
 
+const TRANSACTIONS_PER_PAGE = 10;
+
 const ExplorePage: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -22,6 +24,12 @@ const ExplorePage: React.FC = () => {
     TABS.some(t => t.key === initialTab) ? initialTab as 'tokens' | 'pools' | 'transactions' : 'tokens'
   );
   const [search, setSearch] = useState('');
+  const [transactionsPage, setTransactionsPage] = useState(1);
+
+  // Reset pagination when changing tabs or search
+  React.useEffect(() => {
+    setTransactionsPage(1);
+  }, [activeTab, search]);
 
   // Récupération des données pour chaque tableau
   const { data: tokens = [], isLoading: tokensLoading } = useQuery({
@@ -45,7 +53,7 @@ const ExplorePage: React.FC = () => {
   const { data: txs = [], isLoading: txsLoading } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
       if (!resp.ok) return [];
       return resp.json();
     },
@@ -76,9 +84,8 @@ const ExplorePage: React.FC = () => {
 
   // Filtrage contextuel selon l'onglet actif
   const filteredTokens = useMemo(() => {
-    const inPoolTokens = tokens.filter((t: any) => t.inPool)
-    if (!search) return inPoolTokens
-    return inPoolTokens.filter((token: any) =>
+    if (!search) return tokens;
+    return tokens.filter((token: any) =>
       token.name.toLowerCase().includes(search.toLowerCase()) ||
       token.symbol.toLowerCase().includes(search.toLowerCase()) ||
       token.address.toLowerCase().includes(search.toLowerCase())
@@ -103,6 +110,26 @@ const ExplorePage: React.FC = () => {
       (tx.tokenOut?.symbol && tx.tokenOut.symbol.toLowerCase().includes(search.toLowerCase()))
     );
   }, [search, txs]);
+
+  // Pagination pour les transactions
+  const transactionsPagination = useMemo(() => {
+    const totalTransactions = filteredTxs.length;
+    const totalPages = Math.ceil(totalTransactions / TRANSACTIONS_PER_PAGE);
+    const startIndex = (transactionsPage - 1) * TRANSACTIONS_PER_PAGE;
+    const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
+    const paginatedTransactions = filteredTxs.slice(startIndex, endIndex);
+
+    return {
+      data: paginatedTransactions,
+      pagination: {
+        currentPage: transactionsPage,
+        totalPages,
+        onPageChange: setTransactionsPage,
+        itemsPerPage: TRANSACTIONS_PER_PAGE,
+        totalItems: totalTransactions,
+      }
+    };
+  }, [filteredTxs, transactionsPage]);
 
   return (
     <div className="ExplorePage">
@@ -129,9 +156,15 @@ const ExplorePage: React.FC = () => {
       </div>
       {activeTab === 'tokens' && <TokensTable data={filteredTokens} isLoading={tokensLoading} />}
       {activeTab === 'pools' && <PoolsTable data={filteredPools} isLoading={poolsLoading} />}
-      {activeTab === 'transactions' && <TransactionsTable data={filteredTxs} isLoading={txsLoading} />}
+      {activeTab === 'transactions' && (
+        <TransactionsTable
+          data={transactionsPagination.data}
+          isLoading={txsLoading}
+          pagination={transactionsPagination.pagination}
+        />
+      )}
     </div>
   );
 };
 
-export default ExplorePage; 
+export default ExplorePage;

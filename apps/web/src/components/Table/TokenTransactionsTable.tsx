@@ -17,7 +17,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
   const { data: txs = [], isLoading } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
       if (!resp.ok) return [];
       return resp.json();
     },
@@ -84,22 +84,28 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
     {
       label: 'Token amount (sent)',
       key: 'amount1',
-      render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(row.amountIn)}
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} />}
-        </span>
-      ),
+      render: (row) => {
+        const amount = parseFloat(formatEther(row.amountIn))
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+          </span>
+        )
+      },
     },
     {
       label: 'Token amount (received)',
       key: 'amount2',
-      render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(BigInt(row.amountOut) * -1n)}
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} />}
-        </span>
-      ),
+      render: (row) => {
+        const amount = parseFloat(formatEther(BigInt(row.amountOut) * -1n))
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+          </span>
+        )
+      },
     },
     {
       label: 'Wallet',

@@ -27,7 +27,7 @@ const columns: TableColumn[] = [
   {
     label: 'Pool APR', key: 'apr', render: (row) => {
       return row.pool.PoolStatistic.length > 0 && row.pool.PoolStatistic[0].apr !== 0
-        ? `${row.pool.PoolStatistic[0].apr}%`
+        ? `${row.pool.PoolStatistic[0].apr.toFixed(2)}%`
         : "-"
     }
   },
