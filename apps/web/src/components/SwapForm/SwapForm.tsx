@@ -82,9 +82,6 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(token);
     }, [fromToken]);
 
-    const handleOpenModal = () => {
-      setShowModal(true);
-    };
     const handleCloseModal = () => {
       setShowModal(false);
       if (swap.status === 'error') {
@@ -134,12 +131,25 @@ const SwapForm: React.FC<FormProps> = React.memo(
         if (fromToken && toToken && fromAmount > 0n && toAmount > 0n) {
           return "Preview"
         }
+        if (swap.isWrap) return "Wrap"
+        if (swap.isUnWrap) return "Unwrap"
+
         return swap?.error || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return swap.status.replace(/^./, swap.status[0].toUpperCase())
     }, [swap.status, fromToken, toToken, fromAmount, toAmount])
+
+    const handleBtnClick = async () => {
+      if (swap.isWrap) {
+        await swap.wrap()
+      } else if (swap.isUnWrap) {
+        await swap.unwrap()
+      } else {
+        setShowModal(true);
+      }
+    }
 
     useWatchBlockNumber({
       onBlockNumber() {
@@ -305,12 +315,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
               <div className="Form__ConnectBtn">
                 <button
                   className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
-                  onClick={handleOpenModal}
+                  onClick={handleBtnClick}
                   disabled={swap.status !== "ready" && swap.status !== "error"}
                 >
                   {btnText === null ? <Loader size="small" /> : btnText}
                 </button>
-              
+
               </div>
             )}
           </div>

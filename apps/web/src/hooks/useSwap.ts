@@ -11,6 +11,7 @@ import { UniversalRouteABI } from "../config/abis/UniversalRouteABI"
 import { SwapRouteV2ABI } from "../config/abis/swapRouter"
 import { PoolABI } from "../config/abis/poolABI"
 import { QuoterV2ABI } from "../config/abis/QuoterV2"
+import { wBeraABI } from "../config/abis/wBeraABI"
 
 const COMMON_BASES: Address[] = [
   '0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce', // HONEY
@@ -77,7 +78,7 @@ export interface OptimizedRoute {
 }
 
 interface SwapState {
-  status: 'idle' | 'loading-routes' | 'quoting' | 'optimizing' | 'ready' | 'approving' | 'swapping' | 'success' | 'error'
+  status: 'idle' | 'loading-routes' | 'quoting' | 'optimizing' | 'ready' | 'approving' | 'swapping' | 'wrapping' | 'unwrapping' | 'success' | 'error'
   error?: string
   routes: SingleRoute[]
   optimizedRoute: OptimizedRoute | null
@@ -87,20 +88,25 @@ interface SwapState {
 const WBERA: Address = "0x6969696969696969696969696969696969696969"
 
 const parseParams = (params: SwapParams) => {
+  const isWrap = params.tokenIn === zeroAddress && params.tokenOut === WBERA
+  const isUnWrap = params.tokenIn === WBERA && params.tokenOut === zeroAddress
+
   return {
     ...params,
-    tokenIn: params.tokenIn === zeroAddress
+    tokenIn: params.tokenIn === zeroAddress && !isWrap
       ? WBERA
       : params.tokenIn,
-    tokenOut: params.tokenOut === zeroAddress
+    tokenOut: params.tokenOut === zeroAddress && !isUnWrap
       ? WBERA
       : params.tokenOut,
+    isWrap,
+    isUnWrap
   }
 }
 
 export const useSwap = (params: SwapParams) => {
   const queryClient = useQueryClient()
-  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient } = parseParams(params)
+  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient, isWrap, isUnWrap } = parseParams(params)
   const { address } = useAccount()
   const publicClient = usePublicClient()
 
@@ -721,6 +727,91 @@ export const useSwap = (params: SwapParams) => {
   }, [tokenIn, state.optimizedRoute, address, needsApproval, executeApprove])
 
   /**
+   * Wrap / UnWrap
+   */
+  const {
+    writeContract: executeWrap,
+    isPending: isWrapping,
+    data: wrapTx
+  } = useWriteContract()
+  const { isLoading: isWrapTxPending, isSuccess: isWrapSuccess } = useWaitForTransactionReceipt({
+    hash: wrapTx
+  })
+  const { data: wrapConfig } = useSimulateContract({
+    address: WBERA,
+    abi: wBeraABI,
+    functionName: "deposit",
+    value: amountIn,
+    query: {
+      enabled: isWrap && !!address
+    }
+  })
+  const wrap = useCallback(() => {
+    if (!wrapConfig?.request) return
+
+    setState(prev => ({ ...prev, status: 'wrapping' }))
+
+    try {
+      executeWrap(wrapConfig.request, {
+        onError: (error) => {
+          setState(prev => ({
+            ...prev,
+            status: "error",
+            error: error instanceof Error ? error.message : 'Wrap failed'
+          }))
+        }
+      })
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        status: "error",
+        error: error instanceof Error ? error.message : 'Wrap failed'
+      }))
+    }
+  }, [wrapConfig])
+
+  const {
+    writeContract: executeUnWrap,
+    isPending: isUnWrapping,
+    data: unWrapTx
+  } = useWriteContract()
+  const { isLoading: isUnWrapTxPending, isSuccess: isUnWrapSuccess } = useWaitForTransactionReceipt({
+    hash: unWrapTx
+  })
+  const { data: unWrapConfig } = useSimulateContract({
+    address: WBERA,
+    abi: wBeraABI,
+    functionName: "withdraw",
+    args: [amountIn],
+    query: {
+      enabled: isUnWrap && !!address
+    }
+  })
+  const unwrap = useCallback(() => {
+    if (!unWrapConfig?.request) return
+
+    setState(prev => ({ ...prev, status: 'unwrapping' }))
+
+    try {
+      executeUnWrap(unWrapConfig.request, {
+        onError: (error) => {
+          setState(prev => ({
+            ...prev,
+            status: "error",
+            error: error instanceof Error ? error.message : 'Unwrap failed'
+          }))
+        }
+      })
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        status: "error",
+        error: error instanceof Error ? error.message : 'Unwrap failed'
+      }))
+    }
+  }, [unWrapConfig])
+
+  /**
     * Swap
     */
   const {
@@ -790,7 +881,11 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({ ...prev, status: 'approving' }))
     } else if (isSwapping || isSwapTxPending) {
       setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
-    } else if (isSwapSuccess) {
+    } else if (isWrapping || isWrapTxPending) {
+      setState(prev => ({ ...prev, status: 'wrapping', tsHash: wrapTx }))
+    } else if (isUnWrapping || isUnWrapTxPending) {
+      setState(prev => ({ ...prev, status: 'unwrapping', tsHash: unWrapTx }))
+    } else if (isSwapSuccess || isWrapSuccess || isUnWrapSuccess) {
       setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
       queryClient.invalidateQueries({ queryKey: ["balance"] })
     } else if (swapConfig?.request) {
@@ -798,7 +893,7 @@ export const useSwap = (params: SwapParams) => {
     } else {
       setState(prev => ({ ...prev, status: 'idle' }))
     }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig])
+  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending, isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess])
 
   return {
     status: state.status,
@@ -809,8 +904,11 @@ export const useSwap = (params: SwapParams) => {
     slippageTolerance: slippageTolerance,
 
     needsApproval,
-    isLoading: ['loading-routes', 'quoting', 'optimizing', 'approving', 'swapping'].includes(state.status),
+    isLoading: ['loading-routes', 'quoting', 'optimizing', 'approving', 'swapping', 'wrapping', 'unwrapping'].includes(state.status),
     isReady: state.status === "ready" && !!state.optimizedRoute?.transactionData,
+
+    isWrap,
+    isUnWrap,
 
     quote: state.optimizedRoute ? {
       amountOut: state.optimizedRoute.totalQuote,
@@ -830,6 +928,8 @@ export const useSwap = (params: SwapParams) => {
     swap,
     approve,
     refresh,
+    wrap,
+    unwrap,
     reset
   }
 }
