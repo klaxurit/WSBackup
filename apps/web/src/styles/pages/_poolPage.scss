@@ -416,6 +416,10 @@
   &__TokenInfoDetailed {
     display: flex;
     gap: 8px;
+    img {
+      width: 32px;
+      height: 32px;
+    }
   }
 
   .Form {
