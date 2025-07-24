@@ -70,6 +70,11 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
       }
     },
     {
+      label: 'BGT APR', key: 'bgtApr', render: () => {
+        return "-"
+      }
+    },
+    {
       label: 'Vol. 1d', key: 'vol1d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
           ? `$${parseFloat(formatEther(row.PoolStatistic[0].volOneDay)).toFixed(2)}`
