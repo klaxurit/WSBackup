@@ -199,7 +199,7 @@ const PoolViewPage: React.FC = () => {
               {lastTxHash && (
                 <a
                   className="PoolView__SuccessLink"
-                  href={`https://beratrail.io/tx/${lastTxHash}`}
+                  href={`https://berascan.com/tx/${lastTxHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

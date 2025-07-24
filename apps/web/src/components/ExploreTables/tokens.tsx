@@ -15,7 +15,7 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
     {
       label: '#', key: 'index', render: (row) => (
         <a
-          href={`https://beratrail.io/address/${row.address}`}
+          href={`https://berascan.com/address/${row.address}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"

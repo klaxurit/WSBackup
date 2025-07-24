@@ -202,7 +202,7 @@ const TokenPage: React.FC = () => {
                   {/* Right: 4 link icons */}
                   <div className="Token__SectionHeadTitleRight">
                     {/* Explorer */}
-                    <a href={token.address ? `https://beratrail.io/address/${token.address}` : '#'} target="_blank" rel="noopener noreferrer" title="View on explorer" className="Token__IconLink">
+                    <a href={token.address ? `https://berascan.com/address/${token.address}` : '#'} target="_blank" rel="noopener noreferrer" title="View on explorer" className="Token__IconLink">
                       <ExplorerIcon />
                     </a>
                     {/* Project website */}
@@ -295,7 +295,7 @@ const TokenPage: React.FC = () => {
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href={token.address ? `https://beratrail.io/address/${token.address}` : '#'}
+                href={token.address ? `https://berascan.com/address/${token.address}` : '#'}
                 className="Token__InfoLink"
               >
                 {/* Explorer Icon */}

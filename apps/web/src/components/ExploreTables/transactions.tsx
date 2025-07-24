@@ -130,7 +130,7 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
       key: 'wallet',
       render: (row) => (
         <a
-          href={`https://beratrail.io/address/${row.recipient}`}
+          href={`https://berascan.com/address/${row.recipient}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
