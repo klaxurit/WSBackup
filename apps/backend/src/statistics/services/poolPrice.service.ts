@@ -136,15 +136,21 @@ export class PoolPriceService {
   }
 
   async getTopPoolStats() {
-    return await this.databaseService.pool.findMany({
+    const pools = await this.databaseService.pool.findMany({
       include: {
         PoolStatistic: {
-          orderBy: { tvlUSD: 'desc' },
-
+          orderBy: {
+            createdAt: 'desc',
+          },
           take: 1,
         },
         token0: true,
         token1: true,
+      },
+      where: {
+        PoolStatistic: {
+          some: {},
+        },
       },
       orderBy: {
         PoolStatistic: {
@@ -153,6 +159,11 @@ export class PoolPriceService {
       },
       take: 4,
     });
+
+    return pools
+      .filter((pool) => pool.PoolStatistic.length > 0)
+      .sort((a, b) => b.PoolStatistic[0].tvlUSD - a.PoolStatistic[0].tvlUSD)
+      .slice(0, 4);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
