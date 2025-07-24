@@ -539,7 +539,7 @@ const CreatePoolPage: React.FC = () => {
             {(poolManager.createPoolReceipt?.status === "success" || poolManager.mintPositionReceipt?.status === "success") && (
               <div className="PoolPage__CreateSection">
                 <h3 className="PoolPage__CreateSectionTitle">Transaction success</h3>
-                <a href={`https://beratrail.io/tx/${poolManager.mintPositionTxHash || poolManager.createPoolTxHash}`}>
+                <a href={`https://berascan.com/tx/${poolManager.mintPositionTxHash || poolManager.createPoolTxHash}`}>
                   <p className="PoolPage__CreateSectionDesc">
                     Transaction hash: {poolManager.mintPositionTxHash?.slice(0, 8) || poolManager.createPoolTxHash?.slice(0, 8)}...
                   </p>

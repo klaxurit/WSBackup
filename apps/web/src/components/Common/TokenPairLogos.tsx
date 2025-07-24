@@ -15,7 +15,7 @@ interface TokenPairLogosProps {
 export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
   token0,
   token1,
-  size = 24,
+  size = 32,
 }) => (
   <span style={{
     display: 'inline-flex',
@@ -65,7 +65,7 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
           border: '2px solid #232323',
           background: '#fff',
           position: 'absolute',
-          left: 16,
+          left: 20,
           zIndex: 1
         }}
         alt={token1.symbol}
@@ -80,7 +80,7 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
           border: '2px solid #232323',
           background: '#fff',
           position: 'absolute',
-          left: 16,
+          left: 20,
           zIndex: 1
         }}
       />

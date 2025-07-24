@@ -15,7 +15,7 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
     {
       label: '#', key: 'index', render: (row) => (
         <a
-          href={`https://beratrail.io/address/${row.address}`}
+          href={`https://berascan.com/address/${row.address}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
@@ -40,7 +40,7 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
             className="TokensTable__NameLink"
             title={`View ${row.name} details`}
           >
-            {row.name}
+            {row.symbol} - {row.name}
           </Link>
         </span>
       )
@@ -64,11 +64,11 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
           : '-'
       }
     },
-    // { label: 'FDV', key: 'fdv' },
+    { label: 'FDV', key: 'fdv', render: () => "-" },
     {
       label: 'Volume', key: 'volume', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `$${parseFloat(formatUnits(row.Statistic[0].volume, row.decimals)).toFixed(4)}`
+          ? `$${parseFloat(formatUnits(row.Statistic[0].volume, row.decimals)).toFixed(2)}`
           : '-'
       }
     },

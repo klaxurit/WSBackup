@@ -57,20 +57,42 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
       label: 'Time',
       key: 'time',
       render: (row) => {
+        let text
         const now = new Date();
         const txTime = new Date(row.createdAt);
         const diffMs = now.getTime() - txTime.getTime();
         const diffMin = Math.floor(diffMs / 60000);
-        if (diffMin < 1) return 'Just now';
-        if (diffMin < 60) return `${diffMin} min ago`;
+
         const diffH = Math.floor(diffMin / 60);
-        if (diffH < 24) return `${diffH}h ago`;
         const diffD = Math.floor(diffH / 24);
-        if (diffD < 30) return `${diffD}d ago`;
         const diffM = Math.floor(diffD / 30);
-        if (diffM < 12) return `${diffM}m ago`;
         const diffY = Math.floor(diffM / 12);
-        return `${diffY}y ago`;
+
+        if (diffMin < 1) {
+          text = 'Just now'
+        } else if (diffMin < 60) {
+          text = `${diffMin} min ago`
+        } else if (diffH < 24) {
+          text = `${diffH}h ago`
+        } else if (diffD < 30) {
+          text = `${diffD}d ago`
+        } else if (diffM < 12) {
+          text = `${diffM}m ago`
+        } else {
+          text = `${diffY}y ago`
+        }
+
+        return (
+          <a
+            href={`https://berascan.com/tx/${row.transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="Table__Address"
+            title={row.recipient}
+          >
+            {text}
+          </a>
+        )
       },
     },
     {
@@ -130,7 +152,7 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
       key: 'wallet',
       render: (row) => (
         <a
-          href={`https://beratrail.io/address/${row.recipient}`}
+          href={`https://berascan.com/address/${row.recipient}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"

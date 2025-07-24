@@ -175,7 +175,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       key: 'wallet',
       render: (row: Transaction) => (
         <a
-          href={`https://beratrail.io/address/${row.recipient}`}
+          href={`https://berascan.com/address/${row.recipient}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"

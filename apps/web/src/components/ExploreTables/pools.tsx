@@ -35,7 +35,7 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
             </span>
           </Link>
           <a
-            href={`https://beratrail.io/address/${row.address}`}
+            href={`https://berascan.com/address/${row.address}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Icon"
@@ -67,6 +67,11 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].apr !== 0
           ? `${row.PoolStatistic[0].apr.toFixed(2)}%`
           : "-"
+      }
+    },
+    {
+      label: 'BGT APR', key: 'bgtApr', render: () => {
+        return "-"
       }
     },
     {

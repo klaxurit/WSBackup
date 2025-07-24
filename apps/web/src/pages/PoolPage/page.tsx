@@ -215,7 +215,7 @@ const PoolDetailPage: React.FC = () => {
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href={pool.address ? `https://beratrail.io/address/${pool.address}` : '#'}
+                href={pool.address ? `https://berascan.com/address/${pool.address}` : '#'}
                 className="Pool__InfoLink"
               >
                 <ExplorerIcon />
@@ -246,7 +246,7 @@ const PoolDetailPage: React.FC = () => {
                           <CopyIcon/>
                         </button>
                         <a
-                          href={`https://beratrail.io/address/${pool.token0.address}`}
+                          href={`https://berascan.com/address/${pool.token0.address}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="Pool__ExplorerButton Pool__ExplorerButton--small"
@@ -281,7 +281,7 @@ const PoolDetailPage: React.FC = () => {
                           <CopyIcon/>
                         </button>
                         <a
-                          href={`https://beratrail.io/address/${pool.token1.address}`}
+                          href={`https://berascan.com/address/${pool.token1.address}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="Pool__ExplorerButton Pool__ExplorerButton--small"
