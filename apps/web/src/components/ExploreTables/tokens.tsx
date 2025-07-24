@@ -68,7 +68,7 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
     {
       label: 'Volume', key: 'volume', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `$${parseFloat(formatUnits(row.Statistic[0].volume, row.decimals)).toFixed(4)}`
+          ? `$${parseFloat(formatUnits(row.Statistic[0].volume, row.decimals)).toFixed(2)}`
           : '-'
       }
     },
