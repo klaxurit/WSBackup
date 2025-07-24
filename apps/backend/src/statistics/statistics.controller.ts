@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { PriceService } from './services/price.service';
 import { PoolPriceService } from './services/poolPrice.service';
 import { Address } from 'viem';
@@ -43,8 +43,18 @@ export class StatisticsController {
   }
 
   @Get('/swaps')
-  async getSwapHistory() {
-    return await this.databaseService.swap.findMany({
+  async getSwapHistory(
+    @Query('currentPage', new ParseIntPipe({ optional: true }))
+    currentPage: number = 1,
+    @Query('itemByPage', new ParseIntPipe({ optional: true }))
+    itemByPage: number = 100,
+  ) {
+    const page = Math.max(1, currentPage);
+    const limit = Math.min(Math.max(1, itemByPage), 1000);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await this.databaseService.swap.count();
+    const swaps = await this.databaseService.swap.findMany({
       include: {
         pool: {
           include: {
@@ -80,8 +90,25 @@ export class StatisticsController {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 100,
+      take: limit,
+      skip: skip,
     });
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      data: swaps,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalItems: totalCount,
+        totalPages: totalPages,
+        hasNextPage: hasNextPage,
+        hasPreviousPage: hasPreviousPage,
+      },
+    };
   }
 
   @Get('/positions/:address')

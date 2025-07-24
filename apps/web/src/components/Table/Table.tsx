@@ -10,9 +10,11 @@ export interface TableColumn<T = any> {
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
   itemsPerPage: number;
   totalItems: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  onPageChange: (page: number) => void;
 }
 
 interface TableProps<T = any> {
@@ -25,7 +27,6 @@ interface TableProps<T = any> {
   scrollClassName?: string;
   getRowClassName?: (row: T, rowIndex: number) => string;
   isLoading?: boolean;
-  // Pagination props
   pagination?: PaginationProps;
 }
 
@@ -34,7 +35,9 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
   itemsPerPage,
-  totalItems
+  totalItems,
+  hasPreviousPage,
+  hasNextPage
 }) => {
   const getVisiblePages = () => {
     const delta = 2;
@@ -73,13 +76,14 @@ const Pagination: React.FC<PaginationProps> = ({
         Showing {startItem}-{endItem} of {totalItems} transactions
       </div>
       <div className="Table__PaginationControls">
-        <button
-          className="Table__PaginationBtn"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
+        {hasPreviousPage && (
+          <button
+            className="Table__PaginationBtn"
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            Previous
+          </button>
+        )}
 
         {getVisiblePages().map((page, index) => (
           <button
@@ -93,13 +97,14 @@ const Pagination: React.FC<PaginationProps> = ({
           </button>
         ))}
 
-        <button
-          className="Table__PaginationBtn"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
+        {hasNextPage && (
+          <button
+            className="Table__PaginationBtn"
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

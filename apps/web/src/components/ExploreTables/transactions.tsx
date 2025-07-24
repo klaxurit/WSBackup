@@ -2,55 +2,62 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatEther } from "viem";
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  itemsPerPage: number;
-  totalItems: number;
-}
+import { useEffect, useState } from "react";
 
 interface TransactionsTableProps {
-  data?: any[];
-  isLoading?: boolean;
-  pagination?: PaginationProps;
+  searchValue: string | null;
 }
 
-export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsTableProps) => {
-  const query = useQuery({
+export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
+  const [currentPage, setCurrentPage] = useState(1)
+  // const [itemByPage, setItemByPage] = useState(20)
+  const itemByPage = 20
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps?` + new URLSearchParams({
+        currentPage: `${currentPage}`,
+        itemByPage: `${itemByPage}`,
+        searchValue: searchValue || ""
+      }).toString()
+      )
       if (!resp.ok) return []
       return resp.json()
     },
     select: (data) => {
-      return data.map((s: any) => {
-        if (s.amount0 > 0n) {
-          // A -> B
-          return {
-            ...s,
-            tokenIn: s.pool.token0,
-            tokenOut: s.pool.token1,
-            amountIn: s.amount0,
-            amountOut: s.amount1,
+      return {
+        pagination: {
+          ...data.pagination,
+          onPageChange: setCurrentPage
+        },
+        txs: data.data.map((s: any) => {
+          if (s.amount0 > 0n) {
+            // A -> B
+            return {
+              ...s,
+              tokenIn: s.pool.token0,
+              tokenOut: s.pool.token1,
+              amountIn: s.amount0,
+              amountOut: s.amount1,
+            }
+          } else {
+            // B -> A
+            return {
+              ...s,
+              tokenIn: s.pool.token1,
+              tokenOut: s.pool.token0,
+              amountIn: s.amount1,
+              amountOut: s.amount0,
+            }
           }
-        } else {
-          // B -> A
-          return {
-            ...s,
-            tokenIn: s.pool.token1,
-            tokenOut: s.pool.token0,
-            amountIn: s.amount1,
-            amountOut: s.amount0,
-          }
-        }
-      })
+        })
+      }
     }
   });
-  const txs = data ?? query.data ?? [];
-  const loading = isLoading ?? query.isLoading;
+
+  useEffect(() => {
+    refetch()
+  }, [currentPage])
 
   const txColumns: TableColumn[] = [
     {
@@ -167,12 +174,12 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
   return (
     <Table
       columns={txColumns}
-      data={txs}
-      isLoading={loading}
+      data={data?.txs || []}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
-      pagination={pagination}
+      pagination={data?.pagination}
     />
   )
 }
