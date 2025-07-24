@@ -40,7 +40,7 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
             className="TokensTable__NameLink"
             title={`View ${row.name} details`}
           >
-            {row.name}
+            {row.symbol} - {row.name}
           </Link>
         </span>
       )
