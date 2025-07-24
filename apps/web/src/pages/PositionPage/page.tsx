@@ -103,7 +103,7 @@ const PoolPage: React.FC = () => {
                 </div>
                 <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
                 <div className="PoolPage__TopApr">
-                  {pool.PoolStatistic[0]?.apr || '0'}% APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
+                  {pool.PoolStatistic[0]?.apr.toFixed(2) || '0'}% APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
                 </div>
               </div>
             ))}
