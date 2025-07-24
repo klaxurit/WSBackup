@@ -101,9 +101,9 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           Swap
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} />}
+          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} />}
           for
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, margin: "0 2px" }} />}
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} />}
         </span>
       ),
     },
@@ -129,7 +129,7 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
           </span>
         )
       },
@@ -142,7 +142,7 @@ export const TransactionsTable = ({ data, isLoading, pagination }: TransactionsT
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 18, height: 18, borderRadius: 6, marginLeft: 2 }} />}
+            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
           </span>
         )
       },
