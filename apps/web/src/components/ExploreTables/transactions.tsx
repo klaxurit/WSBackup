@@ -57,7 +57,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
 
   useEffect(() => {
     refetch()
-  }, [currentPage])
+  }, [currentPage, searchValue])
 
   const txColumns: TableColumn[] = [
     {

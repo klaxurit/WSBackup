@@ -5,6 +5,7 @@ import { Address } from 'viem';
 import { DatabaseService } from 'src/database/database.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { V3_POSITION_MANAGER_ABI } from 'src/blockchain/abis/V3_POSITION_MANAGER_ABI';
+import { Prisma } from '@repo/db';
 
 @Controller('stats')
 export class StatisticsController {
@@ -48,13 +49,62 @@ export class StatisticsController {
     currentPage: number = 1,
     @Query('itemByPage', new ParseIntPipe({ optional: true }))
     itemByPage: number = 100,
+    @Query('searchValue') searchValue?: string,
   ) {
     const page = Math.max(1, currentPage);
     const limit = Math.min(Math.max(1, itemByPage), 1000);
     const skip = (page - 1) * limit;
 
-    const totalCount = await this.databaseService.swap.count();
+    const searchFilter = searchValue
+      ? {
+          pool: {
+            OR: [
+              {
+                token0: {
+                  OR: [
+                    {
+                      name: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                    {
+                      symbol: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                token1: {
+                  OR: [
+                    {
+                      name: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                    {
+                      symbol: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        }
+      : {};
+
+    const totalCount = await this.databaseService.swap.count({
+      where: searchFilter,
+    });
     const swaps = await this.databaseService.swap.findMany({
+      where: searchFilter,
       include: {
         pool: {
           include: {
