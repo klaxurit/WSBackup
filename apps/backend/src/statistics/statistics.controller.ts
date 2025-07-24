@@ -1,10 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { PriceService } from './services/price.service';
 import { PoolPriceService } from './services/poolPrice.service';
 import { Address } from 'viem';
 import { DatabaseService } from 'src/database/database.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { V3_POSITION_MANAGER_ABI } from 'src/blockchain/abis/V3_POSITION_MANAGER_ABI';
+import { Prisma } from '@repo/db';
 
 @Controller('stats')
 export class StatisticsController {
@@ -43,8 +44,67 @@ export class StatisticsController {
   }
 
   @Get('/swaps')
-  async getSwapHistory() {
-    return await this.databaseService.swap.findMany({
+  async getSwapHistory(
+    @Query('currentPage', new ParseIntPipe({ optional: true }))
+    currentPage: number = 1,
+    @Query('itemByPage', new ParseIntPipe({ optional: true }))
+    itemByPage: number = 100,
+    @Query('searchValue') searchValue?: string,
+  ) {
+    const page = Math.max(1, currentPage);
+    const limit = Math.min(Math.max(1, itemByPage), 1000);
+    const skip = (page - 1) * limit;
+
+    const searchFilter = searchValue
+      ? {
+          pool: {
+            OR: [
+              {
+                token0: {
+                  OR: [
+                    {
+                      name: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                    {
+                      symbol: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                token1: {
+                  OR: [
+                    {
+                      name: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                    {
+                      symbol: {
+                        contains: searchValue,
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        }
+      : {};
+
+    const totalCount = await this.databaseService.swap.count({
+      where: searchFilter,
+    });
+    const swaps = await this.databaseService.swap.findMany({
+      where: searchFilter,
       include: {
         pool: {
           include: {
@@ -80,8 +140,25 @@ export class StatisticsController {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 100,
+      take: limit,
+      skip: skip,
     });
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      data: swaps,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalItems: totalCount,
+        totalPages: totalPages,
+        hasNextPage: hasNextPage,
+        hasPreviousPage: hasPreviousPage,
+      },
+    };
   }
 
   @Get('/positions/:address')

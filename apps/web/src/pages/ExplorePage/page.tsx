@@ -13,8 +13,6 @@ const TABS = [
   { key: 'transactions', label: 'Transactions' },
 ];
 
-const TRANSACTIONS_PER_PAGE = 10;
-
 const ExplorePage: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -24,12 +22,6 @@ const ExplorePage: React.FC = () => {
     TABS.some(t => t.key === initialTab) ? initialTab as 'tokens' | 'pools' | 'transactions' : 'tokens'
   );
   const [search, setSearch] = useState('');
-  const [transactionsPage, setTransactionsPage] = useState(1);
-
-  // Reset pagination when changing tabs or search
-  React.useEffect(() => {
-    setTransactionsPage(1);
-  }, [activeTab, search]);
 
   // Récupération des données pour chaque tableau
   const { data: tokens = [], isLoading: tokensLoading } = useQuery({
@@ -47,38 +39,6 @@ const ExplorePage: React.FC = () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
       if (!resp.ok) return [];
       return resp.json();
-    }
-  });
-
-  const { data: txs = [], isLoading: txsLoading } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
-      if (!resp.ok) return [];
-      return resp.json();
-    },
-    select: (data) => {
-      return data.map((s: any) => {
-        if (s.amount0 > 0n) {
-          // A -> B
-          return {
-            ...s,
-            tokenIn: s.pool.token0,
-            tokenOut: s.pool.token1,
-            amountIn: s.amount0,
-            amountOut: s.amount1,
-          }
-        } else {
-          // B -> A
-          return {
-            ...s,
-            tokenIn: s.pool.token1,
-            tokenOut: s.pool.token0,
-            amountIn: s.amount1,
-            amountOut: s.amount0,
-          }
-        }
-      })
     }
   });
 
@@ -102,35 +62,6 @@ const ExplorePage: React.FC = () => {
       (pool.token1?.symbol && pool.token1.symbol.toLowerCase().includes(search.toLowerCase()))
     );
   }, [search, pools]);
-
-  const filteredTxs = useMemo(() => {
-    if (!search) return txs;
-    return txs.filter((tx: any) =>
-      (tx.recipient && tx.recipient.toLowerCase().includes(search.toLowerCase())) ||
-      (tx.tokenIn?.symbol && tx.tokenIn.symbol.toLowerCase().includes(search.toLowerCase())) ||
-      (tx.tokenOut?.symbol && tx.tokenOut.symbol.toLowerCase().includes(search.toLowerCase()))
-    );
-  }, [search, txs]);
-
-  // Pagination pour les transactions
-  const transactionsPagination = useMemo(() => {
-    const totalTransactions = filteredTxs.length;
-    const totalPages = Math.ceil(totalTransactions / TRANSACTIONS_PER_PAGE);
-    const startIndex = (transactionsPage - 1) * TRANSACTIONS_PER_PAGE;
-    const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
-    const paginatedTransactions = filteredTxs.slice(startIndex, endIndex);
-
-    return {
-      data: paginatedTransactions,
-      pagination: {
-        currentPage: transactionsPage,
-        totalPages,
-        onPageChange: setTransactionsPage,
-        itemsPerPage: TRANSACTIONS_PER_PAGE,
-        totalItems: totalTransactions,
-      }
-    };
-  }, [filteredTxs, transactionsPage]);
 
   return (
     <div className="ExplorePage">
@@ -157,13 +88,7 @@ const ExplorePage: React.FC = () => {
       </div>
       {activeTab === 'tokens' && <TokensTable data={filteredTokens} isLoading={tokensLoading} />}
       {activeTab === 'pools' && <PoolsTable data={filteredPools} isLoading={poolsLoading} />}
-      {activeTab === 'transactions' && (
-        <TransactionsTable
-          data={transactionsPagination.data}
-          isLoading={txsLoading}
-          pagination={transactionsPagination.pagination}
-        />
-      )}
+      {activeTab === 'transactions' && <TransactionsTable searchValue={search} />}
     </div>
   );
 };
