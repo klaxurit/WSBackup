@@ -374,15 +374,15 @@ export class PoolPriceService {
       return null;
     }
 
-    // Calculer les volumes
-    const dayVol = this.getVolumeByPeriod(pool, 24);
-    const monthVol = this.getVolumeByPeriod(pool, 24 * 30);
+    // Calculer les volumes en USD
+    const dayVolUSD = this.getVolumeByPeriod(pool, 24);
+    const monthVolUSD = this.getVolumeByPeriod(pool, 24 * 30);
 
     // Calculer APR et TVL
     const aprAndTvl = this.calculateAdvancedMetrics(
       blockchainData,
       tokenPrices,
-      dayVol,
+      dayVolUSD,
       pool,
     );
 
@@ -394,8 +394,8 @@ export class PoolPriceService {
       poolId: pool.id,
       apr: aprAndTvl.apr,
       tvlUSD: aprAndTvl.tvlUSD,
-      volOneDay: dayVol.toString(),
-      volOneMonth: monthVol.toString(),
+      volOneDay: dayVolUSD.toString(),
+      volOneMonth: monthVolUSD.toString(),
       impermanentLoss: aprAndTvl.impermanentLoss,
       healthScore: aprAndTvl.healthScore,
     };
@@ -487,26 +487,40 @@ export class PoolPriceService {
   }
 
   /**
-   * Calcul du volume optimisé (prend en compte amount0 ET amount1)
+   * Calcul du volume optimisé en USD (convertit amount0 ET amount1 puis additionne)
    */
   private getVolumeByPeriod(
     pool: PoolWithTokensAndSwap,
     hourPeriod: number = 24,
-  ): bigint {
+  ): number {
     const xHourAgo = new Date(Date.now() - hourPeriod * 60 * 60 * 1000);
 
     const recentSwaps = pool.swaps.filter(
       (s: Swap) => new Date(s.createdAt) > xHourAgo,
     );
 
-    const vol = recentSwaps.reduce((total: bigint, swap: Swap) => {
-      // Prendre le maximum entre amount0 et amount1 pour éviter la double comptabilisation
-      const vol0 = BigInt(Math.abs(parseInt(swap.amount0) || 0));
-      const vol1 = BigInt(Math.abs(parseInt(swap.amount1) || 0));
-      return total + (vol0 > vol1 ? vol0 : vol1);
-    }, 0n);
+    // Récupérer les prix des tokens depuis le cache
+    const token0Price = this.tokenPriceCache.get(pool.token0.id)?.price || 0;
+    const token1Price = this.tokenPriceCache.get(pool.token1.id)?.price || 0;
 
-    return vol;
+    if (token0Price === 0 && token1Price === 0) {
+      this.logger.warn(`No token prices available for pool ${pool.address}`);
+      return 0;
+    }
+
+    const volumeUSD = recentSwaps.reduce((total: number, swap: Swap) => {
+      // Convertir amount0 et amount1 en USD puis additionner
+      const amount0 = Math.abs(parseFloat(swap.amount0) || 0) / (10 ** pool.token0.decimals);
+      const amount1 = Math.abs(parseFloat(swap.amount1) || 0) / (10 ** pool.token1.decimals);
+      
+      const vol0USD = amount0 * token0Price;
+      const vol1USD = amount1 * token1Price;
+      
+      // Additionner les deux volumes en USD (pas MAX !)
+      return total + vol0USD + vol1USD;
+    }, 0);
+
+    return volumeUSD;
   }
 
   /**
@@ -515,7 +529,7 @@ export class PoolPriceService {
   private calculateAdvancedMetrics(
     blockchainData: BlockchainPoolData,
     tokenPrices: TokenPriceData,
-    volume24h: bigint,
+    volume24hUSD: number,
     pool: PoolWithTokensAndSwap,
   ): {
     apr: number;
@@ -555,10 +569,8 @@ export class PoolPriceService {
           amount1Estimated * tokenPrices.token1Price,
       );
 
-      // Volume 24h en USD
-      const vol24hUSD =
-        Number(formatUnits(volume24h, tokenPrices.token0Decimals)) *
-        tokenPrices.token0Price;
+      // Volume 24h déjà en USD depuis getVolumeByPeriod
+      const vol24hUSD = volume24hUSD;
 
       // Calcul des fees 24h
       const fees24h = vol24hUSD * (blockchainData.fee / 1000000);
@@ -570,10 +582,8 @@ export class PoolPriceService {
         apr = (fees24h / tvlUSD) * 365 * 100;
       } else if (tvlUSD > 0) {
         // Fallback : utiliser la moyenne des 7 derniers jours
-        const volume7d = this.getVolumeByPeriod(pool, 24 * 7);
-        const avgDailyVolume =
-          Number(formatUnits(volume7d, tokenPrices.token0Decimals)) / 7;
-        const avgDailyVolumeUSD = avgDailyVolume * tokenPrices.token0Price;
+        const volume7dUSD = this.getVolumeByPeriod(pool, 24 * 7);
+        const avgDailyVolumeUSD = volume7dUSD / 7;
         const avgDailyFees = avgDailyVolumeUSD * (blockchainData.fee / 1000000);
 
         if (avgDailyFees > 0) {
@@ -582,11 +592,12 @@ export class PoolPriceService {
             `Using 7-day average for APR calculation: ${apr.toFixed(2)}%`,
           );
         } else {
-          // Dernier recours : APR théorique basé sur le fee tier
-          // Estimation très conservative : 0.1% du TVL par jour pour un pool actif
-          const theoreticalDailyYield = tvlUSD * 0.001;
-          apr = (theoreticalDailyYield / tvlUSD) * 365 * 100;
-          this.logger.debug(`Using theoretical APR: ${apr.toFixed(2)}%`);
+          // Dernier recours : APR basé sur le fee tier et une estimation de volume minimal
+          // Estimer 0.01% du TVL comme volume quotidien minimal pour pools actifs
+          const minDailyVolumeEstimate = tvlUSD * 0.0001;
+          const minDailyFees = minDailyVolumeEstimate * (blockchainData.fee / 1000000);
+          apr = (minDailyFees / tvlUSD) * 365 * 100;
+          this.logger.debug(`Using minimal theoretical APR: ${apr.toFixed(4)}% (${blockchainData.fee/10000}% fee tier)`);
         }
       }
 
