@@ -71,18 +71,26 @@ const SwapForm: React.FC<FormProps> = React.memo(
     );
 
     const handleFromTokenSelect = useCallback((token: BerachainToken) => {
-      if (toToken?.address === token.address) {
-        setToToken(null);
-      }
+      // Vérifier si le token sélectionné est déjà le token "to"
+      setToToken(prevTo => {
+        if (prevTo?.address === token.address) {
+          return null;
+        }
+        return prevTo;
+      });
       setFromToken(token);
-    }, [toToken]);
+    }, []); // Pas de dépendances externes
 
     const handleToTokenSelect = useCallback((token: BerachainToken) => {
-      if (fromToken?.address === token.address) {
-        setFromToken(null);
-      }
+      // Vérifier si le token sélectionné est déjà le token "from"
+      setFromToken(prevFrom => {
+        if (prevFrom?.address === token.address) {
+          return null;
+        }
+        return prevFrom;
+      });
       setToToken(token);
-    }, [fromToken]);
+    }, []); // Pas de dépendances externes
 
     const handleCloseModal = () => {
       setShowModal(false);
@@ -90,15 +98,20 @@ const SwapForm: React.FC<FormProps> = React.memo(
         swap.reset();
       }
     };
-    const handleSwitchTokens = () => {
-      setFromToken(toToken);
-      setToToken(fromToken);
-      setFromAmount(toAmount);
-      setToAmount(fromAmount);
+    const handleSwitchTokens = useCallback(() => {
+      const currentFromToken = fromToken;
+      const currentToToken = toToken;
+      const currentFromAmount = fromAmount;
+      const currentToAmount = toAmount;
+      
+      setFromToken(currentToToken);
+      setToToken(currentFromToken);
+      setFromAmount(currentToAmount);
+      setToAmount(currentFromAmount);
       setEditing(null);
-    };
+    }, [fromToken, toToken, fromAmount, toAmount]);
 
-    const updateSlippage = (e: ChangeEvent<HTMLInputElement>) => {
+    const updateSlippage = useCallback((e: ChangeEvent<HTMLInputElement>) => {
       let val = e.target.value.replace(/[^\d.,]/g, '')
       val = val.replace(',', '.')
 
@@ -114,13 +127,14 @@ const SwapForm: React.FC<FormProps> = React.memo(
       if (numVal < 0 || numVal > 100) return
 
       setSlippageConfig({ real, display: val, isAuto: false })
-    }
-    const updateDeadline = (e: ChangeEvent<HTMLInputElement>) => {
+    }, [])
+
+    const updateDeadline = useCallback((e: ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value.replace(/[^\d]/g, '')
       if (+val < 0) return
 
       setDeadlineConfig({ real: +val, display: val })
-    }
+    }, [])
 
     const handleClickParams = () => {
       setParamOpen(!paramOpen)
@@ -168,15 +182,23 @@ const SwapForm: React.FC<FormProps> = React.memo(
     }, [swap.quote, editing])
 
     useEffect(() => {
+      let timeoutId: NodeJS.Timeout
+
       if (swap.status === "success") {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           swap.reset()
           setShowModal(false)
           setFromAmount(0n)
           setToAmount(0n)
         }, 3000)
       }
-    }, [swap.status])
+
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+      }
+    }, [swap.status, swap.reset])
 
     useEffect(() => {
       if (onPoolChange) {
@@ -210,7 +232,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setFromAmount(amount);
     };
 
-    const handleToAmountChange = (amount: bigint) => {
+    const handleToAmountChange = useCallback((amount: bigint) => {
       setEditing('to');
       setToAmount(amount);
       // Synchronization: recalculate fromAmount so that the USD value is identical
@@ -220,7 +242,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
         const fromAmountWei = parseEther(fromAmountFloat.toFixed(fromToken.decimals));
         setFromAmount(fromAmountWei);
       }
-    };
+    }, [priceFrom, priceTo, toToken, fromToken]);
 
     // Conditional classes for sticky mode
     const formClasses = [
