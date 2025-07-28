@@ -23,16 +23,6 @@ const ExplorePage: React.FC = () => {
   );
   const [search, setSearch] = useState('');
 
-  // Récupération des données pour chaque tableau
-  const { data: tokens = [], isLoading: tokensLoading } = useQuery({
-    queryKey: ['tokens'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
-      if (!resp.ok) return [];
-      return resp.json();
-    }
-  });
-
   const { data: pools = [], isLoading: poolsLoading } = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
@@ -41,17 +31,6 @@ const ExplorePage: React.FC = () => {
       return resp.json();
     }
   });
-
-  // Filtrage contextuel selon l'onglet actif
-  const filteredTokens = useMemo(() => {
-    const inPoolTokens = tokens.filter((t: any) => t.inPool)
-    if (!search) return inPoolTokens
-    return inPoolTokens.filter((token: any) =>
-      token.name.toLowerCase().includes(search.toLowerCase()) ||
-      token.symbol.toLowerCase().includes(search.toLowerCase()) ||
-      token.address.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search, tokens]);
 
   const filteredPools = useMemo(() => {
     if (!search) return pools;
@@ -86,7 +65,7 @@ const ExplorePage: React.FC = () => {
           activeTab={TABS.find(t => t.key === activeTab)?.label}
         />
       </div>
-      {activeTab === 'tokens' && <TokensTable data={filteredTokens} isLoading={tokensLoading} />}
+      {activeTab === 'tokens' && <TokensTable searchValue={search} />}
       {activeTab === 'pools' && <PoolsTable data={filteredPools} isLoading={poolsLoading} />}
       {activeTab === 'transactions' && <TransactionsTable searchValue={search} />}
     </div>

@@ -167,6 +167,8 @@ exports.Prisma.TokenScalarFieldEnum = {
   logoUri: 'logoUri',
   coingeckoId: 'coingeckoId',
   tags: 'tags',
+  totalSupply: 'totalSupply',
+  circulatingSupply: 'circulatingSupply',
   website: 'website',
   twitter: 'twitter',
   description: 'description'
@@ -179,6 +181,8 @@ exports.Prisma.TokenStatisticScalarFieldEnum = {
   oneHourEvolution: 'oneHourEvolution',
   oneDayEvolution: 'oneDayEvolution',
   volume: 'volume',
+  fdv: 'fdv',
+  marketCap: 'marketCap',
   createdAt: 'createdAt'
 };
 
