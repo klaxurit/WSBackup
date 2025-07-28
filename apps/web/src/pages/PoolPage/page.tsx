@@ -9,6 +9,7 @@ import SwapForm from '../../components/SwapForm/SwapForm';
 import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTable';
 import { formatNumber } from '../../utils/formatNumber';
 import { FallbackImg } from '../../components/utils/FallbackImg';
+import { formatUnits } from 'viem';
 
 interface Pool {
   id: string;
@@ -34,11 +35,13 @@ interface Pool {
   };
   PoolStatistic: Array<{
     id: string;
-    tvlUSD: string;
+    tvlUSD: number;
     volOneDay: string;
     volOneMonth: string;
     apr: number;
     createdAt: string;
+    impermanentLoss: number;
+    healthScore: number;
   }>;
 }
 
@@ -86,10 +89,11 @@ const PoolDetailPage: React.FC = () => {
 
   // Latest statistics
   const stat = pool.PoolStatistic?.[0];
-  const tvl = stat?.tvlUSD ? Number(stat.tvlUSD) : null;
+  const tvl = stat?.tvlUSD ? stat.tvlUSD : null;
   const volume1d = stat?.volOneDay ? Number(stat.volOneDay) : null;
   const volume30d = stat?.volOneMonth ? Number(stat.volOneMonth) : null;
   const apr = stat?.apr || null;
+  const liquidity = Number(formatUnits(BigInt(pool.liquidity), (pool.token0.decimals + pool.token1.decimals) / 2))
 
   return (
     <div className="Pool">
@@ -181,7 +185,9 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">Liquidity</h4>
                 <p className="Pool__StatCardLabel">
-                  {pool.liquidity ? formatNumber(Number(pool.liquidity), { currency: false }) : 'N/A'}
+                  {liquidity > 0.01
+                    ? formatNumber(liquidity, { currency: false })
+                    : '<0.01'}
                 </p>
               </div>
               <div className="Pool__StatCard">
@@ -243,7 +249,7 @@ const PoolDetailPage: React.FC = () => {
                           onClick={() => navigator.clipboard.writeText(pool.token0.address)}
                           title="Copy token address"
                         >
-                          <CopyIcon/>
+                          <CopyIcon />
                         </button>
                         <a
                           href={`https://berascan.com/address/${pool.token0.address}`}
@@ -278,7 +284,7 @@ const PoolDetailPage: React.FC = () => {
                           onClick={() => navigator.clipboard.writeText(pool.token1.address)}
                           title="Copy token address"
                         >
-                          <CopyIcon/>
+                          <CopyIcon />
                         </button>
                         <a
                           href={`https://berascan.com/address/${pool.token1.address}`}

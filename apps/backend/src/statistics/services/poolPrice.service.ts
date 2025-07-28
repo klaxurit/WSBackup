@@ -71,7 +71,43 @@ export class PoolPriceService {
     });
   }
 
-  async getOnePoolStat(token0Addr: string, token1Addr: string, fee: number) {
+  async getOnePoolStat(poolAddr: string) {
+    const pool = await this.databaseService.pool.findFirst({
+      where: {
+        address: poolAddr,
+      },
+      include: {
+        PoolStatistic: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+        token0: {
+          include: {
+            Statistic: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+        },
+        token1: {
+          include: {
+            Statistic: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    return pool;
+  }
+
+  async getOnePoolStatByTokens(
+    token0Addr: string,
+    token1Addr: string,
+    fee: number,
+  ) {
     const pool = await this.databaseService.pool.findFirst({
       where: {
         OR: [
@@ -494,8 +530,10 @@ export class PoolPriceService {
     try {
       // Calcul correct du prix spot depuis sqrtPriceX96
       // Prix = (sqrtPriceX96 / 2^96)^2 * 10^(decimals0 - decimals1)
-      const sqrtPrice = Number(blockchainData.sqrtPriceX96) / (2 ** 96);
-      const price = sqrtPrice ** 2 * (10 ** (tokenPrices.token0Decimals - tokenPrices.token1Decimals));
+      const sqrtPrice = Number(blockchainData.sqrtPriceX96) / 2 ** 96;
+      const price =
+        sqrtPrice ** 2 *
+        10 ** (tokenPrices.token0Decimals - tokenPrices.token1Decimals);
 
       // Calcul correct de la TVL selon Uniswap V3
       // Pour une range complète [-∞, +∞], L = sqrt(amount0 * amount1)
@@ -503,17 +541,24 @@ export class PoolPriceService {
       // amount1 = L * (sqrt(P_current) - sqrt(P_lower))
       // Pour simplifier, on utilise la liquidity comme approximation
       const liquidityNum = Number(blockchainData.liquidity);
-      
+
       // Estimation des amounts basée sur la liquidity et le prix current
       // Cette approximation suppose une range large autour du prix current
-      const amount1Estimated = liquidityNum / Math.sqrt(price) / (10 ** tokenPrices.token1Decimals);
-      const amount0Estimated = liquidityNum * Math.sqrt(price) / (10 ** tokenPrices.token0Decimals);
+      const amount1Estimated =
+        liquidityNum / Math.sqrt(price) / 10 ** tokenPrices.token1Decimals;
+      const amount0Estimated =
+        (liquidityNum * Math.sqrt(price)) / 10 ** tokenPrices.token0Decimals;
 
       // TVL en USD
-      const tvlUSD = Math.abs(amount0Estimated * tokenPrices.token0Price + amount1Estimated * tokenPrices.token1Price);
+      const tvlUSD = Math.abs(
+        amount0Estimated * tokenPrices.token0Price +
+          amount1Estimated * tokenPrices.token1Price,
+      );
 
       // Volume 24h en USD
-      const vol24hUSD = Number(formatUnits(volume24h, tokenPrices.token0Decimals)) * tokenPrices.token0Price;
+      const vol24hUSD =
+        Number(formatUnits(volume24h, tokenPrices.token0Decimals)) *
+        tokenPrices.token0Price;
 
       // Calcul des fees 24h
       const fees24h = vol24hUSD * (blockchainData.fee / 1000000);
@@ -526,13 +571,16 @@ export class PoolPriceService {
       } else if (tvlUSD > 0) {
         // Fallback : utiliser la moyenne des 7 derniers jours
         const volume7d = this.getVolumeByPeriod(pool, 24 * 7);
-        const avgDailyVolume = Number(formatUnits(volume7d, tokenPrices.token0Decimals)) / 7;
+        const avgDailyVolume =
+          Number(formatUnits(volume7d, tokenPrices.token0Decimals)) / 7;
         const avgDailyVolumeUSD = avgDailyVolume * tokenPrices.token0Price;
         const avgDailyFees = avgDailyVolumeUSD * (blockchainData.fee / 1000000);
-        
+
         if (avgDailyFees > 0) {
           apr = (avgDailyFees / tvlUSD) * 365 * 100;
-          this.logger.debug(`Using 7-day average for APR calculation: ${apr.toFixed(2)}%`);
+          this.logger.debug(
+            `Using 7-day average for APR calculation: ${apr.toFixed(2)}%`,
+          );
         } else {
           // Dernier recours : APR théorique basé sur le fee tier
           // Estimation très conservative : 0.1% du TVL par jour pour un pool actif
