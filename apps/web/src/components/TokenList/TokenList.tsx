@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
+import { PopularTokens } from './PopularTokens';
 import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
 import { Modal } from '../Common/Modal';
 import { zeroAddress } from "viem";
@@ -39,6 +40,12 @@ export const TokenList = ({
     );
   }, [searchValue, tokens, onlyPoolToken]);
 
+  const availableTokensForPopular = useMemo(() => {
+    return onlyPoolToken
+      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokens;
+  }, [tokens, onlyPoolToken]);
+
   return (
     <Modal open={isOpen} onClose={onClose} className="Modal" overlayClassName="NetworksList">
       <div className="Modal__Header">
@@ -56,11 +63,20 @@ export const TokenList = ({
           </button>
         </div>
       </div>
+
       <SearchBar
         searchValue={searchValue}
         setSearchValue={setSearchValue}
         networksList={true}
       />
+      {searchValue === "" && (
+        <PopularTokens
+          tokens={availableTokensForPopular}
+          onTokenSelect={handleTokenSelect}
+          selectedToken={selectedToken}
+        />
+      )}
+
       <div className="Modal__Content">
         {filteredTokens.map((token) => (
           <TokenItem

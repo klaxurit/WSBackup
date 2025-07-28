@@ -3,6 +3,7 @@ import { encodePacked, erc20Abi, formatUnits, parseEther, zeroAddress, type Addr
 import { useAccount, usePublicClient, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { calculatePriceImpact, calculateSlippageAmount, encodePath } from "../utils/swap"
 import { useQueryClient } from "@tanstack/react-query"
+import { useTokenCache } from "./useTokenCache"
 
 import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
 
@@ -109,6 +110,7 @@ export const useSwap = (params: SwapParams) => {
   const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient, isWrap, isUnWrap } = parseParams(params)
   const { address } = useAccount()
   const publicClient = usePublicClient()
+  const { getTokenInfo } = useTokenCache()
 
   const [state, setState] = useState<SwapState>({
     status: 'idle',
@@ -116,54 +118,9 @@ export const useSwap = (params: SwapParams) => {
     optimizedRoute: null
   })
 
-  const [tokenCache, setTokenCache] = useState<Map<Address, TokenInfo>>(() => {
-    const defaultTokens = new Map<Address, TokenInfo>()
-    defaultTokens.set(
-      "0x0000000000000000000000000000000000000000",
-      {
-        address: "0x0000000000000000000000000000000000000000",
-        symbol: "BERA",
-        decimals: 18,
-        name: "Bera"
-      })
-    return defaultTokens
-  })
-
   /**
    * Fetch datas onChain
    */
-  const getTokenInfo = useCallback(async (tokenAddress: Address): Promise<TokenInfo> => {
-    if (tokenCache.has(tokenAddress)) {
-      return tokenCache.get(tokenAddress)!
-    }
-
-    try {
-      const [decimals, symbol] = await Promise.all([
-        publicClient.readContract({
-          address: tokenAddress,
-          abi: erc20Abi,
-          functionName: "decimals"
-        }),
-        publicClient.readContract({
-          address: tokenAddress,
-          abi: erc20Abi,
-          functionName: 'symbol'
-        })
-      ])
-
-      const info: TokenInfo = {
-        address: tokenAddress,
-        symbol,
-        decimals
-      }
-
-      setTokenCache(prev => new Map(prev).set(tokenAddress, info))
-      return info
-    } catch (error) {
-      console.error('Failed to get token info', error)
-      throw error
-    }
-  }, [publicClient, tokenCache])
 
   const checkPoolExists = useCallback(async (
     tokenA: Address,

@@ -16,8 +16,8 @@ export function getAmountsForLiquidity(
   sqrtPriceLowerX96: bigint | string,
   sqrtPriceUpperX96: bigint | string,
   decimals0: number,
-  decimals1: number
-): { amount0: string, amount1: string } {
+  decimals1: number,
+): { amount0: string; amount1: string } {
   try {
     console.log('🧮 getAmountsForLiquidity input:', {
       liquidity: liquidity.toString(),
@@ -25,7 +25,7 @@ export function getAmountsForLiquidity(
       sqrtPriceLowerX96: sqrtPriceLowerX96.toString().slice(0, 20) + '...',
       sqrtPriceUpperX96: sqrtPriceUpperX96.toString().slice(0, 20) + '...',
       decimals0,
-      decimals1
+      decimals1,
     });
 
     const Q96 = new BigNumber(2).pow(96);
@@ -38,7 +38,7 @@ export function getAmountsForLiquidity(
       L: L.toString(),
       sqrtP: sqrtP.toString().slice(0, 20) + '...',
       sqrtPL: sqrtPL.toString().slice(0, 20) + '...',
-      sqrtPU: sqrtPU.toString().slice(0, 20) + '...'
+      sqrtPU: sqrtPU.toString().slice(0, 20) + '...',
     });
 
     let amount0 = new BigNumber(0);
@@ -56,18 +56,16 @@ export function getAmountsForLiquidity(
       amount0 = L.multipliedBy(sqrtPU.minus(sqrtP))
         .dividedBy(sqrtP.multipliedBy(sqrtPU))
         .dividedBy(Q96);
-      amount1 = L.multipliedBy(sqrtP.minus(sqrtPL))
-        .dividedBy(Q96);
+      amount1 = L.multipliedBy(sqrtP.minus(sqrtPL)).dividedBy(Q96);
     } else {
       console.log('📍 Price above range: all token1');
       // current price above the range: all in token1
-      amount1 = L.multipliedBy(sqrtPU.minus(sqrtPL))
-        .dividedBy(Q96);
+      amount1 = L.multipliedBy(sqrtPU.minus(sqrtPL)).dividedBy(Q96);
     }
 
     console.log('🔢 Raw amounts before decimals:', {
       amount0: amount0.toString(),
-      amount1: amount1.toString()
+      amount1: amount1.toString(),
     });
 
     // Ajuster pour les décimales
@@ -81,12 +79,11 @@ export function getAmountsForLiquidity(
 
     console.log('✅ Final amounts:', result);
     return result;
-
   } catch (error) {
     console.error('❌ Error in getAmountsForLiquidity:', error);
     return {
       amount0: '0',
-      amount1: '0'
+      amount1: '0',
     };
   }
 }
@@ -96,6 +93,8 @@ export function getAmountsForLiquidity(
  */
 export function tickToSqrtPriceX96(tick: number): BigNumber {
   // sqrt(1.0001^tick) * 2^96
-  const sqrtRatio = new BigNumber(1.0001).pow(tick / 2);
+  const ratio = new BigNumber(1.0001).pow(tick);
+  const sqrtRatio = ratio.sqrt();
   return sqrtRatio.multipliedBy(new BigNumber(2).pow(96));
-} 
+}
+

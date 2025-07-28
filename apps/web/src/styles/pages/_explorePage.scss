@@ -8,22 +8,12 @@
   flex-direction: column;
   gap: 16px;
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 12px;
-    text-align: left;
-  }
-
   .SearchBar {
     width: auto;
   }
 
   @media (min-width: 600px) {
     gap: 32px;
-
-    h1 {
-      font-size: 2.5rem;
-    }
   }
 
   &__Search {

@@ -6,6 +6,8 @@ export interface CoinGeckoResponse {
   [key: string]: {
     usd: number;
     usd_24h_change: number;
+    usd_market_cap?: number;
+    circulating_supply?: number;
   };
 }
 
@@ -48,6 +50,7 @@ export class CoinGeckoService {
 
   async getMultiTokensData(ids: string): Promise<CoinGeckoResponse | null> {
     try {
+      // Add market_cap and circulating_supply to the request
       const url = `${this.baseUrl}&symbols=${ids}`;
       const response = await firstValueFrom(
         this.http.get(url, {

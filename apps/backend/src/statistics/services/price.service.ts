@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { Token } from '@repo/db';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { PoolWithTokens } from '../types/tokenPrices';
 import { BigNumber } from 'bignumber.js';
+import { Address } from 'viem';
 
 interface CachedToken {
   tokenId: string;
@@ -12,6 +14,8 @@ interface CachedToken {
   oneHourEvolution: number;
   oneDayEvolution: number;
   volume: number;
+  fdv: number | null;
+  marketCap: number | null;
 }
 
 interface TokenWithStats extends Token {
@@ -40,6 +44,7 @@ export class PriceService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly coingeckoService: CoinGeckoService,
+    private readonly blockchainService: BlockchainService,
   ) {}
 
   async getTokenStats() {
@@ -218,6 +223,8 @@ export class PriceService {
               oneHourEvolution: 0,
               oneDayEvolution: 0,
               volume: 0,
+              fdv: null,
+              marketCap: null,
             });
             newlyResolved.push(token.address);
           }
@@ -285,11 +292,16 @@ export class PriceService {
         this.getPriceVariation(token, 24, cachedToken.price),
       ]);
 
+      // Calculate FDV and Market Cap
+      const [fdv, marketCap] = await this.calculateFDVAndMarketCap(token, cachedToken.price);
+      
       this.cachedTokens.set(token.address, {
         ...cachedToken,
         oneHourEvolution: oneHourEvolution || 0,
         oneDayEvolution: oneDayEvolution || 0,
         volume: volume || 0,
+        fdv,
+        marketCap,
       });
     });
 
@@ -304,18 +316,25 @@ export class PriceService {
 
     if (!prices) return;
 
-    tokens.forEach((token) => {
+    for (const token of tokens) {
       const price = prices[token.coingeckoId!];
       if (price) {
+        // Store circulating supply from CoinGecko if available
+        if (price.circulating_supply) {
+          await this.updateCirculatingSupply(token, price.circulating_supply.toString());
+        }
+        
         this.cachedTokens.set(token.address, {
           tokenId: token.id,
           price: price.usd,
           oneDayEvolution: 0,
           oneHourEvolution: 0,
           volume: 0,
+          fdv: null,
+          marketCap: null,
         });
       }
-    });
+    }
   }
 
   private async getPriceFromPools(token: Token): Promise<number | null> {
@@ -494,6 +513,143 @@ export class PriceService {
     }
   }
 
+  /**
+   * Calculate FDV (Fully Diluted Valuation) and Market Cap for a token
+   */
+  private async calculateFDVAndMarketCap(
+    token: Token,
+    price: number,
+  ): Promise<[number | null, number | null]> {
+    try {
+      // Get total supply for FDV calculation
+      const totalSupply = await this.getTotalSupply(token);
+      
+      if (!totalSupply) {
+        this.logger.debug(`No total supply available for ${token.symbol}`);
+        return [null, null];
+      }
+
+      // Convert totalSupply to number with proper decimals
+      const totalSupplyNumber = Number(totalSupply) / (10 ** token.decimals);
+      
+      // FDV = Total Supply × Price
+      const fdv = totalSupplyNumber * price;
+      
+      // Get circulating supply for Market Cap calculation
+      const circulatingSupply = await this.getCirculatingSupply(token);
+      let marketCap: number | null = null;
+      
+      if (circulatingSupply) {
+        const circulatingSupplyNumber = Number(circulatingSupply) / (10 ** token.decimals);
+        // Market Cap = Circulating Supply × Price
+        marketCap = circulatingSupplyNumber * price;
+        
+        this.logger.debug(
+          `Calculated for ${token.symbol}: FDV=$${fdv.toLocaleString()} | Market Cap=$${marketCap.toLocaleString()} (Circulating: ${circulatingSupplyNumber.toLocaleString()})`,
+        );
+      } else {
+        // Fallback: use FDV as Market Cap if no circulating supply available
+        marketCap = fdv;
+        this.logger.debug(
+          `Using FDV as Market Cap for ${token.symbol}: $${fdv.toLocaleString()} (no circulating supply data)`,
+        );
+      }
+
+      return [fdv, marketCap];
+    } catch (error) {
+      this.logger.error(`Error calculating FDV for ${token.symbol}:`, error);
+      return [null, null];
+    }
+  }
+
+  /**
+   * Get total supply from cache or fetch from blockchain
+   */
+  private async getTotalSupply(token: Token): Promise<string | null> {
+    try {
+      // First check if we have it cached in database
+      if (token.totalSupply) {
+        return token.totalSupply;
+      }
+
+      // Fetch from blockchain using ERC20 totalSupply() function
+      const totalSupply = await this.blockchainService.client.readContract({
+        address: token.address as Address,
+        abi: [
+          {
+            inputs: [],
+            name: 'totalSupply',
+            outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+            stateMutability: 'view',
+            type: 'function',
+          },
+        ],
+        functionName: 'totalSupply',
+      });
+
+      const totalSupplyString = totalSupply.toString();
+
+      // Cache the result in database for future use
+      await this.databaseService.token.update({
+        where: { id: token.id },
+        data: { totalSupply: totalSupplyString },
+      });
+
+      this.logger.debug(
+        `Fetched and cached total supply for ${token.symbol}: ${totalSupplyString}`,
+      );
+
+      return totalSupplyString;
+    } catch (error) {
+      this.logger.error(`Error fetching total supply for ${token.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get circulating supply from cache or CoinGecko
+   */
+  private async getCirculatingSupply(token: Token): Promise<string | null> {
+    try {
+      // First check if we have it cached in database
+      if (token.circulatingSupply) {
+        return token.circulatingSupply;
+      }
+
+      // For tokens without CoinGecko ID, we can't get circulating supply
+      if (!token.coingeckoId) {
+        this.logger.debug(`No CoinGecko ID for ${token.symbol}, cannot fetch circulating supply`);
+        return null;
+      }
+
+      // Note: Circulating supply should be fetched from CoinGecko during price updates
+      // This is just a fallback in case it wasn't stored
+      this.logger.debug(`No cached circulating supply for ${token.symbol}`);
+      return null;
+    } catch (error) {
+      this.logger.error(`Error fetching circulating supply for ${token.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Update circulating supply in database
+   */
+  private async updateCirculatingSupply(token: Token, circulatingSupply: string): Promise<void> {
+    try {
+      await this.databaseService.token.update({
+        where: { id: token.id },
+        data: { circulatingSupply },
+      });
+
+      this.logger.debug(
+        `Updated circulating supply for ${token.symbol}: ${circulatingSupply}`,
+      );
+    } catch (error) {
+      this.logger.error(`Error updating circulating supply for ${token.symbol}:`, error);
+    }
+  }
+
   private async saveCachedTokens(): Promise<void> {
     try {
       const tokenStatistics = Array.from(this.cachedTokens.values());
@@ -510,6 +666,8 @@ export class PriceService {
               oneHourEvolution: cachedToken.oneHourEvolution,
               oneDayEvolution: cachedToken.oneDayEvolution,
               volume: cachedToken.volume,
+              fdv: cachedToken.fdv,
+              marketCap: cachedToken.marketCap,
             },
           }),
         ),

@@ -18,6 +18,7 @@
 
 @use 'components/modals/networksList';
 @use 'components/modals/transactionStatusModal';
+@use 'components/modals/popularTokens';
 
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';
@@ -31,7 +32,7 @@
 @use 'components/common/walletConnect';
 @use 'components/common/networkItem';
 @use 'components/common/modal';
-@use 'components/common/swapBanner';
+@use 'components/common/newBanner';
 
 @use 'components/tables/table';
 @use 'components/tables/pagination';

@@ -38,3 +38,6 @@ yarn-error.log*
 *.pem
 packages/db/generated/client/edge.js
 packages/db/generated/client/index.js
+
+# Claude Context (local only)
+context.md

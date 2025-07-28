@@ -1,8 +1,8 @@
 // SwapPageLayout.tsx - Modifications à apporter
 
 import React, { useState } from 'react';
-import { Banner } from '../Common/Banner';
-import winnieHii from '../../assets/winnie_hii.png';
+import { NewBanner } from '../Common/NewBanner';
+import bear from '../../assets/bear_icon.svg';
 import SwapForm from '../SwapForm/SwapForm';
 import type { Address } from 'viem';
 import LineChart from '../Charts/LineChart';
@@ -97,7 +97,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   return (
     <div className={`swap-page-layout ${className}`}>
       <div className="swap-page-layout__banner">
-        <Banner title="Swap" subtitle="Where winners trade" image={winnieHii} imageAlt="Winnie dit bonjour" />
+        <NewBanner title="Swap" subtitle="Trade your winners tokens" image={bear} imageAlt="bear head" />
       </div>
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">
