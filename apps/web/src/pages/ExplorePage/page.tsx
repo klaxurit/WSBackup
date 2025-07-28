@@ -4,7 +4,8 @@ import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
 import { useQuery } from '@tanstack/react-query';
-import { Banner } from '../../components/Common/Banner';
+import { NewBanner } from '../../components/Common/NewBanner';
+import beeIcon from '../../assets/bee_icon.svg';
 import { useLocation } from 'react-router-dom';
 
 const TABS = [
@@ -65,7 +66,7 @@ const ExplorePage: React.FC = () => {
 
   return (
     <div className="ExplorePage">
-      <Banner title="Explore" subtitle="Discover tokens, pools and transactions" />
+      <NewBanner title="Explore" subtitle="Discover your next trading opportunities" image={beeIcon} />
       <div className="ExplorePage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="ExplorePage__Tabs" style={{ display: 'flex', gap: 8 }}>
           {TABS.map(tab => (

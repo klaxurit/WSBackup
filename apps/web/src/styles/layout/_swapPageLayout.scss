@@ -2,7 +2,7 @@
 
 .swap-page-layout {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1192px;
   margin: 0 auto;
   padding: 0 1rem;
 
@@ -79,7 +79,7 @@
 // Mise à jour de src/styles/layout/default.scss
 .app {
   min-height: 100vh;
-  background: $onyx-blacker-bis;
+  background: #180E00;
   color: $white;
   font-family: "TT Hoves", system-ui, sans-serif;
 }

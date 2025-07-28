@@ -7,7 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { usePositions } from '../../hooks/usePositions';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
-import { Banner } from '../../components/Common/Banner';
+import honeyIcon from '../../assets/honey_icon.svg';
+import NewBanner from '../../components/Common/NewBanner';
 
 const columns: TableColumn[] = [
   { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.nftTokenId) },
@@ -16,7 +17,7 @@ const columns: TableColumn[] = [
     key: 'pair',
     render: (row) => (
       <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
           <TokenPairLogos token0={row.pool.token0} token1={row.pool.token1} />
           {row.pool.token0.symbol} / {row.pool.token1.symbol}
         </span>
@@ -55,7 +56,7 @@ const PoolPage: React.FC = () => {
 
   return (
     <div className="PoolPage">
-      <Banner title="Pools" subtitle="View your positions or create new ones" />
+      <NewBanner title="Pools" subtitle="View your positions or create new ones" image={honeyIcon}/>
       <div className="PoolPage__ContentWrapper">
         {/* Left Section (70%) */}
         <div className="PoolPage__Left">
@@ -97,7 +98,7 @@ const PoolPage: React.FC = () => {
           <div className="PoolPage__TopList">
             {topPools.map((pool: any) => (
               <div className="PoolPage__TopCard" key={pool.id}>
-                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <TokenPairLogos token0={pool.token0} token1={pool.token1} />
                   {pool.token0.symbol} / {pool.token1.symbol} <span className="PoolPage__TopVersion">v3</span>
                 </div>
