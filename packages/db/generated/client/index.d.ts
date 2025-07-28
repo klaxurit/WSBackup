@@ -4447,6 +4447,8 @@ export namespace Prisma {
     decimals: number | null
     logoUri: string | null
     coingeckoId: string | null
+    totalSupply: string | null
+    circulatingSupply: string | null
     website: string | null
     twitter: string | null
     description: string | null
@@ -4460,6 +4462,8 @@ export namespace Prisma {
     decimals: number | null
     logoUri: string | null
     coingeckoId: string | null
+    totalSupply: string | null
+    circulatingSupply: string | null
     website: string | null
     twitter: string | null
     description: string | null
@@ -4474,6 +4478,8 @@ export namespace Prisma {
     logoUri: number
     coingeckoId: number
     tags: number
+    totalSupply: number
+    circulatingSupply: number
     website: number
     twitter: number
     description: number
@@ -4497,6 +4503,8 @@ export namespace Prisma {
     decimals?: true
     logoUri?: true
     coingeckoId?: true
+    totalSupply?: true
+    circulatingSupply?: true
     website?: true
     twitter?: true
     description?: true
@@ -4510,6 +4518,8 @@ export namespace Prisma {
     decimals?: true
     logoUri?: true
     coingeckoId?: true
+    totalSupply?: true
+    circulatingSupply?: true
     website?: true
     twitter?: true
     description?: true
@@ -4524,6 +4534,8 @@ export namespace Prisma {
     logoUri?: true
     coingeckoId?: true
     tags?: true
+    totalSupply?: true
+    circulatingSupply?: true
     website?: true
     twitter?: true
     description?: true
@@ -4625,6 +4637,8 @@ export namespace Prisma {
     logoUri: string | null
     coingeckoId: string | null
     tags: string[]
+    totalSupply: string | null
+    circulatingSupply: string | null
     website: string | null
     twitter: string | null
     description: string | null
@@ -4658,6 +4672,8 @@ export namespace Prisma {
     logoUri?: boolean
     coingeckoId?: boolean
     tags?: boolean
+    totalSupply?: boolean
+    circulatingSupply?: boolean
     website?: boolean
     twitter?: boolean
     description?: boolean
@@ -4676,6 +4692,8 @@ export namespace Prisma {
     logoUri?: boolean
     coingeckoId?: boolean
     tags?: boolean
+    totalSupply?: boolean
+    circulatingSupply?: boolean
     website?: boolean
     twitter?: boolean
     description?: boolean
@@ -4690,6 +4708,8 @@ export namespace Prisma {
     logoUri?: boolean
     coingeckoId?: boolean
     tags?: boolean
+    totalSupply?: boolean
+    circulatingSupply?: boolean
     website?: boolean
     twitter?: boolean
     description?: boolean
@@ -4719,6 +4739,8 @@ export namespace Prisma {
       logoUri: string | null
       coingeckoId: string | null
       tags: string[]
+      totalSupply: string | null
+      circulatingSupply: string | null
       website: string | null
       twitter: string | null
       description: string | null
@@ -5126,6 +5148,8 @@ export namespace Prisma {
     readonly logoUri: FieldRef<"Token", 'String'>
     readonly coingeckoId: FieldRef<"Token", 'String'>
     readonly tags: FieldRef<"Token", 'String[]'>
+    readonly totalSupply: FieldRef<"Token", 'String'>
+    readonly circulatingSupply: FieldRef<"Token", 'String'>
     readonly website: FieldRef<"Token", 'String'>
     readonly twitter: FieldRef<"Token", 'String'>
     readonly description: FieldRef<"Token", 'String'>
@@ -5534,6 +5558,8 @@ export namespace Prisma {
     oneHourEvolution: number | null
     oneDayEvolution: number | null
     volume: number | null
+    fdv: number | null
+    marketCap: number | null
   }
 
   export type TokenStatisticSumAggregateOutputType = {
@@ -5541,6 +5567,8 @@ export namespace Prisma {
     oneHourEvolution: number | null
     oneDayEvolution: number | null
     volume: number | null
+    fdv: number | null
+    marketCap: number | null
   }
 
   export type TokenStatisticMinAggregateOutputType = {
@@ -5550,6 +5578,8 @@ export namespace Prisma {
     oneHourEvolution: number | null
     oneDayEvolution: number | null
     volume: number | null
+    fdv: number | null
+    marketCap: number | null
     createdAt: Date | null
   }
 
@@ -5560,6 +5590,8 @@ export namespace Prisma {
     oneHourEvolution: number | null
     oneDayEvolution: number | null
     volume: number | null
+    fdv: number | null
+    marketCap: number | null
     createdAt: Date | null
   }
 
@@ -5570,6 +5602,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume: number
+    fdv: number
+    marketCap: number
     createdAt: number
     _all: number
   }
@@ -5580,6 +5614,8 @@ export namespace Prisma {
     oneHourEvolution?: true
     oneDayEvolution?: true
     volume?: true
+    fdv?: true
+    marketCap?: true
   }
 
   export type TokenStatisticSumAggregateInputType = {
@@ -5587,6 +5623,8 @@ export namespace Prisma {
     oneHourEvolution?: true
     oneDayEvolution?: true
     volume?: true
+    fdv?: true
+    marketCap?: true
   }
 
   export type TokenStatisticMinAggregateInputType = {
@@ -5596,6 +5634,8 @@ export namespace Prisma {
     oneHourEvolution?: true
     oneDayEvolution?: true
     volume?: true
+    fdv?: true
+    marketCap?: true
     createdAt?: true
   }
 
@@ -5606,6 +5646,8 @@ export namespace Prisma {
     oneHourEvolution?: true
     oneDayEvolution?: true
     volume?: true
+    fdv?: true
+    marketCap?: true
     createdAt?: true
   }
 
@@ -5616,6 +5658,8 @@ export namespace Prisma {
     oneHourEvolution?: true
     oneDayEvolution?: true
     volume?: true
+    fdv?: true
+    marketCap?: true
     createdAt?: true
     _all?: true
   }
@@ -5713,6 +5757,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume: number
+    fdv: number | null
+    marketCap: number | null
     createdAt: Date
     _count: TokenStatisticCountAggregateOutputType | null
     _avg: TokenStatisticAvgAggregateOutputType | null
@@ -5742,6 +5788,8 @@ export namespace Prisma {
     oneHourEvolution?: boolean
     oneDayEvolution?: boolean
     volume?: boolean
+    fdv?: boolean
+    marketCap?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenStatistic"]>
@@ -5753,6 +5801,8 @@ export namespace Prisma {
     oneHourEvolution?: boolean
     oneDayEvolution?: boolean
     volume?: boolean
+    fdv?: boolean
+    marketCap?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenStatistic"]>
@@ -5764,6 +5814,8 @@ export namespace Prisma {
     oneHourEvolution?: boolean
     oneDayEvolution?: boolean
     volume?: boolean
+    fdv?: boolean
+    marketCap?: boolean
     createdAt?: boolean
   }
 
@@ -5786,6 +5838,8 @@ export namespace Prisma {
       oneHourEvolution: number
       oneDayEvolution: number
       volume: number
+      fdv: number | null
+      marketCap: number | null
       createdAt: Date
     }, ExtArgs["result"]["tokenStatistic"]>
     composites: {}
@@ -6187,6 +6241,8 @@ export namespace Prisma {
     readonly oneHourEvolution: FieldRef<"TokenStatistic", 'Float'>
     readonly oneDayEvolution: FieldRef<"TokenStatistic", 'Float'>
     readonly volume: FieldRef<"TokenStatistic", 'Float'>
+    readonly fdv: FieldRef<"TokenStatistic", 'Float'>
+    readonly marketCap: FieldRef<"TokenStatistic", 'Float'>
     readonly createdAt: FieldRef<"TokenStatistic", 'DateTime'>
   }
     
@@ -7615,6 +7671,8 @@ export namespace Prisma {
     logoUri: 'logoUri',
     coingeckoId: 'coingeckoId',
     tags: 'tags',
+    totalSupply: 'totalSupply',
+    circulatingSupply: 'circulatingSupply',
     website: 'website',
     twitter: 'twitter',
     description: 'description'
@@ -7630,6 +7688,8 @@ export namespace Prisma {
     oneHourEvolution: 'oneHourEvolution',
     oneDayEvolution: 'oneDayEvolution',
     volume: 'volume',
+    fdv: 'fdv',
+    marketCap: 'marketCap',
     createdAt: 'createdAt'
   };
 
@@ -8003,6 +8063,8 @@ export namespace Prisma {
     logoUri?: StringNullableFilter<"Token"> | string | null
     coingeckoId?: StringNullableFilter<"Token"> | string | null
     tags?: StringNullableListFilter<"Token">
+    totalSupply?: StringNullableFilter<"Token"> | string | null
+    circulatingSupply?: StringNullableFilter<"Token"> | string | null
     website?: StringNullableFilter<"Token"> | string | null
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
@@ -8020,6 +8082,8 @@ export namespace Prisma {
     logoUri?: SortOrderInput | SortOrder
     coingeckoId?: SortOrderInput | SortOrder
     tags?: SortOrder
+    totalSupply?: SortOrderInput | SortOrder
+    circulatingSupply?: SortOrderInput | SortOrder
     website?: SortOrderInput | SortOrder
     twitter?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
@@ -8040,6 +8104,8 @@ export namespace Prisma {
     logoUri?: StringNullableFilter<"Token"> | string | null
     coingeckoId?: StringNullableFilter<"Token"> | string | null
     tags?: StringNullableListFilter<"Token">
+    totalSupply?: StringNullableFilter<"Token"> | string | null
+    circulatingSupply?: StringNullableFilter<"Token"> | string | null
     website?: StringNullableFilter<"Token"> | string | null
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
@@ -8057,6 +8123,8 @@ export namespace Prisma {
     logoUri?: SortOrderInput | SortOrder
     coingeckoId?: SortOrderInput | SortOrder
     tags?: SortOrder
+    totalSupply?: SortOrderInput | SortOrder
+    circulatingSupply?: SortOrderInput | SortOrder
     website?: SortOrderInput | SortOrder
     twitter?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
@@ -8079,6 +8147,8 @@ export namespace Prisma {
     logoUri?: StringNullableWithAggregatesFilter<"Token"> | string | null
     coingeckoId?: StringNullableWithAggregatesFilter<"Token"> | string | null
     tags?: StringNullableListFilter<"Token">
+    totalSupply?: StringNullableWithAggregatesFilter<"Token"> | string | null
+    circulatingSupply?: StringNullableWithAggregatesFilter<"Token"> | string | null
     website?: StringNullableWithAggregatesFilter<"Token"> | string | null
     twitter?: StringNullableWithAggregatesFilter<"Token"> | string | null
     description?: StringNullableWithAggregatesFilter<"Token"> | string | null
@@ -8094,6 +8164,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
     volume?: FloatFilter<"TokenStatistic"> | number
+    fdv?: FloatNullableFilter<"TokenStatistic"> | number | null
+    marketCap?: FloatNullableFilter<"TokenStatistic"> | number | null
     createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
   }
@@ -8105,6 +8177,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrderInput | SortOrder
+    marketCap?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     token?: TokenOrderByWithRelationInput
   }
@@ -8119,6 +8193,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
     volume?: FloatFilter<"TokenStatistic"> | number
+    fdv?: FloatNullableFilter<"TokenStatistic"> | number | null
+    marketCap?: FloatNullableFilter<"TokenStatistic"> | number | null
     createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
   }, "id">
@@ -8130,6 +8206,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrderInput | SortOrder
+    marketCap?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: TokenStatisticCountOrderByAggregateInput
     _avg?: TokenStatisticAvgOrderByAggregateInput
@@ -8148,6 +8226,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatWithAggregatesFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatWithAggregatesFilter<"TokenStatistic"> | number
     volume?: FloatWithAggregatesFilter<"TokenStatistic"> | number
+    fdv?: FloatNullableWithAggregatesFilter<"TokenStatistic"> | number | null
+    marketCap?: FloatNullableWithAggregatesFilter<"TokenStatistic"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"TokenStatistic"> | Date | string
   }
 
@@ -8494,6 +8574,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -8511,6 +8593,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -8528,6 +8612,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8545,6 +8631,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8562,6 +8650,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -8576,6 +8666,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8590,6 +8682,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8601,6 +8695,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume?: number
+    fdv?: number | null
+    marketCap?: number | null
     createdAt?: Date | string
     token: TokenCreateNestedOneWithoutStatisticInput
   }
@@ -8612,6 +8708,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume?: number
+    fdv?: number | null
+    marketCap?: number | null
     createdAt?: Date | string
   }
 
@@ -8621,6 +8719,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     token?: TokenUpdateOneRequiredWithoutStatisticNestedInput
   }
@@ -8632,6 +8732,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8642,6 +8744,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume?: number
+    fdv?: number | null
+    marketCap?: number | null
     createdAt?: Date | string
   }
 
@@ -8651,6 +8755,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8661,6 +8767,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -9134,6 +9242,8 @@ export namespace Prisma {
     logoUri?: SortOrder
     coingeckoId?: SortOrder
     tags?: SortOrder
+    totalSupply?: SortOrder
+    circulatingSupply?: SortOrder
     website?: SortOrder
     twitter?: SortOrder
     description?: SortOrder
@@ -9151,6 +9261,8 @@ export namespace Prisma {
     decimals?: SortOrder
     logoUri?: SortOrder
     coingeckoId?: SortOrder
+    totalSupply?: SortOrder
+    circulatingSupply?: SortOrder
     website?: SortOrder
     twitter?: SortOrder
     description?: SortOrder
@@ -9164,6 +9276,8 @@ export namespace Prisma {
     decimals?: SortOrder
     logoUri?: SortOrder
     coingeckoId?: SortOrder
+    totalSupply?: SortOrder
+    circulatingSupply?: SortOrder
     website?: SortOrder
     twitter?: SortOrder
     description?: SortOrder
@@ -9184,6 +9298,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type TokenStatisticCountOrderByAggregateInput = {
     id?: SortOrder
     tokenId?: SortOrder
@@ -9191,6 +9316,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrder
+    marketCap?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -9199,6 +9326,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrder
+    marketCap?: SortOrder
   }
 
   export type TokenStatisticMaxOrderByAggregateInput = {
@@ -9208,6 +9337,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrder
+    marketCap?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -9218,6 +9349,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrder
+    marketCap?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -9226,6 +9359,8 @@ export namespace Prisma {
     oneHourEvolution?: SortOrder
     oneDayEvolution?: SortOrder
     volume?: SortOrder
+    fdv?: SortOrder
+    marketCap?: SortOrder
   }
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -9242,6 +9377,22 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type PoolStatisticCountOrderByAggregateInput = {
@@ -9605,6 +9756,14 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type TokenUpdateOneRequiredWithoutStatisticNestedInput = {
     create?: XOR<TokenCreateWithoutStatisticInput, TokenUncheckedCreateWithoutStatisticInput>
     connectOrCreate?: TokenCreateOrConnectWithoutStatisticInput
@@ -9833,6 +9992,22 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type TokenCreateWithoutPoolsAsToken0Input = {
     id?: string
     address: string
@@ -9842,6 +10017,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -9858,6 +10035,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -9879,6 +10058,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -9895,6 +10076,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -10001,6 +10184,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10017,6 +10202,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10044,6 +10231,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10060,6 +10249,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10288,6 +10479,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume?: number
+    fdv?: number | null
+    marketCap?: number | null
     createdAt?: Date | string
   }
 
@@ -10297,6 +10490,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume?: number
+    fdv?: number | null
+    marketCap?: number | null
     createdAt?: Date | string
   }
 
@@ -10384,6 +10579,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
     oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
     volume?: FloatFilter<"TokenStatistic"> | number
+    fdv?: FloatNullableFilter<"TokenStatistic"> | number | null
+    marketCap?: FloatNullableFilter<"TokenStatistic"> | number | null
     createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
   }
 
@@ -10396,6 +10593,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -10412,6 +10611,8 @@ export namespace Prisma {
     logoUri?: string | null
     coingeckoId?: string | null
     tags?: TokenCreatetagsInput | string[]
+    totalSupply?: string | null
+    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
@@ -10444,6 +10645,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10460,6 +10663,8 @@ export namespace Prisma {
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
     tags?: TokenUpdatetagsInput | string[]
+    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
+    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10677,6 +10882,8 @@ export namespace Prisma {
     oneHourEvolution: number
     oneDayEvolution: number
     volume?: number
+    fdv?: number | null
+    marketCap?: number | null
     createdAt?: Date | string
   }
 
@@ -10766,6 +10973,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -10775,6 +10984,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -10784,6 +10995,8 @@ export namespace Prisma {
     oneHourEvolution?: FloatFieldUpdateOperationsInput | number
     oneDayEvolution?: FloatFieldUpdateOperationsInput | number
     volume?: FloatFieldUpdateOperationsInput | number
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

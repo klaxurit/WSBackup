@@ -61,20 +61,22 @@ model IndexerState {
 }
 
 model Token {
-  id            String           @id @default(cuid())
-  address       String           @unique()
-  symbol        String
-  name          String
-  decimals      Int
-  logoUri       String?
-  coingeckoId   String?
-  tags          String[]
-  poolsAsToken0 Pool[]           @relation("PoolToken0")
-  poolsAsToken1 Pool[]           @relation("PoolToken1")
-  Statistic     TokenStatistic[]
-  website       String?
-  twitter       String?
-  description   String?
+  id                String           @id @default(cuid())
+  address           String           @unique()
+  symbol            String
+  name              String
+  decimals          Int
+  logoUri           String?
+  coingeckoId       String?
+  tags              String[]
+  totalSupply       String? // Total supply for FDV calculation
+  circulatingSupply String? // Circulating supply for Market Cap calculation
+  poolsAsToken0     Pool[]           @relation("PoolToken0")
+  poolsAsToken1     Pool[]           @relation("PoolToken1")
+  Statistic         TokenStatistic[]
+  website           String?
+  twitter           String?
+  description       String?
 }
 
 model TokenStatistic {
@@ -85,6 +87,8 @@ model TokenStatistic {
   oneHourEvolution Float
   oneDayEvolution  Float
   volume           Float    @default(0)
+  fdv              Float? // Fully Diluted Valuation
+  marketCap        Float? // Circulating supply * price (si disponible)
   createdAt        DateTime @default(now())
 }
 

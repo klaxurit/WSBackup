@@ -1,15 +1,30 @@
+import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
 import { formatUnits } from "viem";
+import { useMemo } from "react";
 
-interface TokensTableProps {
-  data?: any[];
-  isLoading?: boolean;
-}
+export const TokensTable = ({ searchValue }: { searchValue: string }) => {
+  const { data = [], isLoading: isLoading } = useQuery({
+    queryKey: ['tokensStats'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
+      if (!resp.ok) return [];
+      return resp.json();
+    }
+  });
 
-export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
-  const tokens = data ?? [];
+  const tokens = useMemo(() => {
+    const inPoolTokens = data.filter((t: any) => t.inPool)
+    if (!searchValue || searchValue === '') return inPoolTokens
+
+    return inPoolTokens.filter((token: any) =>
+      token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
+      token.address.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [searchValue, data]);
 
   const columns: TableColumn[] = [
     {
@@ -64,7 +79,20 @@ export const TokensTable = ({ data, isLoading }: TokensTableProps) => {
           : '-'
       }
     },
-    { label: 'FDV', key: 'fdv', render: () => "-" },
+    {
+      label: 'FDV', key: 'fdv', render: (row) => {
+        return row.Statistic?.length > 0 && row.Statistic[0].fdv !== 0 && row.Statistic[0].fdv
+          ? `$${row.Statistic[0].fdv.toFixed(2)}`
+          : '-'
+      }
+    },
+    {
+      label: 'Market Cap', key: 'mcap', render: (row) => {
+        return row.Statistic?.length > 0 && row.Statistic[0].marketCap !== 0 && row.Statistic[0].marketCap
+          ? `$${row.Statistic[0].marketCap.toFixed(2)}`
+          : '-'
+      }
+    },
     {
       label: 'Volume', key: 'volume', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0

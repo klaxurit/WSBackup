@@ -40,7 +40,7 @@ export class StatisticsController {
     @Param('token1') token1: Address,
     @Param('fee', ParseIntPipe) fee: number,
   ) {
-    return await this.poolService.getOnePoolStat(token0, token1, fee);
+    return await this.poolService.getOnePoolStatByTokens(token0, token1, fee);
   }
 
   @Get('/swaps')
@@ -161,6 +161,60 @@ export class StatisticsController {
     };
   }
 
+  @Get('/pool/:poolAddr')
+  async getOnePoolStats(@Param('poolAddr') poolAddr: string) {
+    return await this.poolService.getOnePoolStat(poolAddr);
+  }
+
+  @Get('/pool/:poolAddr/swaps')
+  async getPoolSwapHistory(@Param('poolAddr') poolAddr: string) {
+    const swaps = await this.databaseService.swap.findMany({
+      where: {
+        pool: {
+          address: poolAddr,
+        },
+      },
+      include: {
+        pool: {
+          include: {
+            token0: {
+              include: {
+                Statistic: {
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                  select: {
+                    price: true,
+                  },
+                },
+              },
+            },
+            token1: {
+              include: {
+                Statistic: {
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                  select: {
+                    price: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 20,
+    });
+
+    return swaps;
+  }
+
   @Get('/positions/:address')
   async getAddressPositions(@Param('address') address: Address) {
     try {
@@ -195,7 +249,7 @@ export class StatisticsController {
 
             if (!position) return null;
 
-            const pool = await this.poolService.getOnePoolStat(
+            const pool = await this.poolService.getOnePoolStatByTokens(
               position[2],
               position[3],
               position[4],

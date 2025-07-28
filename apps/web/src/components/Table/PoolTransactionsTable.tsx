@@ -38,36 +38,35 @@ interface Transaction {
 }
 
 export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ poolAddress }) => {
-  const { data: transactions = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['pool-transactions', poolAddress],
     enabled: !!poolAddress,
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}/swaps`);
       if (!resp.ok) return [];
       const allSwaps = await resp.json();
 
       // Filter transactions for this specific pool and transform data
       const poolTransactions = allSwaps
-        .filter((swap: any) => swap.pool.address?.toLowerCase() === poolAddress.toLowerCase())
-        .map((swap: any) => {
-          if (swap.amount0 > 0n) {
-            // Token0 -> Token1
+        .map((s: any) => {
+          if (s.amount0 > 0n) {
+            // A -> B
             return {
-              ...swap,
-              tokenIn: swap.pool.token0,
-              tokenOut: swap.pool.token1,
-              amountIn: swap.amount0,
-              amountOut: Math.abs(Number(swap.amount1)).toString(),
-            };
+              ...s,
+              tokenIn: s.pool.token0,
+              tokenOut: s.pool.token1,
+              amountIn: s.amount0,
+              amountOut: s.amount1,
+            }
           } else {
-            // Token1 -> Token0
+            // B -> A
             return {
-              ...swap,
-              tokenIn: swap.pool.token1,
-              tokenOut: swap.pool.token0,
-              amountIn: Math.abs(Number(swap.amount1)).toString(),
-              amountOut: Math.abs(Number(swap.amount0)).toString(),
-            };
+              ...s,
+              tokenIn: s.pool.token1,
+              tokenOut: s.pool.token0,
+              amountIn: s.amount1,
+              amountOut: s.amount0,
+            }
           }
         });
 
@@ -76,33 +75,48 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
     staleTime: 30 * 1000, // 30 seconds
   });
 
-  const formatTimeAgo = (dateString: string) => {
-    const now = new Date();
-    const txTime = new Date(dateString);
-    const diffMs = now.getTime() - txTime.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-
-    if (diffMin < 1) return 'Just now';
-    if (diffMin < 60) return `${diffMin} min ago`;
-
-    const diffH = Math.floor(diffMin / 60);
-    if (diffH < 24) return `${diffH}h ago`;
-
-    const diffD = Math.floor(diffH / 24);
-    if (diffD < 30) return `${diffD}d ago`;
-
-    const diffM = Math.floor(diffD / 30);
-    if (diffM < 12) return `${diffM}m ago`;
-
-    const diffY = Math.floor(diffM / 12);
-    return `${diffY}y ago`;
-  };
-
   const txColumns: TableColumn[] = [
     {
       label: 'Time',
       key: 'time',
-      render: (row: Transaction) => formatTimeAgo(row.createdAt),
+      render: (row) => {
+        let text
+        const now = new Date();
+        const txTime = new Date(row.createdAt);
+        const diffMs = now.getTime() - txTime.getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+
+        const diffH = Math.floor(diffMin / 60);
+        const diffD = Math.floor(diffH / 24);
+        const diffM = Math.floor(diffD / 30);
+        const diffY = Math.floor(diffM / 12);
+
+        if (diffMin < 1) {
+          text = 'Just now'
+        } else if (diffMin < 60) {
+          text = `${diffMin} min ago`
+        } else if (diffH < 24) {
+          text = `${diffH}h ago`
+        } else if (diffD < 30) {
+          text = `${diffD}d ago`
+        } else if (diffM < 12) {
+          text = `${diffM}m ago`
+        } else {
+          text = `${diffY}y ago`
+        }
+
+        return (
+          <a
+            href={`https://berascan.com/tx/${row.transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="Table__Address"
+            title={row.recipient}
+          >
+            {text}
+          </a>
+        )
+      },
     },
     {
       label: 'Type',
@@ -139,13 +153,18 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       ),
     },
     {
-      label: 'USD',
-      key: 'usd',
-      render: (_row: Transaction) => {
-        // This would need actual price data to calculate USD value
-        // For now, showing placeholder
-        return 'N/A';
-      }
+      label: 'USD', key: 'usd',
+      render: (row) => {
+        if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
+
+        const amount = (parseFloat(formatEther(row.amountIn)) * row.tokenIn.Statistic[0].price)
+        if (amount < 0.01) return "<0.01$"
+        return (
+          <span>
+            ${amount.toFixed(2)}
+          </span>
+        )
+      },
     },
     {
       label: 'Token amount (sent)',
@@ -162,13 +181,16 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
     },
     {
       label: 'Token amount (received)',
-      key: 'amountOut',
-      render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-          {formatEther(BigInt(row.amountOut) * -1n)}
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} />}
-        </span>
-      ),
+      key: 'amount2',
+      render: (row) => {
+        const amount = parseFloat(formatEther(BigInt(row.amountOut) * -1n))
+        return (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
+          </span>
+        )
+      },
     },
     {
       label: 'Wallet',
@@ -192,7 +214,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       <h3 className="Pool__TransactionsSectionTitle">Recent Transactions</h3>
       <Table
         columns={txColumns}
-        data={transactions}
+        data={data || []}
         isLoading={isLoading}
         tableClassName="Table"
         wrapperClassName="Table__Wrapper"
