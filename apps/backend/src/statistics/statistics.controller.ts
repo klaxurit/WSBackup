@@ -160,6 +160,54 @@ export class StatisticsController {
       },
     };
   }
+  @Get('/pool/:poolAddr/swaps')
+  async getPoolSwapHistory(@Param('poolAddr') poolAddr: string) {
+    const swaps = await this.databaseService.swap.findMany({
+      where: {
+        pool: {
+          address: poolAddr,
+        },
+      },
+      include: {
+        pool: {
+          include: {
+            token0: {
+              include: {
+                Statistic: {
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                  select: {
+                    price: true,
+                  },
+                },
+              },
+            },
+            token1: {
+              include: {
+                Statistic: {
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                  select: {
+                    price: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 20,
+    });
+
+    return swaps;
+  }
 
   @Get('/positions/:address')
   async getAddressPositions(@Param('address') address: Address) {
