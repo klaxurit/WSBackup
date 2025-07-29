@@ -23,7 +23,7 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
     position: 'relative',
     width: 36,
     height: 28,
-    marginRight: 4
+    marginRight: 12 
   }}>
     {token0.logoUri ? (
       <img

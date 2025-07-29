@@ -16,24 +16,29 @@
   }
 
   &__AddLiquidityBtn {
+    margin-bottom: 12px;
     background-image: url('/src/assets/bear_button.svg');
+    background-size: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+  
+    &:hover {
+      background-image: url('/src/assets/bear_btn_hover.svg');
       background-size: 100%;
       background-position: center;
       background-repeat: no-repeat;
-    
-      &:hover {
-        background-image: url('/src/assets/bear_btn_hover.svg');
-        background-size: 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-    
-      &:active {
-        background-image: url('/src/assets/bear_btn_click.svg');
-        background-size: 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
+    }
+  
+    &:active {
+      background-image: url('/src/assets/bear_btn_click.svg');
+      background-size: 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    @media (min-width: 768px) {
+      margin-bottom: 0;
+    }
   }
 
   &__BreadcrumbsContainer {
@@ -423,7 +428,7 @@
   }
 
   .Form {
-    height: calc(100vh - 277px) !important;
+    height: auto;
     padding-top: 0;
   }
 
