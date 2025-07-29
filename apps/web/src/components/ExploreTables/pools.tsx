@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
-import { formatEther } from "viem";
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
@@ -77,14 +76,14 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: 'Vol. 1d', key: 'vol1d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
-          ? `$${parseFloat(formatEther(row.PoolStatistic[0].volOneDay)).toFixed(2)}`
+          ? `$${parseFloat(row.PoolStatistic[0].volOneDay).toFixed(2)}`
           : "-"
       }
     },
     {
       label: 'Vol. 30d', key: 'vol30d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneMonth !== "0"
-          ? `$${parseFloat(formatEther(BigInt(row.PoolStatistic[0].volOneMonth))).toFixed(2)}`
+          ? `$${parseFloat(row.PoolStatistic[0].volOneMonth).toFixed(2)}`
           : "-"
       }
     },
