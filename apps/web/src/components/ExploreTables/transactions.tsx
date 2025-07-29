@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
-import { formatEther } from "viem";
+import { formatUnits } from "viem";
 import { useEffect, useState } from "react";
 
 interface TransactionsTableProps {
@@ -119,7 +119,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       render: (row) => {
         if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
 
-        const amount = (parseFloat(formatEther(row.amountIn)) * row.tokenIn.Statistic[0].price)
+        const amount = (parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18)) * row.tokenIn.Statistic[0].price)
         if (amount < 0.01) return "<0.01$"
         return (
           <span>
@@ -132,7 +132,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       label: 'Token amount (sent)',
       key: 'amount1',
       render: (row) => {
-        const amount = parseFloat(formatEther(row.amountIn))
+        const amount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
@@ -145,7 +145,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => {
-        const amount = parseFloat(formatEther(BigInt(row.amountOut) * -1n))
+        const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}

@@ -3,7 +3,7 @@ import { useMemo, useRef } from "react";
 import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from "wagmi";
-import { formatEther, parseEther, zeroAddress } from "viem";
+import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
 import { formatTokenAmount } from '../../utils/format';
@@ -57,7 +57,7 @@ export const FromInput: React.FC<FromInputProps> = (
 
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0
-    return (usdValue * +formatEther(value)).toFixed(2)
+    return (usdValue * +formatUnits(value, selectedToken?.decimals || 18)).toFixed(2)
   }, [usdValue, value])
 
   const isOverBalance = useMemo(() => (value > (balance?.value || 0n)), [value, balance])
@@ -67,9 +67,9 @@ export const FromInput: React.FC<FromInputProps> = (
 
   React.useEffect(() => {
     if (!isInputting.current) {
-      setInputValue(value === 0n ? '' : formatEther(value));
+      setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
     }
-  }, [value]);
+  }, [value, selectedToken?.decimals]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -78,7 +78,7 @@ export const FromInput: React.FC<FromInputProps> = (
 
     if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
       try {
-        onAmountChange(parseEther(val));
+        onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
       } catch { }
     } else if (val === '') {
       onAmountChange(0n);
@@ -87,7 +87,7 @@ export const FromInput: React.FC<FromInputProps> = (
 
   const handleBlur = () => {
     isInputting.current = false;
-    setInputValue(value === 0n ? '' : formatEther(value));
+    setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
   };
 
   const setMax = () => {
@@ -95,7 +95,7 @@ export const FromInput: React.FC<FromInputProps> = (
       const val = selectedToken?.address === zeroAddress
         ? (balance?.value || 0n) * 99n / 100n
         : balance?.value
-      inputRef.current.value = formatEther(val || 0n)
+      inputRef.current.value = formatUnits(val || 0n, selectedToken?.decimals || 18)
       onAmountChange(val || 0n)
     }
   }
@@ -162,7 +162,7 @@ export const FromInput: React.FC<FromInputProps> = (
                 Max
               </button>
               <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
-                {loading ? "..." : formatTokenAmount(formatEther(balance?.value || 0n))}
+                {loading ? "..." : formatTokenAmount(formatUnits(balance?.value || 0n, selectedToken?.decimals || 18))}
               </p>
             </>
           )}
