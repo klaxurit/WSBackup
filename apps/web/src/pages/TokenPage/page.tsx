@@ -7,6 +7,7 @@ import { useCoingeckoTokenData } from '../../hooks/useCoingeckoData';
 import { formatNumber } from '../../utils/formatNumber';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
 import LineChart from '../../components/Charts/LineChart';
+import { formatUnits } from 'viem';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
@@ -76,13 +77,7 @@ const TokenPage: React.FC = () => {
   const fdv = stat?.fdv || 0
 
   // 1D Volume: backend then fallback CoinGecko
-  const volume1d = useMemo(() => {
-    if (stat?.volume && stat.volume > 0) return stat.volume;
-    if (coingeckoTokenData?.market_data?.total_volume?.usd && coingeckoTokenData.market_data.total_volume.usd > 0)
-      return coingeckoTokenData.market_data.total_volume.usd;
-    return null;
-  }, [stat, coingeckoTokenData]);
-
+  const volume1d = stat?.volume ? parseFloat(formatUnits(stat.volume, token?.decimals || 18)) : 0
   // Hook pour charger l'historique de prix d'un token (endpoint /stats/token/:address)
   function useTokenLineChart(tokenAddress?: string | null) {
     return useQuery({

@@ -29,7 +29,9 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
 
   const columns: TableColumn[] = [
     {
-      label: '#', key: 'index', render: (row) => (
+      label: '#',
+      key: 'index',
+      render: (row) => (
         <a
           href={`https://berascan.com/address/${row.address}`}
           target="_blank"
@@ -38,12 +40,15 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
           title={row.address}
         >
           {row.address.slice(0, 4) + '...' + row.address.slice(-4)}
-        </a>)
+        </a>
+      )
     },
     {
       label: 'Token name',
       key: 'name',
       className: 'TokensTable__NameTd',
+      sortable: true,
+      sortValue: (row) => row.name || row.symbol || '',
       render: (row) => (
         <span className="TokensTable__NameCell">
           <span className="TokensTable__LogoWrapper">
@@ -62,40 +67,88 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       )
     },
     {
-      label: 'Price', key: 'price', render: (row) => {
+      label: 'Price',
+      key: 'price',
+      sortable: true,
+      sortValue: (row) => {
+        return row.Statistic?.length > 0 ? row.Statistic[0].price : 0;
+      },
+      render: (row) => {
         return row.Statistic?.length > 0 ? `$${formatNumber(row.Statistic[0].price)}` : '-'
       }
     },
     {
-      label: '1h', key: '1h', render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].oneHourEvolution !== 0
-          ? `${row.Statistic[0].oneHourEvolution.toFixed(2)}%`
-          : '-'
+      label: '1h',
+      key: '1h',
+      sortable: true,
+      sortValue: (row) => {
+        return row.Statistic?.length > 0 ? row.Statistic[0].oneHourEvolution : 0;
+      },
+      render: (row) => {
+        const evolution = row.Statistic?.length > 0 ? row.Statistic[0].oneHourEvolution : 0;
+        if (evolution === 0) return '-';
+        const isPositive = evolution > 0;
+        return (
+          <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
+            {evolution.toFixed(2)}%
+          </span>
+        );
       }
     },
     {
-      label: '1d', key: '1d', render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].oneDayEvolution !== 0
-          ? `${row.Statistic[0].oneDayEvolution.toFixed(2)}%`
-          : '-'
+      label: '1d',
+      key: '1d',
+      sortable: true,
+      sortValue: (row) => {
+        return row.Statistic?.length > 0 ? row.Statistic[0].oneDayEvolution : 0;
+      },
+      render: (row) => {
+        const evolution = row.Statistic?.length > 0 ? row.Statistic[0].oneDayEvolution : 0;
+        if (evolution === 0) return '-';
+        const isPositive = evolution > 0;
+        return (
+          <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
+            {evolution.toFixed(2)}%
+          </span>
+        );
       }
     },
     {
-      label: 'FDV', key: 'fdv', render: (row) => {
+      label: 'FDV',
+      key: 'fdv',
+      sortable: true,
+      sortValue: (row) => {
+        return row.Statistic?.length > 0 && row.Statistic[0].fdv ? row.Statistic[0].fdv : 0;
+      },
+      render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].fdv !== 0 && row.Statistic[0].fdv
           ? `$${formatNumber(row.Statistic[0].fdv)}`
           : '-'
       }
     },
     {
-      label: 'Market Cap', key: 'mcap', render: (row) => {
+      label: 'Market Cap',
+      key: 'mcap',
+      sortable: true,
+      sortValue: (row) => {
+        return row.Statistic?.length > 0 && row.Statistic[0].marketCap ? row.Statistic[0].marketCap : 0;
+      },
+      render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].marketCap !== 0 && row.Statistic[0].marketCap
           ? `$${formatNumber(row.Statistic[0].marketCap)}`
           : '-'
       }
     },
     {
-      label: 'Volume', key: 'volume', render: (row) => {
+      label: 'Volume',
+      key: 'volume',
+      sortable: true,
+      sortValue: (row) => {
+        return row.Statistic?.length > 0 && row.Statistic[0].volume
+          ? parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimal))
+          : 0;
+      },
+      render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
           ? `$${formatNumber(parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimals)))}`
           : '-'
@@ -111,6 +164,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
+      defaultSortKey="volume"
+      defaultSortDirection="desc"
     />
   )
 }
