@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
-import { formatUnits } from "viem";
 import { useMemo } from "react";
+import { formatNumber } from "../../utils/formatNumber";
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   const { data = [], isLoading: isLoading } = useQuery({
@@ -62,7 +62,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
     },
     {
       label: 'Price', key: 'price', render: (row) => {
-        return row.Statistic?.length > 0 ? `$${row.Statistic[0].price.toFixed(2)}` : '-'
+        return row.Statistic?.length > 0 ? `$${formatNumber(row.Statistic[0].price)}` : '-'
       }
     },
     {
@@ -82,21 +82,21 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
     {
       label: 'FDV', key: 'fdv', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].fdv !== 0 && row.Statistic[0].fdv
-          ? `$${row.Statistic[0].fdv.toFixed(2)}`
+          ? `$${formatNumber(row.Statistic[0].fdv)}`
           : '-'
       }
     },
     {
       label: 'Market Cap', key: 'mcap', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].marketCap !== 0 && row.Statistic[0].marketCap
-          ? `$${row.Statistic[0].marketCap.toFixed(2)}`
+          ? `$${formatNumber(row.Statistic[0].marketCap)}`
           : '-'
       }
     },
     {
       label: 'Volume', key: 'volume', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `$${parseFloat(formatUnits(row.Statistic[0].volume, row.decimals)).toFixed(2)}`
+          ? `$${formatNumber(row.Statistic[0].volume)}`
           : '-'
       }
     },

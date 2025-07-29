@@ -161,7 +161,7 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">TVL</h4>
                 <p className="Pool__StatCardLabel">
-                  {tvl === null || isNaN(tvl) ? 'N/A' : formatNumber(tvl, { currency: true })}
+                  {tvl === null || isNaN(tvl) ? 'N/A' : formatNumber(tvl)}
                 </p>
               </div>
               <div className="Pool__StatCard">
@@ -173,20 +173,20 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">24h Volume</h4>
                 <p className="Pool__StatCardLabel">
-                  {volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d, { currency: true })}
+                  {volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d)}
                 </p>
               </div>
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">30d Volume</h4>
                 <p className="Pool__StatCardLabel">
-                  {volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d, { currency: true })}
+                  {volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d)}
                 </p>
               </div>
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">Liquidity</h4>
                 <p className="Pool__StatCardLabel">
                   {liquidity > 0.01
-                    ? formatNumber(liquidity, { currency: false })
+                    ? formatNumber(liquidity)
                     : '<0.01'}
                 </p>
               </div>
