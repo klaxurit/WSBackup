@@ -14,13 +14,6 @@
     }
   }
 
-  .dexscreener-chart {
-    width: 100%;
-    height: calc(70vh + 38px);
-    border: none;
-    border-radius: 16px;
-  }
-
   &__main {
     width: 100%;
   }
@@ -85,8 +78,7 @@
 }
 
 .app-main {
-  padding-top: 80px; // Ajustez selon la hauteur de votre navbar
-  min-height: calc(100vh - 80px);
+  padding-top: 105px;
 }
 
 .swap-page {

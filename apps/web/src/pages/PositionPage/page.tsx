@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { usePositions } from '../../hooks/usePositions';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
-import honeyIcon from '../../assets/honey_icon.svg';
+import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
 
 const columns: TableColumn[] = [

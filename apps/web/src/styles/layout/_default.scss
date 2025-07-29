@@ -164,12 +164,11 @@ body {
 
 .app-main {
   flex: 1;
-  padding-top: 80px;
+  padding-top: 105px;
   position: relative;
 }
 
 .swap-page {
-  min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
   justify-content: center;
