@@ -56,7 +56,7 @@ const PoolPage: React.FC = () => {
 
   return (
     <div className="PoolPage">
-      <NewBanner title="Pools" subtitle="View your positions or create new ones" image={honeyIcon}/>
+      <NewBanner title="Pools" subtitle="Manage your liquidity pools and positions" image={honeyIcon}/>
       <div className="PoolPage__ContentWrapper">
         {/* Left Section (70%) */}
         <div className="PoolPage__Left">
