@@ -1,16 +1,25 @@
-export function formatNumber(value: number | null | undefined, options?: { currency?: boolean }) {
+export function formatNumber(value: number | null | undefined) {
   if (value === null || value === undefined || isNaN(value)) return '-';
-  const abs = Math.abs(value);
-  let formatted = '';
-  if (abs >= 1e9) {
-    formatted = (value / 1e9).toFixed(2) + 'B';
-  } else if (abs >= 1e6) {
-    formatted = (value / 1e6).toFixed(2) + 'M';
-  } else if (abs >= 1e3) {
-    formatted = (value / 1e3).toFixed(2) + 'K';
-  } else {
-    formatted = value.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+
+  const absValue = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  
+  const suffixes = [
+    { value: 1e15, suffix: 'Q' },  // Quadrillions
+    { value: 1e12, suffix: 'T' },  // Trillions
+    { value: 1e9, suffix: 'B' },   // Milliards
+    { value: 1e6, suffix: 'M' },   // Millions
+    { value: 1e3, suffix: 'K' }    // Milliers
+  ];
+  
+  for (const { value: threshold, suffix } of suffixes) {
+    if (absValue >= threshold) {
+      const formatted = (absValue / threshold).toFixed(2);
+      const cleaned = parseFloat(formatted).toString();
+      return `${sign}${cleaned}${suffix}`;
+
+    }
   }
-  if (options?.currency) return '$' + formatted;
-  return formatted;
+
+  return parseFloat(value.toFixed(2)).toString()
 } 
