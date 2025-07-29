@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { type Address, encodeFunctionData, erc20Abi, parseUnits, zeroAddress } from "viem"
+import { type Address, encodeFunctionData, erc20Abi, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
@@ -53,6 +53,7 @@ export const usePoolManager = ({
   const needsWrapping = useMemo(() => isToken0Bera || isToken1Bera, [isToken0Bera, isToken1Bera])
 
   const { data: usdPrice0 = 0 } = usePrice(btoken0)
+  const { data: usdPrice1 = 0 } = usePrice(btoken1)
 
   // Prix USD de référence pour l'affichage (garde l'ancien comportement)
   const marketPriceDisplay = usdPrice0
@@ -154,15 +155,22 @@ export const usePoolManager = ({
   // Prix réel de la pool (token0 en termes de token1)
   const currentPrice = useMemo(() => {
     if (!pool) return 0;
-    
+
     try {
-      // Prix de token0 en termes de token1 depuis la pool
-      return parseFloat(pool.token0Price.toSignificant(8));
+      // Pour les calculs internes, utiliser le prix de la pool
+      const poolPrice = parseFloat(pool.token0Price.toSignificant(8));
+
+      // Pour l'affichage, calculer le ratio USD si les deux prix sont disponibles
+      if (usdPrice0 > 0 && usdPrice1 > 0) {
+        return usdPrice0 / usdPrice1;
+      }
+
+      return poolPrice;
     } catch (err) {
       console.error("Error calculating pool price", err);
       return 0;
     }
-  }, [pool])
+  }, [pool, usdPrice0, usdPrice1])
 
   /*
    * PRICE CALCULATION
@@ -206,6 +214,7 @@ export const usePoolManager = ({
         throw new Error('tickLower must be lower thant tickUpper')
       }
 
+      console.log(inputToken, inputAmount, pool)
       let position: Position
       if (inputToken === 'token0') {
         position = Position.fromAmount0({
@@ -225,8 +234,8 @@ export const usePoolManager = ({
       }
 
       return {
-        amount0: parseUnits(position.amount0.toFixed(6), pool?.token0?.decimals || 18),
-        amount1: parseUnits(position.amount1.toFixed(6), pool?.token1?.decimals || 18),
+        amount0: BigInt(position.amount0.quotient.toString()),
+        amount1: BigInt(position.amount1.quotient.toString()),
         position
       }
     } catch (err) {
