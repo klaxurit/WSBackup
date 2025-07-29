@@ -284,8 +284,23 @@
   font-size: 15px;
   transition: background 0.15s;
 
+  background-image: url('/src/assets/paw_background_large.svg') !important;
+  background-size: 170% !important;
+  background-position: center;
+  background-repeat: no-repeat;
+
   &:hover {
-    background: #3a3a3a;
+    background-image: url('/src/assets/paw_bg_large_hover.svg') !important;
+    background-size: 170% !important;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  &:active {
+    background-image: url('/src/assets/paw_bg_large_click.svg') !important;
+    background-size: 170% !important;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 }
 
