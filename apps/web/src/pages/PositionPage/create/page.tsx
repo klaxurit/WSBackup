@@ -12,6 +12,7 @@ import { InitialPriceInput } from '../../../components/Inputs/InitialPriceInput'
 import { useTokens } from '../../../hooks/useBerachainTokenList';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
+import { FallbackImg } from '../../../components/utils/FallbackImg'; // Import ajouté
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -25,7 +26,6 @@ const CreatePoolPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { address, isConnected } = useAccount();
   const [currentStep, setCurrentStep] = useState(1);
-
 
   // Step 1
   const [token0, setToken0] = useState<BerachainToken | null>(null);
@@ -73,14 +73,6 @@ const CreatePoolPage: React.FC = () => {
   }, [balance0, balance1, poolManager])
 
   const buttonState = useMemo(() => {
-    // if (poolManager.createPoolReceipt?.status === "success") {
-    //   return {
-    //     text: "pool created, mint position",
-    //     action: () => {},
-    //     disabled: false,
-    //     loading: false,
-    //   }
-    // }
     if (poolManager.mintPositionReceipt?.status === "success") {
       return {
         text: "View positions",
@@ -431,8 +423,69 @@ const CreatePoolPage: React.FC = () => {
                 {token0 && token1 && (
                   <>
                     <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-                      <img src={token0.logoUri} alt={token0.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
-                      <img src={token1.logoUri} alt={token1.symbol} style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 16, zIndex: 1 }} />
+                      {/* Token0 avec FallbackImg */}
+                      {token0.logoUri ? (
+                        <img
+                          src={token0.logoUri}
+                          alt={token0.symbol}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            border: '2px solid #232323',
+                            background: '#fff',
+                            position: 'absolute',
+                            left: 0,
+                            zIndex: 2
+                          }}
+                        />
+                      ) : (
+                        <FallbackImg
+                          content={token0.symbol}
+                          width={32}
+                          height={32}
+                          style={{
+                            borderRadius: '50%',
+                            border: '2px solid #232323',
+                            background: '#fff',
+                            position: 'absolute',
+                            left: 0,
+                            zIndex: 2
+                          }}
+                        />
+                      )}
+
+                      {/* Token1 avec FallbackImg */}
+                      {token1.logoUri ? (
+                        <img
+                          src={token1.logoUri}
+                          alt={token1.symbol}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            border: '2px solid #232323',
+                            background: '#fff',
+                            position: 'absolute',
+                            left: 16,
+                            zIndex: 1
+                          }}
+                        />
+                      ) : (
+                        <FallbackImg
+                          content={token1.symbol}
+                          width={32}
+                          height={32}
+                          style={{
+                            borderRadius: '50%',
+                            border: '2px solid #232323',
+                            background: '#fff',
+                            position: 'absolute',
+                            left: 16,
+                            zIndex: 1
+                          }}
+                        />
+                      )}
                     </span>
                     <span style={{ fontWeight: 700, fontSize: 18 }}>{token0.symbol} / {token1.symbol}</span>
                   </>
