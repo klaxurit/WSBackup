@@ -93,7 +93,7 @@ const PoolDetailPage: React.FC = () => {
   const volume1d = stat?.volOneDay ? Number(stat.volOneDay) : null;
   const volume30d = stat?.volOneMonth ? Number(stat.volOneMonth) : null;
   const apr = stat?.apr || null;
-  const liquidity = Number(formatUnits(BigInt(pool.liquidity), (pool.token0.decimals + pool.token1.decimals) / 2))
+  const liquidity = Number(formatUnits(BigInt(pool.liquidity || "0"), (pool.token0.decimals + pool.token1.decimals) / 2))
 
   return (
     <div className="Pool">
