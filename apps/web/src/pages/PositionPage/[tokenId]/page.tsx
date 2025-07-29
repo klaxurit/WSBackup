@@ -181,6 +181,7 @@ const PoolViewPage: React.FC = () => {
                   defaultValue={BigInt(position?.liquidity || '0')}
                   value={config?.withdraw?.liquidity || BigInt(position?.liquidity || '0')}
                   onAmountChange={(amount: bigint) => setConfig({ ...config, withdraw: { liquidity: amount } })}
+                  decimals={18}
                 />
                 <button
                   className={`btn btn__main btn--large${!pm.canWithdraw ? ' btn__disabled' : ''}`}

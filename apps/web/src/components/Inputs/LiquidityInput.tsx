@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'r
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
 import { usePrice } from '../../hooks/usePrice';
-import { formatEther, parseEther, zeroAddress } from 'viem';
+import { formatUnits, parseUnits, zeroAddress } from 'viem';
 import { formatTokenAmount } from '../../utils/format';
 import { FallbackImg } from '../utils/FallbackImg';
 import type { Token } from '../../hooks/usePositions';
@@ -39,13 +39,13 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
 
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0
-    return (usdValue * +formatEther(value)).toFixed(2)
+    return (usdValue * +formatUnits(value, selectedToken?.decimals || 18)).toFixed(2)
   }, [usdValue, value])
 
 
   useEffect(() => {
     if (!isInputting.current) {
-      setInputValue(value === 0n ? '' : formatEther(value));
+      setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
     }
   }, [value]);
 
@@ -55,7 +55,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
     isInputting.current = true;
 
     if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
-      onAmountChange(parseEther(val));
+      onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
     } else if (val === '') {
       onAmountChange(0n);
     }
@@ -63,12 +63,12 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
 
   const handleBlur = () => {
     isInputting.current = false;
-    setInputValue(value === 0n ? '' : formatEther(value));
+    setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
   };
 
   const setMax = () => {
     if (inputRef.current) {
-      inputRef.current.value = formatEther(balance?.value || 0n)
+      inputRef.current.value = formatUnits(balance?.value || 0n, selectedToken?.decimals || 18)
       onAmountChange(balance?.value || 0n)
     }
   }
@@ -130,7 +130,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
                       Max
                     </button>
                     <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
-                      {loading ? "..." : formatTokenAmount(formatEther(balance?.value || 0n))}
+                      {loading ? "..." : formatTokenAmount(formatUnits(balance?.value || 0n, selectedToken?.decimals || 18))}
                     </p>
                   </>
                 )}

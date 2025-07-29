@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "./Table";
 import { FallbackImg } from "../utils/FallbackImg";
-import { formatEther } from "viem";
+import { formatUnits } from "viem";
 
 // Types
 export interface Transaction {
@@ -85,7 +85,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       label: 'Token amount (sent)',
       key: 'amount1',
       render: (row) => {
-        const amount = parseFloat(formatEther(row.amountIn))
+        const amount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
@@ -98,7 +98,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => {
-        const amount = parseFloat(formatEther(BigInt(row.amountOut) * -1n))
+        const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { type Address, encodeFunctionData, erc20Abi, parseEther, zeroAddress } from "viem"
+import { type Address, encodeFunctionData, erc20Abi, parseUnits, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
@@ -209,8 +209,8 @@ export const usePoolManager = ({
       }
 
       return {
-        amount0: parseEther(position.amount0.toFixed(6)),
-        amount1: parseEther(position.amount1.toFixed(6)),
+        amount0: parseUnits(position.amount0.toFixed(6), pool?.token0?.decimals || 18),
+        amount1: parseUnits(position.amount1.toFixed(6), pool?.token1?.decimals || 18),
         position
       }
     } catch (err) {
