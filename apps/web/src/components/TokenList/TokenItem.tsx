@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Loader } from '../Loader/Loader';
-import { formatEther, zeroAddress } from 'viem';
+import { formatUnits, zeroAddress } from 'viem';
 import { useAccount, useBalance } from 'wagmi';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
@@ -70,13 +70,13 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
             <>
               <span className="Modal__ItemPrice">
                 {balance && balance.value !== 0n && token.lastPrice && token.lastPrice !== 0
-                  ? `$${(token.lastPrice * +formatEther(balance.value)).toFixed(2)}`
+                  ? `$${(token.lastPrice * +formatUnits(balance.value, token.decimals || 18)).toFixed(2)}`
                   : ''
                 }
               </span>
               <span className="Modal__ItemBalance">
                 {balance && balance.value !== 0n
-                  ? `${parseFloat(formatEther(balance.value)).toFixed(4)}`
+                  ? `${parseFloat(formatUnits(balance.value, token.decimals || 18)).toFixed(4)}`
                   : ''
                 }
               </span>

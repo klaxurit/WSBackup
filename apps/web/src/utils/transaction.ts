@@ -1,9 +1,9 @@
-import { formatEther } from 'viem';
+import { formatUnits } from 'viem';
 import type { OptimizedRoute, PoolInfo, SingleRoute } from '../hooks/useSwap';
 
-export function getUsdAmount(tokenUsdPrice: number, amount: bigint) {
+export function getUsdAmount(tokenUsdPrice: number, amount: bigint, decimal: number = 18) {
   if (!tokenUsdPrice || amount === 0n) return 0;
-  return tokenUsdPrice * +formatEther(amount);
+  return tokenUsdPrice * +formatUnits(amount, decimal);
 }
 
 export function getPoolFeesInBera(opRoute: OptimizedRoute | null) {

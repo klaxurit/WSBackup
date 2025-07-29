@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Table, { type TableColumn } from '../Table/Table';
 import { FallbackImg } from '../utils/FallbackImg';
-import { formatEther } from 'viem';
+import { formatUnits } from 'viem';
 
 interface PoolTransactionsTableProps {
   poolAddress: string;
@@ -157,7 +157,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row) => {
         if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
 
-        const amount = (parseFloat(formatEther(row.amountIn)) * row.tokenIn.Statistic[0].price)
+        const amount = (parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18)) * row.tokenIn.Statistic[0].price)
         if (amount < 0.01) return "<0.01$"
         return (
           <span>
@@ -170,7 +170,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Token amount (sent)',
       key: 'amountIn',
       render: (row) => {
-        const amount = parseFloat(formatEther(row.amountIn))
+        const amount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
@@ -183,7 +183,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => {
-        const amount = parseFloat(formatEther(BigInt(row.amountOut) * -1n))
+        const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}

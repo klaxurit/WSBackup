@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { formatEther, parseEther } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { FallbackImg } from "../utils/FallbackImg";
 
 interface InitialPriceInputProps {
@@ -34,7 +34,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
       }
     }
 
-    onAmountChange(parseEther(val));
+    onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
     setInputValue(val)
   };
 
@@ -45,7 +45,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
 
   useEffect(() => {
     if (value > 0n && inputValue === "0") {
-      setInputValue(formatEther(value))
+      setInputValue(formatUnits(value, selectedToken?.decimals || 18))
     }
   }, [value, inputValue])
 

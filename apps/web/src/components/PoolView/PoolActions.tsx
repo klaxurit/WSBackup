@@ -88,6 +88,7 @@ const PoolActions = (
             defaultValue={BigInt(positionData?.position?.liquidity || "0")}
             value={config?.withdraw?.liquidity || BigInt(positionData?.position?.liquidity || "0")}
             onAmountChange={(amount) => { updateConfig({ ...config, withdraw: { liquidity: amount } }) }}
+            decimals={18}
           />
           <button
             className={`btn btn__main btn--large ${!positionManager.canWithdraw || !!btnText ? "btn__disabled" : ""}`}

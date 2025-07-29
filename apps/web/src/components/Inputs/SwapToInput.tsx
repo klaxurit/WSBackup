@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from "react";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
-import { formatEther, parseEther, zeroAddress } from "viem";
+import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
 import { useAccount, useBalance } from "wagmi";
@@ -51,7 +51,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
 
     const usdAmount = useMemo(() => {
       if (inputValue === 0n) return 0
-      return (usdValue * +formatEther(inputValue)).toFixed(2)
+      return (usdValue * +formatUnits(inputValue, preSelected?.decimals || 18)).toFixed(2)
     }, [usdValue, inputValue])
 
     return (
@@ -64,10 +64,10 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
             <input
               ref={textareaRef}
               className="From__Input"
-              value={formatEther(inputValue)}
+              value={formatUnits(inputValue, preSelected?.decimals || 18)}
               type="number"
               placeholder="0"
-              onChange={e => onInputChange(parseEther(e.target.value))}
+              onChange={e => onInputChange(parseUnits(e.target.value, preSelected?.decimals || 18))}
               readOnly={disabled}
               onClick={disabled ? onInputClick : undefined}
               onBlur={onBlur}
@@ -92,7 +92,7 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
           <div className="From__Balance" style={{ display: 'flex', alignItems: 'baseline' }}>
             {preSelected && (
               <p className="From__Amount" style={{ margin: 0, fontWeight: 500 }}>
-                Current: {loading ? "..." : (+formatEther(balance?.value || 0n)).toFixed(4)}
+                Current: {loading ? "..." : (+formatUnits(balance?.value || 0n, preSelected?.decimals || 18)).toFixed(4)}
               </p>
             )}
           </div>

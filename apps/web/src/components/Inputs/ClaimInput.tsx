@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { formatEther, parseEther } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 
 interface ClaimInputProps {
   defaultValue: bigint;
   onAmountChange: (amount: bigint) => void;
   value: bigint;
+  decimals: number
 }
 
 export const ClaimInput = ({
   defaultValue,
   onAmountChange,
   value,
+  decimals
 }: ClaimInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isInputting = useRef(false);
@@ -18,7 +20,7 @@ export const ClaimInput = ({
 
   useEffect(() => {
     if (!isInputting.current) {
-      setInputValue(value === 0n ? '' : formatEther(value));
+      setInputValue(value === 0n ? '' : formatUnits(value, decimals));
     }
   }, [value]);
 
@@ -28,7 +30,7 @@ export const ClaimInput = ({
     isInputting.current = true;
 
     if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
-      onAmountChange(parseEther(val));
+      onAmountChange(parseUnits(val, decimals));
     } else if (val === '') {
       onAmountChange(0n);
     }
@@ -36,13 +38,13 @@ export const ClaimInput = ({
 
   const handleBlur = () => {
     isInputting.current = false;
-    setInputValue(value === 0n ? '' : formatEther(value));
+    setInputValue(value === 0n ? '' : formatUnits(value, decimals));
   };
 
   const setPercent = (percent: bigint) => {
     if (inputRef.current) {
       const v = (defaultValue * percent) / 100n
-      inputRef.current.value = formatEther(v || 0n)
+      inputRef.current.value = formatUnits(v || 0n, decimals)
       onAmountChange(v || 0n)
     }
   }

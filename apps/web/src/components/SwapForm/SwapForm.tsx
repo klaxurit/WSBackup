@@ -7,9 +7,8 @@ import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
-import { zeroAddress } from "viem";
+import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { usePrice } from '../../hooks/usePrice';
-import { formatEther, parseEther } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
@@ -103,7 +102,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
       const currentToToken = toToken;
       const currentFromAmount = fromAmount;
       const currentToAmount = toAmount;
-      
+
       setFromToken(currentToToken);
       setToToken(currentFromToken);
       setFromAmount(currentToAmount);
@@ -237,9 +236,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setToAmount(amount);
       // Synchronization: recalculate fromAmount so that the USD value is identical
       if (priceFrom && priceTo && toToken && fromToken) {
-        const toAmountFloat = parseFloat(formatEther(amount));
+        const toAmountFloat = parseFloat(formatUnits(amount, toToken?.decimals || 18));
         const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
-        const fromAmountWei = parseEther(fromAmountFloat.toFixed(fromToken.decimals));
+        const fromAmountWei = parseUnits(fromAmountFloat.toFixed(fromToken.decimals), fromToken?.decimals || 18);
         setFromAmount(fromAmountWei);
       }
     }, [priceFrom, priceTo, toToken, fromToken]);

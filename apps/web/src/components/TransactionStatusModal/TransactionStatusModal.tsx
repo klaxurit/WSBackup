@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { useSwap } from '../../hooks/useSwap';
-import { formatEther } from 'viem';
+import { formatEther, formatUnits } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
 import { usePrice } from '../../hooks/usePrice';
@@ -35,11 +35,11 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const usdAmountIn = useMemo(() => {
     if (inputAmount === 0n) return 0
-    return (usdValueIn * +formatEther(inputAmount)).toFixed(2)
+    return (usdValueIn * +formatUnits(inputAmount, inputToken?.decimals || 18)).toFixed(2)
   }, [usdValueIn, inputAmount])
   const usdAmountOut = useMemo(() => {
     if (!quote || quote?.amountOut === 0n) return 0
-    return (usdValueOut * +formatEther(quote.amountOut)).toFixed(2)
+    return (usdValueOut * +formatUnits(quote.amountOut, outputToken?.decimals || 18)).toFixed(2)
   }, [usdValueOut, quote])
 
   const poolFeesInBera = useMemo(() => getPoolFeesInBera(swap.optimizedRoute), [swap.optimizedRoute]);
@@ -68,7 +68,9 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const rateValue = useMemo(() => {
     if (!swap?.quote) return "0"
-    return parseFloat(formatEther((inputAmount * (10n ** BigInt(18))) / swap.quote.amountOut)).toFixed(2)
+    const inputDecimals = inputToken?.decimals || 18;
+    const outputDecimals = outputToken?.decimals || 18;
+    return parseFloat(formatUnits((inputAmount * (10n ** BigInt(outputDecimals))) / swap.quote.amountOut, inputDecimals)).toFixed(2)
   }, [swap.quote, inputAmount])
 
   const priceImpact = useMemo(() => {
@@ -123,7 +125,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
             <div className="TransactionModal__tokenRow">
               <div className="TransactionModal__tokenInfo">
                 <span className="TransactionModal__tokenAmount">
-                  {formatTokenAmount(formatEther(inputAmount))} {inputToken.symbol}
+                  {formatTokenAmount(formatUnits(inputAmount, inputToken?.decimals || 18))} {inputToken.symbol}
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountIn}</span>
               </div>
@@ -138,7 +140,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
             <div className="TransactionModal__tokenRow">
               <div className="TransactionModal__tokenInfo">
                 <span className="TransactionModal__tokenAmount">
-                  {quote?.amountOut ? formatTokenAmount(formatEther(quote.amountOut)) : '0'} {outputToken.symbol}
+                  {quote?.amountOut ? formatTokenAmount(formatUnits(quote.amountOut, outputToken?.decimals || 18)) : '0'} {outputToken.symbol}
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountOut}</span>
               </div>
@@ -180,7 +182,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                   </div>
                   <div className="TransactionModal__infoRow">
                     <span className="TransactionModal__infoLabel">Min amount</span>
-                    <span className="TransactionModal__infoContent">{quote?.amountOut ? formatTokenAmount(formatEther(quote.amountOut)) : '0'} {outputToken.symbol}</span>
+                    <span className="TransactionModal__infoContent">{quote?.amountOut ? formatTokenAmount(formatUnits(quote.amountOut, outputToken?.decimals || 18)) : '0'} {outputToken.symbol}</span>
                   </div>
                   <div className="TransactionModal__infoRow">
                     <span className="TransactionModal__infoLabel">Price impact</span>
