@@ -533,7 +533,7 @@ const CreatePoolPage: React.FC = () => {
                   <span className="PoolPage__PriceValue">
                     {poolManager?.currentPrice ? poolManager.currentPrice.toLocaleString() : '-'} {token1?.symbol} = 1 {token0?.symbol}
                     <span style={{ color: '#888', marginLeft: 8 }}>
-                      {poolManager?.currentPrice ? `$${poolManager.currentPrice.toLocaleString()}` : '-'}
+                      {poolManager?.marketPriceDisplay ? `$${poolManager.marketPriceDisplay.toLocaleString()}` : '-'}
                     </span>
                   </span>
                 </div>
