@@ -12,6 +12,16 @@ export interface TableColumn<T = any> {
   width?: string;
 }
 
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  totalItems: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  onPageChange: (page: number) => void;
+}
+
 interface TableProps<T = any> {
   columns: TableColumn<T>[];
   data: T[];
@@ -22,9 +32,91 @@ interface TableProps<T = any> {
   scrollClassName?: string;
   getRowClassName?: (row: T, rowIndex: number) => string;
   isLoading?: boolean;
+  pagination?: PaginationProps;
   defaultSortKey?: string;
   defaultSortDirection?: SortDirection;
 }
+
+const Pagination: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  itemsPerPage,
+  totalItems,
+  hasPreviousPage,
+  hasNextPage
+}) => {
+  const getVisiblePages = () => {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
+  };
+
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="Table__Pagination">
+      <div className="Table__PaginationInfo">
+        Showing {startItem}-{endItem} of {totalItems} transactions
+      </div>
+      <div className="Table__PaginationControls">
+        {hasPreviousPage && (
+          <button
+            className="Table__PaginationBtn"
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            Previous
+          </button>
+        )}
+
+        {getVisiblePages().map((page, index) => (
+          <button
+            key={index}
+            className={`Table__PaginationBtn ${page === currentPage ?
+              'Table__PaginationBtn--active' : ''
+              } ${page === '...' ? 'Table__PaginationBtn--dots' : ''}`}
+            onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
+            disabled={page === '...'}
+          >
+            {page}
+          </button>
+        ))}
+
+        {hasNextPage && (
+          <button
+            className="Table__PaginationBtn"
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            Next
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export function Table<T = any>({
   columns,
@@ -36,6 +128,7 @@ export function Table<T = any>({
   scrollClassName = 'TokenTxTable__Scroll',
   getRowClassName,
   isLoading = false,
+  pagination,
   defaultSortKey,
   defaultSortDirection = null,
 }: TableProps<T>) {
@@ -122,8 +215,14 @@ export function Table<T = any>({
     return <span className="Table__SortIcon Table__SortIcon--inactive">↕</span>;
   };
 
+  const wrapperClasses = [
+    wrapperClassName,
+    className,
+    pagination ? 'Table__Wrapper--with-pagination' : ''
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`${wrapperClassName} ${className}`.trim()}>
+    <div className={wrapperClasses}>
       <div className={scrollClassName}>
         <table className={`${tableClassName} Table--bordered`}>
           <thead>
@@ -171,6 +270,7 @@ export function Table<T = any>({
           </tbody>
         </table>
       </div>
+      {pagination && <Pagination {...pagination} />}
     </div>
   );
 }
