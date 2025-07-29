@@ -97,7 +97,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
     {
       label: 'Volume', key: 'volume', render: (row) => {
         return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `$${formatNumber(parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimal)))}`
+          ? `$${formatNumber(parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimals)))}`
           : '-'
       }
     },
