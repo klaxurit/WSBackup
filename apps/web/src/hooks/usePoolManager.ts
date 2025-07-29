@@ -52,7 +52,10 @@ export const usePoolManager = ({
   const isToken1Bera = useMemo(() => btoken1?.address === zeroAddress, [btoken1])
   const needsWrapping = useMemo(() => isToken0Bera || isToken1Bera, [isToken0Bera, isToken1Bera])
 
-  const { data: currentPrice = 0 } = usePrice(btoken0)
+  const { data: usdPrice0 = 0 } = usePrice(btoken0)
+
+  // Prix USD de référence pour l'affichage (garde l'ancien comportement)
+  const marketPriceDisplay = usdPrice0
 
   /*
    * CHECK IF POOL EXISTS
@@ -147,6 +150,19 @@ export const usePoolManager = ({
       return null
     }
   }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData])
+
+  // Prix réel de la pool (token0 en termes de token1)
+  const currentPrice = useMemo(() => {
+    if (!pool) return 0;
+    
+    try {
+      // Prix de token0 en termes de token1 depuis la pool
+      return parseFloat(pool.token0Price.toSignificant(8));
+    } catch (err) {
+      console.error("Error calculating pool price", err);
+      return 0;
+    }
+  }, [pool])
 
   /*
    * PRICE CALCULATION
@@ -510,6 +526,7 @@ export const usePoolManager = ({
     // Price calculation
     ...prices,
     currentPrice,
+    marketPriceDisplay,
 
     approveToken0: handleApproveToken0,
     approveToken1: handleApproveToken1,
