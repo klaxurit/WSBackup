@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { createChart, ColorType, AreaSeries, type IChartApi, type Time, createTextWatermark } from 'lightweight-charts';
 import type { LineChartPoint } from '../../types/chart';
+import lilBear from '../../assets/lil_bear.png';
 
 export interface LineChartProps {
   data: LineChartPoint[];
@@ -29,24 +30,16 @@ export const LineChart: React.FC<LineChartProps> = ({
   onIntervalChange,
   availableIntervals = defaultIntervals,
   activeFilterColor = BERYL_PURE,
-  showNoDataOverlay = false, // NOUVEAU
-  noDataMessage = "No data available for this selection.",
+  showNoDataOverlay = false,
+  noDataMessage = "No data available",
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<any>(null);
   const [selectedInterval, setSelectedInterval] = useState('1H');
   const [legend] = useState<{ time: Time | null, value: number | null }>({ time: null, value: null });
-
-  // Détection de l'intervalle "fake"
   const isFakeInterval = !['1H', '1D'].includes(selectedInterval);
-  const shouldShowOverlay = showNoDataOverlay || isFakeInterval;
-  const overlayMessage = showNoDataOverlay
-    ? noDataMessage
-    : "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.";
 
-
-  // Génération d'un fake dataset pour les intervalles non supportés
   const fakeData = useMemo(() => {
     const now = Math.floor(Date.now() / 1000);
     return Array.from({ length: 30 }, (_, i) => ({
@@ -87,7 +80,6 @@ export const LineChart: React.FC<LineChartProps> = ({
     });
     chartRef.current = chart;
 
-    // Ajout du watermark (API v5)
     const firstPane = chart.panes()[0];
     createTextWatermark(firstPane, {
       horzAlign: 'center',
@@ -118,7 +110,6 @@ export const LineChart: React.FC<LineChartProps> = ({
     seriesRef.current = areaSeries;
   }, [data, height, backgroundColor, lineColor, priceFormatter, isFakeInterval, fakeData]);
 
-  // Gestion du changement d'intervalle
   const handleIntervalChange = (interval: string) => {
     setSelectedInterval(interval);
     if (onIntervalChange) onIntervalChange(interval);
@@ -134,29 +125,73 @@ export const LineChart: React.FC<LineChartProps> = ({
     <div
       style={{ width: '100%', position: 'relative', overflow: 'hidden', background: backgroundColor }}
     >
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '12px',
+        marginTop: '30px',
+        position: 'relative'
+      }}>
         {availableIntervals.map(interval => (
-          <button
-            key={interval}
-            className={selectedInterval === interval ? 'active' : ''}
-            onClick={() => handleIntervalChange(interval)}
-            style={{
-              padding: '4px 12px',
-              borderRadius: 4,
-              border: 'none',
-              background: selectedInterval === interval ? activeFilterColor : '#222',
-              color: '#fff',
-              cursor: 'pointer',
-              fontWeight: selectedInterval === interval ? 700 : 400,
-              letterSpacing: 1,
-            }}
-          >
-            {interval}
-          </button>
+          <div key={interval} style={{ position: 'relative' }}>
+            {selectedInterval === interval && (
+              <img
+                src={lilBear}
+                alt="Selected"
+                style={{
+                  position: 'absolute',
+                  top: '-23px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '45px',
+                  zIndex: 10,
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+            <button
+              onClick={() => handleIntervalChange(interval)}
+              style={{
+                padding: '10px 16px',
+                fontSize: '14px',
+                fontWeight: '600',
+                borderRadius: '20px',
+                border: selectedInterval === interval
+                  ? `1px solid ${activeFilterColor}`
+                  : '1px solid #4B5563',
+                background: selectedInterval === interval
+                  ? `${activeFilterColor}1A` // 10% d'opacité
+                  : 'transparent',
+                color: selectedInterval === interval ? '#fff' : '#D1D5DB',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                boxShadow: selectedInterval === interval
+                  ? `0 4px 12px ${activeFilterColor}33` // 20% d'opacité pour l'ombre
+                  : 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (selectedInterval !== interval) {
+                  e.currentTarget.style.borderColor = '#6B7280';
+                  e.currentTarget.style.background = 'rgba(75, 85, 99, 0.3)';
+                  e.currentTarget.style.color = '#fff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedInterval !== interval) {
+                  e.currentTarget.style.borderColor = '#4B5563';
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#D1D5DB';
+                }
+              }}
+            >
+              {interval}
+            </button>
+          </div>
         ))}
       </div>
+
       {/* Légende dynamique */}
-      {legend.value !== null && !shouldShowOverlay && (
+      {legend.value !== null && (
         <div style={{ position: 'absolute', top: 8, right: 16, background: '#181A20', color: '#fff', borderRadius: 4, padding: '4px 12px', fontSize: 14, zIndex: 2, opacity: 0.95 }}>
           <span>Value: <b>{legend.value}</b></span>
         </div>
@@ -173,8 +208,8 @@ export const LineChart: React.FC<LineChartProps> = ({
           pointerEvents: isFakeInterval ? 'none' : 'auto',
         }}
       />
-      {/* Overlay de carde pour les intervalles non supportés */}
-      {shouldShowOverlay && (
+      {/* Overlay de carde pour les intervalles non supportés OU pour manque de données */}
+      {(isFakeInterval || showNoDataOverlay) && (
         <div
           style={{
             position: 'absolute',
@@ -206,7 +241,10 @@ export const LineChart: React.FC<LineChartProps> = ({
               pointerEvents: 'auto',
             }}
           >
-            {overlayMessage}
+            {showNoDataOverlay
+              ? noDataMessage
+              : "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon."
+            }
           </div>
         </div>
       )}

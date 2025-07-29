@@ -5,7 +5,7 @@ import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
 import { useQuery } from '@tanstack/react-query';
 import { NewBanner } from '../../components/Common/NewBanner';
-import beeIcon from '../../assets/bee_icon.svg';
+import beeIcon from '../../assets/bee_icon.png';
 import { useLocation } from 'react-router-dom';
 
 const TABS = [

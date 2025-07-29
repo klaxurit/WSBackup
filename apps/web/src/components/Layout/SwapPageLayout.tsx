@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { NewBanner } from '../Common/NewBanner';
-import bear from '../../assets/bear_icon.svg';
+import bear from '../../assets/bear_icon.png';
 import SwapForm from '../SwapForm/SwapForm';
 import type { Address } from 'viem';
 import LineChart from '../Charts/LineChart';
@@ -59,31 +59,25 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
   const handleIntervalChange = (interval: string) => {
     setInterval(interval as '1H' | '1D' | '1W' | '1M' | 'MAX');
-    // NOUVEAU :
     setSelectedInterval(interval);
   };
 
-  // Hook pour récupérer les données du line chart (token from)
   const { data: lineData = [], isLoading: lineLoading, error: lineError } = useTokenLineChart(fromTokenAddress);
   const { data: defaultLineData = [], isLoading: defaultLoading, error: defaultError } = useTokenLineChart(DEFAULT_TOKEN);
-
   const chartData = getTokenLineChartData(lineData, fromToken?.decimals, interval);
   const defaultChartData = getTokenLineChartData(defaultLineData, undefined, interval);
-
-  // NOUVELLES LOGIQUES D'OVERLAY :
   const showOverlayForSelectedPool = shouldShowNoDataOverlay(
     lineData,
     selectedInterval,
-    !!poolAddress // hasPoolData
+    !!poolAddress
   );
 
   const showOverlayForDefault = shouldShowNoDataOverlay(
     defaultLineData,
     selectedInterval,
-    false // pas de pool spécifique pour le défaut
+    false
   );
 
-  // Messages personnalisés
   const getNoDataMessage = (hasData: boolean, interval: string, isPoolSelected: boolean) => {
     if (!hasData) {
       return isPoolSelected
@@ -107,7 +101,6 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             ) : lineError ? (
               <div style={{ padding: 32, color: 'red' }}>Error loading chart</div>
             ) : (
-              // NOUVEAU CODE - Remplace l'iframe
               <LineChart
                 data={chartData}
                 height={340}
@@ -123,7 +116,6 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             ) : defaultError ? (
               <div style={{ padding: 32, color: 'red' }}>Error loading default chart</div>
             ) : (
-              // NOUVEAU CODE - Remplace l'iframe
               <LineChart
                 data={defaultChartData}
                 height={340}
