@@ -24,7 +24,9 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
 
   const columns: TableColumn[] = [
     {
-      label: '#', key: 'index', render: (row) => (
+      label: '#',
+      key: 'index',
+      render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Link
             to={`/pool/${row.address}`}
@@ -47,48 +49,89 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
       )
     },
     {
-      label: 'Pool', key: 'pool', render: (row) => (
+      label: 'Pool',
+      key: 'pool',
+      sortable: true,
+      sortValue: (row) => `${row.token0.symbol}/${row.token1.symbol}`,
+      render: (row) => (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <TokenPairLogos token0={row.token0} token1={row.token1} />
           <span style={{ fontWeight: 600 }}>{row.pool}</span>
         </span>
       )
     },
-    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.fee / 10000}%`) },
     {
-      label: 'TVL', key: 'tvl', render: (row) => {
+      label: 'Fee Tier',
+      key: 'fee',
+      sortable: true,
+      sortValue: (row) => row.fee,
+      render: (row) => (`${row.fee / 10000}%`)
+    },
+    {
+      label: 'TVL',
+      key: 'tvl',
+      sortable: true,
+      sortValue: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].tvlUSD !== "0"
+          ? parseFloat(row.PoolStatistic[0].tvlUSD)
+          : 0;
+      },
+      render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].tvlUSD !== "0"
           ? `$${formatNumber(parseFloat(row.PoolStatistic[0].tvlUSD))}`
           : "-"
       }
     },
     {
-      label: 'Pool APR', key: 'apr', render: (row) => {
+      label: 'Pool APR',
+      key: 'apr',
+      sortable: true,
+      sortValue: (row) => {
+        return row.PoolStatistic.length > 0 ? row.PoolStatistic[0].apr : 0;
+      },
+      render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].apr !== 0
           ? `${row.PoolStatistic[0].apr.toFixed(2)}%`
           : "-"
       }
     },
     {
-      label: 'BGT APR', key: 'bgtApr', render: () => {
+      label: 'BGT APR',
+      key: 'bgtApr',
+      render: () => {
         return "-"
       }
     },
     {
-      label: 'Vol. 1d', key: 'vol1d', render: (row) => {
+      label: 'Vol. 1d',
+      key: 'vol1d',
+      sortable: true,
+      sortValue: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
+          ? parseFloat(row.PoolStatistic[0].volOneDay)
+          : 0;
+      },
+      render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
           ? `$${formatNumber(parseFloat(row.PoolStatistic[0].volOneDay))}`
           : "-"
       }
     },
     {
-      label: 'Vol. 30d', key: 'vol30d', render: (row) => {
+      label: 'Vol. 30d',
+      key: 'vol30d',
+      sortable: true,
+      sortValue: (row) => {
+        return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneMonth !== "0"
+          ? parseFloat(row.PoolStatistic[0].volOneMonth)
+          : 0;
+      },
+      render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneMonth !== "0"
           ? `$${formatNumber(parseFloat(row.PoolStatistic[0].volOneMonth))}`
           : "-"
       }
     },
-    // { label: 'Vol. 1d/TVL', key: 'vol1dTvl' },
   ];
 
   return (
@@ -99,6 +142,8 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
+      defaultSortKey="tvl"
+      defaultSortDirection="desc"
     />
   )
 }

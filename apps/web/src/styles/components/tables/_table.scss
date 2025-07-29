@@ -222,3 +222,296 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+// Main table wrapper
+.Table__Wrapper {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.04);
+  overflow: hidden;
+}
+
+// Scrollable container
+.Table__Scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+}
+
+// Main table
+.Table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 15px;
+  color: #e0e0e0;
+  background: none;
+}
+
+// Table headers
+.Table thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(18, 17, 14, 0.98);
+  color: #aaa;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 16px 12px;
+  z-index: 2;
+  text-align: left;
+  border-bottom: 1px solid #232323;
+  white-space: nowrap;
+
+  &:nth-child(n+3) {
+    text-align: right;
+  }
+}
+
+// Sortable header styles
+.Table__SortableHeader {
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #fff;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+}
+
+// Header content container
+.Table__HeaderContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0; // Allow flex items to shrink
+}
+
+// Sort icons
+.Table__SortIcon {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  min-width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.Table__SortIcon--inactive {
+  opacity: 0.3;
+}
+
+.Table__SortIcon--asc,
+.Table__SortIcon--desc {
+  opacity: 1;
+  color: #e39229;
+}
+
+.Table__SortableHeader:hover .Table__SortIcon--inactive {
+  opacity: 0.6;
+  color: #fff;
+}
+
+// Table body
+.Table tbody tr {
+  transition: background 0.13s ease;
+
+  &:last-child {
+    border-bottom: none !important;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+// Table cells
+.Table td {
+  padding: 12px;
+  border-bottom: 1px solid #232323;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &:nth-child(n+3) {
+    text-align: right;
+  }
+}
+
+// Transaction type styles
+.Table__Type {
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+
+.Table__Type--buy {
+  background: rgba(0, 255, 163, 0.15);
+  color: #00FFA3;
+}
+
+.Table__Type--sell {
+  background: rgba(255, 77, 77, 0.15);
+  color: #FF4D4D;
+}
+
+// Address links
+.Table__Address {
+  color: #e39229;
+  text-decoration: none;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+// Empty state
+.Table__Empty {
+  text-align: center;
+  color: #888;
+  font-size: 15px;
+  padding: 48px 0;
+  font-style: italic;
+}
+
+// Token name cell styles
+.TokensTable__NameCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.TokensTable__LogoWrapper {
+  flex-shrink: 0;
+}
+
+.TokensTable__Logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.TokensTable__NameLink {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    color: #e39229;
+  }
+}
+
+// Right-aligned columns for numerical data
+.Table thead th:nth-child(n+3) {
+  .Table__HeaderContent {
+    justify-content: flex-end;
+  }
+}
+
+// Loading state
+.Table--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .Table {
+    min-width: 700px;
+    font-size: 14px;
+  }
+
+  .Table thead th {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .Table td {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Table {
+    min-width: 600px;
+    font-size: 13px;
+  }
+
+  .Table__HeaderContent {
+    gap: 4px;
+  }
+
+  .Table__SortIcon {
+    font-size: 10px;
+    min-width: 10px;
+  }
+
+  .TokensTable__NameCell {
+    gap: 8px;
+  }
+
+  .TokensTable__Logo {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Focus styles for accessibility
+.Table__SortableHeader:focus {
+  outline: 2px solid #e39229;
+  outline-offset: -2px;
+}
+
+// Animation for sort changes
+.Table tbody {
+  transition: all 0.2s ease;
+}
+
+// Striped rows option (can be enabled via class)
+.Table--striped tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+// Compact table option
+.Table--compact {
+  font-size: 13px;
+
+  thead th {
+    padding: 8px;
+  }
+
+  td {
+    padding: 8px;
+  }
+}
