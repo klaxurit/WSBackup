@@ -62,8 +62,6 @@ const TokenPage: React.FC = () => {
 
   // Addition: get the latest token statistic
   const stat = token?.Statistic?.[0];
-  const totalSupply = token?.totalSupply ?? coingeckoTokenData?.total_supply ?? null;
-
   // Market Cap: backend then fallback to CoinGecko
   const marketCap = useMemo(() => {
     // If backend stat contains marketCap (adapt if backend exposes this field)
@@ -75,10 +73,7 @@ const TokenPage: React.FC = () => {
   }, [stat, coingeckoTokenData]);
 
   // FDV: calculated frontend (price * totalSupply), fallback N/A
-  const fdv = useMemo(() => {
-    if (!stat || !totalSupply) return null;
-    return stat.price * totalSupply;
-  }, [stat, totalSupply]);
+  const fdv = stat?.fdv || 0
 
   // 1D Volume: backend then fallback CoinGecko
   const volume1d = useMemo(() => {
@@ -250,25 +245,25 @@ const TokenPage: React.FC = () => {
               <div className="Token__StatCard">
                 <h4 className="Token__StatCardTitle">TVL</h4>
                 <p className="Token__StatCardLabel">
-                  {poolsLoading ? 'Loading…' : (tvl === null || tvl === 0 || isNaN(tvl)) ? 'N/A' : formatNumber(tvl, { currency: true })}
+                  {poolsLoading ? 'Loading…' : (tvl === null || tvl === 0 || isNaN(tvl)) ? 'N/A' : formatNumber(tvl)}
                 </p>
               </div>
               <div className="Token__StatCard">
                 <h4 className="Token__StatCardTitle">Market Cap</h4>
                 <p className="Token__StatCardLabel">
-                  {marketCap === null || isNaN(marketCap) ? 'N/A' : formatNumber(marketCap, { currency: true })}
+                  {marketCap === null || isNaN(marketCap) ? 'N/A' : formatNumber(marketCap)}
                 </p>
               </div>
               <div className="Token__StatCard">
                 <h4 className="Token__StatCardTitle">FDV</h4>
                 <p className="Token__StatCardLabel">
-                  {fdv === null || isNaN(fdv) ? 'N/A' : formatNumber(fdv, { currency: true })}
+                  {fdv === null || isNaN(fdv) ? 'N/A' : formatNumber(fdv)}
                 </p>
               </div>
               <div className="Token__StatCard">
                 <h4 className="Token__StatCardTitle">1D Volume</h4>
                 <p className="Token__StatCardLabel">
-                  {volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d, { currency: true })}
+                  {volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d)}
                 </p>
               </div>
             </div>

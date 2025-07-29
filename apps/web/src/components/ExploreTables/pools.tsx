@@ -3,6 +3,7 @@ import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
+import { formatNumber } from "../../utils/formatNumber";
 
 interface PoolsTableProps {
   data?: any[];
@@ -57,7 +58,7 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: 'TVL', key: 'tvl', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].tvlUSD !== "0"
-          ? `$${parseInt(row.PoolStatistic[0].tvlUSD).toFixed(2)}`
+          ? `$${formatNumber(parseFloat(row.PoolStatistic[0].tvlUSD))}`
           : "-"
       }
     },
@@ -76,14 +77,14 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     {
       label: 'Vol. 1d', key: 'vol1d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneDay !== "0"
-          ? `$${parseFloat(row.PoolStatistic[0].volOneDay).toFixed(2)}`
+          ? `$${formatNumber(parseFloat(row.PoolStatistic[0].volOneDay))}`
           : "-"
       }
     },
     {
       label: 'Vol. 30d', key: 'vol30d', render: (row) => {
         return row.PoolStatistic.length > 0 && row.PoolStatistic[0].volOneMonth !== "0"
-          ? `$${parseFloat(row.PoolStatistic[0].volOneMonth).toFixed(2)}`
+          ? `$${formatNumber(parseFloat(row.PoolStatistic[0].volOneMonth))}`
           : "-"
       }
     },
