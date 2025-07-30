@@ -108,11 +108,21 @@ export class PoolTracker implements OnModuleInit {
         return;
       }
 
-      const token0 = await this.db.token.findUnique({
-        where: { address: decoded.args.token0 },
+      const token0 = await this.db.token.findFirst({
+        where: {
+          address: {
+            equals: decoded.args.token0 as string,
+            mode: 'insensitive',
+          },
+        },
       });
-      const token1 = await this.db.token.findUnique({
-        where: { address: decoded.args.token1 },
+      const token1 = await this.db.token.findFirst({
+        where: {
+          address: {
+            equals: decoded.args.token1 as string,
+            mode: 'insensitive',
+          },
+        },
       });
 
       if (!token0 || !token1) {
