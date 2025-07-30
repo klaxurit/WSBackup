@@ -18,6 +18,26 @@ interface CachedToken {
   marketCap: number | null;
 }
 
+interface TokenUpdate {
+  tokenId: string;
+  totalSupply?: string;
+  circulatingSupply?: string;
+}
+
+interface EnrichedToken extends Token {
+  // Runtime enriched data
+  calculatedTotalSupply?: string;
+  calculatedCirculatingSupply?: string | null;
+  Statistic: Array<{
+    price: number;
+    createdAt: Date;
+  }>;
+  _count: {
+    poolsAsToken1: number;
+    poolsAsToken0: number;
+  };
+}
+
 interface TokenWithStats extends Token {
   Statistic: Array<{
     price: number;
@@ -38,8 +58,10 @@ export class PriceService {
 
   private cachedTokens: Map<string, CachedToken> = new Map();
   private poolsCache: Map<string, PoolWithTokens[]> = new Map();
-
   private tokenPoolsMap: Map<string, Set<string>> = new Map();
+  
+  // New: In-memory cache for token updates to be batched
+  private tokenUpdates: Map<string, TokenUpdate> = new Map();
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -77,10 +99,13 @@ export class PriceService {
     let processedTokens = 0;
 
     try {
+      // Clear all caches at start
       this.cachedTokens.clear();
       this.poolsCache.clear();
       this.tokenPoolsMap.clear();
+      this.tokenUpdates.clear();
 
+      // 1. Single DB fetch with all required data
       const tokens = await this.databaseService.token.findMany({
         include: {
           Statistic: {
@@ -96,30 +121,33 @@ export class PriceService {
         },
       });
 
-      // Retirer les tokens qui ne sont pas dans une pool
+      // Filter tokens that are in pools
       const tokensInPool = tokens.filter((t) => {
         return t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0;
-      });
+      }) as EnrichedToken[];
 
       await this.buildTokenPoolsMap(tokensInPool);
 
-      // Séparer les tokens par source de prix
+      // 2. Process tokens in optimized order
       const [tokensWithCoinGecko, tokensWithoutCoinGecko] =
-        this.partitionTokens(tokensInPool);
+        this.partitionEnrichedTokens(tokensInPool);
 
-      // 1. Première étape : tokens avec CoinGecko (prix de référence)
+      // 3. Enrich tokens with supply data (batch blockchain calls)
+      await this.enrichTokensWithSupplyData(tokensInPool);
+
+      // 4. Process CoinGecko tokens first (reference prices)
       if (tokensWithCoinGecko.length > 0) {
-        await this.updateWithCoingecko(tokensWithCoinGecko);
+        await this.updateWithCoingeckoOptimized(tokensWithCoinGecko);
       }
 
-      // 2. Deuxième étape : résolution des dépendances avec passes multiples
-      await this.resolveTokenDependencies(tokensWithoutCoinGecko);
+      // 5. Resolve dependencies for non-CoinGecko tokens
+      await this.resolveTokenDependenciesOptimized(tokensWithoutCoinGecko);
 
-      // 3. Calcul des statistiques (volume, évolutions) pour tous les tokens
-      await this.calculateTokenStatistics(tokensInPool);
+      // 6. Calculate all statistics using enriched data
+      await this.calculateTokenStatisticsOptimized(tokensInPool);
 
-      // 4. Sauvegarde en base
-      await this.saveCachedTokens();
+      // 7. Batch save everything in single transaction
+      await this.batchSaveAllData();
 
       processedTokens = this.cachedTokens.size;
       this.logger.log(
@@ -188,6 +216,57 @@ export class PriceService {
       },
       [[], []] as [TokenWithStats[], TokenWithStats[]],
     );
+  }
+
+  /**
+   * NEW: Partition enriched tokens
+   */
+  private partitionEnrichedTokens(
+    tokens: EnrichedToken[],
+  ): [EnrichedToken[], EnrichedToken[]] {
+    return tokens.reduce(
+      (acc, token) => {
+        acc[token.coingeckoId ? 0 : 1].push(token);
+        return acc;
+      },
+      [[], []] as [EnrichedToken[], EnrichedToken[]],
+    );
+  }
+
+  /**
+   * NEW: Enrich tokens with supply data in batch to avoid individual DB calls
+   */
+  private async enrichTokensWithSupplyData(tokens: EnrichedToken[]): Promise<void> {
+    this.logger.debug(`Enriching ${tokens.length} tokens with supply data`);
+    
+    const enrichPromises = tokens.map(async (token) => {
+      try {
+        // Get total supply if not cached
+        if (!token.totalSupply) {
+          const totalSupply = await this.fetchTotalSupplyFromBlockchain(token);
+          if (totalSupply) {
+            token.calculatedTotalSupply = totalSupply;
+            // Queue for DB update
+            this.queueTokenUpdate(token.id, { totalSupply });
+          }
+        } else {
+          token.calculatedTotalSupply = token.totalSupply;
+        }
+
+        // Calculate circulating supply using current data
+        token.calculatedCirculatingSupply = await this.calculateCirculatingSupplyInMemory(token);
+        
+        if (token.calculatedCirculatingSupply && token.calculatedCirculatingSupply !== token.circulatingSupply) {
+          // Queue for DB update
+          this.queueTokenUpdate(token.id, { circulatingSupply: token.calculatedCirculatingSupply });
+        }
+      } catch (error) {
+        this.logger.error(`Error enriching token ${token.symbol}:`, error);
+      }
+    });
+
+    await Promise.all(enrichPromises);
+    this.logger.debug(`Enrichment completed for ${tokens.length} tokens`);
   }
 
   /**
@@ -548,17 +627,16 @@ export class PriceService {
       if (circulatingSupply) {
         const circulatingSupplyNumber =
           Number(circulatingSupply) / 10 ** token.decimals;
-        
-        // CRITICAL FIX: Validate circulating supply is not zero after decimal conversion
+
         if (circulatingSupplyNumber <= 0) {
           this.logger.warn(
-            `Circulating supply converted to zero for ${token.symbol}: raw=${circulatingSupply}, decimals=${token.decimals}, converted=${circulatingSupplyNumber}. Using FDV as fallback.`
+            `Circulating supply converted to zero for ${token.symbol}: raw=${circulatingSupply}, decimals=${token.decimals}, converted=${circulatingSupplyNumber}. Using FDV as fallback.`,
           );
           marketCap = fdv; // Use FDV as fallback
         } else {
           // Market Cap = Circulating Supply × Price
           marketCap = circulatingSupplyNumber * price;
-          
+
           this.logger.debug(
             `Calculated for ${token.symbol}: FDV=$${fdv.toLocaleString()} | Market Cap=$${marketCap.toLocaleString()} | Price = $${price} (Circulating: ${circulatingSupplyNumber.toLocaleString()})`,
           );
@@ -634,16 +712,20 @@ export class PriceService {
       if (token.circulatingSupply) {
         const cachedValue = new BigNumber(token.circulatingSupply);
         if (cachedValue.gt(0)) {
-          this.logger.debug(`Using cached circulating supply for ${token.symbol}: ${token.circulatingSupply}`);
+          this.logger.debug(
+            `Using cached circulating supply for ${token.symbol}: ${token.circulatingSupply}`,
+          );
           return token.circulatingSupply;
         } else {
-          this.logger.warn(`Cached circulating supply is zero for ${token.symbol}, will re-estimate`);
+          this.logger.warn(
+            `Cached circulating supply is zero for ${token.symbol}, will re-estimate`,
+          );
         }
       }
 
       // Try estimation strategies first
       let estimatedSupply: string | null = null;
-      
+
       if (!token.coingeckoId) {
         this.logger.debug(
           `No CoinGecko ID for ${token.symbol}, using fallback strategies`,
@@ -652,21 +734,27 @@ export class PriceService {
       } else {
         // For tokens WITH CoinGecko ID but no cached circulating supply, also try estimation
         // This handles cases where CoinGecko doesn't provide circulating_supply
-        this.logger.debug(`No cached circulating supply for ${token.symbol} (has CoinGecko ID), trying estimation`);
+        this.logger.debug(
+          `No cached circulating supply for ${token.symbol} (has CoinGecko ID), trying estimation`,
+        );
         estimatedSupply = await this.estimateCirculatingSupply(token);
       }
 
       // If estimation failed, use totalSupply as ultimate fallback
       if (!estimatedSupply) {
-        this.logger.warn(`All circulating supply estimation strategies failed for ${token.symbol}, using totalSupply as fallback`);
+        this.logger.warn(
+          `All circulating supply estimation strategies failed for ${token.symbol}, using totalSupply as fallback`,
+        );
         const totalSupply = await this.getTotalSupply(token);
-        
+
         if (totalSupply) {
           const totalSupplyBN = new BigNumber(totalSupply);
           if (totalSupplyBN.gt(0)) {
             // Cache this fallback value
             await this.updateCirculatingSupply(token, totalSupply);
-            this.logger.debug(`Using totalSupply as circulating supply for ${token.symbol}: ${totalSupply}`);
+            this.logger.debug(
+              `Using totalSupply as circulating supply for ${token.symbol}: ${totalSupply}`,
+            );
             return totalSupply;
           }
         }
@@ -678,18 +766,23 @@ export class PriceService {
         `Error fetching circulating supply for ${token.symbol}:`,
         error,
       );
-      
+
       // Even in error case, try totalSupply as absolute last resort
       try {
         const totalSupply = await this.getTotalSupply(token);
         if (totalSupply) {
-          this.logger.warn(`Using totalSupply as emergency fallback for ${token.symbol} due to error: ${totalSupply}`);
+          this.logger.warn(
+            `Using totalSupply as emergency fallback for ${token.symbol} due to error: ${totalSupply}`,
+          );
           return totalSupply;
         }
       } catch (fallbackError) {
-        this.logger.error(`Even totalSupply fallback failed for ${token.symbol}:`, fallbackError);
+        this.logger.error(
+          `Even totalSupply fallback failed for ${token.symbol}:`,
+          fallbackError,
+        );
       }
-      
+
       return null;
     }
   }
@@ -703,18 +796,24 @@ export class PriceService {
     try {
       const totalSupply = await this.getTotalSupply(token);
       if (!totalSupply) {
-        this.logger.warn(`No total supply available for ${token.symbol}, cannot estimate circulating supply`);
+        this.logger.warn(
+          `No total supply available for ${token.symbol}, cannot estimate circulating supply`,
+        );
         return null;
       }
 
       // CRITICAL FIX: Validate totalSupply is not zero
       const totalSupplyBN = new BigNumber(totalSupply);
       if (totalSupplyBN.lte(0)) {
-        this.logger.warn(`Total supply is zero or negative for ${token.symbol}: ${totalSupply}`);
+        this.logger.warn(
+          `Total supply is zero or negative for ${token.symbol}: ${totalSupply}`,
+        );
         return null;
       }
 
-      this.logger.debug(`Starting circulating supply estimation for ${token.symbol} (Total: ${totalSupply})`);
+      this.logger.debug(
+        `Starting circulating supply estimation for ${token.symbol} (Total: ${totalSupply})`,
+      );
 
       // Strategy 1: Check if token has burn mechanisms (common addresses)
       const circulatingSupply = await this.estimateWithBurnAnalysis(
@@ -725,7 +824,9 @@ export class PriceService {
         // DOUBLE CHECK: Ensure result is not zero
         const circulatingBN = new BigNumber(circulatingSupply);
         if (circulatingBN.lte(0)) {
-          this.logger.warn(`Burn analysis returned zero/negative circulating supply for ${token.symbol}: ${circulatingSupply}`);
+          this.logger.warn(
+            `Burn analysis returned zero/negative circulating supply for ${token.symbol}: ${circulatingSupply}`,
+          );
         } else {
           // Cache the estimated circulating supply
           await this.updateCirculatingSupply(token, circulatingSupply);
@@ -745,7 +846,9 @@ export class PriceService {
       // FINAL VALIDATION: Ensure estimated circulating is never zero
       const estimatedBN = new BigNumber(estimatedCirculating);
       if (estimatedBN.lte(0)) {
-        this.logger.warn(`Final estimation is zero/negative for ${token.symbol}: ${estimatedCirculating}. Letting totalSupply fallback handle this.`);
+        this.logger.warn(
+          `Final estimation is zero/negative for ${token.symbol}: ${estimatedCirculating}. Letting totalSupply fallback handle this.`,
+        );
         // Return null to trigger totalSupply fallback in getCirculatingSupply
         return null;
       }
@@ -809,7 +912,9 @@ export class PriceService {
           totalBurned = totalBurned.plus(balance.toString());
         } catch (error) {
           // Skip if address doesn't exist or contract call fails
-          this.logger.debug(`Skipping burn address ${burnAddress} for ${token.symbol}: ${error}`);
+          this.logger.debug(
+            `Skipping burn address ${burnAddress} for ${token.symbol}: ${error}`,
+          );
           continue;
         }
       }
@@ -822,14 +927,14 @@ export class PriceService {
         // CRITICAL FIX: Ensure circulating supply never goes negative or zero
         if (circulatingSupply.lte(0)) {
           this.logger.warn(
-            `Burned tokens (${totalBurned.toString()}) >= total supply (${totalSupply}) for ${token.symbol}. Using 10% of total supply as fallback.`
+            `Burned tokens (${totalBurned.toString()}) >= total supply (${totalSupply}) for ${token.symbol}. Using 10% of total supply as fallback.`,
           );
           // Fallback: assume 10% is still circulating
           return totalSupplyBN.multipliedBy(0.1).toFixed(0);
         }
 
         this.logger.debug(
-          `Found ${totalBurned.toString()} burned tokens for ${token.symbol}. Circulating: ${circulatingSupply.toString()}`
+          `Found ${totalBurned.toString()} burned tokens for ${token.symbol}. Circulating: ${circulatingSupply.toString()}`,
         );
 
         return circulatingSupply.toString();
@@ -909,6 +1014,393 @@ export class PriceService {
         `Error updating circulating supply for ${token.symbol}:`,
         error,
       );
+    }
+  }
+
+  /**
+   * NEW: Queue token updates for batch processing
+   */
+  private queueTokenUpdate(tokenId: string, update: Partial<TokenUpdate>): void {
+    const existing = this.tokenUpdates.get(tokenId) || { tokenId };
+    
+    if (update.totalSupply) {
+      existing.totalSupply = update.totalSupply;
+    }
+    if (update.circulatingSupply) {
+      existing.circulatingSupply = update.circulatingSupply;
+    }
+    
+    this.tokenUpdates.set(tokenId, existing);
+  }
+
+  /**
+   * NEW: Fetch total supply from blockchain (without DB update)
+   */
+  private async fetchTotalSupplyFromBlockchain(token: EnrichedToken): Promise<string | null> {
+    try {
+      const totalSupply = await this.blockchainService.client.readContract({
+        address: token.address as Address,
+        abi: [
+          {
+            inputs: [],
+            name: 'totalSupply',
+            outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+            stateMutability: 'view',
+            type: 'function',
+          },
+        ],
+        functionName: 'totalSupply',
+      });
+
+      return totalSupply.toString();
+    } catch (error) {
+      this.logger.error(`Error fetching total supply for ${token.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * NEW: Calculate circulating supply in memory without DB updates
+   */
+  private async calculateCirculatingSupplyInMemory(token: EnrichedToken): Promise<string | null> {
+    try {
+      // Use existing cached circulating supply if valid
+      if (token.circulatingSupply) {
+        const cachedValue = new BigNumber(token.circulatingSupply);
+        if (cachedValue.gt(0)) {
+          return token.circulatingSupply;
+        }
+      }
+
+      const totalSupply = token.calculatedTotalSupply;
+      if (!totalSupply) {
+        return null;
+      }
+
+      const totalSupplyBN = new BigNumber(totalSupply);
+      if (totalSupplyBN.lte(0)) {
+        return null;
+      }
+
+      // Strategy 1: Burn analysis
+      const burnedSupply = await this.calculateBurnedSupplyInMemory(token, totalSupply);
+      if (burnedSupply) {
+        const totalBurnedBN = new BigNumber(burnedSupply);
+        const circulatingBN = totalSupplyBN.minus(totalBurnedBN);
+        
+        if (circulatingBN.gt(0)) {
+          return circulatingBN.toString();
+        }
+      }
+
+      // Strategy 2: Heuristic estimation
+      const ratio = await this.getCirculatingRatioHeuristic(token);
+      const estimatedCirculating = totalSupplyBN.multipliedBy(ratio).toFixed(0);
+      
+      const estimatedBN = new BigNumber(estimatedCirculating);
+      if (estimatedBN.gt(0)) {
+        return estimatedCirculating;
+      }
+
+      // Strategy 3: Use total supply as fallback
+      return totalSupply;
+    } catch (error) {
+      this.logger.error(`Error calculating circulating supply in memory for ${token.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * NEW: Calculate burned supply without updating anything
+   */
+  private async calculateBurnedSupplyInMemory(token: EnrichedToken, totalSupply: string): Promise<string | null> {
+    try {
+      const burnAddresses = [
+        '0x000000000000000000000000000000000000dead',
+        '0x0000000000000000000000000000000000000000',
+        '0x000000000000000000000000000000000000dEaD',
+      ];
+
+      let totalBurned = new BigNumber(0);
+
+      for (const burnAddress of burnAddresses) {
+        try {
+          const balance = await this.blockchainService.client.readContract({
+            address: token.address as Address,
+            abi: [
+              {
+                inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
+                name: 'balanceOf',
+                outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+                stateMutability: 'view',
+                type: 'function',
+              },
+            ],
+            functionName: 'balanceOf',
+            args: [burnAddress as Address],
+          });
+
+          totalBurned = totalBurned.plus(balance.toString());
+        } catch {
+          continue;
+        }
+      }
+
+      return totalBurned.gt(0) ? totalBurned.toString() : null;
+    } catch (error) {
+      this.logger.error(`Error calculating burned supply for ${token.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * NEW: Optimized CoinGecko update using enriched tokens
+   */
+  private async updateWithCoingeckoOptimized(tokens: EnrichedToken[]): Promise<void> {
+    this.logger.log(`Updating ${tokens.length} tokens with CoinGecko`);
+
+    const ids = tokens.map((t) => t.coingeckoId).join(',');
+    const prices = await this.coingeckoService.getMultiTokensData(ids);
+
+    if (!prices) return;
+
+    for (const token of tokens) {
+      const price = prices[token.coingeckoId!];
+      if (price) {
+        // Store circulating supply from CoinGecko if available
+        if (price.circulating_supply) {
+          const circulatingSupplyString = price.circulating_supply.toString();
+          token.calculatedCirculatingSupply = circulatingSupplyString;
+          this.queueTokenUpdate(token.id, { circulatingSupply: circulatingSupplyString });
+        }
+        
+        this.cachedTokens.set(token.address, {
+          tokenId: token.id,
+          price: price.usd,
+          oneDayEvolution: 0,
+          oneHourEvolution: 0,
+          volume: 0,
+          fdv: null,
+          marketCap: null,
+        });
+      }
+    }
+  }
+
+  /**
+   * NEW: Optimized dependency resolution using enriched tokens
+   */
+  private async resolveTokenDependenciesOptimized(tokens: EnrichedToken[]): Promise<void> {
+    let remainingTokens = [...tokens];
+    let pass = 0;
+
+    while (remainingTokens.length > 0 && pass < this.MAX_PASSES) {
+      pass++;
+      const initialCount = remainingTokens.length;
+
+      const sortedTokens = this.sortEnrichedTokensByResolvability(remainingTokens);
+      const newlyResolved: string[] = [];
+
+      for (let i = 0; i < sortedTokens.length; i += this.BATCH_SIZE) {
+        const batch = sortedTokens.slice(i, i + this.BATCH_SIZE);
+
+        const batchPromises = batch.map(async (token) => {
+          const price = await this.getPriceFromPoolsOptimized(token);
+          if (price !== null) {
+            this.cachedTokens.set(token.address, {
+              tokenId: token.id,
+              price,
+              oneHourEvolution: 0,
+              oneDayEvolution: 0,
+              volume: 0,
+              fdv: null,
+              marketCap: null,
+            });
+            newlyResolved.push(token.address);
+          }
+        });
+
+        await Promise.all(batchPromises);
+      }
+
+      remainingTokens = remainingTokens.filter(
+        (token) => !newlyResolved.includes(token.address),
+      );
+
+      if (remainingTokens.length === initialCount) {
+        this.logger.warn(
+          `No progress in pass ${pass}, stopping. Remaining tokens: ${remainingTokens.map((t) => t.symbol).join(', ')}`,
+        );
+        break;
+      }
+    }
+  }
+
+  /**
+   * NEW: Sort enriched tokens by resolvability
+   */
+  private sortEnrichedTokensByResolvability(tokens: EnrichedToken[]): EnrichedToken[] {
+    return tokens.sort((a, b) => {
+      const aReferences = this.countAvailableReferences(a.address);
+      const bReferences = this.countAvailableReferences(b.address);
+      return bReferences - aReferences;
+    });
+  }
+
+  /**
+   * NEW: Optimized price calculation from pools
+   */
+  private async getPriceFromPoolsOptimized(token: EnrichedToken): Promise<number | null> {
+    const cacheKey = `pools_${token.address}`;
+    let pools = this.poolsCache.get(cacheKey);
+
+    if (!pools) {
+      const cachedTokensAddr = Array.from(this.cachedTokens.keys());
+
+      pools = await this.databaseService.pool.findMany({
+        where: {
+          OR: [
+            {
+              token0: { address: token.address },
+              token1: { address: { in: cachedTokensAddr } },
+            },
+            {
+              token0: { address: { in: cachedTokensAddr } },
+              token1: { address: token.address },
+            },
+          ],
+        },
+        include: { token0: true, token1: true },
+        orderBy: { liquidity: 'desc' },
+        take: 3,
+      });
+
+      this.poolsCache.set(cacheKey, pools);
+      setTimeout(() => this.poolsCache.delete(cacheKey), this.CACHE_TTL);
+    }
+
+    if (pools.length === 0) {
+      return null;
+    }
+
+    for (const pool of pools) {
+      const price = this.calculateTokenPrice(token.address, pool);
+      if (price !== null) {
+        return price;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * NEW: Optimized statistics calculation using enriched tokens
+   */
+  private async calculateTokenStatisticsOptimized(tokens: EnrichedToken[]): Promise<void> {
+    const statisticsPromises = tokens.map(async (token) => {
+      if (!this.cachedTokens.has(token.address)) return;
+
+      const cachedToken = this.cachedTokens.get(token.address)!;
+
+      const [volume, oneHourEvolution, oneDayEvolution] = await Promise.all([
+        this.calculateVolume24h(token),
+        this.getPriceVariation(token, 1, cachedToken.price),
+        this.getPriceVariation(token, 24, cachedToken.price),
+      ]);
+
+      // Calculate FDV and Market Cap using enriched data
+      const [fdv, marketCap] = this.calculateFDVAndMarketCapOptimized(token, cachedToken.price);
+      
+      this.cachedTokens.set(token.address, {
+        ...cachedToken,
+        oneHourEvolution: oneHourEvolution || 0,
+        oneDayEvolution: oneDayEvolution || 0,
+        volume: volume || 0,
+        fdv,
+        marketCap,
+      });
+    });
+
+    await Promise.all(statisticsPromises);
+  }
+
+  /**
+   * NEW: Optimized FDV and Market Cap calculation using enriched data
+   */
+  private calculateFDVAndMarketCapOptimized(token: EnrichedToken, price: number): [number | null, number | null] {
+    try {
+      const totalSupply = token.calculatedTotalSupply;
+      if (!totalSupply) {
+        return [null, null];
+      }
+
+      const totalSupplyNumber = Number(totalSupply) / (10 ** token.decimals);
+      const fdv = totalSupplyNumber * price;
+
+      const circulatingSupply = token.calculatedCirculatingSupply;
+      let marketCap: number | null = null;
+
+      if (circulatingSupply) {
+        const circulatingSupplyNumber = Number(circulatingSupply) / (10 ** token.decimals);
+        
+        if (circulatingSupplyNumber > 0) {
+          marketCap = circulatingSupplyNumber * price;
+        } else {
+          marketCap = fdv; // Fallback
+        }
+      } else {
+        marketCap = fdv; // Fallback
+      }
+
+      return [fdv, marketCap];
+    } catch (error) {
+      this.logger.error(`Error calculating FDV for ${token.symbol}:`, error);
+      return [null, null];
+    }
+  }
+
+  /**
+   * NEW: Batch save all data in single transaction
+   */
+  private async batchSaveAllData(): Promise<void> {
+    try {
+      const tokenStatistics = Array.from(this.cachedTokens.values());
+      const tokenUpdatesArray = Array.from(this.tokenUpdates.values());
+
+      if (tokenStatistics.length === 0 && tokenUpdatesArray.length === 0) return;
+
+      await this.databaseService.client.$transaction([
+        // Update tokens with new supply data
+        ...tokenUpdatesArray.map((update) =>
+          this.databaseService.token.update({
+            where: { id: update.tokenId },
+            data: {
+              ...(update.totalSupply && { totalSupply: update.totalSupply }),
+              ...(update.circulatingSupply && { circulatingSupply: update.circulatingSupply }),
+            },
+          }),
+        ),
+        // Create token statistics
+        ...tokenStatistics.map((cachedToken) =>
+          this.databaseService.tokenStats.create({
+            data: {
+              tokenId: cachedToken.tokenId,
+              price: cachedToken.price,
+              oneHourEvolution: cachedToken.oneHourEvolution,
+              oneDayEvolution: cachedToken.oneDayEvolution,
+              volume: cachedToken.volume,
+              fdv: cachedToken.fdv,
+              marketCap: cachedToken.marketCap,
+            },
+          }),
+        ),
+      ]);
+
+      this.logger.log(
+        `Batch saved ${tokenUpdatesArray.length} token updates and ${tokenStatistics.length} statistics`,
+      );
+    } catch (error) {
+      this.logger.error('Error in batch save:', error);
     }
   }
 
