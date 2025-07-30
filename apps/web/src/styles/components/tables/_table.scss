@@ -5,6 +5,7 @@
   border-radius: 16px;
   box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.04);
   overflow: hidden;
+  margin-bottom: 20px;
 
   // Quand il y a une pagination, on retire le border-radius du bas du scroll
   &.Table__Wrapper--with-pagination {

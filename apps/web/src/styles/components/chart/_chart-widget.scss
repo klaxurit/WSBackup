@@ -1,0 +1,427 @@
+@use "../../utils" as *;
+
+// Variables pour les charts
+$chart-background: transparent;
+$chart-border-radius: 12px;
+$chart-toolbar-height: 56px;
+$chart-button-padding: 8px 12px;
+$chart-button-border-radius: 6px;
+
+// ===== CHART WIDGET =====
+.chart-widget {
+  width: 100%;
+  background: $chart-background;
+  border-radius: $chart-border-radius;
+  position: relative;
+
+  &__container {
+    width: 100%;
+    position: relative;
+    border-radius: $chart-border-radius;
+    overflow: hidden;
+  }
+
+  &__chart {
+    width: 100%;
+    height: var(--chart-height, 500px);
+    background: $chart-background;
+  }
+
+  // Overlay pour les états de chargement/erreur
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba($onyx-black, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: $chart-border-radius;
+  }
+
+  &__overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  &__overlay-message {
+    color: $white;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  &__spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid $white-020;
+    border-top: 2px solid $beryl-pure;
+    border-radius: 50%;
+    animation: chart-spinner 1s linear infinite;
+  }
+
+  &__retry-button {
+    padding: 8px 16px;
+    background: $beryl-pure;
+    color: $onyx-black;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $beryl-light;
+    }
+
+    &:active {
+      background: $beryl-medium;
+    }
+  }
+
+  // Responsive
+  @media #{$md} {
+    --chart-height: 500px;
+  }
+
+  @media (max-width: 767px) {
+    --chart-height: 350px;
+
+    &__overlay-content {
+      padding: 16px;
+    }
+  }
+}
+
+// ===== CHART TOOLBAR =====
+.chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: $chart-toolbar-height;
+  gap: 16px;
+
+  // Sections gauche/droite
+  &__section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &--left {
+      flex: 1;
+    }
+
+    &--right {
+      flex-shrink: 0;
+    }
+  }
+
+  // Groupes de boutons
+  &__chart-types,
+  &__intervals {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px;
+    border-radius: 8px;
+    padding-top: 25px;
+  }
+
+  // Intervalles avec design original
+  &__intervals-original {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 25px; // Espace pour l'ours au-dessus
+  }
+
+  // Intervalles (ancienne version - gardée pour compatibility)
+  &__intervals {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background: $white-008;
+    border-radius: 8px;
+  }
+
+  // Séparateur vertical
+  &__separator {
+    width: 1px;
+    height: 24px;
+    background: $white-012;
+    margin-top: 25px;
+  }
+
+  // Boutons principaux
+  &__button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: $chart-button-padding;
+    background: transparent;
+    color: $onyx-light;
+    border: none;
+    border-radius: $chart-button-border-radius;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      background: $white-008;
+      color: $white;
+    }
+
+    &:active:not(:disabled) {
+      background: $white-012;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    // État actif
+    &--active {
+      background: $beryl-pure;
+      color: $onyx-black;
+
+      &:hover {
+        background: $beryl-light;
+        color: $onyx-black;
+      }
+
+      &:active {
+        background: $beryl-medium;
+      }
+    }
+  }
+
+  // Boutons de type de chart (avec icônes)
+  &__chart-type {
+    .chart-toolbar__button-label {
+      display: none; // Masquer le label par défaut
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+  }
+
+  // Boutons d'intervalles (plus compacts)
+  &__interval {
+    min-width: 44px;
+    justify-content: center;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  // Statistiques
+  &__stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  &__stat-label {
+    color: $onyx-pure;
+    font-weight: 400;
+  }
+
+  &__stat-value {
+    color: $white;
+    font-weight: 500;
+    font-family: "Space Mono", monospace;
+  }
+
+  // Indicateur de chargement dans la toolbar
+  &__loading {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+  }
+
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid $white-020;
+    border-top: 2px solid $beryl-pure;
+    border-radius: 50%;
+    animation: chart-spinner 1s linear infinite;
+  }
+
+  // Responsive
+  @media (max-width: 1024px) {
+    gap: 12px;
+    padding: 10px 12px;
+
+    &__stats {
+      gap: 12px;
+    }
+
+    &__stat {
+      font-size: 11px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    align-items: stretch;
+
+    &__section {
+      justify-content: center;
+
+      &--left {
+        order: 1;
+      }
+
+      &--right {
+        order: 2;
+        justify-content: center;
+      }
+    }
+
+    &__chart-type {
+      .chart-toolbar__button-label {
+        display: inline; // Afficher les labels sur mobile
+      }
+
+      svg {
+        display: none; // Masquer les icônes sur mobile
+      }
+    }
+
+    &__stats {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    &__separator {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+
+    &__chart-types,
+    &__intervals {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    &__button {
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+
+    &__interval {
+      min-width: 36px;
+      padding: 4px 6px;
+    }
+
+    &__stats {
+      display: none; // Masquer les stats sur très petits écrans
+    }
+  }
+}
+
+// ===== ANIMATIONS =====
+@keyframes chart-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// ===== ÉTATS SPÉCIAUX =====
+
+// Mode plein écran (si implémenté plus tard)
+.chart-widget--fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: $onyx-black;
+
+  .chart-widget__chart {
+    height: calc(100vh - #{$chart-toolbar-height});
+  }
+}
+
+// Mode compact (sans toolbar)
+.chart-widget--compact {
+  .chart-toolbar {
+    display: none;
+  }
+}
+
+// Thème sombre spécial (si besoin de surcharger)
+.chart-widget--dark {
+  .chart-toolbar {
+    background: $onyx-darker;
+    border-color: $white-006;
+  }
+
+  .chart-widget__overlay {
+    background: rgba($onyx-blacker, 0.9);
+  }
+}
+
+// ===== UTILITAIRES =====
+
+// Classes helper pour l'intégration
+.chart-container {
+  width: 100%;
+
+  &--with-margin {
+    margin: 16px 0;
+  }
+
+  &--with-border {
+    border: 1px solid $white-008;
+    border-radius: $chart-border-radius;
+  }
+}
+
+// Styles pour les charts dans différents contextes
+.swap-page-layout__chart .chart-widget {
+  border-radius: $chart-border-radius;
+}
+
+.token-page__chart .chart-widget {
+  border-radius: 0 0 $chart-border-radius $chart-border-radius;
+
+  .chart-toolbar {
+    border-radius: 0;
+  }
+}
