@@ -272,33 +272,30 @@ const CreatePoolPage: React.FC = () => {
   const { data: tokens } = useTokens();
 
   useEffect(() => {
-    if (!tokens) return;
+    if (!tokens || !!token0 || !!token1) return;
 
     const token0Address = searchParams.get('token0');
     const token1Address = searchParams.get('token1');
     const feeParam = searchParams.get('fee');
 
-    // Pré-remplir token0 si spécifié dans l'URL
-    if (token0Address && !token0) {
+    if (token0Address && token1Address) {
       const foundToken0 = tokens.find(
         (t) => t.address.toLowerCase() === token0Address.toLowerCase()
       );
-      if (foundToken0) {
-        setToken0(foundToken0);
-      }
-    }
-
-    // Pré-remplir token1 si spécifié dans l'URL
-    if (token1Address && !token1) {
       const foundToken1 = tokens.find(
         (t) => t.address.toLowerCase() === token1Address.toLowerCase()
       );
-      if (foundToken1) {
-        setToken1(foundToken1);
+      if (foundToken0 && foundToken1) {
+        handleSelect0(foundToken0);
+        handleSelect1(foundToken1);
+      }
+    } else {
+      const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+      if (bera) {
+        handleSelect0(bera)
       }
     }
 
-    // Pré-remplir le fee si spécifié dans l'URL
     if (feeParam && !isNaN(Number(feeParam))) {
       const feeValue = Number(feeParam);
       const foundFeeTier = feeTiers.find((tier) => tier.fee === feeValue);
@@ -308,20 +305,13 @@ const CreatePoolPage: React.FC = () => {
     }
   }, [tokens, searchParams, token0, token1]);
 
-  useEffect(() => {
-    if (!token0 && tokens && !searchParams.get('token0')) {
-      const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
-      if (bera) setToken0(bera);
-    }
-  }, [tokens, token0, searchParams]);
-
   const { selectedToken0, selectedToken1 } = useMemo(() => {
-    const selectedToken0 = poolManager?.pool?.token0.address === token0?.address
+    const selectedToken0 = poolManager?.pool?.token0.address.toLowerCase() === token0?.address.toLowerCase()
       ? token0
       : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0?.address === "0x0000000000000000000000000000000000000000")
         ? token0
         : token1
-    const selectedToken1 = poolManager?.pool?.token1.address === token1?.address
+    const selectedToken1 = poolManager?.pool?.token1.address.toLowerCase() === token1?.address.toLowerCase()
       ? token1
       : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1?.address === "0x0000000000000000000000000000000000000000")
         ? token1
@@ -582,7 +572,7 @@ const CreatePoolPage: React.FC = () => {
                     selectedToken={selectedToken1}
                     onAmountChange={handleAmount1Change}
                     value={poolManager.amount1}
-                    isOverBalance={insufficient0 || false}
+                    isOverBalance={insufficient1 || false}
                     disabled={false}
                   />
                 </div>
