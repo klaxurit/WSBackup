@@ -24,6 +24,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isInputting = useRef(false);
+  const lastUserInput = useRef<string>('');
   const [inputValue, setInputValue] = useState('');
 
   const { address } = useAccount()
@@ -45,24 +46,42 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
 
   useEffect(() => {
     if (!isInputting.current) {
-      setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
+      const formattedValue = value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18);
+      
+      // Si la valeur correspond à ce que l'utilisateur a tapé, garder l'input utilisateur
+      if (lastUserInput.current && value > 0n) {
+        try {
+          const parsedUserInput = parseUnits(lastUserInput.current, selectedToken?.decimals || 18);
+          if (parsedUserInput === value) {
+            setInputValue(lastUserInput.current);
+            return;
+          }
+        } catch {
+          // Si erreur de parsing, utiliser la valeur formatée
+        }
+      }
+      
+      setInputValue(formattedValue);
     }
-  }, [value]);
+  }, [value, selectedToken?.decimals]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
     isInputting.current = true;
+    lastUserInput.current = val;
 
     if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
       onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
     } else if (val === '') {
+      lastUserInput.current = '';
       onAmountChange(0n);
     }
   };
 
   const handleBlur = () => {
     isInputting.current = false;
+    lastUserInput.current = '';
     setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
   };
 
