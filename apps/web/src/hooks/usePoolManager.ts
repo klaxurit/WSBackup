@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { type Address, encodeFunctionData, erc20Abi, zeroAddress } from "viem"
+import { type Address, encodeFunctionData, erc20Abi, maxUint256, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
@@ -214,7 +214,6 @@ export const usePoolManager = ({
         throw new Error('tickLower must be lower thant tickUpper')
       }
 
-      console.log(inputToken, inputAmount, pool)
       let position: Position
       if (inputToken === 'token0') {
         position = Position.fromAmount0({
@@ -290,7 +289,7 @@ export const usePoolManager = ({
     address: (token0?.address as Address),
     abi: erc20Abi,
     functionName: 'approve',
-    args: [CONTRACTS_ADDRESS.positionManager, prices.amount0 * 105n / 100n],
+    args: [CONTRACTS_ADDRESS.positionManager, maxUint256],
     chainId: currentChain.id,
     query: {
       enabled: !!token0 && token0NeedApproval
@@ -300,7 +299,7 @@ export const usePoolManager = ({
     address: (token1?.address as Address),
     abi: erc20Abi,
     functionName: 'approve',
-    args: [CONTRACTS_ADDRESS.positionManager, prices.amount1 * 105n / 100n],
+    args: [CONTRACTS_ADDRESS.positionManager, maxUint256],
     chainId: currentChain.id,
     query: {
       enabled: !!token1 && token1NeedApproval
