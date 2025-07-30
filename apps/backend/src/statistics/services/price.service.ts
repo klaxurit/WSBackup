@@ -293,8 +293,11 @@ export class PriceService {
       ]);
 
       // Calculate FDV and Market Cap
-      const [fdv, marketCap] = await this.calculateFDVAndMarketCap(token, cachedToken.price);
-      
+      const [fdv, marketCap] = await this.calculateFDVAndMarketCap(
+        token,
+        cachedToken.price,
+      );
+
       this.cachedTokens.set(token.address, {
         ...cachedToken,
         oneHourEvolution: oneHourEvolution || 0,
@@ -321,9 +324,12 @@ export class PriceService {
       if (price) {
         // Store circulating supply from CoinGecko if available
         if (price.circulating_supply) {
-          await this.updateCirculatingSupply(token, price.circulating_supply.toString());
+          await this.updateCirculatingSupply(
+            token,
+            price.circulating_supply.toString(),
+          );
         }
-        
+
         this.cachedTokens.set(token.address, {
           tokenId: token.id,
           price: price.usd,
@@ -523,27 +529,28 @@ export class PriceService {
     try {
       // Get total supply for FDV calculation
       const totalSupply = await this.getTotalSupply(token);
-      
+
       if (!totalSupply) {
         this.logger.debug(`No total supply available for ${token.symbol}`);
         return [null, null];
       }
 
       // Convert totalSupply to number with proper decimals
-      const totalSupplyNumber = Number(totalSupply) / (10 ** token.decimals);
-      
+      const totalSupplyNumber = Number(totalSupply) / 10 ** token.decimals;
+
       // FDV = Total Supply × Price
       const fdv = totalSupplyNumber * price;
-      
+
       // Get circulating supply for Market Cap calculation
       const circulatingSupply = await this.getCirculatingSupply(token);
       let marketCap: number | null = null;
-      
+
       if (circulatingSupply) {
-        const circulatingSupplyNumber = Number(circulatingSupply) / (10 ** token.decimals);
+        const circulatingSupplyNumber =
+          Number(circulatingSupply) / 10 ** token.decimals;
         // Market Cap = Circulating Supply × Price
         marketCap = circulatingSupplyNumber * price;
-        
+
         this.logger.debug(
           `Calculated for ${token.symbol}: FDV=$${fdv.toLocaleString()} | Market Cap=$${marketCap.toLocaleString()} (Circulating: ${circulatingSupplyNumber.toLocaleString()})`,
         );
@@ -601,13 +608,16 @@ export class PriceService {
 
       return totalSupplyString;
     } catch (error) {
-      this.logger.error(`Error fetching total supply for ${token.symbol}:`, error);
+      this.logger.error(
+        `Error fetching total supply for ${token.symbol}:`,
+        error,
+      );
       return null;
     }
   }
 
   /**
-   * Get circulating supply from cache or CoinGecko
+   * Get circulating supply from cache, CoinGecko, or estimate using fallback strategies
    */
   private async getCirculatingSupply(token: Token): Promise<string | null> {
     try {
@@ -616,10 +626,12 @@ export class PriceService {
         return token.circulatingSupply;
       }
 
-      // For tokens without CoinGecko ID, we can't get circulating supply
+      // For tokens without CoinGecko ID, use fallback estimation strategies
       if (!token.coingeckoId) {
-        this.logger.debug(`No CoinGecko ID for ${token.symbol}, cannot fetch circulating supply`);
-        return null;
+        this.logger.debug(
+          `No CoinGecko ID for ${token.symbol}, using fallback strategies`,
+        );
+        return await this.estimateCirculatingSupply(token);
       }
 
       // Note: Circulating supply should be fetched from CoinGecko during price updates
@@ -627,15 +639,184 @@ export class PriceService {
       this.logger.debug(`No cached circulating supply for ${token.symbol}`);
       return null;
     } catch (error) {
-      this.logger.error(`Error fetching circulating supply for ${token.symbol}:`, error);
+      this.logger.error(
+        `Error fetching circulating supply for ${token.symbol}:`,
+        error,
+      );
       return null;
+    }
+  }
+
+  /**
+   * Estimate circulating supply for tokens without CoinGecko ID using multiple strategies
+   */
+  private async estimateCirculatingSupply(
+    token: Token,
+  ): Promise<string | null> {
+    try {
+      const totalSupply = await this.getTotalSupply(token);
+      if (!totalSupply) {
+        return null;
+      }
+
+      // Strategy 1: Check if token has burn mechanisms (common addresses)
+      const circulatingSupply = await this.estimateWithBurnAnalysis(
+        token,
+        totalSupply,
+      );
+      if (circulatingSupply) {
+        // Cache the estimated circulating supply
+        await this.updateCirculatingSupply(token, circulatingSupply);
+        this.logger.debug(
+          `Estimated circulating supply for ${token.symbol}: ${circulatingSupply} (burn analysis)`,
+        );
+        return circulatingSupply;
+      }
+
+      // Strategy 2: For newer/smaller tokens, assume most supply is circulating (80-95%)
+      const estimatedRatio = await this.getCirculatingRatioHeuristic(token);
+      const totalSupplyBN = new BigNumber(totalSupply);
+      const estimatedCirculating = totalSupplyBN
+        .multipliedBy(estimatedRatio)
+        .toFixed(0);
+
+      // Cache the estimation
+      await this.updateCirculatingSupply(token, estimatedCirculating);
+
+      this.logger.debug(
+        `Estimated circulating supply for ${token.symbol}: ${estimatedCirculating} (${(estimatedRatio * 100).toFixed(1)}% of total)`,
+      );
+
+      return estimatedCirculating;
+    } catch (error) {
+      this.logger.error(
+        `Error estimating circulating supply for ${token.symbol}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Analyze token for burn mechanisms and calculate effective circulating supply
+   */
+  private async estimateWithBurnAnalysis(
+    token: Token,
+    totalSupply: string,
+  ): Promise<string | null> {
+    try {
+      // Common burn/dead addresses to check
+      const burnAddresses = [
+        '0x000000000000000000000000000000000000dead', // Burn address
+        '0x0000000000000000000000000000000000000000', // Zero address
+        '0x000000000000000000000000000000000000dEaD', // Alternative burn
+      ];
+
+      let totalBurned = new BigNumber(0);
+
+      // Check balance of burn addresses
+      for (const burnAddress of burnAddresses) {
+        try {
+          const balance = await this.blockchainService.client.readContract({
+            address: token.address as Address,
+            abi: [
+              {
+                inputs: [
+                  { internalType: 'address', name: 'account', type: 'address' },
+                ],
+                name: 'balanceOf',
+                outputs: [
+                  { internalType: 'uint256', name: '', type: 'uint256' },
+                ],
+                stateMutability: 'view',
+                type: 'function',
+              },
+            ],
+            functionName: 'balanceOf',
+            args: [burnAddress as Address],
+          });
+
+          totalBurned = totalBurned.plus(balance.toString());
+        } catch (error) {
+          // Skip if address doesn't exist or contract call fails
+          continue;
+        }
+      }
+
+      // If we found burned tokens, calculate circulating supply
+      if (totalBurned.gt(0)) {
+        const totalSupplyBN = new BigNumber(totalSupply);
+        const circulatingSupply = totalSupplyBN.minus(totalBurned);
+
+        this.logger.debug(
+          `Found ${totalBurned.toString()} burned tokens for ${token.symbol}`,
+        );
+
+        return circulatingSupply.toString();
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.error(`Error in burn analysis for ${token.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get circulating supply ratio heuristic based on token characteristics
+   */
+  private async getCirculatingRatioHeuristic(token: Token): Promise<number> {
+    try {
+      // Base assumption: most DeFi tokens have high circulation (80-95%)
+      let baseRatio = 0.85; // 85% default
+
+      // Get token age (if we have creation data)
+      const oldestStat = await this.databaseService.tokenStats.findFirst({
+        where: { tokenId: token.id },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (oldestStat) {
+        const tokenAgeMonths =
+          (Date.now() - oldestStat.createdAt.getTime()) /
+          (1000 * 60 * 60 * 24 * 30);
+
+        if (tokenAgeMonths < 1) {
+          // Very new tokens: 90-95% circulating (most launches)
+          baseRatio = 0.92;
+        } else if (tokenAgeMonths < 6) {
+          // Recent tokens: 85-90% circulating
+          baseRatio = 0.87;
+        } else {
+          // Established tokens: 80-85% circulating
+          baseRatio = 0.82;
+        }
+      }
+
+      // Check if token has high trading activity (suggests good distribution)
+      const volume24h = await this.calculateVolume24h(token);
+      if (volume24h && volume24h > 1000) {
+        // $1000+ daily volume
+        baseRatio += 0.05; // Increase by 5% for active tokens
+      }
+
+      // Cap the ratio at 95%
+      return Math.min(baseRatio, 0.95);
+    } catch {
+      this.logger.error(
+        `Error in heuristic calculation for ${token.symbol}`,
+      );
+      return 0.85; // Safe default
     }
   }
 
   /**
    * Update circulating supply in database
    */
-  private async updateCirculatingSupply(token: Token, circulatingSupply: string): Promise<void> {
+  private async updateCirculatingSupply(
+    token: Token,
+    circulatingSupply: string,
+  ): Promise<void> {
     try {
       await this.databaseService.token.update({
         where: { id: token.id },
@@ -646,7 +827,10 @@ export class PriceService {
         `Updated circulating supply for ${token.symbol}: ${circulatingSupply}`,
       );
     } catch (error) {
-      this.logger.error(`Error updating circulating supply for ${token.symbol}:`, error);
+      this.logger.error(
+        `Error updating circulating supply for ${token.symbol}:`,
+        error,
+      );
     }
   }
 
