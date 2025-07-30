@@ -45,7 +45,7 @@ export class PriceService {
     private readonly databaseService: DatabaseService,
     private readonly coingeckoService: CoinGeckoService,
     private readonly blockchainService: BlockchainService,
-  ) {}
+  ) { }
 
   async getTokenStats() {
     const tokens = await this.databaseService.token.findMany({
@@ -548,12 +548,21 @@ export class PriceService {
       if (circulatingSupply) {
         const circulatingSupplyNumber =
           Number(circulatingSupply) / 10 ** token.decimals;
-        // Market Cap = Circulating Supply × Price
-        marketCap = circulatingSupplyNumber * price;
-
-        this.logger.debug(
-          `Calculated for ${token.symbol}: FDV=$${fdv.toLocaleString()} | Market Cap=$${marketCap.toLocaleString()} (Circulating: ${circulatingSupplyNumber.toLocaleString()})`,
-        );
+        
+        // CRITICAL FIX: Validate circulating supply is not zero after decimal conversion
+        if (circulatingSupplyNumber <= 0) {
+          this.logger.warn(
+            `Circulating supply converted to zero for ${token.symbol}: raw=${circulatingSupply}, decimals=${token.decimals}, converted=${circulatingSupplyNumber}. Using FDV as fallback.`
+          );
+          marketCap = fdv; // Use FDV as fallback
+        } else {
+          // Market Cap = Circulating Supply × Price
+          marketCap = circulatingSupplyNumber * price;
+          
+          this.logger.debug(
+            `Calculated for ${token.symbol}: FDV=$${fdv.toLocaleString()} | Market Cap=$${marketCap.toLocaleString()} | Price = $${price} (Circulating: ${circulatingSupplyNumber.toLocaleString()})`,
+          );
+        }
       } else {
         // Fallback: use FDV as Market Cap if no circulating supply available
         marketCap = fdv;
@@ -621,28 +630,66 @@ export class PriceService {
    */
   private async getCirculatingSupply(token: Token): Promise<string | null> {
     try {
-      // First check if we have it cached in database
+      // First check if we have it cached in database AND it's not zero
       if (token.circulatingSupply) {
-        return token.circulatingSupply;
+        const cachedValue = new BigNumber(token.circulatingSupply);
+        if (cachedValue.gt(0)) {
+          this.logger.debug(`Using cached circulating supply for ${token.symbol}: ${token.circulatingSupply}`);
+          return token.circulatingSupply;
+        } else {
+          this.logger.warn(`Cached circulating supply is zero for ${token.symbol}, will re-estimate`);
+        }
       }
 
-      // For tokens without CoinGecko ID, use fallback estimation strategies
+      // Try estimation strategies first
+      let estimatedSupply: string | null = null;
+      
       if (!token.coingeckoId) {
         this.logger.debug(
           `No CoinGecko ID for ${token.symbol}, using fallback strategies`,
         );
-        return await this.estimateCirculatingSupply(token);
+        estimatedSupply = await this.estimateCirculatingSupply(token);
+      } else {
+        // For tokens WITH CoinGecko ID but no cached circulating supply, also try estimation
+        // This handles cases where CoinGecko doesn't provide circulating_supply
+        this.logger.debug(`No cached circulating supply for ${token.symbol} (has CoinGecko ID), trying estimation`);
+        estimatedSupply = await this.estimateCirculatingSupply(token);
       }
 
-      // Note: Circulating supply should be fetched from CoinGecko during price updates
-      // This is just a fallback in case it wasn't stored
-      this.logger.debug(`No cached circulating supply for ${token.symbol}`);
-      return null;
+      // If estimation failed, use totalSupply as ultimate fallback
+      if (!estimatedSupply) {
+        this.logger.warn(`All circulating supply estimation strategies failed for ${token.symbol}, using totalSupply as fallback`);
+        const totalSupply = await this.getTotalSupply(token);
+        
+        if (totalSupply) {
+          const totalSupplyBN = new BigNumber(totalSupply);
+          if (totalSupplyBN.gt(0)) {
+            // Cache this fallback value
+            await this.updateCirculatingSupply(token, totalSupply);
+            this.logger.debug(`Using totalSupply as circulating supply for ${token.symbol}: ${totalSupply}`);
+            return totalSupply;
+          }
+        }
+      }
+
+      return estimatedSupply;
     } catch (error) {
       this.logger.error(
         `Error fetching circulating supply for ${token.symbol}:`,
         error,
       );
+      
+      // Even in error case, try totalSupply as absolute last resort
+      try {
+        const totalSupply = await this.getTotalSupply(token);
+        if (totalSupply) {
+          this.logger.warn(`Using totalSupply as emergency fallback for ${token.symbol} due to error: ${totalSupply}`);
+          return totalSupply;
+        }
+      } catch (fallbackError) {
+        this.logger.error(`Even totalSupply fallback failed for ${token.symbol}:`, fallbackError);
+      }
+      
       return null;
     }
   }
@@ -656,8 +703,18 @@ export class PriceService {
     try {
       const totalSupply = await this.getTotalSupply(token);
       if (!totalSupply) {
+        this.logger.warn(`No total supply available for ${token.symbol}, cannot estimate circulating supply`);
         return null;
       }
+
+      // CRITICAL FIX: Validate totalSupply is not zero
+      const totalSupplyBN = new BigNumber(totalSupply);
+      if (totalSupplyBN.lte(0)) {
+        this.logger.warn(`Total supply is zero or negative for ${token.symbol}: ${totalSupply}`);
+        return null;
+      }
+
+      this.logger.debug(`Starting circulating supply estimation for ${token.symbol} (Total: ${totalSupply})`);
 
       // Strategy 1: Check if token has burn mechanisms (common addresses)
       const circulatingSupply = await this.estimateWithBurnAnalysis(
@@ -665,26 +722,39 @@ export class PriceService {
         totalSupply,
       );
       if (circulatingSupply) {
-        // Cache the estimated circulating supply
-        await this.updateCirculatingSupply(token, circulatingSupply);
-        this.logger.debug(
-          `Estimated circulating supply for ${token.symbol}: ${circulatingSupply} (burn analysis)`,
-        );
-        return circulatingSupply;
+        // DOUBLE CHECK: Ensure result is not zero
+        const circulatingBN = new BigNumber(circulatingSupply);
+        if (circulatingBN.lte(0)) {
+          this.logger.warn(`Burn analysis returned zero/negative circulating supply for ${token.symbol}: ${circulatingSupply}`);
+        } else {
+          // Cache the estimated circulating supply
+          await this.updateCirculatingSupply(token, circulatingSupply);
+          this.logger.debug(
+            `Estimated circulating supply for ${token.symbol}: ${circulatingSupply} (burn analysis)`,
+          );
+          return circulatingSupply;
+        }
       }
 
       // Strategy 2: For newer/smaller tokens, assume most supply is circulating (80-95%)
       const estimatedRatio = await this.getCirculatingRatioHeuristic(token);
-      const totalSupplyBN = new BigNumber(totalSupply);
       const estimatedCirculating = totalSupplyBN
         .multipliedBy(estimatedRatio)
         .toFixed(0);
+
+      // FINAL VALIDATION: Ensure estimated circulating is never zero
+      const estimatedBN = new BigNumber(estimatedCirculating);
+      if (estimatedBN.lte(0)) {
+        this.logger.warn(`Final estimation is zero/negative for ${token.symbol}: ${estimatedCirculating}. Letting totalSupply fallback handle this.`);
+        // Return null to trigger totalSupply fallback in getCirculatingSupply
+        return null;
+      }
 
       // Cache the estimation
       await this.updateCirculatingSupply(token, estimatedCirculating);
 
       this.logger.debug(
-        `Estimated circulating supply for ${token.symbol}: ${estimatedCirculating} (${(estimatedRatio * 100).toFixed(1)}% of total)`,
+        `Estimated circulating supply for ${token.symbol}: ${estimatedCirculating} (${(estimatedRatio * 100).toFixed(1)}% of total ${totalSupply})`,
       );
 
       return estimatedCirculating;
@@ -739,6 +809,7 @@ export class PriceService {
           totalBurned = totalBurned.plus(balance.toString());
         } catch (error) {
           // Skip if address doesn't exist or contract call fails
+          this.logger.debug(`Skipping burn address ${burnAddress} for ${token.symbol}: ${error}`);
           continue;
         }
       }
@@ -748,8 +819,17 @@ export class PriceService {
         const totalSupplyBN = new BigNumber(totalSupply);
         const circulatingSupply = totalSupplyBN.minus(totalBurned);
 
+        // CRITICAL FIX: Ensure circulating supply never goes negative or zero
+        if (circulatingSupply.lte(0)) {
+          this.logger.warn(
+            `Burned tokens (${totalBurned.toString()}) >= total supply (${totalSupply}) for ${token.symbol}. Using 10% of total supply as fallback.`
+          );
+          // Fallback: assume 10% is still circulating
+          return totalSupplyBN.multipliedBy(0.1).toFixed(0);
+        }
+
         this.logger.debug(
-          `Found ${totalBurned.toString()} burned tokens for ${token.symbol}`,
+          `Found ${totalBurned.toString()} burned tokens for ${token.symbol}. Circulating: ${circulatingSupply.toString()}`
         );
 
         return circulatingSupply.toString();
@@ -803,9 +883,7 @@ export class PriceService {
       // Cap the ratio at 95%
       return Math.min(baseRatio, 0.95);
     } catch {
-      this.logger.error(
-        `Error in heuristic calculation for ${token.symbol}`,
-      );
+      this.logger.error(`Error in heuristic calculation for ${token.symbol}`);
       return 0.85; // Safe default
     }
   }
