@@ -171,7 +171,8 @@ exports.Prisma.TokenScalarFieldEnum = {
   circulatingSupply: 'circulatingSupply',
   website: 'website',
   twitter: 'twitter',
-  description: 'description'
+  description: 'description',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.TokenStatisticScalarFieldEnum = {
