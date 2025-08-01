@@ -4452,6 +4452,7 @@ export namespace Prisma {
     website: string | null
     twitter: string | null
     description: string | null
+    createdAt: Date | null
   }
 
   export type TokenMaxAggregateOutputType = {
@@ -4467,6 +4468,7 @@ export namespace Prisma {
     website: string | null
     twitter: string | null
     description: string | null
+    createdAt: Date | null
   }
 
   export type TokenCountAggregateOutputType = {
@@ -4483,6 +4485,7 @@ export namespace Prisma {
     website: number
     twitter: number
     description: number
+    createdAt: number
     _all: number
   }
 
@@ -4508,6 +4511,7 @@ export namespace Prisma {
     website?: true
     twitter?: true
     description?: true
+    createdAt?: true
   }
 
   export type TokenMaxAggregateInputType = {
@@ -4523,6 +4527,7 @@ export namespace Prisma {
     website?: true
     twitter?: true
     description?: true
+    createdAt?: true
   }
 
   export type TokenCountAggregateInputType = {
@@ -4539,6 +4544,7 @@ export namespace Prisma {
     website?: true
     twitter?: true
     description?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -4642,6 +4648,7 @@ export namespace Prisma {
     website: string | null
     twitter: string | null
     description: string | null
+    createdAt: Date
     _count: TokenCountAggregateOutputType | null
     _avg: TokenAvgAggregateOutputType | null
     _sum: TokenSumAggregateOutputType | null
@@ -4677,6 +4684,7 @@ export namespace Prisma {
     website?: boolean
     twitter?: boolean
     description?: boolean
+    createdAt?: boolean
     poolsAsToken0?: boolean | Token$poolsAsToken0Args<ExtArgs>
     poolsAsToken1?: boolean | Token$poolsAsToken1Args<ExtArgs>
     Statistic?: boolean | Token$StatisticArgs<ExtArgs>
@@ -4697,6 +4705,7 @@ export namespace Prisma {
     website?: boolean
     twitter?: boolean
     description?: boolean
+    createdAt?: boolean
   }, ExtArgs["result"]["token"]>
 
   export type TokenSelectScalar = {
@@ -4713,6 +4722,7 @@ export namespace Prisma {
     website?: boolean
     twitter?: boolean
     description?: boolean
+    createdAt?: boolean
   }
 
   export type TokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4744,6 +4754,7 @@ export namespace Prisma {
       website: string | null
       twitter: string | null
       description: string | null
+      createdAt: Date
     }, ExtArgs["result"]["token"]>
     composites: {}
   }
@@ -5153,6 +5164,7 @@ export namespace Prisma {
     readonly website: FieldRef<"Token", 'String'>
     readonly twitter: FieldRef<"Token", 'String'>
     readonly description: FieldRef<"Token", 'String'>
+    readonly createdAt: FieldRef<"Token", 'DateTime'>
   }
     
 
@@ -7675,7 +7687,8 @@ export namespace Prisma {
     circulatingSupply: 'circulatingSupply',
     website: 'website',
     twitter: 'twitter',
-    description: 'description'
+    description: 'description',
+    createdAt: 'createdAt'
   };
 
   export type TokenScalarFieldEnum = (typeof TokenScalarFieldEnum)[keyof typeof TokenScalarFieldEnum]
@@ -8068,6 +8081,7 @@ export namespace Prisma {
     website?: StringNullableFilter<"Token"> | string | null
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
+    createdAt?: DateTimeFilter<"Token"> | Date | string
     poolsAsToken0?: PoolListRelationFilter
     poolsAsToken1?: PoolListRelationFilter
     Statistic?: TokenStatisticListRelationFilter
@@ -8087,6 +8101,7 @@ export namespace Prisma {
     website?: SortOrderInput | SortOrder
     twitter?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
     poolsAsToken0?: PoolOrderByRelationAggregateInput
     poolsAsToken1?: PoolOrderByRelationAggregateInput
     Statistic?: TokenStatisticOrderByRelationAggregateInput
@@ -8109,6 +8124,7 @@ export namespace Prisma {
     website?: StringNullableFilter<"Token"> | string | null
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
+    createdAt?: DateTimeFilter<"Token"> | Date | string
     poolsAsToken0?: PoolListRelationFilter
     poolsAsToken1?: PoolListRelationFilter
     Statistic?: TokenStatisticListRelationFilter
@@ -8128,6 +8144,7 @@ export namespace Prisma {
     website?: SortOrderInput | SortOrder
     twitter?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
     _count?: TokenCountOrderByAggregateInput
     _avg?: TokenAvgOrderByAggregateInput
     _max?: TokenMaxOrderByAggregateInput
@@ -8152,6 +8169,7 @@ export namespace Prisma {
     website?: StringNullableWithAggregatesFilter<"Token"> | string | null
     twitter?: StringNullableWithAggregatesFilter<"Token"> | string | null
     description?: StringNullableWithAggregatesFilter<"Token"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Token"> | Date | string
   }
 
   export type TokenStatisticWhereInput = {
@@ -8579,6 +8597,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
@@ -8598,6 +8617,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
@@ -8617,6 +8637,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
@@ -8636,6 +8657,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
@@ -8655,6 +8677,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
   }
 
   export type TokenUpdateManyMutationInput = {
@@ -8671,6 +8694,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenUncheckedUpdateManyInput = {
@@ -8687,6 +8711,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenStatisticCreateInput = {
@@ -9247,6 +9272,7 @@ export namespace Prisma {
     website?: SortOrder
     twitter?: SortOrder
     description?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type TokenAvgOrderByAggregateInput = {
@@ -9266,6 +9292,7 @@ export namespace Prisma {
     website?: SortOrder
     twitter?: SortOrder
     description?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type TokenMinOrderByAggregateInput = {
@@ -9281,6 +9308,7 @@ export namespace Prisma {
     website?: SortOrder
     twitter?: SortOrder
     description?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type TokenSumOrderByAggregateInput = {
@@ -10022,6 +10050,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
   }
@@ -10040,6 +10069,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
     Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
   }
@@ -10063,6 +10093,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
     Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
   }
@@ -10081,6 +10112,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
     Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
   }
@@ -10189,6 +10221,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
   }
@@ -10207,6 +10240,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
     Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
   }
@@ -10236,6 +10270,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
     Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
   }
@@ -10254,6 +10289,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
     Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
   }
@@ -10598,6 +10634,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
   }
@@ -10616,6 +10653,7 @@ export namespace Prisma {
     website?: string | null
     twitter?: string | null
     description?: string | null
+    createdAt?: Date | string
     poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
     poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
   }
@@ -10650,6 +10688,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
   }
@@ -10668,6 +10707,7 @@ export namespace Prisma {
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
     poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
   }
