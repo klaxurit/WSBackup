@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { NewBanner } from '../Common/NewBanner';
 import bear from '../../assets/bear_icon.png';
 import SwapForm from '../SwapForm/SwapForm';
-import type { Address } from 'viem';
 import { ChartWidget } from '../Charts/ChartWidget';
 import type { ChartType, ChartInterval } from '../../types/chart';
 import { DEFAULT_TOKEN } from '../../utils/lineChart';
+import { getStatsAddress } from '../../utils/tokenMapping';
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface SwapPageLayoutProps {
   className?: string;
@@ -18,24 +19,32 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   className = "",
   onToggleSidebar
 }) => {
-  // États pour le pool sélectionné
-  const [poolAddress, setPoolAddress] = useState<Address | null>(null);
-  const [fromTokenAddress, setFromTokenAddress] = useState<string | null>(null);
-  const [fromToken, setFromToken] = useState<any>(null);
-
-  // États pour les contrôles du chart (nouveaux)
+  // Suppression de poolAddress car non utilisé
+  const [fromToken] = useState<BerachainToken | null>(null);
+  const [toToken] = useState<BerachainToken | null>(null);
   const [chartType, setChartType] = useState<ChartType>('area');
   const [interval, setInterval] = useState<ChartInterval>('1H');
 
-  // Gestionnaires d'événements
-  const handlePoolChange = (
-    address: string | null,
-    fromTokenObj?: any
-  ) => {
-    setPoolAddress(address as Address | null);
-    if (fromTokenObj?.address) setFromTokenAddress(fromTokenObj.address);
-    if (fromTokenObj) setFromToken(fromTokenObj);
-  };
+  const chartConfig = React.useMemo(() => {
+    if (!fromToken) {
+      return {
+        type: 'default',
+        tokenAddress: DEFAULT_TOKEN,
+        message: "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.",
+        showOverlay: true,
+        dataType: 'token' as const
+      };
+    }
+
+    const statsAddress = getStatsAddress(fromToken.address);
+    return {
+      type: 'single-token',
+      tokenAddress: statsAddress,
+      message: `Showing price data for ${fromToken.symbol}${statsAddress !== fromToken.address ? ' (using WBERA data)' : ''}`,
+      showOverlay: false,
+      dataType: 'token' as const
+    };
+  }, [fromToken]);
 
   const handleChartTypeChange = (newType: ChartType) => {
     setChartType(newType);
@@ -45,15 +54,8 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
     setInterval(newInterval);
   };
 
-  // Déterminer quelle adresse de token utiliser pour le chart
-  const chartTokenAddress = fromTokenAddress || DEFAULT_TOKEN;
-
-  // Messages personnalisés selon le contexte
   const getNoDataMessage = () => {
-    if (fromTokenAddress && poolAddress) {
-      return "No data available for this token pair. Select a different pool or try again later.";
-    }
-    return "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.";
+    return chartConfig.message;
   };
 
   return (
@@ -69,8 +71,19 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">
+          {/* DEBUG INFO - à retirer en production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '12px', marginBottom: '8px' }}>
+              <strong>Chart Debug:</strong> Type: {chartConfig.type} |
+              Token: {chartConfig.tokenAddress} |
+              FromToken: {fromToken?.symbol || 'none'} |
+              ToToken: {toToken?.symbol || 'none'} |
+              DataType: {chartConfig.dataType}
+            </div>
+          )}
+
           <ChartWidget
-            tokenAddress={chartTokenAddress}
+            tokenAddress={chartConfig.tokenAddress}
             chartType={chartType}
             interval={interval}
             height={500}
@@ -79,14 +92,14 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             onChartTypeChange={handleChartTypeChange}
             onIntervalChange={handleIntervalChange}
             tokenDecimals={fromToken?.decimals}
-            showNoDataOverlay={!fromTokenAddress} // Afficher overlay seulement si pas de token sélectionné
+            showNoDataOverlay={chartConfig.showOverlay}
             noDataMessage={getNoDataMessage()}
+            dataType={chartConfig.dataType}
           />
         </div>
 
         <div className="swap-page-layout__swap">
           <SwapForm
-            onPoolChange={(address, fromToken) => handlePoolChange(address, fromToken)}
             toggleSidebar={onToggleSidebar}
             isSticky={true}
           />

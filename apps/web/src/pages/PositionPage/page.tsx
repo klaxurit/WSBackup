@@ -9,6 +9,8 @@ import { usePositions } from '../../hooks/usePositions';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
+import { getPoolDisplayToken } from '../../utils/tokenMapping';
+
 
 const columns: TableColumn[] = [
   { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.nftTokenId) },
@@ -19,7 +21,13 @@ const columns: TableColumn[] = [
       <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
           <TokenPairLogos token0={row.pool.token0} token1={row.pool.token1} />
-          {row.pool.token0.symbol} / {row.pool.token1.symbol}
+          {(() => {
+            const displayToken0 = getPoolDisplayToken(row.pool.token0.address);
+            const displayToken1 = getPoolDisplayToken(row.pool.token1.address);
+            const symbol0 = displayToken0.symbol || row.pool.token0.symbol;
+            const symbol1 = displayToken1.symbol || row.pool.token1.symbol;
+            return `${symbol0} / ${symbol1}`;
+          })()}
         </span>
       </Link>
     ),
@@ -100,7 +108,13 @@ const PoolPage: React.FC = () => {
               <div className="PoolPage__TopCard" key={pool.id}>
                 <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <TokenPairLogos token0={pool.token0} token1={pool.token1} />
-                  {pool.token0.symbol} / {pool.token1.symbol} <span className="PoolPage__TopVersion">v3</span>
+                  {(() => {
+                    const displayToken0 = getPoolDisplayToken(pool.token0.address);
+                    const displayToken1 = getPoolDisplayToken(pool.token1.address);
+                    const symbol0 = displayToken0.symbol || pool.token0.symbol;
+                    const symbol1 = displayToken1.symbol || pool.token1.symbol;
+                    return `${symbol0} / ${symbol1}`;
+                  })()} <span className="PoolPage__TopVersion">v3</span>
                 </div>
                 <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
                 <div className="PoolPage__TopApr">

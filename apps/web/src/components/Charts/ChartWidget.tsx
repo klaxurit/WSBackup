@@ -27,6 +27,7 @@ export interface ChartWidgetProps {
   tokenDecimals?: number;
   showNoDataOverlay?: boolean;
   noDataMessage?: string;
+  dataType?: 'token' | 'pool';
 }
 
 const BERYL_PURE = '#E39229';
@@ -46,7 +47,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   onIntervalChange,
   tokenDecimals,
   showNoDataOverlay = false,
-  noDataMessage = "No data available",
+  noDataMessage = "No data available"
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);

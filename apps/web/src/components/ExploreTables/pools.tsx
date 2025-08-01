@@ -4,6 +4,8 @@ import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
+import { getPoolDisplayToken } from "../../utils/tokenMapping";
+
 
 interface PoolsTableProps {
   data?: any[];
@@ -21,6 +23,15 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
   });
   const pools = data ?? query.data ?? [];
   const loading = isLoading ?? query.isLoading;
+  const getDisplayName = (token0: any, token1: any) => {
+    const displayToken0 = getPoolDisplayToken(token0.address);
+    const displayToken1 = getPoolDisplayToken(token1.address);
+
+    const symbol0 = displayToken0.symbol || token0.symbol;
+    const symbol1 = displayToken1.symbol || token1.symbol;
+
+    return `${symbol0}/${symbol1}`;
+  };
 
   const columns: TableColumn[] = [
     {
@@ -33,7 +44,7 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <span className={`Table__Address`}>
-              {row.token0.symbol + '/' + row.token1.symbol}
+              {getDisplayName(row.token0, row.token1)}
             </span>
           </Link>
           <a
