@@ -5,10 +5,13 @@
   max-width: 1192px;
   margin: 0 auto;
   padding: 0 1rem;
+  box-sizing: border-box; // ✅ Ajouté
 
   &__banner {
     width: 100%;
     margin-bottom: 0rem;
+    box-sizing: border-box; // ✅ Ajouté
+
     @media (min-width: 768px) {
       margin-bottom: 2rem;
     }
@@ -16,6 +19,7 @@
 
   &__main {
     width: 100%;
+    box-sizing: border-box; // ✅ Ajouté
   }
 
   &__container {
@@ -24,6 +28,7 @@
     gap: 2rem;
     align-items: start;
     min-height: 600px;
+    box-sizing: border-box; // ✅ Ajouté
 
     @media (max-width: 1024px) {
       grid-template-columns: minmax(0, 65%) minmax(0, 35%);
@@ -33,6 +38,7 @@
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
       gap: 1.5rem;
+      padding: 0; // ✅ Reset padding sur mobile pour éviter les débordements
 
       // L'ordre sur mobile : SwapForm puis Chart
       .swap-page-layout__swap {
@@ -48,9 +54,13 @@
   &__chart {
     width: 100%;
     min-height: 500px;
+    box-sizing: border-box; // ✅ Ajouté
+    overflow: hidden; // ✅ Empêcher le débordement
 
     @media (max-width: 768px) {
       min-height: 400px;
+      // ✅ S'assurer que le chart respecte les contraintes sur mobile
+      max-width: 100%;
     }
   }
 
@@ -60,12 +70,85 @@
     margin-left: auto;
     margin-right: 0;
     position: sticky;
-    top: 100px; // Ajustez selon la hauteur de votre navbar
+    top: 100px;
+    box-sizing: border-box; // ✅ Ajouté
+    overflow: hidden; // ✅ Empêcher le débordement
 
     @media (max-width: 768px) {
       max-width: 100%;
-      position: static; // Pas de sticky sur mobile
+      position: static;
+      margin: 0; // ✅ Reset des marges sur mobile
+      // ✅ S'assurer que le form respecte les contraintes
+      overflow: visible; // ✅ Permettre au ParamBox de s'afficher correctement
     }
+  }
+}
+
+// ✅ Correctifs spécifiques pour les composants internes
+.swap-page-layout {
+
+  // ✅ Assurer que tous les éléments enfants respectent le box-sizing
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  // ✅ Correctif pour le ChartWidget
+  .chart-widget {
+    width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+      overflow: hidden;
+    }
+  }
+
+  // ✅ Correctif pour le SwapForm en mode sticky
+  .Form--sticky {
+    width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+    }
+
+    .Form__box {
+      width: 100%;
+      box-sizing: border-box;
+
+      @media (max-width: 768px) {
+        max-width: 100%;
+      }
+    }
+  }
+
+  // ✅ Correctif pour le ParamBox qui déborde sur mobile
+  .ParamBox {
+    @media (max-width: 768px) {
+      width: 280px; // ✅ Réduire la largeur sur mobile
+      max-width: calc(100vw - 2rem); // ✅ Assurer qu'il ne dépasse pas la viewport
+      right: 0;
+      left: auto;
+    }
+
+    @media (max-width: 480px) {
+      width: 250px; // ✅ Encore plus petit sur très petits écrans
+      max-width: calc(100vw - 1rem);
+    }
+  }
+}
+
+// ✅ Styles pour s'assurer que le NewBanner respecte aussi les contraintes
+.swap-banner {
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -75,43 +158,36 @@
   background: #180E00;
   color: $white;
   font-family: "TT Hoves", system-ui, sans-serif;
+  box-sizing: border-box; // ✅ Ajouté
 }
 
 .app-main {
   padding-top: 105px;
+  box-sizing: border-box; // ✅ Ajouté
+
+  @media (max-width: 768px) {
+    // ✅ Réduire le padding top sur mobile si nécessaire
+    padding-top: 90px;
+  }
 }
 
 .swap-page {
   width: 100%;
+  box-sizing: border-box; // ✅ Ajouté
 }
 
-.token-prices-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
+// ✅ Règle globale pour éviter les débordements sur mobile
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden; // ✅ Empêcher le scroll horizontal sur mobile
+  }
 
-.token-price-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.token-price-logo {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-}
-
-.bera-badge {
-  background: #FFA500;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
+  // ✅ S'assurer que tous les containers respectent la largeur mobile
+  .swap-page-layout,
+  .swap-page-layout__container,
+  .swap-page-layout__chart,
+  .swap-page-layout__swap {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
 }

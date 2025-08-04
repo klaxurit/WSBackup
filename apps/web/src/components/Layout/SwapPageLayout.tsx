@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { NewBanner } from '../Common/NewBanner';
 import bear from '../../assets/bear_icon.png';
 import SwapForm from '../SwapForm/SwapForm';
@@ -19,14 +19,26 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   className = "",
   onToggleSidebar
 }) => {
-  // Suppression de poolAddress car non utilisé
-  const [fromToken] = useState<BerachainToken | null>(null);
-  const [toToken] = useState<BerachainToken | null>(null);
+  const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
+  const [toToken, setToToken] = useState<BerachainToken | null>(null);
   const [chartType, setChartType] = useState<ChartType>('area');
   const [interval, setInterval] = useState<ChartInterval>('1H');
 
+  const handleTokensChange = useCallback((
+    _poolAddress: string | null,
+    newFromToken: BerachainToken | null,
+    newToToken: BerachainToken | null
+  ) => {
+    setFromToken(newFromToken);
+    setToToken(newToToken);
+  }, []);
+
+  // Configuration du chart basée sur le token sélectionné
   const chartConfig = React.useMemo(() => {
-    if (!fromToken) {
+    // Priorité : fromToken d'abord, puis toToken si pas de fromToken
+    const selectedToken = fromToken || toToken;
+
+    if (!selectedToken) {
       return {
         type: 'default',
         tokenAddress: DEFAULT_TOKEN,
@@ -36,15 +48,15 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
       };
     }
 
-    const statsAddress = getStatsAddress(fromToken.address);
+    const statsAddress = getStatsAddress(selectedToken.address);
     return {
       type: 'single-token',
       tokenAddress: statsAddress,
-      message: `Showing price data for ${fromToken.symbol}${statsAddress !== fromToken.address ? ' (using WBERA data)' : ''}`,
+      message: `Showing price data for ${selectedToken.symbol}${statsAddress !== selectedToken.address ? ' (using WBERA data)' : ''}`,
       showOverlay: false,
       dataType: 'token' as const
     };
-  }, [fromToken]);
+  }, [fromToken, toToken]);
 
   const handleChartTypeChange = (newType: ChartType) => {
     setChartType(newType);
@@ -57,6 +69,9 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   const getNoDataMessage = () => {
     return chartConfig.message;
   };
+
+  // Déterminer le token à utiliser pour les décimales
+  const selectedToken = fromToken || toToken;
 
   return (
     <div className={`swap-page-layout ${className}`}>
@@ -71,16 +86,6 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">
-          {/* DEBUG INFO - à retirer en production */}
-          {process.env.NODE_ENV === 'development' && (
-            <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '12px', marginBottom: '8px' }}>
-              <strong>Chart Debug:</strong> Type: {chartConfig.type} |
-              Token: {chartConfig.tokenAddress} |
-              FromToken: {fromToken?.symbol || 'none'} |
-              ToToken: {toToken?.symbol || 'none'} |
-              DataType: {chartConfig.dataType}
-            </div>
-          )}
 
           <ChartWidget
             tokenAddress={chartConfig.tokenAddress}
@@ -91,7 +96,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             priceFormatter={priceFormatter}
             onChartTypeChange={handleChartTypeChange}
             onIntervalChange={handleIntervalChange}
-            tokenDecimals={fromToken?.decimals}
+            tokenDecimals={selectedToken?.decimals}
             showNoDataOverlay={chartConfig.showOverlay}
             noDataMessage={getNoDataMessage()}
             dataType={chartConfig.dataType}
@@ -102,6 +107,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
           <SwapForm
             toggleSidebar={onToggleSidebar}
             isSticky={true}
+            onPoolChange={handleTokensChange}
           />
         </div>
       </div>

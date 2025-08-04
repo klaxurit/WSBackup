@@ -19,11 +19,12 @@
 @use 'components/modals/networksList';
 @use 'components/modals/transactionStatusModal';
 @use 'components/modals/popularTokens';
-
+@use 'components/footer/footer';
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
+
 
 @use 'components/common/link';
 @use 'components/common/iconLink';
