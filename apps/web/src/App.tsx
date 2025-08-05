@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
 import PoolDetailPage from './pages/PoolPage/page'
+import { Footer } from './components/Footer/Footer'
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -49,6 +50,7 @@ function App() {
             <Route path="/pool/:poolAddress" element={<PoolDetailPage />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   )

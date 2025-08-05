@@ -1,11 +1,11 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import type {
-  ChartType,
-  ChartInterval,
-  LineChartPoint,
-  CandlestickPoint,
+import type { 
+  ChartType, 
+  ChartInterval, 
+  LineChartPoint, 
+  CandlestickPoint, 
   ApiDataPoint,
-  ProcessedChartData
+  ProcessedChartData 
 } from '../types/chart';
 import { ChartDataProcessor } from '../utils/chartDataProcessor';
 
@@ -29,8 +29,8 @@ const getRefetchIntervalForInterval = (interval: ChartInterval): number | false 
     case '1H': return 2 * 60 * 1000;  // Refresh toutes les 2 minutes
     case '1D': return 5 * 60 * 1000;  // Refresh toutes les 5 minutes
     case '1W': return 15 * 60 * 1000; // Refresh toutes les 15 minutes
-    case '1M':
-    case '1Y':
+    case '1M': 
+    case '1Y': 
     case 'MAX': return false; // Pas de refresh auto pour les longues périodes
     default: return false;
   }
@@ -61,7 +61,7 @@ export function useChartData<T extends ChartType>(
       }
 
       const rawData = await response.json();
-
+      
       // Conversion au format ApiDataPoint
       const apiData: ApiDataPoint[] = rawData.map((d: any) => ({
         timestamp: d.timestamp,
@@ -69,7 +69,7 @@ export function useChartData<T extends ChartType>(
         volume: d.volume || 0,
         // Si l'API retourne des données OHLC à l'avenir
         open: d.open,
-        high: d.high,
+        high: d.high, 
         low: d.low,
         close: d.close,
       }));
@@ -128,16 +128,16 @@ export function useChartTypeConverter(
     enabled: !!data && data.length > 0 && fromType !== toType,
     queryFn: () => {
       if (!data || data.length === 0) return [];
-
+      
       if (fromType === 'area' || fromType === 'line') {
         return ChartDataProcessor.convertChartType(
-          data as LineChartPoint[],
-          fromType,
-          toType,
+          data as LineChartPoint[], 
+          fromType, 
+          toType, 
           interval
         );
       }
-
+      
       // Pour candlestick vers line/area
       return ChartDataProcessor.convertChartType(
         data as LineChartPoint[], // Le type sera géré dans la fonction
@@ -159,7 +159,7 @@ export function useDefaultChartData(
 ) {
   // Token BERA par défaut (vous pouvez ajuster selon votre configuration)
   const DEFAULT_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000';
-
+  
   return useChartData(DEFAULT_TOKEN_ADDRESS, chartType, interval);
 }
 
@@ -185,25 +185,25 @@ export function useCompareChartData(
       const normalize = (data: any[], baseValue: number) => {
         return data.map(point => ({
           ...point,
-          value: chartType === 'candlestick'
+          value: chartType === 'candlestick' 
             ? {
-              ...point,
-              open: (point.open / baseValue) * 100,
-              high: (point.high / baseValue) * 100,
-              low: (point.low / baseValue) * 100,
-              close: (point.close / baseValue) * 100,
-            }
+                ...point,
+                open: (point.open / baseValue) * 100,
+                high: (point.high / baseValue) * 100,
+                low: (point.low / baseValue) * 100,
+                close: (point.close / baseValue) * 100,
+              }
             : {
-              ...point,
-              value: (point.value / baseValue) * 100
-            }
+                ...point,
+                value: (point.value / baseValue) * 100
+              }
         }));
       };
 
-      const token1Base = chartType === 'candlestick'
-        ? (token1Data.data as CandlestickPoint[])[0]?.close
+      const token1Base = chartType === 'candlestick' 
+        ? (token1Data.data as CandlestickPoint[])[0]?.close 
         : (token1Data.data as LineChartPoint[])[0]?.value;
-
+        
       const token2Base = chartType === 'candlestick'
         ? (token2Data.data as CandlestickPoint[])[0]?.close
         : (token2Data.data as LineChartPoint[])[0]?.value;
@@ -244,7 +244,7 @@ export function usePaginatedChartData(
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/stats/token/${tokenAddress}?page=${page}&limit=${limit}`
       );
-
+      
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
