@@ -91,6 +91,9 @@ model TokenStatistic {
   fdv              Float? // Fully Diluted Valuation
   marketCap        Float? // Circulating supply * price (si disponible)
   createdAt        DateTime @default(now())
+
+  @@index([tokenId, createdAt(sort: Desc)]) // Index composé pour ORDER BY optimisé
+  @@index([tokenId]) // Index simple pour les requêtes par token
 }
 
 model PoolStatistic {
@@ -104,4 +107,8 @@ model PoolStatistic {
   impermanentLoss Float
   healthScore     Int
   createdAt       DateTime @default(now())
+
+  @@index([poolId, createdAt(sort: Desc)]) // Index composé pour ORDER BY optimisé
+  @@index([poolId]) // Index simple pour les requêtes par pool
+  @@index([tvlUSD(sort: Desc)]) // Index pour tri par TVL
 }
