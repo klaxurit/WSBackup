@@ -44,14 +44,32 @@ export class PriceService {
     private readonly blockchainService: BlockchainService,
   ) { }
 
-  async getTokenStats() {
+  async getTokenStats(page: number = 1, limit: number = 50) {
+    const skip = (page - 1) * limit;
+    const maxLimit = Math.min(limit, 100); // Cap à 100 max
+
     const tokens = await this.databaseService.token.findMany({
+      where: {
+        OR: [
+          { poolsAsToken0: { some: {} } },
+          { poolsAsToken1: { some: {} } }
+        ]
+      }, // Seulement tokens actifs dans des pools
       include: {
         Statistic: {
           orderBy: {
             createdAt: 'desc',
           },
           take: 1,
+          select: {
+            price: true,
+            oneHourEvolution: true,
+            oneDayEvolution: true,
+            volume: true,
+            fdv: true,
+            marketCap: true,
+            createdAt: true,
+          },
         },
         _count: {
           select: {
@@ -60,12 +78,30 @@ export class PriceService {
           },
         },
       },
+      orderBy: [
+        { 
+          Statistic: {
+            _count: 'desc' // Tokens avec plus de statistiques en premier
+          }
+        },
+        { createdAt: 'desc' }
+      ],
+      skip,
+      take: maxLimit,
     });
 
-    return tokens.map((t) => ({
-      ...t,
-      inPool: t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0,
-    }));
+    return {
+      data: tokens.map((t) => ({
+        ...t,
+        inPool: t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0,
+      })),
+      pagination: {
+        page,
+        limit: maxLimit,
+        hasMore: tokens.length === maxLimit,
+        total: tokens.length,
+      },
+    };
   }
 
   /**

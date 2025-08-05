@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { PriceService } from './services/price.service';
 import { PoolPriceService } from './services/poolPrice.service';
 import { Address } from 'viem';
@@ -6,8 +13,10 @@ import { DatabaseService } from 'src/database/database.service';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { V3_POSITION_MANAGER_ABI } from 'src/blockchain/abis/V3_POSITION_MANAGER_ABI';
 import { Prisma } from '@repo/db';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @Controller('stats')
+@UseInterceptors(CacheInterceptor)
 export class StatisticsController {
   private readonly positionManagerAddress =
     '0xEf089afF769bC068520a1A90f0773037eF31fbBC';
@@ -20,16 +29,28 @@ export class StatisticsController {
   ) {}
 
   @Get('/tokens')
-  async getTokensWithStats() {
-    return await this.priceService.getTokenStats();
+  @CacheKey('stats:tokens')
+  @CacheTTL(30 * 1000) // 30 secondes cache
+  async getTokensWithStats(
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 50,
+  ) {
+    return await this.priceService.getTokenStats(page, limit);
   }
 
   @Get('/pools')
-  async getPoolsWithStats() {
-    return await this.poolService.getPoolStats();
+  @CacheKey('stats:pools')
+  @CacheTTL(30 * 1000) // 30 secondes cache
+  async getPoolsWithStats(
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 50,
+  ) {
+    return await this.poolService.getPoolStats(page, limit);
   }
 
   @Get('/topPools')
+  @CacheKey('stats:topPools')
+  @CacheTTL(60 * 1000) // 60 secondes cache (données moins fréquentes)
   async getTopPools() {
     return await this.poolService.getTopPoolStats();
   }
@@ -162,6 +183,8 @@ export class StatisticsController {
   }
 
   @Get('/pool/:poolAddr')
+  @CacheKey('stats:pool')
+  @CacheTTL(45 * 1000) // 45 secondes cache
   async getOnePoolStats(@Param('poolAddr') poolAddr: string) {
     return await this.poolService.getOnePoolStat(poolAddr);
   }
@@ -279,6 +302,8 @@ export class StatisticsController {
   }
 
   @Get('/token/:address')
+  @CacheKey('stats:token-price')
+  @CacheTTL(60 * 1000) // 60 secondes cache pour historique des prix
   async getTokenPrice(@Param('address') address: Address) {
     const priceHistory = await this.databaseService.tokenStats.findMany({
       where: {
@@ -293,6 +318,7 @@ export class StatisticsController {
       orderBy: {
         createdAt: 'asc',
       },
+      take: 1000, // Limite pour éviter trop de données
     });
 
     return priceHistory.map((stat) => ({

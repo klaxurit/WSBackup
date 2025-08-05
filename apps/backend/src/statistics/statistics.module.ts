@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from 'src/database/database.module';
 import { PriceService } from './services/price.service';
 import { HttpModule } from '@nestjs/axios';
@@ -13,6 +14,11 @@ import { BlockchainModule } from 'src/blockchain/blockchain.module';
   imports: [
     ConfigModule,
     ScheduleModule.forRoot(),
+    CacheModule.register({
+      ttl: 30 * 1000, // 30 secondes TTL par défaut
+      max: 1000, // 1000 entrées maximum
+      isGlobal: false, // Cache local au module Statistics
+    }),
     DatabaseModule,
     HttpModule,
     CoingeckoModule,

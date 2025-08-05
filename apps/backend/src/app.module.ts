@@ -9,12 +9,17 @@ import { StatisticsModule } from './statistics/statistics.module';
 
 import appConfig from './app.config';
 import { DatabaseModule } from './database/database.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
+    }),
+    CacheModule.register({
+      ttl: 2000,
+      isGlobal: true,
     }),
     BlockchainModule,
     CoingeckoModule,
