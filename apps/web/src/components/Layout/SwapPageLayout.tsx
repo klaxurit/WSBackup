@@ -7,6 +7,7 @@ import type { ChartType, ChartInterval } from '../../types/chart';
 import { DEFAULT_TOKEN } from '../../utils/lineChart';
 import { getStatsAddress } from '../../utils/tokenMapping';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import { TradingViewChart } from '../Charts/TradingViewChart';
 
 interface SwapPageLayoutProps {
   className?: string;
@@ -86,8 +87,14 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">
+          <TradingViewChart
+            tokenAddress={chartConfig.tokenAddress}
+            height={500}
+            showToolbar={true}
+            tokenDecimals={selectedToken?.decimals}
+          />
 
-          <ChartWidget
+          {/* <ChartWidget
             tokenAddress={chartConfig.tokenAddress}
             chartType={chartType}
             interval={interval}
@@ -100,7 +107,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             showNoDataOverlay={chartConfig.showOverlay}
             noDataMessage={getNoDataMessage()}
             dataType={chartConfig.dataType}
-          />
+          /> */}
         </div>
 
         <div className="swap-page-layout__swap">
