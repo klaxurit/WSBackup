@@ -8,11 +8,11 @@ import { TransactionStatusModal } from '../TransactionStatusModal/TransactionSta
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { usePrice } from '../../hooks/usePrice';
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
 import { Loader } from '../Loader/Loader';
+import { useTokenStats } from "../../hooks/useTokenStats";
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -52,8 +52,10 @@ const SwapForm: React.FC<FormProps> = React.memo(
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
-    const { data: priceFrom = 0 } = usePrice(fromToken);
-    const { data: priceTo = 0 } = usePrice(toToken);
+    const { data: fromTokenStats } = useTokenStats(fromToken?.address || null);
+    const { data: toTokenStats } = useTokenStats(toToken?.address || null);
+    const priceFrom = fromTokenStats?.price || 0;
+    const priceTo = toTokenStats?.price || 0;
     const { data: tokens } = useTokens();
 
     const swap = useSwap({
@@ -89,7 +91,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
         return prevFrom;
       });
       setToToken(token);
-    }, []); // Pas de dépendances externes
+    }, []);
 
     const handleCloseModal = () => {
       setShowModal(false);

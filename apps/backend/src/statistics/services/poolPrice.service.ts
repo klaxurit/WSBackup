@@ -56,19 +56,76 @@ export class PoolPriceService {
     private readonly blockchainService: BlockchainService,
   ) {}
 
-  async getPoolStats() {
-    return await this.databaseService.pool.findMany({
+  async getPoolStats(page: number = 1, limit: number = 50) {
+    const skip = (page - 1) * limit;
+    const maxLimit = Math.min(limit, 100); // Cap à 100 max
+
+    const pools = await this.databaseService.pool.findMany({
+      where: {
+        AND: [
+          { sqrtPriceX96: { not: null } },
+          { liquidity: { not: null } },
+          { liquidity: { not: '0' } },
+        ],
+      },
       include: {
         PoolStatistic: {
           orderBy: {
             createdAt: 'desc',
           },
           take: 1,
+          select: {
+            apr: true,
+            tvlUSD: true,
+            volOneDay: true,
+            volOneMonth: true,
+            impermanentLoss: true,
+            healthScore: true,
+            createdAt: true,
+          },
         },
-        token0: true,
-        token1: true,
+        token0: {
+          select: {
+            id: true,
+            address: true,
+            symbol: true,
+            name: true,
+            decimals: true,
+            logoUri: true,
+          },
+        },
+        token1: {
+          select: {
+            id: true,
+            address: true,
+            symbol: true,
+            name: true,
+            decimals: true,
+            logoUri: true,
+          },
+        },
       },
+      orderBy: [
+        {
+          PoolStatistic: {
+            _count: 'desc' // Pools avec statistiques d'abord
+          }
+        },
+        { liquidity: 'desc' }, // Puis par liquidité
+      ],
+      skip,
+      take: maxLimit,
     });
+
+    return {
+      data: pools,
+      pagination: {
+        page,
+        limit: maxLimit,
+        hasMore: pools.length === maxLimit,
+        total: pools.length,
+      },
+    };
   }
 
   async getOnePoolStat(poolAddr: string) {
