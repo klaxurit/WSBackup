@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Token } from '@repo/db';
 import { DatabaseService } from './database/database.service';
-import { FallbackIndexerService } from './tracker/fallbackIndexer.service';
 import { IsNotEmpty } from 'class-validator';
 
 class NewTokenDTO {
@@ -34,8 +33,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly db: DatabaseService,
-    private readonly indexer: FallbackIndexerService,
-  ) { }
+  ) {}
 
   @Get()
   getHello(): string {
@@ -78,10 +76,5 @@ export class AppController {
         ...newTokenDTO,
       },
     });
-  }
-
-  @Get('/reindex/:startBlock')
-  async reindex(@Param('startBlock') startBlock: string): Promise<void> {
-    await this.indexer.reIndex(BigInt(startBlock));
   }
 }
