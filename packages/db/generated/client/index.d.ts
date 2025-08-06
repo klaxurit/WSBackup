@@ -14,35 +14,53 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 
 /**
- * Model Pool
- * 
- */
-export type Pool = $Result.DefaultSelection<Prisma.$PoolPayload>
-/**
- * Model Swap
- * 
- */
-export type Swap = $Result.DefaultSelection<Prisma.$SwapPayload>
-/**
- * Model IndexerState
- * 
- */
-export type IndexerState = $Result.DefaultSelection<Prisma.$IndexerStatePayload>
-/**
  * Model Token
  * 
  */
 export type Token = $Result.DefaultSelection<Prisma.$TokenPayload>
 /**
- * Model TokenStatistic
+ * Model TokenPrice
  * 
  */
-export type TokenStatistic = $Result.DefaultSelection<Prisma.$TokenStatisticPayload>
+export type TokenPrice = $Result.DefaultSelection<Prisma.$TokenPricePayload>
 /**
- * Model PoolStatistic
+ * Model TokenDailyStats
  * 
  */
-export type PoolStatistic = $Result.DefaultSelection<Prisma.$PoolStatisticPayload>
+export type TokenDailyStats = $Result.DefaultSelection<Prisma.$TokenDailyStatsPayload>
+
+/**
+ * Enums
+ */
+export namespace $Enums {
+  export const TokenState: {
+  DISCOVERED: 'DISCOVERED',
+  ENRICHING: 'ENRICHING',
+  IN_POOL: 'IN_POOL',
+  VERIFIED: 'VERIFIED',
+  DEPRECATED: 'DEPRECATED'
+};
+
+export type TokenState = (typeof TokenState)[keyof typeof TokenState]
+
+
+export const PriceSource: {
+  POOL_CALCULATION: 'POOL_CALCULATION',
+  COINGECKO_FALLBACK: 'COINGECKO_FALLBACK',
+  MANUAL_OVERRIDE: 'MANUAL_OVERRIDE'
+};
+
+export type PriceSource = (typeof PriceSource)[keyof typeof PriceSource]
+
+}
+
+export type TokenState = $Enums.TokenState
+
+export const TokenState: typeof $Enums.TokenState
+
+export type PriceSource = $Enums.PriceSource
+
+export const PriceSource: typeof $Enums.PriceSource
 
 /**
  * ##  Prisma Client ʲˢ
@@ -51,8 +69,8 @@ export type PoolStatistic = $Result.DefaultSelection<Prisma.$PoolStatisticPayloa
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Pools
- * const pools = await prisma.pool.findMany()
+ * // Fetch zero or more Tokens
+ * const tokens = await prisma.token.findMany()
  * ```
  *
  * 
@@ -72,8 +90,8 @@ export class PrismaClient<
    * @example
    * ```
    * const prisma = new PrismaClient()
-   * // Fetch zero or more Pools
-   * const pools = await prisma.pool.findMany()
+   * // Fetch zero or more Tokens
+   * const tokens = await prisma.token.findMany()
    * ```
    *
    * 
@@ -168,36 +186,6 @@ export class PrismaClient<
   $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb, ExtArgs>
 
       /**
-   * `prisma.pool`: Exposes CRUD operations for the **Pool** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Pools
-    * const pools = await prisma.pool.findMany()
-    * ```
-    */
-  get pool(): Prisma.PoolDelegate<ExtArgs>;
-
-  /**
-   * `prisma.swap`: Exposes CRUD operations for the **Swap** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Swaps
-    * const swaps = await prisma.swap.findMany()
-    * ```
-    */
-  get swap(): Prisma.SwapDelegate<ExtArgs>;
-
-  /**
-   * `prisma.indexerState`: Exposes CRUD operations for the **IndexerState** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more IndexerStates
-    * const indexerStates = await prisma.indexerState.findMany()
-    * ```
-    */
-  get indexerState(): Prisma.IndexerStateDelegate<ExtArgs>;
-
-  /**
    * `prisma.token`: Exposes CRUD operations for the **Token** model.
     * Example usage:
     * ```ts
@@ -208,24 +196,24 @@ export class PrismaClient<
   get token(): Prisma.TokenDelegate<ExtArgs>;
 
   /**
-   * `prisma.tokenStatistic`: Exposes CRUD operations for the **TokenStatistic** model.
+   * `prisma.tokenPrice`: Exposes CRUD operations for the **TokenPrice** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more TokenStatistics
-    * const tokenStatistics = await prisma.tokenStatistic.findMany()
+    * // Fetch zero or more TokenPrices
+    * const tokenPrices = await prisma.tokenPrice.findMany()
     * ```
     */
-  get tokenStatistic(): Prisma.TokenStatisticDelegate<ExtArgs>;
+  get tokenPrice(): Prisma.TokenPriceDelegate<ExtArgs>;
 
   /**
-   * `prisma.poolStatistic`: Exposes CRUD operations for the **PoolStatistic** model.
+   * `prisma.tokenDailyStats`: Exposes CRUD operations for the **TokenDailyStats** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more PoolStatistics
-    * const poolStatistics = await prisma.poolStatistic.findMany()
+    * // Fetch zero or more TokenDailyStats
+    * const tokenDailyStats = await prisma.tokenDailyStats.findMany()
     * ```
     */
-  get poolStatistic(): Prisma.PoolStatisticDelegate<ExtArgs>;
+  get tokenDailyStats(): Prisma.TokenDailyStatsDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -286,7 +274,7 @@ export namespace Prisma {
 
   /**
    * Prisma Client JS version: 5.22.0
-   * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
+   * Query Engine version: acc0b9dd43eb689cbd20c9470515d719db10d0b0
    */
   export type PrismaVersion = {
     client: string
@@ -667,12 +655,9 @@ export namespace Prisma {
 
 
   export const ModelName: {
-    Pool: 'Pool',
-    Swap: 'Swap',
-    IndexerState: 'IndexerState',
     Token: 'Token',
-    TokenStatistic: 'TokenStatistic',
-    PoolStatistic: 'PoolStatistic'
+    TokenPrice: 'TokenPrice',
+    TokenDailyStats: 'TokenDailyStats'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -688,220 +673,10 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "pool" | "swap" | "indexerState" | "token" | "tokenStatistic" | "poolStatistic"
+      modelProps: "token" | "tokenPrice" | "tokenDailyStats"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
-      Pool: {
-        payload: Prisma.$PoolPayload<ExtArgs>
-        fields: Prisma.PoolFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.PoolFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.PoolFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>
-          }
-          findFirst: {
-            args: Prisma.PoolFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.PoolFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>
-          }
-          findMany: {
-            args: Prisma.PoolFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>[]
-          }
-          create: {
-            args: Prisma.PoolCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>
-          }
-          createMany: {
-            args: Prisma.PoolCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.PoolCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>[]
-          }
-          delete: {
-            args: Prisma.PoolDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>
-          }
-          update: {
-            args: Prisma.PoolUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>
-          }
-          deleteMany: {
-            args: Prisma.PoolDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.PoolUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.PoolUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolPayload>
-          }
-          aggregate: {
-            args: Prisma.PoolAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePool>
-          }
-          groupBy: {
-            args: Prisma.PoolGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PoolGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.PoolCountArgs<ExtArgs>
-            result: $Utils.Optional<PoolCountAggregateOutputType> | number
-          }
-        }
-      }
-      Swap: {
-        payload: Prisma.$SwapPayload<ExtArgs>
-        fields: Prisma.SwapFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SwapFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SwapFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
-          }
-          findFirst: {
-            args: Prisma.SwapFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SwapFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
-          }
-          findMany: {
-            args: Prisma.SwapFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>[]
-          }
-          create: {
-            args: Prisma.SwapCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
-          }
-          createMany: {
-            args: Prisma.SwapCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SwapCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>[]
-          }
-          delete: {
-            args: Prisma.SwapDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
-          }
-          update: {
-            args: Prisma.SwapUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
-          }
-          deleteMany: {
-            args: Prisma.SwapDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SwapUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.SwapUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SwapPayload>
-          }
-          aggregate: {
-            args: Prisma.SwapAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSwap>
-          }
-          groupBy: {
-            args: Prisma.SwapGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SwapGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SwapCountArgs<ExtArgs>
-            result: $Utils.Optional<SwapCountAggregateOutputType> | number
-          }
-        }
-      }
-      IndexerState: {
-        payload: Prisma.$IndexerStatePayload<ExtArgs>
-        fields: Prisma.IndexerStateFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.IndexerStateFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.IndexerStateFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
-          }
-          findFirst: {
-            args: Prisma.IndexerStateFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.IndexerStateFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
-          }
-          findMany: {
-            args: Prisma.IndexerStateFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>[]
-          }
-          create: {
-            args: Prisma.IndexerStateCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
-          }
-          createMany: {
-            args: Prisma.IndexerStateCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.IndexerStateCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>[]
-          }
-          delete: {
-            args: Prisma.IndexerStateDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
-          }
-          update: {
-            args: Prisma.IndexerStateUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
-          }
-          deleteMany: {
-            args: Prisma.IndexerStateDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.IndexerStateUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.IndexerStateUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IndexerStatePayload>
-          }
-          aggregate: {
-            args: Prisma.IndexerStateAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateIndexerState>
-          }
-          groupBy: {
-            args: Prisma.IndexerStateGroupByArgs<ExtArgs>
-            result: $Utils.Optional<IndexerStateGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.IndexerStateCountArgs<ExtArgs>
-            result: $Utils.Optional<IndexerStateCountAggregateOutputType> | number
-          }
-        }
-      }
       Token: {
         payload: Prisma.$TokenPayload<ExtArgs>
         fields: Prisma.TokenFieldRefs
@@ -972,143 +747,143 @@ export namespace Prisma {
           }
         }
       }
-      TokenStatistic: {
-        payload: Prisma.$TokenStatisticPayload<ExtArgs>
-        fields: Prisma.TokenStatisticFieldRefs
+      TokenPrice: {
+        payload: Prisma.$TokenPricePayload<ExtArgs>
+        fields: Prisma.TokenPriceFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.TokenStatisticFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload> | null
+            args: Prisma.TokenPriceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.TokenStatisticFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>
+            args: Prisma.TokenPriceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>
           }
           findFirst: {
-            args: Prisma.TokenStatisticFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload> | null
+            args: Prisma.TokenPriceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.TokenStatisticFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>
+            args: Prisma.TokenPriceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>
           }
           findMany: {
-            args: Prisma.TokenStatisticFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>[]
+            args: Prisma.TokenPriceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>[]
           }
           create: {
-            args: Prisma.TokenStatisticCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>
+            args: Prisma.TokenPriceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>
           }
           createMany: {
-            args: Prisma.TokenStatisticCreateManyArgs<ExtArgs>
+            args: Prisma.TokenPriceCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.TokenStatisticCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>[]
+            args: Prisma.TokenPriceCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>[]
           }
           delete: {
-            args: Prisma.TokenStatisticDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>
+            args: Prisma.TokenPriceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>
           }
           update: {
-            args: Prisma.TokenStatisticUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>
+            args: Prisma.TokenPriceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>
           }
           deleteMany: {
-            args: Prisma.TokenStatisticDeleteManyArgs<ExtArgs>
+            args: Prisma.TokenPriceDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.TokenStatisticUpdateManyArgs<ExtArgs>
+            args: Prisma.TokenPriceUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.TokenStatisticUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TokenStatisticPayload>
+            args: Prisma.TokenPriceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenPricePayload>
           }
           aggregate: {
-            args: Prisma.TokenStatisticAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateTokenStatistic>
+            args: Prisma.TokenPriceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTokenPrice>
           }
           groupBy: {
-            args: Prisma.TokenStatisticGroupByArgs<ExtArgs>
-            result: $Utils.Optional<TokenStatisticGroupByOutputType>[]
+            args: Prisma.TokenPriceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TokenPriceGroupByOutputType>[]
           }
           count: {
-            args: Prisma.TokenStatisticCountArgs<ExtArgs>
-            result: $Utils.Optional<TokenStatisticCountAggregateOutputType> | number
+            args: Prisma.TokenPriceCountArgs<ExtArgs>
+            result: $Utils.Optional<TokenPriceCountAggregateOutputType> | number
           }
         }
       }
-      PoolStatistic: {
-        payload: Prisma.$PoolStatisticPayload<ExtArgs>
-        fields: Prisma.PoolStatisticFieldRefs
+      TokenDailyStats: {
+        payload: Prisma.$TokenDailyStatsPayload<ExtArgs>
+        fields: Prisma.TokenDailyStatsFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.PoolStatisticFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload> | null
+            args: Prisma.TokenDailyStatsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.PoolStatisticFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>
+            args: Prisma.TokenDailyStatsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>
           }
           findFirst: {
-            args: Prisma.PoolStatisticFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload> | null
+            args: Prisma.TokenDailyStatsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.PoolStatisticFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>
+            args: Prisma.TokenDailyStatsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>
           }
           findMany: {
-            args: Prisma.PoolStatisticFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>[]
+            args: Prisma.TokenDailyStatsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>[]
           }
           create: {
-            args: Prisma.PoolStatisticCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>
+            args: Prisma.TokenDailyStatsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>
           }
           createMany: {
-            args: Prisma.PoolStatisticCreateManyArgs<ExtArgs>
+            args: Prisma.TokenDailyStatsCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.PoolStatisticCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>[]
+            args: Prisma.TokenDailyStatsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>[]
           }
           delete: {
-            args: Prisma.PoolStatisticDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>
+            args: Prisma.TokenDailyStatsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>
           }
           update: {
-            args: Prisma.PoolStatisticUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>
+            args: Prisma.TokenDailyStatsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>
           }
           deleteMany: {
-            args: Prisma.PoolStatisticDeleteManyArgs<ExtArgs>
+            args: Prisma.TokenDailyStatsDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.PoolStatisticUpdateManyArgs<ExtArgs>
+            args: Prisma.TokenDailyStatsUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.PoolStatisticUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PoolStatisticPayload>
+            args: Prisma.TokenDailyStatsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TokenDailyStatsPayload>
           }
           aggregate: {
-            args: Prisma.PoolStatisticAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePoolStatistic>
+            args: Prisma.TokenDailyStatsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTokenDailyStats>
           }
           groupBy: {
-            args: Prisma.PoolStatisticGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PoolStatisticGroupByOutputType>[]
+            args: Prisma.TokenDailyStatsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TokenDailyStatsGroupByOutputType>[]
           }
           count: {
-            args: Prisma.PoolStatisticCountArgs<ExtArgs>
-            result: $Utils.Optional<PoolStatisticCountAggregateOutputType> | number
+            args: Prisma.TokenDailyStatsCountArgs<ExtArgs>
+            result: $Utils.Optional<TokenDailyStatsCountAggregateOutputType> | number
           }
         }
       }
@@ -1269,59 +1044,17 @@ export namespace Prisma {
 
 
   /**
-   * Count Type PoolCountOutputType
-   */
-
-  export type PoolCountOutputType = {
-    swaps: number
-    PoolStatistic: number
-  }
-
-  export type PoolCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    swaps?: boolean | PoolCountOutputTypeCountSwapsArgs
-    PoolStatistic?: boolean | PoolCountOutputTypeCountPoolStatisticArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * PoolCountOutputType without action
-   */
-  export type PoolCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PoolCountOutputType
-     */
-    select?: PoolCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * PoolCountOutputType without action
-   */
-  export type PoolCountOutputTypeCountSwapsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SwapWhereInput
-  }
-
-  /**
-   * PoolCountOutputType without action
-   */
-  export type PoolCountOutputTypeCountPoolStatisticArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PoolStatisticWhereInput
-  }
-
-
-  /**
    * Count Type TokenCountOutputType
    */
 
   export type TokenCountOutputType = {
-    poolsAsToken0: number
-    poolsAsToken1: number
-    Statistic: number
+    TokenPrice: number
+    TokenDailyStats: number
   }
 
   export type TokenCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    poolsAsToken0?: boolean | TokenCountOutputTypeCountPoolsAsToken0Args
-    poolsAsToken1?: boolean | TokenCountOutputTypeCountPoolsAsToken1Args
-    Statistic?: boolean | TokenCountOutputTypeCountStatisticArgs
+    TokenPrice?: boolean | TokenCountOutputTypeCountTokenPriceArgs
+    TokenDailyStats?: boolean | TokenCountOutputTypeCountTokenDailyStatsArgs
   }
 
   // Custom InputTypes
@@ -1338,3086 +1071,21 @@ export namespace Prisma {
   /**
    * TokenCountOutputType without action
    */
-  export type TokenCountOutputTypeCountPoolsAsToken0Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PoolWhereInput
+  export type TokenCountOutputTypeCountTokenPriceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TokenPriceWhereInput
   }
 
   /**
    * TokenCountOutputType without action
    */
-  export type TokenCountOutputTypeCountPoolsAsToken1Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PoolWhereInput
-  }
-
-  /**
-   * TokenCountOutputType without action
-   */
-  export type TokenCountOutputTypeCountStatisticArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TokenStatisticWhereInput
+  export type TokenCountOutputTypeCountTokenDailyStatsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TokenDailyStatsWhereInput
   }
 
 
   /**
    * Models
    */
-
-  /**
-   * Model Pool
-   */
-
-  export type AggregatePool = {
-    _count: PoolCountAggregateOutputType | null
-    _avg: PoolAvgAggregateOutputType | null
-    _sum: PoolSumAggregateOutputType | null
-    _min: PoolMinAggregateOutputType | null
-    _max: PoolMaxAggregateOutputType | null
-  }
-
-  export type PoolAvgAggregateOutputType = {
-    fee: number | null
-    tick: number | null
-  }
-
-  export type PoolSumAggregateOutputType = {
-    fee: number | null
-    tick: number | null
-  }
-
-  export type PoolMinAggregateOutputType = {
-    id: string | null
-    address: string | null
-    token0Id: string | null
-    token1Id: string | null
-    fee: number | null
-    liquidity: string | null
-    tick: number | null
-    sqrtPriceX96: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PoolMaxAggregateOutputType = {
-    id: string | null
-    address: string | null
-    token0Id: string | null
-    token1Id: string | null
-    fee: number | null
-    liquidity: string | null
-    tick: number | null
-    sqrtPriceX96: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PoolCountAggregateOutputType = {
-    id: number
-    address: number
-    token0Id: number
-    token1Id: number
-    fee: number
-    liquidity: number
-    tick: number
-    sqrtPriceX96: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type PoolAvgAggregateInputType = {
-    fee?: true
-    tick?: true
-  }
-
-  export type PoolSumAggregateInputType = {
-    fee?: true
-    tick?: true
-  }
-
-  export type PoolMinAggregateInputType = {
-    id?: true
-    address?: true
-    token0Id?: true
-    token1Id?: true
-    fee?: true
-    liquidity?: true
-    tick?: true
-    sqrtPriceX96?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PoolMaxAggregateInputType = {
-    id?: true
-    address?: true
-    token0Id?: true
-    token1Id?: true
-    fee?: true
-    liquidity?: true
-    tick?: true
-    sqrtPriceX96?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PoolCountAggregateInputType = {
-    id?: true
-    address?: true
-    token0Id?: true
-    token1Id?: true
-    fee?: true
-    liquidity?: true
-    tick?: true
-    sqrtPriceX96?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type PoolAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Pool to aggregate.
-     */
-    where?: PoolWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Pools to fetch.
-     */
-    orderBy?: PoolOrderByWithRelationInput | PoolOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: PoolWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Pools from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Pools.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Pools
-    **/
-    _count?: true | PoolCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: PoolAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: PoolSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: PoolMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: PoolMaxAggregateInputType
-  }
-
-  export type GetPoolAggregateType<T extends PoolAggregateArgs> = {
-        [P in keyof T & keyof AggregatePool]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregatePool[P]>
-      : GetScalarType<T[P], AggregatePool[P]>
-  }
-
-
-
-
-  export type PoolGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PoolWhereInput
-    orderBy?: PoolOrderByWithAggregationInput | PoolOrderByWithAggregationInput[]
-    by: PoolScalarFieldEnum[] | PoolScalarFieldEnum
-    having?: PoolScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: PoolCountAggregateInputType | true
-    _avg?: PoolAvgAggregateInputType
-    _sum?: PoolSumAggregateInputType
-    _min?: PoolMinAggregateInputType
-    _max?: PoolMaxAggregateInputType
-  }
-
-  export type PoolGroupByOutputType = {
-    id: string
-    address: string
-    token0Id: string
-    token1Id: string
-    fee: number
-    liquidity: string | null
-    tick: number | null
-    sqrtPriceX96: string | null
-    createdAt: Date
-    updatedAt: Date
-    _count: PoolCountAggregateOutputType | null
-    _avg: PoolAvgAggregateOutputType | null
-    _sum: PoolSumAggregateOutputType | null
-    _min: PoolMinAggregateOutputType | null
-    _max: PoolMaxAggregateOutputType | null
-  }
-
-  type GetPoolGroupByPayload<T extends PoolGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<PoolGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof PoolGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], PoolGroupByOutputType[P]>
-            : GetScalarType<T[P], PoolGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type PoolSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    address?: boolean
-    token0Id?: boolean
-    token1Id?: boolean
-    fee?: boolean
-    liquidity?: boolean
-    tick?: boolean
-    sqrtPriceX96?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    token0?: boolean | TokenDefaultArgs<ExtArgs>
-    token1?: boolean | TokenDefaultArgs<ExtArgs>
-    swaps?: boolean | Pool$swapsArgs<ExtArgs>
-    PoolStatistic?: boolean | Pool$PoolStatisticArgs<ExtArgs>
-    _count?: boolean | PoolCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["pool"]>
-
-  export type PoolSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    address?: boolean
-    token0Id?: boolean
-    token1Id?: boolean
-    fee?: boolean
-    liquidity?: boolean
-    tick?: boolean
-    sqrtPriceX96?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    token0?: boolean | TokenDefaultArgs<ExtArgs>
-    token1?: boolean | TokenDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["pool"]>
-
-  export type PoolSelectScalar = {
-    id?: boolean
-    address?: boolean
-    token0Id?: boolean
-    token1Id?: boolean
-    fee?: boolean
-    liquidity?: boolean
-    tick?: boolean
-    sqrtPriceX96?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type PoolInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    token0?: boolean | TokenDefaultArgs<ExtArgs>
-    token1?: boolean | TokenDefaultArgs<ExtArgs>
-    swaps?: boolean | Pool$swapsArgs<ExtArgs>
-    PoolStatistic?: boolean | Pool$PoolStatisticArgs<ExtArgs>
-    _count?: boolean | PoolCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type PoolIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    token0?: boolean | TokenDefaultArgs<ExtArgs>
-    token1?: boolean | TokenDefaultArgs<ExtArgs>
-  }
-
-  export type $PoolPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Pool"
-    objects: {
-      token0: Prisma.$TokenPayload<ExtArgs>
-      token1: Prisma.$TokenPayload<ExtArgs>
-      swaps: Prisma.$SwapPayload<ExtArgs>[]
-      PoolStatistic: Prisma.$PoolStatisticPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      address: string
-      token0Id: string
-      token1Id: string
-      fee: number
-      liquidity: string | null
-      tick: number | null
-      sqrtPriceX96: string | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["pool"]>
-    composites: {}
-  }
-
-  type PoolGetPayload<S extends boolean | null | undefined | PoolDefaultArgs> = $Result.GetResult<Prisma.$PoolPayload, S>
-
-  type PoolCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<PoolFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: PoolCountAggregateInputType | true
-    }
-
-  export interface PoolDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Pool'], meta: { name: 'Pool' } }
-    /**
-     * Find zero or one Pool that matches the filter.
-     * @param {PoolFindUniqueArgs} args - Arguments to find a Pool
-     * @example
-     * // Get one Pool
-     * const pool = await prisma.pool.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends PoolFindUniqueArgs>(args: SelectSubset<T, PoolFindUniqueArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
-
-    /**
-     * Find one Pool that matches the filter or throw an error with `error.code='P2025'` 
-     * if no matches were found.
-     * @param {PoolFindUniqueOrThrowArgs} args - Arguments to find a Pool
-     * @example
-     * // Get one Pool
-     * const pool = await prisma.pool.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends PoolFindUniqueOrThrowArgs>(args: SelectSubset<T, PoolFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
-
-    /**
-     * Find the first Pool that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolFindFirstArgs} args - Arguments to find a Pool
-     * @example
-     * // Get one Pool
-     * const pool = await prisma.pool.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends PoolFindFirstArgs>(args?: SelectSubset<T, PoolFindFirstArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
-
-    /**
-     * Find the first Pool that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolFindFirstOrThrowArgs} args - Arguments to find a Pool
-     * @example
-     * // Get one Pool
-     * const pool = await prisma.pool.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends PoolFindFirstOrThrowArgs>(args?: SelectSubset<T, PoolFindFirstOrThrowArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
-
-    /**
-     * Find zero or more Pools that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Pools
-     * const pools = await prisma.pool.findMany()
-     * 
-     * // Get first 10 Pools
-     * const pools = await prisma.pool.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const poolWithIdOnly = await prisma.pool.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends PoolFindManyArgs>(args?: SelectSubset<T, PoolFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findMany">>
-
-    /**
-     * Create a Pool.
-     * @param {PoolCreateArgs} args - Arguments to create a Pool.
-     * @example
-     * // Create one Pool
-     * const Pool = await prisma.pool.create({
-     *   data: {
-     *     // ... data to create a Pool
-     *   }
-     * })
-     * 
-     */
-    create<T extends PoolCreateArgs>(args: SelectSubset<T, PoolCreateArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "create">, never, ExtArgs>
-
-    /**
-     * Create many Pools.
-     * @param {PoolCreateManyArgs} args - Arguments to create many Pools.
-     * @example
-     * // Create many Pools
-     * const pool = await prisma.pool.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends PoolCreateManyArgs>(args?: SelectSubset<T, PoolCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Pools and returns the data saved in the database.
-     * @param {PoolCreateManyAndReturnArgs} args - Arguments to create many Pools.
-     * @example
-     * // Create many Pools
-     * const pool = await prisma.pool.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Pools and only return the `id`
-     * const poolWithIdOnly = await prisma.pool.createManyAndReturn({ 
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends PoolCreateManyAndReturnArgs>(args?: SelectSubset<T, PoolCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "createManyAndReturn">>
-
-    /**
-     * Delete a Pool.
-     * @param {PoolDeleteArgs} args - Arguments to delete one Pool.
-     * @example
-     * // Delete one Pool
-     * const Pool = await prisma.pool.delete({
-     *   where: {
-     *     // ... filter to delete one Pool
-     *   }
-     * })
-     * 
-     */
-    delete<T extends PoolDeleteArgs>(args: SelectSubset<T, PoolDeleteArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "delete">, never, ExtArgs>
-
-    /**
-     * Update one Pool.
-     * @param {PoolUpdateArgs} args - Arguments to update one Pool.
-     * @example
-     * // Update one Pool
-     * const pool = await prisma.pool.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends PoolUpdateArgs>(args: SelectSubset<T, PoolUpdateArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "update">, never, ExtArgs>
-
-    /**
-     * Delete zero or more Pools.
-     * @param {PoolDeleteManyArgs} args - Arguments to filter Pools to delete.
-     * @example
-     * // Delete a few Pools
-     * const { count } = await prisma.pool.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends PoolDeleteManyArgs>(args?: SelectSubset<T, PoolDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Pools.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Pools
-     * const pool = await prisma.pool.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends PoolUpdateManyArgs>(args: SelectSubset<T, PoolUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one Pool.
-     * @param {PoolUpsertArgs} args - Arguments to update or create a Pool.
-     * @example
-     * // Update or create a Pool
-     * const pool = await prisma.pool.upsert({
-     *   create: {
-     *     // ... data to create a Pool
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Pool we want to update
-     *   }
-     * })
-     */
-    upsert<T extends PoolUpsertArgs>(args: SelectSubset<T, PoolUpsertArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
-
-
-    /**
-     * Count the number of Pools.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolCountArgs} args - Arguments to filter Pools to count.
-     * @example
-     * // Count the number of Pools
-     * const count = await prisma.pool.count({
-     *   where: {
-     *     // ... the filter for the Pools we want to count
-     *   }
-     * })
-    **/
-    count<T extends PoolCountArgs>(
-      args?: Subset<T, PoolCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], PoolCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Pool.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends PoolAggregateArgs>(args: Subset<T, PoolAggregateArgs>): Prisma.PrismaPromise<GetPoolAggregateType<T>>
-
-    /**
-     * Group by Pool.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends PoolGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PoolGroupByArgs['orderBy'] }
-        : { orderBy?: PoolGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, PoolGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPoolGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Pool model
-   */
-  readonly fields: PoolFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Pool.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__PoolClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    token0<T extends TokenDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TokenDefaultArgs<ExtArgs>>): Prisma__TokenClient<$Result.GetResult<Prisma.$TokenPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    token1<T extends TokenDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TokenDefaultArgs<ExtArgs>>): Prisma__TokenClient<$Result.GetResult<Prisma.$TokenPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    swaps<T extends Pool$swapsArgs<ExtArgs> = {}>(args?: Subset<T, Pool$swapsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findMany"> | Null>
-    PoolStatistic<T extends Pool$PoolStatisticArgs<ExtArgs> = {}>(args?: Subset<T, Pool$PoolStatisticArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "findMany"> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Pool model
-   */ 
-  interface PoolFieldRefs {
-    readonly id: FieldRef<"Pool", 'String'>
-    readonly address: FieldRef<"Pool", 'String'>
-    readonly token0Id: FieldRef<"Pool", 'String'>
-    readonly token1Id: FieldRef<"Pool", 'String'>
-    readonly fee: FieldRef<"Pool", 'Int'>
-    readonly liquidity: FieldRef<"Pool", 'String'>
-    readonly tick: FieldRef<"Pool", 'Int'>
-    readonly sqrtPriceX96: FieldRef<"Pool", 'String'>
-    readonly createdAt: FieldRef<"Pool", 'DateTime'>
-    readonly updatedAt: FieldRef<"Pool", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Pool findUnique
-   */
-  export type PoolFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * Filter, which Pool to fetch.
-     */
-    where: PoolWhereUniqueInput
-  }
-
-  /**
-   * Pool findUniqueOrThrow
-   */
-  export type PoolFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * Filter, which Pool to fetch.
-     */
-    where: PoolWhereUniqueInput
-  }
-
-  /**
-   * Pool findFirst
-   */
-  export type PoolFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * Filter, which Pool to fetch.
-     */
-    where?: PoolWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Pools to fetch.
-     */
-    orderBy?: PoolOrderByWithRelationInput | PoolOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Pools.
-     */
-    cursor?: PoolWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Pools from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Pools.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Pools.
-     */
-    distinct?: PoolScalarFieldEnum | PoolScalarFieldEnum[]
-  }
-
-  /**
-   * Pool findFirstOrThrow
-   */
-  export type PoolFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * Filter, which Pool to fetch.
-     */
-    where?: PoolWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Pools to fetch.
-     */
-    orderBy?: PoolOrderByWithRelationInput | PoolOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Pools.
-     */
-    cursor?: PoolWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Pools from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Pools.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Pools.
-     */
-    distinct?: PoolScalarFieldEnum | PoolScalarFieldEnum[]
-  }
-
-  /**
-   * Pool findMany
-   */
-  export type PoolFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * Filter, which Pools to fetch.
-     */
-    where?: PoolWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Pools to fetch.
-     */
-    orderBy?: PoolOrderByWithRelationInput | PoolOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Pools.
-     */
-    cursor?: PoolWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Pools from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Pools.
-     */
-    skip?: number
-    distinct?: PoolScalarFieldEnum | PoolScalarFieldEnum[]
-  }
-
-  /**
-   * Pool create
-   */
-  export type PoolCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Pool.
-     */
-    data: XOR<PoolCreateInput, PoolUncheckedCreateInput>
-  }
-
-  /**
-   * Pool createMany
-   */
-  export type PoolCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Pools.
-     */
-    data: PoolCreateManyInput | PoolCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Pool createManyAndReturn
-   */
-  export type PoolCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * The data used to create many Pools.
-     */
-    data: PoolCreateManyInput | PoolCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Pool update
-   */
-  export type PoolUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Pool.
-     */
-    data: XOR<PoolUpdateInput, PoolUncheckedUpdateInput>
-    /**
-     * Choose, which Pool to update.
-     */
-    where: PoolWhereUniqueInput
-  }
-
-  /**
-   * Pool updateMany
-   */
-  export type PoolUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Pools.
-     */
-    data: XOR<PoolUpdateManyMutationInput, PoolUncheckedUpdateManyInput>
-    /**
-     * Filter which Pools to update
-     */
-    where?: PoolWhereInput
-  }
-
-  /**
-   * Pool upsert
-   */
-  export type PoolUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Pool to update in case it exists.
-     */
-    where: PoolWhereUniqueInput
-    /**
-     * In case the Pool found by the `where` argument doesn't exist, create a new Pool with this data.
-     */
-    create: XOR<PoolCreateInput, PoolUncheckedCreateInput>
-    /**
-     * In case the Pool was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<PoolUpdateInput, PoolUncheckedUpdateInput>
-  }
-
-  /**
-   * Pool delete
-   */
-  export type PoolDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-    /**
-     * Filter which Pool to delete.
-     */
-    where: PoolWhereUniqueInput
-  }
-
-  /**
-   * Pool deleteMany
-   */
-  export type PoolDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Pools to delete
-     */
-    where?: PoolWhereInput
-  }
-
-  /**
-   * Pool.swaps
-   */
-  export type Pool$swapsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    where?: SwapWhereInput
-    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
-    cursor?: SwapWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
-  }
-
-  /**
-   * Pool.PoolStatistic
-   */
-  export type Pool$PoolStatisticArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PoolStatistic
-     */
-    select?: PoolStatisticSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolStatisticInclude<ExtArgs> | null
-    where?: PoolStatisticWhereInput
-    orderBy?: PoolStatisticOrderByWithRelationInput | PoolStatisticOrderByWithRelationInput[]
-    cursor?: PoolStatisticWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PoolStatisticScalarFieldEnum | PoolStatisticScalarFieldEnum[]
-  }
-
-  /**
-   * Pool without action
-   */
-  export type PoolDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Pool
-     */
-    select?: PoolSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PoolInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model Swap
-   */
-
-  export type AggregateSwap = {
-    _count: SwapCountAggregateOutputType | null
-    _avg: SwapAvgAggregateOutputType | null
-    _sum: SwapSumAggregateOutputType | null
-    _min: SwapMinAggregateOutputType | null
-    _max: SwapMaxAggregateOutputType | null
-  }
-
-  export type SwapAvgAggregateOutputType = {
-    tick: number | null
-    logIndex: number | null
-    gasUsed: number | null
-  }
-
-  export type SwapSumAggregateOutputType = {
-    tick: number | null
-    logIndex: number | null
-    gasUsed: number | null
-  }
-
-  export type SwapMinAggregateOutputType = {
-    id: string | null
-    sender: string | null
-    recipient: string | null
-    amount0: string | null
-    amount1: string | null
-    sqrtPriceX96: string | null
-    tick: number | null
-    transactionHash: string | null
-    logIndex: number | null
-    poolAddress: string | null
-    poolId: string | null
-    gasUsed: number | null
-    gasPrice: string | null
-    createdAt: Date | null
-  }
-
-  export type SwapMaxAggregateOutputType = {
-    id: string | null
-    sender: string | null
-    recipient: string | null
-    amount0: string | null
-    amount1: string | null
-    sqrtPriceX96: string | null
-    tick: number | null
-    transactionHash: string | null
-    logIndex: number | null
-    poolAddress: string | null
-    poolId: string | null
-    gasUsed: number | null
-    gasPrice: string | null
-    createdAt: Date | null
-  }
-
-  export type SwapCountAggregateOutputType = {
-    id: number
-    sender: number
-    recipient: number
-    amount0: number
-    amount1: number
-    sqrtPriceX96: number
-    tick: number
-    transactionHash: number
-    logIndex: number
-    poolAddress: number
-    poolId: number
-    gasUsed: number
-    gasPrice: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type SwapAvgAggregateInputType = {
-    tick?: true
-    logIndex?: true
-    gasUsed?: true
-  }
-
-  export type SwapSumAggregateInputType = {
-    tick?: true
-    logIndex?: true
-    gasUsed?: true
-  }
-
-  export type SwapMinAggregateInputType = {
-    id?: true
-    sender?: true
-    recipient?: true
-    amount0?: true
-    amount1?: true
-    sqrtPriceX96?: true
-    tick?: true
-    transactionHash?: true
-    logIndex?: true
-    poolAddress?: true
-    poolId?: true
-    gasUsed?: true
-    gasPrice?: true
-    createdAt?: true
-  }
-
-  export type SwapMaxAggregateInputType = {
-    id?: true
-    sender?: true
-    recipient?: true
-    amount0?: true
-    amount1?: true
-    sqrtPriceX96?: true
-    tick?: true
-    transactionHash?: true
-    logIndex?: true
-    poolAddress?: true
-    poolId?: true
-    gasUsed?: true
-    gasPrice?: true
-    createdAt?: true
-  }
-
-  export type SwapCountAggregateInputType = {
-    id?: true
-    sender?: true
-    recipient?: true
-    amount0?: true
-    amount1?: true
-    sqrtPriceX96?: true
-    tick?: true
-    transactionHash?: true
-    logIndex?: true
-    poolAddress?: true
-    poolId?: true
-    gasUsed?: true
-    gasPrice?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type SwapAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Swap to aggregate.
-     */
-    where?: SwapWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Swaps to fetch.
-     */
-    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SwapWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Swaps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Swaps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Swaps
-    **/
-    _count?: true | SwapCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SwapAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SwapSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SwapMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SwapMaxAggregateInputType
-  }
-
-  export type GetSwapAggregateType<T extends SwapAggregateArgs> = {
-        [P in keyof T & keyof AggregateSwap]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSwap[P]>
-      : GetScalarType<T[P], AggregateSwap[P]>
-  }
-
-
-
-
-  export type SwapGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SwapWhereInput
-    orderBy?: SwapOrderByWithAggregationInput | SwapOrderByWithAggregationInput[]
-    by: SwapScalarFieldEnum[] | SwapScalarFieldEnum
-    having?: SwapScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SwapCountAggregateInputType | true
-    _avg?: SwapAvgAggregateInputType
-    _sum?: SwapSumAggregateInputType
-    _min?: SwapMinAggregateInputType
-    _max?: SwapMaxAggregateInputType
-  }
-
-  export type SwapGroupByOutputType = {
-    id: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    poolId: string
-    gasUsed: number
-    gasPrice: string
-    createdAt: Date
-    _count: SwapCountAggregateOutputType | null
-    _avg: SwapAvgAggregateOutputType | null
-    _sum: SwapSumAggregateOutputType | null
-    _min: SwapMinAggregateOutputType | null
-    _max: SwapMaxAggregateOutputType | null
-  }
-
-  type GetSwapGroupByPayload<T extends SwapGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SwapGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SwapGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SwapGroupByOutputType[P]>
-            : GetScalarType<T[P], SwapGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SwapSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    sender?: boolean
-    recipient?: boolean
-    amount0?: boolean
-    amount1?: boolean
-    sqrtPriceX96?: boolean
-    tick?: boolean
-    transactionHash?: boolean
-    logIndex?: boolean
-    poolAddress?: boolean
-    poolId?: boolean
-    gasUsed?: boolean
-    gasPrice?: boolean
-    createdAt?: boolean
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["swap"]>
-
-  export type SwapSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    sender?: boolean
-    recipient?: boolean
-    amount0?: boolean
-    amount1?: boolean
-    sqrtPriceX96?: boolean
-    tick?: boolean
-    transactionHash?: boolean
-    logIndex?: boolean
-    poolAddress?: boolean
-    poolId?: boolean
-    gasUsed?: boolean
-    gasPrice?: boolean
-    createdAt?: boolean
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["swap"]>
-
-  export type SwapSelectScalar = {
-    id?: boolean
-    sender?: boolean
-    recipient?: boolean
-    amount0?: boolean
-    amount1?: boolean
-    sqrtPriceX96?: boolean
-    tick?: boolean
-    transactionHash?: boolean
-    logIndex?: boolean
-    poolAddress?: boolean
-    poolId?: boolean
-    gasUsed?: boolean
-    gasPrice?: boolean
-    createdAt?: boolean
-  }
-
-  export type SwapInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
-  }
-  export type SwapIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
-  }
-
-  export type $SwapPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Swap"
-    objects: {
-      pool: Prisma.$PoolPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      sender: string
-      recipient: string
-      amount0: string
-      amount1: string
-      sqrtPriceX96: string
-      tick: number
-      transactionHash: string
-      logIndex: number
-      poolAddress: string
-      poolId: string
-      gasUsed: number
-      gasPrice: string
-      createdAt: Date
-    }, ExtArgs["result"]["swap"]>
-    composites: {}
-  }
-
-  type SwapGetPayload<S extends boolean | null | undefined | SwapDefaultArgs> = $Result.GetResult<Prisma.$SwapPayload, S>
-
-  type SwapCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<SwapFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: SwapCountAggregateInputType | true
-    }
-
-  export interface SwapDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Swap'], meta: { name: 'Swap' } }
-    /**
-     * Find zero or one Swap that matches the filter.
-     * @param {SwapFindUniqueArgs} args - Arguments to find a Swap
-     * @example
-     * // Get one Swap
-     * const swap = await prisma.swap.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SwapFindUniqueArgs>(args: SelectSubset<T, SwapFindUniqueArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
-
-    /**
-     * Find one Swap that matches the filter or throw an error with `error.code='P2025'` 
-     * if no matches were found.
-     * @param {SwapFindUniqueOrThrowArgs} args - Arguments to find a Swap
-     * @example
-     * // Get one Swap
-     * const swap = await prisma.swap.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SwapFindUniqueOrThrowArgs>(args: SelectSubset<T, SwapFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
-
-    /**
-     * Find the first Swap that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapFindFirstArgs} args - Arguments to find a Swap
-     * @example
-     * // Get one Swap
-     * const swap = await prisma.swap.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SwapFindFirstArgs>(args?: SelectSubset<T, SwapFindFirstArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
-
-    /**
-     * Find the first Swap that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapFindFirstOrThrowArgs} args - Arguments to find a Swap
-     * @example
-     * // Get one Swap
-     * const swap = await prisma.swap.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SwapFindFirstOrThrowArgs>(args?: SelectSubset<T, SwapFindFirstOrThrowArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
-
-    /**
-     * Find zero or more Swaps that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Swaps
-     * const swaps = await prisma.swap.findMany()
-     * 
-     * // Get first 10 Swaps
-     * const swaps = await prisma.swap.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const swapWithIdOnly = await prisma.swap.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SwapFindManyArgs>(args?: SelectSubset<T, SwapFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "findMany">>
-
-    /**
-     * Create a Swap.
-     * @param {SwapCreateArgs} args - Arguments to create a Swap.
-     * @example
-     * // Create one Swap
-     * const Swap = await prisma.swap.create({
-     *   data: {
-     *     // ... data to create a Swap
-     *   }
-     * })
-     * 
-     */
-    create<T extends SwapCreateArgs>(args: SelectSubset<T, SwapCreateArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "create">, never, ExtArgs>
-
-    /**
-     * Create many Swaps.
-     * @param {SwapCreateManyArgs} args - Arguments to create many Swaps.
-     * @example
-     * // Create many Swaps
-     * const swap = await prisma.swap.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SwapCreateManyArgs>(args?: SelectSubset<T, SwapCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Swaps and returns the data saved in the database.
-     * @param {SwapCreateManyAndReturnArgs} args - Arguments to create many Swaps.
-     * @example
-     * // Create many Swaps
-     * const swap = await prisma.swap.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Swaps and only return the `id`
-     * const swapWithIdOnly = await prisma.swap.createManyAndReturn({ 
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SwapCreateManyAndReturnArgs>(args?: SelectSubset<T, SwapCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "createManyAndReturn">>
-
-    /**
-     * Delete a Swap.
-     * @param {SwapDeleteArgs} args - Arguments to delete one Swap.
-     * @example
-     * // Delete one Swap
-     * const Swap = await prisma.swap.delete({
-     *   where: {
-     *     // ... filter to delete one Swap
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SwapDeleteArgs>(args: SelectSubset<T, SwapDeleteArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "delete">, never, ExtArgs>
-
-    /**
-     * Update one Swap.
-     * @param {SwapUpdateArgs} args - Arguments to update one Swap.
-     * @example
-     * // Update one Swap
-     * const swap = await prisma.swap.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SwapUpdateArgs>(args: SelectSubset<T, SwapUpdateArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "update">, never, ExtArgs>
-
-    /**
-     * Delete zero or more Swaps.
-     * @param {SwapDeleteManyArgs} args - Arguments to filter Swaps to delete.
-     * @example
-     * // Delete a few Swaps
-     * const { count } = await prisma.swap.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SwapDeleteManyArgs>(args?: SelectSubset<T, SwapDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Swaps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Swaps
-     * const swap = await prisma.swap.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SwapUpdateManyArgs>(args: SelectSubset<T, SwapUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one Swap.
-     * @param {SwapUpsertArgs} args - Arguments to update or create a Swap.
-     * @example
-     * // Update or create a Swap
-     * const swap = await prisma.swap.upsert({
-     *   create: {
-     *     // ... data to create a Swap
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Swap we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SwapUpsertArgs>(args: SelectSubset<T, SwapUpsertArgs<ExtArgs>>): Prisma__SwapClient<$Result.GetResult<Prisma.$SwapPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
-
-
-    /**
-     * Count the number of Swaps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapCountArgs} args - Arguments to filter Swaps to count.
-     * @example
-     * // Count the number of Swaps
-     * const count = await prisma.swap.count({
-     *   where: {
-     *     // ... the filter for the Swaps we want to count
-     *   }
-     * })
-    **/
-    count<T extends SwapCountArgs>(
-      args?: Subset<T, SwapCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SwapCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Swap.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SwapAggregateArgs>(args: Subset<T, SwapAggregateArgs>): Prisma.PrismaPromise<GetSwapAggregateType<T>>
-
-    /**
-     * Group by Swap.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SwapGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SwapGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SwapGroupByArgs['orderBy'] }
-        : { orderBy?: SwapGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SwapGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSwapGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Swap model
-   */
-  readonly fields: SwapFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Swap.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SwapClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    pool<T extends PoolDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PoolDefaultArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Swap model
-   */ 
-  interface SwapFieldRefs {
-    readonly id: FieldRef<"Swap", 'String'>
-    readonly sender: FieldRef<"Swap", 'String'>
-    readonly recipient: FieldRef<"Swap", 'String'>
-    readonly amount0: FieldRef<"Swap", 'String'>
-    readonly amount1: FieldRef<"Swap", 'String'>
-    readonly sqrtPriceX96: FieldRef<"Swap", 'String'>
-    readonly tick: FieldRef<"Swap", 'Int'>
-    readonly transactionHash: FieldRef<"Swap", 'String'>
-    readonly logIndex: FieldRef<"Swap", 'Int'>
-    readonly poolAddress: FieldRef<"Swap", 'String'>
-    readonly poolId: FieldRef<"Swap", 'String'>
-    readonly gasUsed: FieldRef<"Swap", 'Int'>
-    readonly gasPrice: FieldRef<"Swap", 'String'>
-    readonly createdAt: FieldRef<"Swap", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Swap findUnique
-   */
-  export type SwapFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * Filter, which Swap to fetch.
-     */
-    where: SwapWhereUniqueInput
-  }
-
-  /**
-   * Swap findUniqueOrThrow
-   */
-  export type SwapFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * Filter, which Swap to fetch.
-     */
-    where: SwapWhereUniqueInput
-  }
-
-  /**
-   * Swap findFirst
-   */
-  export type SwapFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * Filter, which Swap to fetch.
-     */
-    where?: SwapWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Swaps to fetch.
-     */
-    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Swaps.
-     */
-    cursor?: SwapWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Swaps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Swaps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Swaps.
-     */
-    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
-  }
-
-  /**
-   * Swap findFirstOrThrow
-   */
-  export type SwapFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * Filter, which Swap to fetch.
-     */
-    where?: SwapWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Swaps to fetch.
-     */
-    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Swaps.
-     */
-    cursor?: SwapWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Swaps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Swaps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Swaps.
-     */
-    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
-  }
-
-  /**
-   * Swap findMany
-   */
-  export type SwapFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * Filter, which Swaps to fetch.
-     */
-    where?: SwapWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Swaps to fetch.
-     */
-    orderBy?: SwapOrderByWithRelationInput | SwapOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Swaps.
-     */
-    cursor?: SwapWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Swaps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Swaps.
-     */
-    skip?: number
-    distinct?: SwapScalarFieldEnum | SwapScalarFieldEnum[]
-  }
-
-  /**
-   * Swap create
-   */
-  export type SwapCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Swap.
-     */
-    data: XOR<SwapCreateInput, SwapUncheckedCreateInput>
-  }
-
-  /**
-   * Swap createMany
-   */
-  export type SwapCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Swaps.
-     */
-    data: SwapCreateManyInput | SwapCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Swap createManyAndReturn
-   */
-  export type SwapCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * The data used to create many Swaps.
-     */
-    data: SwapCreateManyInput | SwapCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Swap update
-   */
-  export type SwapUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Swap.
-     */
-    data: XOR<SwapUpdateInput, SwapUncheckedUpdateInput>
-    /**
-     * Choose, which Swap to update.
-     */
-    where: SwapWhereUniqueInput
-  }
-
-  /**
-   * Swap updateMany
-   */
-  export type SwapUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Swaps.
-     */
-    data: XOR<SwapUpdateManyMutationInput, SwapUncheckedUpdateManyInput>
-    /**
-     * Filter which Swaps to update
-     */
-    where?: SwapWhereInput
-  }
-
-  /**
-   * Swap upsert
-   */
-  export type SwapUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Swap to update in case it exists.
-     */
-    where: SwapWhereUniqueInput
-    /**
-     * In case the Swap found by the `where` argument doesn't exist, create a new Swap with this data.
-     */
-    create: XOR<SwapCreateInput, SwapUncheckedCreateInput>
-    /**
-     * In case the Swap was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SwapUpdateInput, SwapUncheckedUpdateInput>
-  }
-
-  /**
-   * Swap delete
-   */
-  export type SwapDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-    /**
-     * Filter which Swap to delete.
-     */
-    where: SwapWhereUniqueInput
-  }
-
-  /**
-   * Swap deleteMany
-   */
-  export type SwapDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Swaps to delete
-     */
-    where?: SwapWhereInput
-  }
-
-  /**
-   * Swap without action
-   */
-  export type SwapDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Swap
-     */
-    select?: SwapSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SwapInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model IndexerState
-   */
-
-  export type AggregateIndexerState = {
-    _count: IndexerStateCountAggregateOutputType | null
-    _avg: IndexerStateAvgAggregateOutputType | null
-    _sum: IndexerStateSumAggregateOutputType | null
-    _min: IndexerStateMinAggregateOutputType | null
-    _max: IndexerStateMaxAggregateOutputType | null
-  }
-
-  export type IndexerStateAvgAggregateOutputType = {
-    lastBlock: number | null
-  }
-
-  export type IndexerStateSumAggregateOutputType = {
-    lastBlock: bigint | null
-  }
-
-  export type IndexerStateMinAggregateOutputType = {
-    id: string | null
-    lastBlock: bigint | null
-    lastUpdate: Date | null
-  }
-
-  export type IndexerStateMaxAggregateOutputType = {
-    id: string | null
-    lastBlock: bigint | null
-    lastUpdate: Date | null
-  }
-
-  export type IndexerStateCountAggregateOutputType = {
-    id: number
-    lastBlock: number
-    lastUpdate: number
-    _all: number
-  }
-
-
-  export type IndexerStateAvgAggregateInputType = {
-    lastBlock?: true
-  }
-
-  export type IndexerStateSumAggregateInputType = {
-    lastBlock?: true
-  }
-
-  export type IndexerStateMinAggregateInputType = {
-    id?: true
-    lastBlock?: true
-    lastUpdate?: true
-  }
-
-  export type IndexerStateMaxAggregateInputType = {
-    id?: true
-    lastBlock?: true
-    lastUpdate?: true
-  }
-
-  export type IndexerStateCountAggregateInputType = {
-    id?: true
-    lastBlock?: true
-    lastUpdate?: true
-    _all?: true
-  }
-
-  export type IndexerStateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which IndexerState to aggregate.
-     */
-    where?: IndexerStateWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IndexerStates to fetch.
-     */
-    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: IndexerStateWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IndexerStates from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IndexerStates.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned IndexerStates
-    **/
-    _count?: true | IndexerStateCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: IndexerStateAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: IndexerStateSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: IndexerStateMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: IndexerStateMaxAggregateInputType
-  }
-
-  export type GetIndexerStateAggregateType<T extends IndexerStateAggregateArgs> = {
-        [P in keyof T & keyof AggregateIndexerState]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateIndexerState[P]>
-      : GetScalarType<T[P], AggregateIndexerState[P]>
-  }
-
-
-
-
-  export type IndexerStateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: IndexerStateWhereInput
-    orderBy?: IndexerStateOrderByWithAggregationInput | IndexerStateOrderByWithAggregationInput[]
-    by: IndexerStateScalarFieldEnum[] | IndexerStateScalarFieldEnum
-    having?: IndexerStateScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: IndexerStateCountAggregateInputType | true
-    _avg?: IndexerStateAvgAggregateInputType
-    _sum?: IndexerStateSumAggregateInputType
-    _min?: IndexerStateMinAggregateInputType
-    _max?: IndexerStateMaxAggregateInputType
-  }
-
-  export type IndexerStateGroupByOutputType = {
-    id: string
-    lastBlock: bigint
-    lastUpdate: Date
-    _count: IndexerStateCountAggregateOutputType | null
-    _avg: IndexerStateAvgAggregateOutputType | null
-    _sum: IndexerStateSumAggregateOutputType | null
-    _min: IndexerStateMinAggregateOutputType | null
-    _max: IndexerStateMaxAggregateOutputType | null
-  }
-
-  type GetIndexerStateGroupByPayload<T extends IndexerStateGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<IndexerStateGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof IndexerStateGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], IndexerStateGroupByOutputType[P]>
-            : GetScalarType<T[P], IndexerStateGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type IndexerStateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    lastBlock?: boolean
-    lastUpdate?: boolean
-  }, ExtArgs["result"]["indexerState"]>
-
-  export type IndexerStateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    lastBlock?: boolean
-    lastUpdate?: boolean
-  }, ExtArgs["result"]["indexerState"]>
-
-  export type IndexerStateSelectScalar = {
-    id?: boolean
-    lastBlock?: boolean
-    lastUpdate?: boolean
-  }
-
-
-  export type $IndexerStatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "IndexerState"
-    objects: {}
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      lastBlock: bigint
-      lastUpdate: Date
-    }, ExtArgs["result"]["indexerState"]>
-    composites: {}
-  }
-
-  type IndexerStateGetPayload<S extends boolean | null | undefined | IndexerStateDefaultArgs> = $Result.GetResult<Prisma.$IndexerStatePayload, S>
-
-  type IndexerStateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<IndexerStateFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: IndexerStateCountAggregateInputType | true
-    }
-
-  export interface IndexerStateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IndexerState'], meta: { name: 'IndexerState' } }
-    /**
-     * Find zero or one IndexerState that matches the filter.
-     * @param {IndexerStateFindUniqueArgs} args - Arguments to find a IndexerState
-     * @example
-     * // Get one IndexerState
-     * const indexerState = await prisma.indexerState.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends IndexerStateFindUniqueArgs>(args: SelectSubset<T, IndexerStateFindUniqueArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
-
-    /**
-     * Find one IndexerState that matches the filter or throw an error with `error.code='P2025'` 
-     * if no matches were found.
-     * @param {IndexerStateFindUniqueOrThrowArgs} args - Arguments to find a IndexerState
-     * @example
-     * // Get one IndexerState
-     * const indexerState = await prisma.indexerState.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends IndexerStateFindUniqueOrThrowArgs>(args: SelectSubset<T, IndexerStateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
-
-    /**
-     * Find the first IndexerState that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateFindFirstArgs} args - Arguments to find a IndexerState
-     * @example
-     * // Get one IndexerState
-     * const indexerState = await prisma.indexerState.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends IndexerStateFindFirstArgs>(args?: SelectSubset<T, IndexerStateFindFirstArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
-
-    /**
-     * Find the first IndexerState that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateFindFirstOrThrowArgs} args - Arguments to find a IndexerState
-     * @example
-     * // Get one IndexerState
-     * const indexerState = await prisma.indexerState.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends IndexerStateFindFirstOrThrowArgs>(args?: SelectSubset<T, IndexerStateFindFirstOrThrowArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
-
-    /**
-     * Find zero or more IndexerStates that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all IndexerStates
-     * const indexerStates = await prisma.indexerState.findMany()
-     * 
-     * // Get first 10 IndexerStates
-     * const indexerStates = await prisma.indexerState.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const indexerStateWithIdOnly = await prisma.indexerState.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends IndexerStateFindManyArgs>(args?: SelectSubset<T, IndexerStateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "findMany">>
-
-    /**
-     * Create a IndexerState.
-     * @param {IndexerStateCreateArgs} args - Arguments to create a IndexerState.
-     * @example
-     * // Create one IndexerState
-     * const IndexerState = await prisma.indexerState.create({
-     *   data: {
-     *     // ... data to create a IndexerState
-     *   }
-     * })
-     * 
-     */
-    create<T extends IndexerStateCreateArgs>(args: SelectSubset<T, IndexerStateCreateArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "create">, never, ExtArgs>
-
-    /**
-     * Create many IndexerStates.
-     * @param {IndexerStateCreateManyArgs} args - Arguments to create many IndexerStates.
-     * @example
-     * // Create many IndexerStates
-     * const indexerState = await prisma.indexerState.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends IndexerStateCreateManyArgs>(args?: SelectSubset<T, IndexerStateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many IndexerStates and returns the data saved in the database.
-     * @param {IndexerStateCreateManyAndReturnArgs} args - Arguments to create many IndexerStates.
-     * @example
-     * // Create many IndexerStates
-     * const indexerState = await prisma.indexerState.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many IndexerStates and only return the `id`
-     * const indexerStateWithIdOnly = await prisma.indexerState.createManyAndReturn({ 
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends IndexerStateCreateManyAndReturnArgs>(args?: SelectSubset<T, IndexerStateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "createManyAndReturn">>
-
-    /**
-     * Delete a IndexerState.
-     * @param {IndexerStateDeleteArgs} args - Arguments to delete one IndexerState.
-     * @example
-     * // Delete one IndexerState
-     * const IndexerState = await prisma.indexerState.delete({
-     *   where: {
-     *     // ... filter to delete one IndexerState
-     *   }
-     * })
-     * 
-     */
-    delete<T extends IndexerStateDeleteArgs>(args: SelectSubset<T, IndexerStateDeleteArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "delete">, never, ExtArgs>
-
-    /**
-     * Update one IndexerState.
-     * @param {IndexerStateUpdateArgs} args - Arguments to update one IndexerState.
-     * @example
-     * // Update one IndexerState
-     * const indexerState = await prisma.indexerState.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends IndexerStateUpdateArgs>(args: SelectSubset<T, IndexerStateUpdateArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "update">, never, ExtArgs>
-
-    /**
-     * Delete zero or more IndexerStates.
-     * @param {IndexerStateDeleteManyArgs} args - Arguments to filter IndexerStates to delete.
-     * @example
-     * // Delete a few IndexerStates
-     * const { count } = await prisma.indexerState.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends IndexerStateDeleteManyArgs>(args?: SelectSubset<T, IndexerStateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more IndexerStates.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many IndexerStates
-     * const indexerState = await prisma.indexerState.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends IndexerStateUpdateManyArgs>(args: SelectSubset<T, IndexerStateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one IndexerState.
-     * @param {IndexerStateUpsertArgs} args - Arguments to update or create a IndexerState.
-     * @example
-     * // Update or create a IndexerState
-     * const indexerState = await prisma.indexerState.upsert({
-     *   create: {
-     *     // ... data to create a IndexerState
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the IndexerState we want to update
-     *   }
-     * })
-     */
-    upsert<T extends IndexerStateUpsertArgs>(args: SelectSubset<T, IndexerStateUpsertArgs<ExtArgs>>): Prisma__IndexerStateClient<$Result.GetResult<Prisma.$IndexerStatePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
-
-
-    /**
-     * Count the number of IndexerStates.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateCountArgs} args - Arguments to filter IndexerStates to count.
-     * @example
-     * // Count the number of IndexerStates
-     * const count = await prisma.indexerState.count({
-     *   where: {
-     *     // ... the filter for the IndexerStates we want to count
-     *   }
-     * })
-    **/
-    count<T extends IndexerStateCountArgs>(
-      args?: Subset<T, IndexerStateCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], IndexerStateCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a IndexerState.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends IndexerStateAggregateArgs>(args: Subset<T, IndexerStateAggregateArgs>): Prisma.PrismaPromise<GetIndexerStateAggregateType<T>>
-
-    /**
-     * Group by IndexerState.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IndexerStateGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends IndexerStateGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: IndexerStateGroupByArgs['orderBy'] }
-        : { orderBy?: IndexerStateGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, IndexerStateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIndexerStateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the IndexerState model
-   */
-  readonly fields: IndexerStateFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for IndexerState.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__IndexerStateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the IndexerState model
-   */ 
-  interface IndexerStateFieldRefs {
-    readonly id: FieldRef<"IndexerState", 'String'>
-    readonly lastBlock: FieldRef<"IndexerState", 'BigInt'>
-    readonly lastUpdate: FieldRef<"IndexerState", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * IndexerState findUnique
-   */
-  export type IndexerStateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * Filter, which IndexerState to fetch.
-     */
-    where: IndexerStateWhereUniqueInput
-  }
-
-  /**
-   * IndexerState findUniqueOrThrow
-   */
-  export type IndexerStateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * Filter, which IndexerState to fetch.
-     */
-    where: IndexerStateWhereUniqueInput
-  }
-
-  /**
-   * IndexerState findFirst
-   */
-  export type IndexerStateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * Filter, which IndexerState to fetch.
-     */
-    where?: IndexerStateWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IndexerStates to fetch.
-     */
-    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for IndexerStates.
-     */
-    cursor?: IndexerStateWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IndexerStates from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IndexerStates.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of IndexerStates.
-     */
-    distinct?: IndexerStateScalarFieldEnum | IndexerStateScalarFieldEnum[]
-  }
-
-  /**
-   * IndexerState findFirstOrThrow
-   */
-  export type IndexerStateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * Filter, which IndexerState to fetch.
-     */
-    where?: IndexerStateWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IndexerStates to fetch.
-     */
-    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for IndexerStates.
-     */
-    cursor?: IndexerStateWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IndexerStates from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IndexerStates.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of IndexerStates.
-     */
-    distinct?: IndexerStateScalarFieldEnum | IndexerStateScalarFieldEnum[]
-  }
-
-  /**
-   * IndexerState findMany
-   */
-  export type IndexerStateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * Filter, which IndexerStates to fetch.
-     */
-    where?: IndexerStateWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IndexerStates to fetch.
-     */
-    orderBy?: IndexerStateOrderByWithRelationInput | IndexerStateOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing IndexerStates.
-     */
-    cursor?: IndexerStateWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IndexerStates from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IndexerStates.
-     */
-    skip?: number
-    distinct?: IndexerStateScalarFieldEnum | IndexerStateScalarFieldEnum[]
-  }
-
-  /**
-   * IndexerState create
-   */
-  export type IndexerStateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * The data needed to create a IndexerState.
-     */
-    data?: XOR<IndexerStateCreateInput, IndexerStateUncheckedCreateInput>
-  }
-
-  /**
-   * IndexerState createMany
-   */
-  export type IndexerStateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many IndexerStates.
-     */
-    data: IndexerStateCreateManyInput | IndexerStateCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * IndexerState createManyAndReturn
-   */
-  export type IndexerStateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * The data used to create many IndexerStates.
-     */
-    data: IndexerStateCreateManyInput | IndexerStateCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * IndexerState update
-   */
-  export type IndexerStateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * The data needed to update a IndexerState.
-     */
-    data: XOR<IndexerStateUpdateInput, IndexerStateUncheckedUpdateInput>
-    /**
-     * Choose, which IndexerState to update.
-     */
-    where: IndexerStateWhereUniqueInput
-  }
-
-  /**
-   * IndexerState updateMany
-   */
-  export type IndexerStateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update IndexerStates.
-     */
-    data: XOR<IndexerStateUpdateManyMutationInput, IndexerStateUncheckedUpdateManyInput>
-    /**
-     * Filter which IndexerStates to update
-     */
-    where?: IndexerStateWhereInput
-  }
-
-  /**
-   * IndexerState upsert
-   */
-  export type IndexerStateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * The filter to search for the IndexerState to update in case it exists.
-     */
-    where: IndexerStateWhereUniqueInput
-    /**
-     * In case the IndexerState found by the `where` argument doesn't exist, create a new IndexerState with this data.
-     */
-    create: XOR<IndexerStateCreateInput, IndexerStateUncheckedCreateInput>
-    /**
-     * In case the IndexerState was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<IndexerStateUpdateInput, IndexerStateUncheckedUpdateInput>
-  }
-
-  /**
-   * IndexerState delete
-   */
-  export type IndexerStateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-    /**
-     * Filter which IndexerState to delete.
-     */
-    where: IndexerStateWhereUniqueInput
-  }
-
-  /**
-   * IndexerState deleteMany
-   */
-  export type IndexerStateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which IndexerStates to delete
-     */
-    where?: IndexerStateWhereInput
-  }
-
-  /**
-   * IndexerState without action
-   */
-  export type IndexerStateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IndexerState
-     */
-    select?: IndexerStateSelect<ExtArgs> | null
-  }
-
 
   /**
    * Model Token
@@ -4433,118 +1101,152 @@ export namespace Prisma {
 
   export type TokenAvgAggregateOutputType = {
     decimals: number | null
+    totalSupply: number | null
   }
 
   export type TokenSumAggregateOutputType = {
     decimals: number | null
+    totalSupply: bigint | null
   }
 
   export type TokenMinAggregateOutputType = {
-    id: string | null
     address: string | null
     symbol: string | null
     name: string | null
     decimals: number | null
     logoUri: string | null
-    coingeckoId: string | null
-    totalSupply: string | null
-    circulatingSupply: string | null
     website: string | null
     twitter: string | null
     description: string | null
+    coingeckoId: string | null
+    totalSupply: bigint | null
+    status: $Enums.TokenState | null
+    discoveredAt: Date | null
+    lastEnrichmentAt: Date | null
+    lastActivityAt: Date | null
+    isStableCoin: boolean | null
+    isVerifiedManually: boolean | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TokenMaxAggregateOutputType = {
-    id: string | null
     address: string | null
     symbol: string | null
     name: string | null
     decimals: number | null
     logoUri: string | null
-    coingeckoId: string | null
-    totalSupply: string | null
-    circulatingSupply: string | null
     website: string | null
     twitter: string | null
     description: string | null
+    coingeckoId: string | null
+    totalSupply: bigint | null
+    status: $Enums.TokenState | null
+    discoveredAt: Date | null
+    lastEnrichmentAt: Date | null
+    lastActivityAt: Date | null
+    isStableCoin: boolean | null
+    isVerifiedManually: boolean | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TokenCountAggregateOutputType = {
-    id: number
     address: number
     symbol: number
     name: number
     decimals: number
     logoUri: number
-    coingeckoId: number
-    tags: number
-    totalSupply: number
-    circulatingSupply: number
     website: number
     twitter: number
     description: number
+    coingeckoId: number
+    totalSupply: number
+    status: number
+    discoveredAt: number
+    lastEnrichmentAt: number
+    lastActivityAt: number
+    isStableCoin: number
+    isVerifiedManually: number
+    metadata: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
   export type TokenAvgAggregateInputType = {
     decimals?: true
+    totalSupply?: true
   }
 
   export type TokenSumAggregateInputType = {
     decimals?: true
+    totalSupply?: true
   }
 
   export type TokenMinAggregateInputType = {
-    id?: true
     address?: true
     symbol?: true
     name?: true
     decimals?: true
     logoUri?: true
-    coingeckoId?: true
-    totalSupply?: true
-    circulatingSupply?: true
     website?: true
     twitter?: true
     description?: true
+    coingeckoId?: true
+    totalSupply?: true
+    status?: true
+    discoveredAt?: true
+    lastEnrichmentAt?: true
+    lastActivityAt?: true
+    isStableCoin?: true
+    isVerifiedManually?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TokenMaxAggregateInputType = {
-    id?: true
     address?: true
     symbol?: true
     name?: true
     decimals?: true
     logoUri?: true
-    coingeckoId?: true
-    totalSupply?: true
-    circulatingSupply?: true
     website?: true
     twitter?: true
     description?: true
+    coingeckoId?: true
+    totalSupply?: true
+    status?: true
+    discoveredAt?: true
+    lastEnrichmentAt?: true
+    lastActivityAt?: true
+    isStableCoin?: true
+    isVerifiedManually?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TokenCountAggregateInputType = {
-    id?: true
     address?: true
     symbol?: true
     name?: true
     decimals?: true
     logoUri?: true
-    coingeckoId?: true
-    tags?: true
-    totalSupply?: true
-    circulatingSupply?: true
     website?: true
     twitter?: true
     description?: true
+    coingeckoId?: true
+    totalSupply?: true
+    status?: true
+    discoveredAt?: true
+    lastEnrichmentAt?: true
+    lastActivityAt?: true
+    isStableCoin?: true
+    isVerifiedManually?: true
+    metadata?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -4635,20 +1337,25 @@ export namespace Prisma {
   }
 
   export type TokenGroupByOutputType = {
-    id: string
     address: string
     symbol: string
     name: string
     decimals: number
     logoUri: string | null
-    coingeckoId: string | null
-    tags: string[]
-    totalSupply: string | null
-    circulatingSupply: string | null
     website: string | null
     twitter: string | null
     description: string | null
+    coingeckoId: string | null
+    totalSupply: bigint
+    status: $Enums.TokenState
+    discoveredAt: Date
+    lastEnrichmentAt: Date | null
+    lastActivityAt: Date | null
+    isStableCoin: boolean
+    isVerifiedManually: boolean
+    metadata: JsonValue | null
     createdAt: Date
+    updatedAt: Date
     _count: TokenCountAggregateOutputType | null
     _avg: TokenAvgAggregateOutputType | null
     _sum: TokenSumAggregateOutputType | null
@@ -4671,64 +1378,77 @@ export namespace Prisma {
 
 
   export type TokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
     address?: boolean
     symbol?: boolean
     name?: boolean
     decimals?: boolean
     logoUri?: boolean
-    coingeckoId?: boolean
-    tags?: boolean
-    totalSupply?: boolean
-    circulatingSupply?: boolean
     website?: boolean
     twitter?: boolean
     description?: boolean
+    coingeckoId?: boolean
+    totalSupply?: boolean
+    status?: boolean
+    discoveredAt?: boolean
+    lastEnrichmentAt?: boolean
+    lastActivityAt?: boolean
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: boolean
     createdAt?: boolean
-    poolsAsToken0?: boolean | Token$poolsAsToken0Args<ExtArgs>
-    poolsAsToken1?: boolean | Token$poolsAsToken1Args<ExtArgs>
-    Statistic?: boolean | Token$StatisticArgs<ExtArgs>
+    updatedAt?: boolean
+    TokenPrice?: boolean | Token$TokenPriceArgs<ExtArgs>
+    TokenDailyStats?: boolean | Token$TokenDailyStatsArgs<ExtArgs>
     _count?: boolean | TokenCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["token"]>
 
   export type TokenSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
     address?: boolean
     symbol?: boolean
     name?: boolean
     decimals?: boolean
     logoUri?: boolean
-    coingeckoId?: boolean
-    tags?: boolean
-    totalSupply?: boolean
-    circulatingSupply?: boolean
     website?: boolean
     twitter?: boolean
     description?: boolean
+    coingeckoId?: boolean
+    totalSupply?: boolean
+    status?: boolean
+    discoveredAt?: boolean
+    lastEnrichmentAt?: boolean
+    lastActivityAt?: boolean
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["token"]>
 
   export type TokenSelectScalar = {
-    id?: boolean
     address?: boolean
     symbol?: boolean
     name?: boolean
     decimals?: boolean
     logoUri?: boolean
-    coingeckoId?: boolean
-    tags?: boolean
-    totalSupply?: boolean
-    circulatingSupply?: boolean
     website?: boolean
     twitter?: boolean
     description?: boolean
+    coingeckoId?: boolean
+    totalSupply?: boolean
+    status?: boolean
+    discoveredAt?: boolean
+    lastEnrichmentAt?: boolean
+    lastActivityAt?: boolean
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type TokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    poolsAsToken0?: boolean | Token$poolsAsToken0Args<ExtArgs>
-    poolsAsToken1?: boolean | Token$poolsAsToken1Args<ExtArgs>
-    Statistic?: boolean | Token$StatisticArgs<ExtArgs>
+    TokenPrice?: boolean | Token$TokenPriceArgs<ExtArgs>
+    TokenDailyStats?: boolean | Token$TokenDailyStatsArgs<ExtArgs>
     _count?: boolean | TokenCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TokenIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4736,25 +1456,29 @@ export namespace Prisma {
   export type $TokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Token"
     objects: {
-      poolsAsToken0: Prisma.$PoolPayload<ExtArgs>[]
-      poolsAsToken1: Prisma.$PoolPayload<ExtArgs>[]
-      Statistic: Prisma.$TokenStatisticPayload<ExtArgs>[]
+      TokenPrice: Prisma.$TokenPricePayload<ExtArgs>[]
+      TokenDailyStats: Prisma.$TokenDailyStatsPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: string
       address: string
       symbol: string
       name: string
       decimals: number
       logoUri: string | null
-      coingeckoId: string | null
-      tags: string[]
-      totalSupply: string | null
-      circulatingSupply: string | null
       website: string | null
       twitter: string | null
       description: string | null
+      coingeckoId: string | null
+      totalSupply: bigint
+      status: $Enums.TokenState
+      discoveredAt: Date
+      lastEnrichmentAt: Date | null
+      lastActivityAt: Date | null
+      isStableCoin: boolean
+      isVerifiedManually: boolean
+      metadata: Prisma.JsonValue | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["token"]>
     composites: {}
   }
@@ -4838,8 +1562,8 @@ export namespace Prisma {
      * // Get first 10 Tokens
      * const tokens = await prisma.token.findMany({ take: 10 })
      * 
-     * // Only select the `id`
-     * const tokenWithIdOnly = await prisma.token.findMany({ select: { id: true } })
+     * // Only select the `address`
+     * const tokenWithAddressOnly = await prisma.token.findMany({ select: { address: true } })
      * 
      */
     findMany<T extends TokenFindManyArgs>(args?: SelectSubset<T, TokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenPayload<ExtArgs>, T, "findMany">>
@@ -4883,9 +1607,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Create many Tokens and only return the `id`
-     * const tokenWithIdOnly = await prisma.token.createManyAndReturn({ 
-     *   select: { id: true },
+     * // Create many Tokens and only return the `address`
+     * const tokenWithAddressOnly = await prisma.token.createManyAndReturn({ 
+     *   select: { address: true },
      *   data: [
      *     // ... provide data here
      *   ]
@@ -5119,9 +1843,8 @@ export namespace Prisma {
    */
   export interface Prisma__TokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    poolsAsToken0<T extends Token$poolsAsToken0Args<ExtArgs> = {}>(args?: Subset<T, Token$poolsAsToken0Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findMany"> | Null>
-    poolsAsToken1<T extends Token$poolsAsToken1Args<ExtArgs> = {}>(args?: Subset<T, Token$poolsAsToken1Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findMany"> | Null>
-    Statistic<T extends Token$StatisticArgs<ExtArgs> = {}>(args?: Subset<T, Token$StatisticArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "findMany"> | Null>
+    TokenPrice<T extends Token$TokenPriceArgs<ExtArgs> = {}>(args?: Subset<T, Token$TokenPriceArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "findMany"> | Null>
+    TokenDailyStats<T extends Token$TokenDailyStatsArgs<ExtArgs> = {}>(args?: Subset<T, Token$TokenDailyStatsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5151,20 +1874,25 @@ export namespace Prisma {
    * Fields of the Token model
    */ 
   interface TokenFieldRefs {
-    readonly id: FieldRef<"Token", 'String'>
     readonly address: FieldRef<"Token", 'String'>
     readonly symbol: FieldRef<"Token", 'String'>
     readonly name: FieldRef<"Token", 'String'>
     readonly decimals: FieldRef<"Token", 'Int'>
     readonly logoUri: FieldRef<"Token", 'String'>
-    readonly coingeckoId: FieldRef<"Token", 'String'>
-    readonly tags: FieldRef<"Token", 'String[]'>
-    readonly totalSupply: FieldRef<"Token", 'String'>
-    readonly circulatingSupply: FieldRef<"Token", 'String'>
     readonly website: FieldRef<"Token", 'String'>
     readonly twitter: FieldRef<"Token", 'String'>
     readonly description: FieldRef<"Token", 'String'>
+    readonly coingeckoId: FieldRef<"Token", 'String'>
+    readonly totalSupply: FieldRef<"Token", 'BigInt'>
+    readonly status: FieldRef<"Token", 'TokenState'>
+    readonly discoveredAt: FieldRef<"Token", 'DateTime'>
+    readonly lastEnrichmentAt: FieldRef<"Token", 'DateTime'>
+    readonly lastActivityAt: FieldRef<"Token", 'DateTime'>
+    readonly isStableCoin: FieldRef<"Token", 'Boolean'>
+    readonly isVerifiedManually: FieldRef<"Token", 'Boolean'>
+    readonly metadata: FieldRef<"Token", 'Json'>
     readonly createdAt: FieldRef<"Token", 'DateTime'>
+    readonly updatedAt: FieldRef<"Token", 'DateTime'>
   }
     
 
@@ -5422,6 +2150,7 @@ export namespace Prisma {
      * Filter which Tokens to update
      */
     where?: TokenWhereInput
+    limit?: number
   }
 
   /**
@@ -5476,66 +2205,47 @@ export namespace Prisma {
      * Filter which Tokens to delete
      */
     where?: TokenWhereInput
+    limit?: number
   }
 
   /**
-   * Token.poolsAsToken0
+   * Token.TokenPrice
    */
-  export type Token$poolsAsToken0Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Token$TokenPriceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Pool
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: PoolSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolInclude<ExtArgs> | null
-    where?: PoolWhereInput
-    orderBy?: PoolOrderByWithRelationInput | PoolOrderByWithRelationInput[]
-    cursor?: PoolWhereUniqueInput
+    include?: TokenPriceInclude<ExtArgs> | null
+    where?: TokenPriceWhereInput
+    orderBy?: TokenPriceOrderByWithRelationInput | TokenPriceOrderByWithRelationInput[]
+    cursor?: TokenPriceWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: PoolScalarFieldEnum | PoolScalarFieldEnum[]
+    distinct?: TokenPriceScalarFieldEnum | TokenPriceScalarFieldEnum[]
   }
 
   /**
-   * Token.poolsAsToken1
+   * Token.TokenDailyStats
    */
-  export type Token$poolsAsToken1Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Token$TokenDailyStatsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Pool
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolInclude<ExtArgs> | null
-    where?: PoolWhereInput
-    orderBy?: PoolOrderByWithRelationInput | PoolOrderByWithRelationInput[]
-    cursor?: PoolWhereUniqueInput
+    include?: TokenDailyStatsInclude<ExtArgs> | null
+    where?: TokenDailyStatsWhereInput
+    orderBy?: TokenDailyStatsOrderByWithRelationInput | TokenDailyStatsOrderByWithRelationInput[]
+    cursor?: TokenDailyStatsWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: PoolScalarFieldEnum | PoolScalarFieldEnum[]
-  }
-
-  /**
-   * Token.Statistic
-   */
-  export type Token$StatisticArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TokenStatistic
-     */
-    select?: TokenStatisticSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TokenStatisticInclude<ExtArgs> | null
-    where?: TokenStatisticWhereInput
-    orderBy?: TokenStatisticOrderByWithRelationInput | TokenStatisticOrderByWithRelationInput[]
-    cursor?: TokenStatisticWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TokenStatisticScalarFieldEnum | TokenStatisticScalarFieldEnum[]
+    distinct?: TokenDailyStatsScalarFieldEnum | TokenDailyStatsScalarFieldEnum[]
   }
 
   /**
@@ -5554,436 +2264,416 @@ export namespace Prisma {
 
 
   /**
-   * Model TokenStatistic
+   * Model TokenPrice
    */
 
-  export type AggregateTokenStatistic = {
-    _count: TokenStatisticCountAggregateOutputType | null
-    _avg: TokenStatisticAvgAggregateOutputType | null
-    _sum: TokenStatisticSumAggregateOutputType | null
-    _min: TokenStatisticMinAggregateOutputType | null
-    _max: TokenStatisticMaxAggregateOutputType | null
+  export type AggregateTokenPrice = {
+    _count: TokenPriceCountAggregateOutputType | null
+    _avg: TokenPriceAvgAggregateOutputType | null
+    _sum: TokenPriceSumAggregateOutputType | null
+    _min: TokenPriceMinAggregateOutputType | null
+    _max: TokenPriceMaxAggregateOutputType | null
   }
 
-  export type TokenStatisticAvgAggregateOutputType = {
+  export type TokenPriceAvgAggregateOutputType = {
     price: number | null
-    oneHourEvolution: number | null
-    oneDayEvolution: number | null
-    volume: number | null
-    fdv: number | null
-    marketCap: number | null
+    confidence: number | null
+    volumeUSD: number | null
   }
 
-  export type TokenStatisticSumAggregateOutputType = {
+  export type TokenPriceSumAggregateOutputType = {
     price: number | null
-    oneHourEvolution: number | null
-    oneDayEvolution: number | null
-    volume: number | null
-    fdv: number | null
-    marketCap: number | null
+    confidence: number | null
+    volumeUSD: number | null
   }
 
-  export type TokenStatisticMinAggregateOutputType = {
-    id: string | null
-    tokenId: string | null
+  export type TokenPriceMinAggregateOutputType = {
+    tokenAddress: string | null
+    timestamp: Date | null
     price: number | null
-    oneHourEvolution: number | null
-    oneDayEvolution: number | null
-    volume: number | null
-    fdv: number | null
-    marketCap: number | null
+    priceSource: $Enums.PriceSource | null
+    confidence: number | null
+    volumeUSD: number | null
     createdAt: Date | null
   }
 
-  export type TokenStatisticMaxAggregateOutputType = {
-    id: string | null
-    tokenId: string | null
+  export type TokenPriceMaxAggregateOutputType = {
+    tokenAddress: string | null
+    timestamp: Date | null
     price: number | null
-    oneHourEvolution: number | null
-    oneDayEvolution: number | null
-    volume: number | null
-    fdv: number | null
-    marketCap: number | null
+    priceSource: $Enums.PriceSource | null
+    confidence: number | null
+    volumeUSD: number | null
     createdAt: Date | null
   }
 
-  export type TokenStatisticCountAggregateOutputType = {
-    id: number
-    tokenId: number
+  export type TokenPriceCountAggregateOutputType = {
+    tokenAddress: number
+    timestamp: number
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume: number
-    fdv: number
-    marketCap: number
+    priceSource: number
+    confidence: number
+    volumeUSD: number
+    liquidityPath: number
+    poolsInvolved: number
     createdAt: number
     _all: number
   }
 
 
-  export type TokenStatisticAvgAggregateInputType = {
+  export type TokenPriceAvgAggregateInputType = {
     price?: true
-    oneHourEvolution?: true
-    oneDayEvolution?: true
-    volume?: true
-    fdv?: true
-    marketCap?: true
+    confidence?: true
+    volumeUSD?: true
   }
 
-  export type TokenStatisticSumAggregateInputType = {
+  export type TokenPriceSumAggregateInputType = {
     price?: true
-    oneHourEvolution?: true
-    oneDayEvolution?: true
-    volume?: true
-    fdv?: true
-    marketCap?: true
+    confidence?: true
+    volumeUSD?: true
   }
 
-  export type TokenStatisticMinAggregateInputType = {
-    id?: true
-    tokenId?: true
+  export type TokenPriceMinAggregateInputType = {
+    tokenAddress?: true
+    timestamp?: true
     price?: true
-    oneHourEvolution?: true
-    oneDayEvolution?: true
-    volume?: true
-    fdv?: true
-    marketCap?: true
+    priceSource?: true
+    confidence?: true
+    volumeUSD?: true
     createdAt?: true
   }
 
-  export type TokenStatisticMaxAggregateInputType = {
-    id?: true
-    tokenId?: true
+  export type TokenPriceMaxAggregateInputType = {
+    tokenAddress?: true
+    timestamp?: true
     price?: true
-    oneHourEvolution?: true
-    oneDayEvolution?: true
-    volume?: true
-    fdv?: true
-    marketCap?: true
+    priceSource?: true
+    confidence?: true
+    volumeUSD?: true
     createdAt?: true
   }
 
-  export type TokenStatisticCountAggregateInputType = {
-    id?: true
-    tokenId?: true
+  export type TokenPriceCountAggregateInputType = {
+    tokenAddress?: true
+    timestamp?: true
     price?: true
-    oneHourEvolution?: true
-    oneDayEvolution?: true
-    volume?: true
-    fdv?: true
-    marketCap?: true
+    priceSource?: true
+    confidence?: true
+    volumeUSD?: true
+    liquidityPath?: true
+    poolsInvolved?: true
     createdAt?: true
     _all?: true
   }
 
-  export type TokenStatisticAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which TokenStatistic to aggregate.
+     * Filter which TokenPrice to aggregate.
      */
-    where?: TokenStatisticWhereInput
+    where?: TokenPriceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TokenStatistics to fetch.
+     * Determine the order of TokenPrices to fetch.
      */
-    orderBy?: TokenStatisticOrderByWithRelationInput | TokenStatisticOrderByWithRelationInput[]
+    orderBy?: TokenPriceOrderByWithRelationInput | TokenPriceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: TokenStatisticWhereUniqueInput
+    cursor?: TokenPriceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TokenStatistics from the position of the cursor.
+     * Take `±n` TokenPrices from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TokenStatistics.
+     * Skip the first `n` TokenPrices.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned TokenStatistics
+     * Count returned TokenPrices
     **/
-    _count?: true | TokenStatisticCountAggregateInputType
+    _count?: true | TokenPriceCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: TokenStatisticAvgAggregateInputType
+    _avg?: TokenPriceAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: TokenStatisticSumAggregateInputType
+    _sum?: TokenPriceSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: TokenStatisticMinAggregateInputType
+    _min?: TokenPriceMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: TokenStatisticMaxAggregateInputType
+    _max?: TokenPriceMaxAggregateInputType
   }
 
-  export type GetTokenStatisticAggregateType<T extends TokenStatisticAggregateArgs> = {
-        [P in keyof T & keyof AggregateTokenStatistic]: P extends '_count' | 'count'
+  export type GetTokenPriceAggregateType<T extends TokenPriceAggregateArgs> = {
+        [P in keyof T & keyof AggregateTokenPrice]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateTokenStatistic[P]>
-      : GetScalarType<T[P], AggregateTokenStatistic[P]>
+        : GetScalarType<T[P], AggregateTokenPrice[P]>
+      : GetScalarType<T[P], AggregateTokenPrice[P]>
   }
 
 
 
 
-  export type TokenStatisticGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TokenStatisticWhereInput
-    orderBy?: TokenStatisticOrderByWithAggregationInput | TokenStatisticOrderByWithAggregationInput[]
-    by: TokenStatisticScalarFieldEnum[] | TokenStatisticScalarFieldEnum
-    having?: TokenStatisticScalarWhereWithAggregatesInput
+  export type TokenPriceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TokenPriceWhereInput
+    orderBy?: TokenPriceOrderByWithAggregationInput | TokenPriceOrderByWithAggregationInput[]
+    by: TokenPriceScalarFieldEnum[] | TokenPriceScalarFieldEnum
+    having?: TokenPriceScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: TokenStatisticCountAggregateInputType | true
-    _avg?: TokenStatisticAvgAggregateInputType
-    _sum?: TokenStatisticSumAggregateInputType
-    _min?: TokenStatisticMinAggregateInputType
-    _max?: TokenStatisticMaxAggregateInputType
+    _count?: TokenPriceCountAggregateInputType | true
+    _avg?: TokenPriceAvgAggregateInputType
+    _sum?: TokenPriceSumAggregateInputType
+    _min?: TokenPriceMinAggregateInputType
+    _max?: TokenPriceMaxAggregateInputType
   }
 
-  export type TokenStatisticGroupByOutputType = {
-    id: string
-    tokenId: string
+  export type TokenPriceGroupByOutputType = {
+    tokenAddress: string
+    timestamp: Date
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume: number
-    fdv: number | null
-    marketCap: number | null
+    priceSource: $Enums.PriceSource
+    confidence: number
+    volumeUSD: number
+    liquidityPath: JsonValue | null
+    poolsInvolved: string[]
     createdAt: Date
-    _count: TokenStatisticCountAggregateOutputType | null
-    _avg: TokenStatisticAvgAggregateOutputType | null
-    _sum: TokenStatisticSumAggregateOutputType | null
-    _min: TokenStatisticMinAggregateOutputType | null
-    _max: TokenStatisticMaxAggregateOutputType | null
+    _count: TokenPriceCountAggregateOutputType | null
+    _avg: TokenPriceAvgAggregateOutputType | null
+    _sum: TokenPriceSumAggregateOutputType | null
+    _min: TokenPriceMinAggregateOutputType | null
+    _max: TokenPriceMaxAggregateOutputType | null
   }
 
-  type GetTokenStatisticGroupByPayload<T extends TokenStatisticGroupByArgs> = Prisma.PrismaPromise<
+  type GetTokenPriceGroupByPayload<T extends TokenPriceGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<TokenStatisticGroupByOutputType, T['by']> &
+      PickEnumerable<TokenPriceGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof TokenStatisticGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof TokenPriceGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], TokenStatisticGroupByOutputType[P]>
-            : GetScalarType<T[P], TokenStatisticGroupByOutputType[P]>
+              : GetScalarType<T[P], TokenPriceGroupByOutputType[P]>
+            : GetScalarType<T[P], TokenPriceGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type TokenStatisticSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    tokenId?: boolean
+  export type TokenPriceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    tokenAddress?: boolean
+    timestamp?: boolean
     price?: boolean
-    oneHourEvolution?: boolean
-    oneDayEvolution?: boolean
-    volume?: boolean
-    fdv?: boolean
-    marketCap?: boolean
+    priceSource?: boolean
+    confidence?: boolean
+    volumeUSD?: boolean
+    liquidityPath?: boolean
+    poolsInvolved?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["tokenStatistic"]>
+  }, ExtArgs["result"]["tokenPrice"]>
 
-  export type TokenStatisticSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    tokenId?: boolean
+  export type TokenPriceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    tokenAddress?: boolean
+    timestamp?: boolean
     price?: boolean
-    oneHourEvolution?: boolean
-    oneDayEvolution?: boolean
-    volume?: boolean
-    fdv?: boolean
-    marketCap?: boolean
+    priceSource?: boolean
+    confidence?: boolean
+    volumeUSD?: boolean
+    liquidityPath?: boolean
+    poolsInvolved?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["tokenStatistic"]>
+  }, ExtArgs["result"]["tokenPrice"]>
 
-  export type TokenStatisticSelectScalar = {
-    id?: boolean
-    tokenId?: boolean
+  export type TokenPriceSelectScalar = {
+    tokenAddress?: boolean
+    timestamp?: boolean
     price?: boolean
-    oneHourEvolution?: boolean
-    oneDayEvolution?: boolean
-    volume?: boolean
-    fdv?: boolean
-    marketCap?: boolean
+    priceSource?: boolean
+    confidence?: boolean
+    volumeUSD?: boolean
+    liquidityPath?: boolean
+    poolsInvolved?: boolean
     createdAt?: boolean
   }
 
-  export type TokenStatisticInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }
-  export type TokenStatisticIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }
 
-  export type $TokenStatisticPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "TokenStatistic"
+  export type $TokenPricePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TokenPrice"
     objects: {
       token: Prisma.$TokenPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: string
-      tokenId: string
+      tokenAddress: string
+      timestamp: Date
       price: number
-      oneHourEvolution: number
-      oneDayEvolution: number
-      volume: number
-      fdv: number | null
-      marketCap: number | null
+      priceSource: $Enums.PriceSource
+      confidence: number
+      volumeUSD: number
+      liquidityPath: Prisma.JsonValue | null
+      poolsInvolved: string[]
       createdAt: Date
-    }, ExtArgs["result"]["tokenStatistic"]>
+    }, ExtArgs["result"]["tokenPrice"]>
     composites: {}
   }
 
-  type TokenStatisticGetPayload<S extends boolean | null | undefined | TokenStatisticDefaultArgs> = $Result.GetResult<Prisma.$TokenStatisticPayload, S>
+  type TokenPriceGetPayload<S extends boolean | null | undefined | TokenPriceDefaultArgs> = $Result.GetResult<Prisma.$TokenPricePayload, S>
 
-  type TokenStatisticCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<TokenStatisticFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: TokenStatisticCountAggregateInputType | true
+  type TokenPriceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<TokenPriceFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: TokenPriceCountAggregateInputType | true
     }
 
-  export interface TokenStatisticDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TokenStatistic'], meta: { name: 'TokenStatistic' } }
+  export interface TokenPriceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TokenPrice'], meta: { name: 'TokenPrice' } }
     /**
-     * Find zero or one TokenStatistic that matches the filter.
-     * @param {TokenStatisticFindUniqueArgs} args - Arguments to find a TokenStatistic
+     * Find zero or one TokenPrice that matches the filter.
+     * @param {TokenPriceFindUniqueArgs} args - Arguments to find a TokenPrice
      * @example
-     * // Get one TokenStatistic
-     * const tokenStatistic = await prisma.tokenStatistic.findUnique({
+     * // Get one TokenPrice
+     * const tokenPrice = await prisma.tokenPrice.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends TokenStatisticFindUniqueArgs>(args: SelectSubset<T, TokenStatisticFindUniqueArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+    findUnique<T extends TokenPriceFindUniqueArgs>(args: SelectSubset<T, TokenPriceFindUniqueArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
 
     /**
-     * Find one TokenStatistic that matches the filter or throw an error with `error.code='P2025'` 
+     * Find one TokenPrice that matches the filter or throw an error with `error.code='P2025'` 
      * if no matches were found.
-     * @param {TokenStatisticFindUniqueOrThrowArgs} args - Arguments to find a TokenStatistic
+     * @param {TokenPriceFindUniqueOrThrowArgs} args - Arguments to find a TokenPrice
      * @example
-     * // Get one TokenStatistic
-     * const tokenStatistic = await prisma.tokenStatistic.findUniqueOrThrow({
+     * // Get one TokenPrice
+     * const tokenPrice = await prisma.tokenPrice.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends TokenStatisticFindUniqueOrThrowArgs>(args: SelectSubset<T, TokenStatisticFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+    findUniqueOrThrow<T extends TokenPriceFindUniqueOrThrowArgs>(args: SelectSubset<T, TokenPriceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
 
     /**
-     * Find the first TokenStatistic that matches the filter.
+     * Find the first TokenPrice that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticFindFirstArgs} args - Arguments to find a TokenStatistic
+     * @param {TokenPriceFindFirstArgs} args - Arguments to find a TokenPrice
      * @example
-     * // Get one TokenStatistic
-     * const tokenStatistic = await prisma.tokenStatistic.findFirst({
+     * // Get one TokenPrice
+     * const tokenPrice = await prisma.tokenPrice.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends TokenStatisticFindFirstArgs>(args?: SelectSubset<T, TokenStatisticFindFirstArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+    findFirst<T extends TokenPriceFindFirstArgs>(args?: SelectSubset<T, TokenPriceFindFirstArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
 
     /**
-     * Find the first TokenStatistic that matches the filter or
+     * Find the first TokenPrice that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticFindFirstOrThrowArgs} args - Arguments to find a TokenStatistic
+     * @param {TokenPriceFindFirstOrThrowArgs} args - Arguments to find a TokenPrice
      * @example
-     * // Get one TokenStatistic
-     * const tokenStatistic = await prisma.tokenStatistic.findFirstOrThrow({
+     * // Get one TokenPrice
+     * const tokenPrice = await prisma.tokenPrice.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends TokenStatisticFindFirstOrThrowArgs>(args?: SelectSubset<T, TokenStatisticFindFirstOrThrowArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+    findFirstOrThrow<T extends TokenPriceFindFirstOrThrowArgs>(args?: SelectSubset<T, TokenPriceFindFirstOrThrowArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
 
     /**
-     * Find zero or more TokenStatistics that matches the filter.
+     * Find zero or more TokenPrices that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {TokenPriceFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all TokenStatistics
-     * const tokenStatistics = await prisma.tokenStatistic.findMany()
+     * // Get all TokenPrices
+     * const tokenPrices = await prisma.tokenPrice.findMany()
      * 
-     * // Get first 10 TokenStatistics
-     * const tokenStatistics = await prisma.tokenStatistic.findMany({ take: 10 })
+     * // Get first 10 TokenPrices
+     * const tokenPrices = await prisma.tokenPrice.findMany({ take: 10 })
      * 
-     * // Only select the `id`
-     * const tokenStatisticWithIdOnly = await prisma.tokenStatistic.findMany({ select: { id: true } })
+     * // Only select the `tokenAddress`
+     * const tokenPriceWithTokenAddressOnly = await prisma.tokenPrice.findMany({ select: { tokenAddress: true } })
      * 
      */
-    findMany<T extends TokenStatisticFindManyArgs>(args?: SelectSubset<T, TokenStatisticFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "findMany">>
+    findMany<T extends TokenPriceFindManyArgs>(args?: SelectSubset<T, TokenPriceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "findMany">>
 
     /**
-     * Create a TokenStatistic.
-     * @param {TokenStatisticCreateArgs} args - Arguments to create a TokenStatistic.
+     * Create a TokenPrice.
+     * @param {TokenPriceCreateArgs} args - Arguments to create a TokenPrice.
      * @example
-     * // Create one TokenStatistic
-     * const TokenStatistic = await prisma.tokenStatistic.create({
+     * // Create one TokenPrice
+     * const TokenPrice = await prisma.tokenPrice.create({
      *   data: {
-     *     // ... data to create a TokenStatistic
+     *     // ... data to create a TokenPrice
      *   }
      * })
      * 
      */
-    create<T extends TokenStatisticCreateArgs>(args: SelectSubset<T, TokenStatisticCreateArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "create">, never, ExtArgs>
+    create<T extends TokenPriceCreateArgs>(args: SelectSubset<T, TokenPriceCreateArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "create">, never, ExtArgs>
 
     /**
-     * Create many TokenStatistics.
-     * @param {TokenStatisticCreateManyArgs} args - Arguments to create many TokenStatistics.
+     * Create many TokenPrices.
+     * @param {TokenPriceCreateManyArgs} args - Arguments to create many TokenPrices.
      * @example
-     * // Create many TokenStatistics
-     * const tokenStatistic = await prisma.tokenStatistic.createMany({
+     * // Create many TokenPrices
+     * const tokenPrice = await prisma.tokenPrice.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends TokenStatisticCreateManyArgs>(args?: SelectSubset<T, TokenStatisticCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends TokenPriceCreateManyArgs>(args?: SelectSubset<T, TokenPriceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many TokenStatistics and returns the data saved in the database.
-     * @param {TokenStatisticCreateManyAndReturnArgs} args - Arguments to create many TokenStatistics.
+     * Create many TokenPrices and returns the data saved in the database.
+     * @param {TokenPriceCreateManyAndReturnArgs} args - Arguments to create many TokenPrices.
      * @example
-     * // Create many TokenStatistics
-     * const tokenStatistic = await prisma.tokenStatistic.createManyAndReturn({
+     * // Create many TokenPrices
+     * const tokenPrice = await prisma.tokenPrice.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many TokenStatistics and only return the `id`
-     * const tokenStatisticWithIdOnly = await prisma.tokenStatistic.createManyAndReturn({ 
-     *   select: { id: true },
+     * // Create many TokenPrices and only return the `tokenAddress`
+     * const tokenPriceWithTokenAddressOnly = await prisma.tokenPrice.createManyAndReturn({ 
+     *   select: { tokenAddress: true },
      *   data: [
      *     // ... provide data here
      *   ]
@@ -5992,28 +2682,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends TokenStatisticCreateManyAndReturnArgs>(args?: SelectSubset<T, TokenStatisticCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "createManyAndReturn">>
+    createManyAndReturn<T extends TokenPriceCreateManyAndReturnArgs>(args?: SelectSubset<T, TokenPriceCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "createManyAndReturn">>
 
     /**
-     * Delete a TokenStatistic.
-     * @param {TokenStatisticDeleteArgs} args - Arguments to delete one TokenStatistic.
+     * Delete a TokenPrice.
+     * @param {TokenPriceDeleteArgs} args - Arguments to delete one TokenPrice.
      * @example
-     * // Delete one TokenStatistic
-     * const TokenStatistic = await prisma.tokenStatistic.delete({
+     * // Delete one TokenPrice
+     * const TokenPrice = await prisma.tokenPrice.delete({
      *   where: {
-     *     // ... filter to delete one TokenStatistic
+     *     // ... filter to delete one TokenPrice
      *   }
      * })
      * 
      */
-    delete<T extends TokenStatisticDeleteArgs>(args: SelectSubset<T, TokenStatisticDeleteArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+    delete<T extends TokenPriceDeleteArgs>(args: SelectSubset<T, TokenPriceDeleteArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "delete">, never, ExtArgs>
 
     /**
-     * Update one TokenStatistic.
-     * @param {TokenStatisticUpdateArgs} args - Arguments to update one TokenStatistic.
+     * Update one TokenPrice.
+     * @param {TokenPriceUpdateArgs} args - Arguments to update one TokenPrice.
      * @example
-     * // Update one TokenStatistic
-     * const tokenStatistic = await prisma.tokenStatistic.update({
+     * // Update one TokenPrice
+     * const tokenPrice = await prisma.tokenPrice.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -6023,30 +2713,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends TokenStatisticUpdateArgs>(args: SelectSubset<T, TokenStatisticUpdateArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "update">, never, ExtArgs>
+    update<T extends TokenPriceUpdateArgs>(args: SelectSubset<T, TokenPriceUpdateArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "update">, never, ExtArgs>
 
     /**
-     * Delete zero or more TokenStatistics.
-     * @param {TokenStatisticDeleteManyArgs} args - Arguments to filter TokenStatistics to delete.
+     * Delete zero or more TokenPrices.
+     * @param {TokenPriceDeleteManyArgs} args - Arguments to filter TokenPrices to delete.
      * @example
-     * // Delete a few TokenStatistics
-     * const { count } = await prisma.tokenStatistic.deleteMany({
+     * // Delete a few TokenPrices
+     * const { count } = await prisma.tokenPrice.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends TokenStatisticDeleteManyArgs>(args?: SelectSubset<T, TokenStatisticDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends TokenPriceDeleteManyArgs>(args?: SelectSubset<T, TokenPriceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more TokenStatistics.
+     * Update zero or more TokenPrices.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {TokenPriceUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many TokenStatistics
-     * const tokenStatistic = await prisma.tokenStatistic.updateMany({
+     * // Update many TokenPrices
+     * const tokenPrice = await prisma.tokenPrice.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -6056,56 +2746,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends TokenStatisticUpdateManyArgs>(args: SelectSubset<T, TokenStatisticUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends TokenPriceUpdateManyArgs>(args: SelectSubset<T, TokenPriceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one TokenStatistic.
-     * @param {TokenStatisticUpsertArgs} args - Arguments to update or create a TokenStatistic.
+     * Create or update one TokenPrice.
+     * @param {TokenPriceUpsertArgs} args - Arguments to update or create a TokenPrice.
      * @example
-     * // Update or create a TokenStatistic
-     * const tokenStatistic = await prisma.tokenStatistic.upsert({
+     * // Update or create a TokenPrice
+     * const tokenPrice = await prisma.tokenPrice.upsert({
      *   create: {
-     *     // ... data to create a TokenStatistic
+     *     // ... data to create a TokenPrice
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the TokenStatistic we want to update
+     *     // ... the filter for the TokenPrice we want to update
      *   }
      * })
      */
-    upsert<T extends TokenStatisticUpsertArgs>(args: SelectSubset<T, TokenStatisticUpsertArgs<ExtArgs>>): Prisma__TokenStatisticClient<$Result.GetResult<Prisma.$TokenStatisticPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+    upsert<T extends TokenPriceUpsertArgs>(args: SelectSubset<T, TokenPriceUpsertArgs<ExtArgs>>): Prisma__TokenPriceClient<$Result.GetResult<Prisma.$TokenPricePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
 
 
     /**
-     * Count the number of TokenStatistics.
+     * Count the number of TokenPrices.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticCountArgs} args - Arguments to filter TokenStatistics to count.
+     * @param {TokenPriceCountArgs} args - Arguments to filter TokenPrices to count.
      * @example
-     * // Count the number of TokenStatistics
-     * const count = await prisma.tokenStatistic.count({
+     * // Count the number of TokenPrices
+     * const count = await prisma.tokenPrice.count({
      *   where: {
-     *     // ... the filter for the TokenStatistics we want to count
+     *     // ... the filter for the TokenPrices we want to count
      *   }
      * })
     **/
-    count<T extends TokenStatisticCountArgs>(
-      args?: Subset<T, TokenStatisticCountArgs>,
+    count<T extends TokenPriceCountArgs>(
+      args?: Subset<T, TokenPriceCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], TokenStatisticCountAggregateOutputType>
+          : GetScalarType<T['select'], TokenPriceCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a TokenStatistic.
+     * Allows you to perform aggregations operations on a TokenPrice.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {TokenPriceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -6125,13 +2815,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends TokenStatisticAggregateArgs>(args: Subset<T, TokenStatisticAggregateArgs>): Prisma.PrismaPromise<GetTokenStatisticAggregateType<T>>
+    aggregate<T extends TokenPriceAggregateArgs>(args: Subset<T, TokenPriceAggregateArgs>): Prisma.PrismaPromise<GetTokenPriceAggregateType<T>>
 
     /**
-     * Group by TokenStatistic.
+     * Group by TokenPrice.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {TokenStatisticGroupByArgs} args - Group by arguments.
+     * @param {TokenPriceGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -6146,14 +2836,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends TokenStatisticGroupByArgs,
+      T extends TokenPriceGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: TokenStatisticGroupByArgs['orderBy'] }
-        : { orderBy?: TokenStatisticGroupByArgs['orderBy'] },
+        ? { orderBy: TokenPriceGroupByArgs['orderBy'] }
+        : { orderBy?: TokenPriceGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -6202,20 +2892,20 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, TokenStatisticGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTokenStatisticGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, TokenPriceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTokenPriceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the TokenStatistic model
+   * Fields of the TokenPrice model
    */
-  readonly fields: TokenStatisticFieldRefs;
+  readonly fields: TokenPriceFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for TokenStatistic.
+   * The delegate class that acts as a "Promise-like" for TokenPrice.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__TokenStatisticClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__TokenPriceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     token<T extends TokenDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TokenDefaultArgs<ExtArgs>>): Prisma__TokenClient<$Result.GetResult<Prisma.$TokenPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
@@ -6244,773 +2934,899 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the TokenStatistic model
+   * Fields of the TokenPrice model
    */ 
-  interface TokenStatisticFieldRefs {
-    readonly id: FieldRef<"TokenStatistic", 'String'>
-    readonly tokenId: FieldRef<"TokenStatistic", 'String'>
-    readonly price: FieldRef<"TokenStatistic", 'Float'>
-    readonly oneHourEvolution: FieldRef<"TokenStatistic", 'Float'>
-    readonly oneDayEvolution: FieldRef<"TokenStatistic", 'Float'>
-    readonly volume: FieldRef<"TokenStatistic", 'Float'>
-    readonly fdv: FieldRef<"TokenStatistic", 'Float'>
-    readonly marketCap: FieldRef<"TokenStatistic", 'Float'>
-    readonly createdAt: FieldRef<"TokenStatistic", 'DateTime'>
+  interface TokenPriceFieldRefs {
+    readonly tokenAddress: FieldRef<"TokenPrice", 'String'>
+    readonly timestamp: FieldRef<"TokenPrice", 'DateTime'>
+    readonly price: FieldRef<"TokenPrice", 'Float'>
+    readonly priceSource: FieldRef<"TokenPrice", 'PriceSource'>
+    readonly confidence: FieldRef<"TokenPrice", 'Float'>
+    readonly volumeUSD: FieldRef<"TokenPrice", 'Float'>
+    readonly liquidityPath: FieldRef<"TokenPrice", 'Json'>
+    readonly poolsInvolved: FieldRef<"TokenPrice", 'String[]'>
+    readonly createdAt: FieldRef<"TokenPrice", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * TokenStatistic findUnique
+   * TokenPrice findUnique
    */
-  export type TokenStatisticFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * Filter, which TokenStatistic to fetch.
+     * Filter, which TokenPrice to fetch.
      */
-    where: TokenStatisticWhereUniqueInput
+    where: TokenPriceWhereUniqueInput
   }
 
   /**
-   * TokenStatistic findUniqueOrThrow
+   * TokenPrice findUniqueOrThrow
    */
-  export type TokenStatisticFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * Filter, which TokenStatistic to fetch.
+     * Filter, which TokenPrice to fetch.
      */
-    where: TokenStatisticWhereUniqueInput
+    where: TokenPriceWhereUniqueInput
   }
 
   /**
-   * TokenStatistic findFirst
+   * TokenPrice findFirst
    */
-  export type TokenStatisticFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * Filter, which TokenStatistic to fetch.
+     * Filter, which TokenPrice to fetch.
      */
-    where?: TokenStatisticWhereInput
+    where?: TokenPriceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TokenStatistics to fetch.
+     * Determine the order of TokenPrices to fetch.
      */
-    orderBy?: TokenStatisticOrderByWithRelationInput | TokenStatisticOrderByWithRelationInput[]
+    orderBy?: TokenPriceOrderByWithRelationInput | TokenPriceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for TokenStatistics.
+     * Sets the position for searching for TokenPrices.
      */
-    cursor?: TokenStatisticWhereUniqueInput
+    cursor?: TokenPriceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TokenStatistics from the position of the cursor.
+     * Take `±n` TokenPrices from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TokenStatistics.
+     * Skip the first `n` TokenPrices.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of TokenStatistics.
+     * Filter by unique combinations of TokenPrices.
      */
-    distinct?: TokenStatisticScalarFieldEnum | TokenStatisticScalarFieldEnum[]
+    distinct?: TokenPriceScalarFieldEnum | TokenPriceScalarFieldEnum[]
   }
 
   /**
-   * TokenStatistic findFirstOrThrow
+   * TokenPrice findFirstOrThrow
    */
-  export type TokenStatisticFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * Filter, which TokenStatistic to fetch.
+     * Filter, which TokenPrice to fetch.
      */
-    where?: TokenStatisticWhereInput
+    where?: TokenPriceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TokenStatistics to fetch.
+     * Determine the order of TokenPrices to fetch.
      */
-    orderBy?: TokenStatisticOrderByWithRelationInput | TokenStatisticOrderByWithRelationInput[]
+    orderBy?: TokenPriceOrderByWithRelationInput | TokenPriceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for TokenStatistics.
+     * Sets the position for searching for TokenPrices.
      */
-    cursor?: TokenStatisticWhereUniqueInput
+    cursor?: TokenPriceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TokenStatistics from the position of the cursor.
+     * Take `±n` TokenPrices from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TokenStatistics.
+     * Skip the first `n` TokenPrices.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of TokenStatistics.
+     * Filter by unique combinations of TokenPrices.
      */
-    distinct?: TokenStatisticScalarFieldEnum | TokenStatisticScalarFieldEnum[]
+    distinct?: TokenPriceScalarFieldEnum | TokenPriceScalarFieldEnum[]
   }
 
   /**
-   * TokenStatistic findMany
+   * TokenPrice findMany
    */
-  export type TokenStatisticFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * Filter, which TokenStatistics to fetch.
+     * Filter, which TokenPrices to fetch.
      */
-    where?: TokenStatisticWhereInput
+    where?: TokenPriceWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of TokenStatistics to fetch.
+     * Determine the order of TokenPrices to fetch.
      */
-    orderBy?: TokenStatisticOrderByWithRelationInput | TokenStatisticOrderByWithRelationInput[]
+    orderBy?: TokenPriceOrderByWithRelationInput | TokenPriceOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing TokenStatistics.
+     * Sets the position for listing TokenPrices.
      */
-    cursor?: TokenStatisticWhereUniqueInput
+    cursor?: TokenPriceWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` TokenStatistics from the position of the cursor.
+     * Take `±n` TokenPrices from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` TokenStatistics.
+     * Skip the first `n` TokenPrices.
      */
     skip?: number
-    distinct?: TokenStatisticScalarFieldEnum | TokenStatisticScalarFieldEnum[]
+    distinct?: TokenPriceScalarFieldEnum | TokenPriceScalarFieldEnum[]
   }
 
   /**
-   * TokenStatistic create
+   * TokenPrice create
    */
-  export type TokenStatisticCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * The data needed to create a TokenStatistic.
+     * The data needed to create a TokenPrice.
      */
-    data: XOR<TokenStatisticCreateInput, TokenStatisticUncheckedCreateInput>
+    data: XOR<TokenPriceCreateInput, TokenPriceUncheckedCreateInput>
   }
 
   /**
-   * TokenStatistic createMany
+   * TokenPrice createMany
    */
-  export type TokenStatisticCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many TokenStatistics.
+     * The data used to create many TokenPrices.
      */
-    data: TokenStatisticCreateManyInput | TokenStatisticCreateManyInput[]
+    data: TokenPriceCreateManyInput | TokenPriceCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * TokenStatistic createManyAndReturn
+   * TokenPrice createManyAndReturn
    */
-  export type TokenStatisticCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelectCreateManyAndReturn<ExtArgs> | null
+    select?: TokenPriceSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * The data used to create many TokenStatistics.
+     * The data used to create many TokenPrices.
      */
-    data: TokenStatisticCreateManyInput | TokenStatisticCreateManyInput[]
+    data: TokenPriceCreateManyInput | TokenPriceCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: TokenPriceIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * TokenStatistic update
+   * TokenPrice update
    */
-  export type TokenStatisticUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * The data needed to update a TokenStatistic.
+     * The data needed to update a TokenPrice.
      */
-    data: XOR<TokenStatisticUpdateInput, TokenStatisticUncheckedUpdateInput>
+    data: XOR<TokenPriceUpdateInput, TokenPriceUncheckedUpdateInput>
     /**
-     * Choose, which TokenStatistic to update.
+     * Choose, which TokenPrice to update.
      */
-    where: TokenStatisticWhereUniqueInput
+    where: TokenPriceWhereUniqueInput
   }
 
   /**
-   * TokenStatistic updateMany
+   * TokenPrice updateMany
    */
-  export type TokenStatisticUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update TokenStatistics.
+     * The data used to update TokenPrices.
      */
-    data: XOR<TokenStatisticUpdateManyMutationInput, TokenStatisticUncheckedUpdateManyInput>
+    data: XOR<TokenPriceUpdateManyMutationInput, TokenPriceUncheckedUpdateManyInput>
     /**
-     * Filter which TokenStatistics to update
+     * Filter which TokenPrices to update
      */
-    where?: TokenStatisticWhereInput
+    where?: TokenPriceWhereInput
+    limit?: number
   }
 
   /**
-   * TokenStatistic upsert
+   * TokenPrice upsert
    */
-  export type TokenStatisticUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * The filter to search for the TokenStatistic to update in case it exists.
+     * The filter to search for the TokenPrice to update in case it exists.
      */
-    where: TokenStatisticWhereUniqueInput
+    where: TokenPriceWhereUniqueInput
     /**
-     * In case the TokenStatistic found by the `where` argument doesn't exist, create a new TokenStatistic with this data.
+     * In case the TokenPrice found by the `where` argument doesn't exist, create a new TokenPrice with this data.
      */
-    create: XOR<TokenStatisticCreateInput, TokenStatisticUncheckedCreateInput>
+    create: XOR<TokenPriceCreateInput, TokenPriceUncheckedCreateInput>
     /**
-     * In case the TokenStatistic was found with the provided `where` argument, update it with this data.
+     * In case the TokenPrice was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<TokenStatisticUpdateInput, TokenStatisticUncheckedUpdateInput>
+    update: XOR<TokenPriceUpdateInput, TokenPriceUncheckedUpdateInput>
   }
 
   /**
-   * TokenStatistic delete
+   * TokenPrice delete
    */
-  export type TokenStatisticDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
     /**
-     * Filter which TokenStatistic to delete.
+     * Filter which TokenPrice to delete.
      */
-    where: TokenStatisticWhereUniqueInput
+    where: TokenPriceWhereUniqueInput
   }
 
   /**
-   * TokenStatistic deleteMany
+   * TokenPrice deleteMany
    */
-  export type TokenStatisticDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which TokenStatistics to delete
+     * Filter which TokenPrices to delete
      */
-    where?: TokenStatisticWhereInput
+    where?: TokenPriceWhereInput
+    limit?: number
   }
 
   /**
-   * TokenStatistic without action
+   * TokenPrice without action
    */
-  export type TokenStatisticDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenPriceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TokenStatistic
+     * Select specific fields to fetch from the TokenPrice
      */
-    select?: TokenStatisticSelect<ExtArgs> | null
+    select?: TokenPriceSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TokenStatisticInclude<ExtArgs> | null
+    include?: TokenPriceInclude<ExtArgs> | null
   }
 
 
   /**
-   * Model PoolStatistic
+   * Model TokenDailyStats
    */
 
-  export type AggregatePoolStatistic = {
-    _count: PoolStatisticCountAggregateOutputType | null
-    _avg: PoolStatisticAvgAggregateOutputType | null
-    _sum: PoolStatisticSumAggregateOutputType | null
-    _min: PoolStatisticMinAggregateOutputType | null
-    _max: PoolStatisticMaxAggregateOutputType | null
+  export type AggregateTokenDailyStats = {
+    _count: TokenDailyStatsCountAggregateOutputType | null
+    _avg: TokenDailyStatsAvgAggregateOutputType | null
+    _sum: TokenDailyStatsSumAggregateOutputType | null
+    _min: TokenDailyStatsMinAggregateOutputType | null
+    _max: TokenDailyStatsMaxAggregateOutputType | null
   }
 
-  export type PoolStatisticAvgAggregateOutputType = {
-    apr: number | null
-    tvlUSD: number | null
-    impermanentLoss: number | null
-    healthScore: number | null
+  export type TokenDailyStatsAvgAggregateOutputType = {
+    price: number | null
+    priceChange1h: number | null
+    priceChange24h: number | null
+    volume24h: number | null
+    volumeUSD24h: number | null
+    tvlInPools: number | null
+    marketCap: number | null
+    fdv: number | null
+    rankByTvl: number | null
+    rankByVolume: number | null
+    rankByMarketCap: number | null
+    swapCount24h: number | null
+    uniqueTraders24h: number | null
   }
 
-  export type PoolStatisticSumAggregateOutputType = {
-    apr: number | null
-    tvlUSD: number | null
-    impermanentLoss: number | null
-    healthScore: number | null
+  export type TokenDailyStatsSumAggregateOutputType = {
+    price: number | null
+    priceChange1h: number | null
+    priceChange24h: number | null
+    volume24h: number | null
+    volumeUSD24h: number | null
+    tvlInPools: number | null
+    marketCap: number | null
+    fdv: number | null
+    rankByTvl: number | null
+    rankByVolume: number | null
+    rankByMarketCap: number | null
+    swapCount24h: number | null
+    uniqueTraders24h: number | null
   }
 
-  export type PoolStatisticMinAggregateOutputType = {
-    id: string | null
-    poolId: string | null
-    apr: number | null
-    tvlUSD: number | null
-    volOneDay: string | null
-    volOneMonth: string | null
-    impermanentLoss: number | null
-    healthScore: number | null
+  export type TokenDailyStatsMinAggregateOutputType = {
+    tokenAddress: string | null
+    date: string | null
+    price: number | null
+    priceChange1h: number | null
+    priceChange24h: number | null
+    volume24h: number | null
+    volumeUSD24h: number | null
+    tvlInPools: number | null
+    marketCap: number | null
+    fdv: number | null
+    rankByTvl: number | null
+    rankByVolume: number | null
+    rankByMarketCap: number | null
+    swapCount24h: number | null
+    uniqueTraders24h: number | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
-  export type PoolStatisticMaxAggregateOutputType = {
-    id: string | null
-    poolId: string | null
-    apr: number | null
-    tvlUSD: number | null
-    volOneDay: string | null
-    volOneMonth: string | null
-    impermanentLoss: number | null
-    healthScore: number | null
+  export type TokenDailyStatsMaxAggregateOutputType = {
+    tokenAddress: string | null
+    date: string | null
+    price: number | null
+    priceChange1h: number | null
+    priceChange24h: number | null
+    volume24h: number | null
+    volumeUSD24h: number | null
+    tvlInPools: number | null
+    marketCap: number | null
+    fdv: number | null
+    rankByTvl: number | null
+    rankByVolume: number | null
+    rankByMarketCap: number | null
+    swapCount24h: number | null
+    uniqueTraders24h: number | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
-  export type PoolStatisticCountAggregateOutputType = {
-    id: number
-    poolId: number
-    apr: number
-    tvlUSD: number
-    volOneDay: number
-    volOneMonth: number
-    impermanentLoss: number
-    healthScore: number
+  export type TokenDailyStatsCountAggregateOutputType = {
+    tokenAddress: number
+    date: number
+    price: number
+    priceChange1h: number
+    priceChange24h: number
+    volume24h: number
+    volumeUSD24h: number
+    tvlInPools: number
+    marketCap: number
+    fdv: number
+    rankByTvl: number
+    rankByVolume: number
+    rankByMarketCap: number
+    swapCount24h: number
+    uniqueTraders24h: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
-  export type PoolStatisticAvgAggregateInputType = {
-    apr?: true
-    tvlUSD?: true
-    impermanentLoss?: true
-    healthScore?: true
+  export type TokenDailyStatsAvgAggregateInputType = {
+    price?: true
+    priceChange1h?: true
+    priceChange24h?: true
+    volume24h?: true
+    volumeUSD24h?: true
+    tvlInPools?: true
+    marketCap?: true
+    fdv?: true
+    rankByTvl?: true
+    rankByVolume?: true
+    rankByMarketCap?: true
+    swapCount24h?: true
+    uniqueTraders24h?: true
   }
 
-  export type PoolStatisticSumAggregateInputType = {
-    apr?: true
-    tvlUSD?: true
-    impermanentLoss?: true
-    healthScore?: true
+  export type TokenDailyStatsSumAggregateInputType = {
+    price?: true
+    priceChange1h?: true
+    priceChange24h?: true
+    volume24h?: true
+    volumeUSD24h?: true
+    tvlInPools?: true
+    marketCap?: true
+    fdv?: true
+    rankByTvl?: true
+    rankByVolume?: true
+    rankByMarketCap?: true
+    swapCount24h?: true
+    uniqueTraders24h?: true
   }
 
-  export type PoolStatisticMinAggregateInputType = {
-    id?: true
-    poolId?: true
-    apr?: true
-    tvlUSD?: true
-    volOneDay?: true
-    volOneMonth?: true
-    impermanentLoss?: true
-    healthScore?: true
+  export type TokenDailyStatsMinAggregateInputType = {
+    tokenAddress?: true
+    date?: true
+    price?: true
+    priceChange1h?: true
+    priceChange24h?: true
+    volume24h?: true
+    volumeUSD24h?: true
+    tvlInPools?: true
+    marketCap?: true
+    fdv?: true
+    rankByTvl?: true
+    rankByVolume?: true
+    rankByMarketCap?: true
+    swapCount24h?: true
+    uniqueTraders24h?: true
     createdAt?: true
+    updatedAt?: true
   }
 
-  export type PoolStatisticMaxAggregateInputType = {
-    id?: true
-    poolId?: true
-    apr?: true
-    tvlUSD?: true
-    volOneDay?: true
-    volOneMonth?: true
-    impermanentLoss?: true
-    healthScore?: true
+  export type TokenDailyStatsMaxAggregateInputType = {
+    tokenAddress?: true
+    date?: true
+    price?: true
+    priceChange1h?: true
+    priceChange24h?: true
+    volume24h?: true
+    volumeUSD24h?: true
+    tvlInPools?: true
+    marketCap?: true
+    fdv?: true
+    rankByTvl?: true
+    rankByVolume?: true
+    rankByMarketCap?: true
+    swapCount24h?: true
+    uniqueTraders24h?: true
     createdAt?: true
+    updatedAt?: true
   }
 
-  export type PoolStatisticCountAggregateInputType = {
-    id?: true
-    poolId?: true
-    apr?: true
-    tvlUSD?: true
-    volOneDay?: true
-    volOneMonth?: true
-    impermanentLoss?: true
-    healthScore?: true
+  export type TokenDailyStatsCountAggregateInputType = {
+    tokenAddress?: true
+    date?: true
+    price?: true
+    priceChange1h?: true
+    priceChange24h?: true
+    volume24h?: true
+    volumeUSD24h?: true
+    tvlInPools?: true
+    marketCap?: true
+    fdv?: true
+    rankByTvl?: true
+    rankByVolume?: true
+    rankByMarketCap?: true
+    swapCount24h?: true
+    uniqueTraders24h?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
-  export type PoolStatisticAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which PoolStatistic to aggregate.
+     * Filter which TokenDailyStats to aggregate.
      */
-    where?: PoolStatisticWhereInput
+    where?: TokenDailyStatsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PoolStatistics to fetch.
+     * Determine the order of TokenDailyStats to fetch.
      */
-    orderBy?: PoolStatisticOrderByWithRelationInput | PoolStatisticOrderByWithRelationInput[]
+    orderBy?: TokenDailyStatsOrderByWithRelationInput | TokenDailyStatsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: PoolStatisticWhereUniqueInput
+    cursor?: TokenDailyStatsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PoolStatistics from the position of the cursor.
+     * Take `±n` TokenDailyStats from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PoolStatistics.
+     * Skip the first `n` TokenDailyStats.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned PoolStatistics
+     * Count returned TokenDailyStats
     **/
-    _count?: true | PoolStatisticCountAggregateInputType
+    _count?: true | TokenDailyStatsCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: PoolStatisticAvgAggregateInputType
+    _avg?: TokenDailyStatsAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: PoolStatisticSumAggregateInputType
+    _sum?: TokenDailyStatsSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: PoolStatisticMinAggregateInputType
+    _min?: TokenDailyStatsMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: PoolStatisticMaxAggregateInputType
+    _max?: TokenDailyStatsMaxAggregateInputType
   }
 
-  export type GetPoolStatisticAggregateType<T extends PoolStatisticAggregateArgs> = {
-        [P in keyof T & keyof AggregatePoolStatistic]: P extends '_count' | 'count'
+  export type GetTokenDailyStatsAggregateType<T extends TokenDailyStatsAggregateArgs> = {
+        [P in keyof T & keyof AggregateTokenDailyStats]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregatePoolStatistic[P]>
-      : GetScalarType<T[P], AggregatePoolStatistic[P]>
+        : GetScalarType<T[P], AggregateTokenDailyStats[P]>
+      : GetScalarType<T[P], AggregateTokenDailyStats[P]>
   }
 
 
 
 
-  export type PoolStatisticGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PoolStatisticWhereInput
-    orderBy?: PoolStatisticOrderByWithAggregationInput | PoolStatisticOrderByWithAggregationInput[]
-    by: PoolStatisticScalarFieldEnum[] | PoolStatisticScalarFieldEnum
-    having?: PoolStatisticScalarWhereWithAggregatesInput
+  export type TokenDailyStatsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TokenDailyStatsWhereInput
+    orderBy?: TokenDailyStatsOrderByWithAggregationInput | TokenDailyStatsOrderByWithAggregationInput[]
+    by: TokenDailyStatsScalarFieldEnum[] | TokenDailyStatsScalarFieldEnum
+    having?: TokenDailyStatsScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: PoolStatisticCountAggregateInputType | true
-    _avg?: PoolStatisticAvgAggregateInputType
-    _sum?: PoolStatisticSumAggregateInputType
-    _min?: PoolStatisticMinAggregateInputType
-    _max?: PoolStatisticMaxAggregateInputType
+    _count?: TokenDailyStatsCountAggregateInputType | true
+    _avg?: TokenDailyStatsAvgAggregateInputType
+    _sum?: TokenDailyStatsSumAggregateInputType
+    _min?: TokenDailyStatsMinAggregateInputType
+    _max?: TokenDailyStatsMaxAggregateInputType
   }
 
-  export type PoolStatisticGroupByOutputType = {
-    id: string
-    poolId: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
+  export type TokenDailyStatsGroupByOutputType = {
+    tokenAddress: string
+    date: string
+    price: number
+    priceChange1h: number | null
+    priceChange24h: number | null
+    volume24h: number
+    volumeUSD24h: number
+    tvlInPools: number
+    marketCap: number | null
+    fdv: number | null
+    rankByTvl: number | null
+    rankByVolume: number | null
+    rankByMarketCap: number | null
+    swapCount24h: number
+    uniqueTraders24h: number
     createdAt: Date
-    _count: PoolStatisticCountAggregateOutputType | null
-    _avg: PoolStatisticAvgAggregateOutputType | null
-    _sum: PoolStatisticSumAggregateOutputType | null
-    _min: PoolStatisticMinAggregateOutputType | null
-    _max: PoolStatisticMaxAggregateOutputType | null
+    updatedAt: Date
+    _count: TokenDailyStatsCountAggregateOutputType | null
+    _avg: TokenDailyStatsAvgAggregateOutputType | null
+    _sum: TokenDailyStatsSumAggregateOutputType | null
+    _min: TokenDailyStatsMinAggregateOutputType | null
+    _max: TokenDailyStatsMaxAggregateOutputType | null
   }
 
-  type GetPoolStatisticGroupByPayload<T extends PoolStatisticGroupByArgs> = Prisma.PrismaPromise<
+  type GetTokenDailyStatsGroupByPayload<T extends TokenDailyStatsGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<PoolStatisticGroupByOutputType, T['by']> &
+      PickEnumerable<TokenDailyStatsGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof PoolStatisticGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof TokenDailyStatsGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], PoolStatisticGroupByOutputType[P]>
-            : GetScalarType<T[P], PoolStatisticGroupByOutputType[P]>
+              : GetScalarType<T[P], TokenDailyStatsGroupByOutputType[P]>
+            : GetScalarType<T[P], TokenDailyStatsGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type PoolStatisticSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    poolId?: boolean
-    apr?: boolean
-    tvlUSD?: boolean
-    volOneDay?: boolean
-    volOneMonth?: boolean
-    impermanentLoss?: boolean
-    healthScore?: boolean
+  export type TokenDailyStatsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    tokenAddress?: boolean
+    date?: boolean
+    price?: boolean
+    priceChange1h?: boolean
+    priceChange24h?: boolean
+    volume24h?: boolean
+    volumeUSD24h?: boolean
+    tvlInPools?: boolean
+    marketCap?: boolean
+    fdv?: boolean
+    rankByTvl?: boolean
+    rankByVolume?: boolean
+    rankByMarketCap?: boolean
+    swapCount24h?: boolean
+    uniqueTraders24h?: boolean
     createdAt?: boolean
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["poolStatistic"]>
+    updatedAt?: boolean
+    token?: boolean | TokenDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tokenDailyStats"]>
 
-  export type PoolStatisticSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    poolId?: boolean
-    apr?: boolean
-    tvlUSD?: boolean
-    volOneDay?: boolean
-    volOneMonth?: boolean
-    impermanentLoss?: boolean
-    healthScore?: boolean
+  export type TokenDailyStatsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    tokenAddress?: boolean
+    date?: boolean
+    price?: boolean
+    priceChange1h?: boolean
+    priceChange24h?: boolean
+    volume24h?: boolean
+    volumeUSD24h?: boolean
+    tvlInPools?: boolean
+    marketCap?: boolean
+    fdv?: boolean
+    rankByTvl?: boolean
+    rankByVolume?: boolean
+    rankByMarketCap?: boolean
+    swapCount24h?: boolean
+    uniqueTraders24h?: boolean
     createdAt?: boolean
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["poolStatistic"]>
+    updatedAt?: boolean
+    token?: boolean | TokenDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tokenDailyStats"]>
 
-  export type PoolStatisticSelectScalar = {
-    id?: boolean
-    poolId?: boolean
-    apr?: boolean
-    tvlUSD?: boolean
-    volOneDay?: boolean
-    volOneMonth?: boolean
-    impermanentLoss?: boolean
-    healthScore?: boolean
+  export type TokenDailyStatsSelectScalar = {
+    tokenAddress?: boolean
+    date?: boolean
+    price?: boolean
+    priceChange1h?: boolean
+    priceChange24h?: boolean
+    volume24h?: boolean
+    volumeUSD24h?: boolean
+    tvlInPools?: boolean
+    marketCap?: boolean
+    fdv?: boolean
+    rankByTvl?: boolean
+    rankByVolume?: boolean
+    rankByMarketCap?: boolean
+    swapCount24h?: boolean
+    uniqueTraders24h?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type PoolStatisticInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
+  export type TokenDailyStatsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    token?: boolean | TokenDefaultArgs<ExtArgs>
   }
-  export type PoolStatisticIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    pool?: boolean | PoolDefaultArgs<ExtArgs>
+  export type TokenDailyStatsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    token?: boolean | TokenDefaultArgs<ExtArgs>
   }
 
-  export type $PoolStatisticPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PoolStatistic"
+  export type $TokenDailyStatsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TokenDailyStats"
     objects: {
-      pool: Prisma.$PoolPayload<ExtArgs>
+      token: Prisma.$TokenPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      id: string
-      poolId: string
-      apr: number
-      tvlUSD: number
-      volOneDay: string
-      volOneMonth: string
-      impermanentLoss: number
-      healthScore: number
+      tokenAddress: string
+      date: string
+      price: number
+      priceChange1h: number | null
+      priceChange24h: number | null
+      volume24h: number
+      volumeUSD24h: number
+      tvlInPools: number
+      marketCap: number | null
+      fdv: number | null
+      rankByTvl: number | null
+      rankByVolume: number | null
+      rankByMarketCap: number | null
+      swapCount24h: number
+      uniqueTraders24h: number
       createdAt: Date
-    }, ExtArgs["result"]["poolStatistic"]>
+      updatedAt: Date
+    }, ExtArgs["result"]["tokenDailyStats"]>
     composites: {}
   }
 
-  type PoolStatisticGetPayload<S extends boolean | null | undefined | PoolStatisticDefaultArgs> = $Result.GetResult<Prisma.$PoolStatisticPayload, S>
+  type TokenDailyStatsGetPayload<S extends boolean | null | undefined | TokenDailyStatsDefaultArgs> = $Result.GetResult<Prisma.$TokenDailyStatsPayload, S>
 
-  type PoolStatisticCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<PoolStatisticFindManyArgs, 'select' | 'include' | 'distinct'> & {
-      select?: PoolStatisticCountAggregateInputType | true
+  type TokenDailyStatsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<TokenDailyStatsFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: TokenDailyStatsCountAggregateInputType | true
     }
 
-  export interface PoolStatisticDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PoolStatistic'], meta: { name: 'PoolStatistic' } }
+  export interface TokenDailyStatsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TokenDailyStats'], meta: { name: 'TokenDailyStats' } }
     /**
-     * Find zero or one PoolStatistic that matches the filter.
-     * @param {PoolStatisticFindUniqueArgs} args - Arguments to find a PoolStatistic
+     * Find zero or one TokenDailyStats that matches the filter.
+     * @param {TokenDailyStatsFindUniqueArgs} args - Arguments to find a TokenDailyStats
      * @example
-     * // Get one PoolStatistic
-     * const poolStatistic = await prisma.poolStatistic.findUnique({
+     * // Get one TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends PoolStatisticFindUniqueArgs>(args: SelectSubset<T, PoolStatisticFindUniqueArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+    findUnique<T extends TokenDailyStatsFindUniqueArgs>(args: SelectSubset<T, TokenDailyStatsFindUniqueArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
 
     /**
-     * Find one PoolStatistic that matches the filter or throw an error with `error.code='P2025'` 
+     * Find one TokenDailyStats that matches the filter or throw an error with `error.code='P2025'` 
      * if no matches were found.
-     * @param {PoolStatisticFindUniqueOrThrowArgs} args - Arguments to find a PoolStatistic
+     * @param {TokenDailyStatsFindUniqueOrThrowArgs} args - Arguments to find a TokenDailyStats
      * @example
-     * // Get one PoolStatistic
-     * const poolStatistic = await prisma.poolStatistic.findUniqueOrThrow({
+     * // Get one TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends PoolStatisticFindUniqueOrThrowArgs>(args: SelectSubset<T, PoolStatisticFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+    findUniqueOrThrow<T extends TokenDailyStatsFindUniqueOrThrowArgs>(args: SelectSubset<T, TokenDailyStatsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
 
     /**
-     * Find the first PoolStatistic that matches the filter.
+     * Find the first TokenDailyStats that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticFindFirstArgs} args - Arguments to find a PoolStatistic
+     * @param {TokenDailyStatsFindFirstArgs} args - Arguments to find a TokenDailyStats
      * @example
-     * // Get one PoolStatistic
-     * const poolStatistic = await prisma.poolStatistic.findFirst({
+     * // Get one TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends PoolStatisticFindFirstArgs>(args?: SelectSubset<T, PoolStatisticFindFirstArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+    findFirst<T extends TokenDailyStatsFindFirstArgs>(args?: SelectSubset<T, TokenDailyStatsFindFirstArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
 
     /**
-     * Find the first PoolStatistic that matches the filter or
+     * Find the first TokenDailyStats that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticFindFirstOrThrowArgs} args - Arguments to find a PoolStatistic
+     * @param {TokenDailyStatsFindFirstOrThrowArgs} args - Arguments to find a TokenDailyStats
      * @example
-     * // Get one PoolStatistic
-     * const poolStatistic = await prisma.poolStatistic.findFirstOrThrow({
+     * // Get one TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends PoolStatisticFindFirstOrThrowArgs>(args?: SelectSubset<T, PoolStatisticFindFirstOrThrowArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+    findFirstOrThrow<T extends TokenDailyStatsFindFirstOrThrowArgs>(args?: SelectSubset<T, TokenDailyStatsFindFirstOrThrowArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
 
     /**
-     * Find zero or more PoolStatistics that matches the filter.
+     * Find zero or more TokenDailyStats that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {TokenDailyStatsFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all PoolStatistics
-     * const poolStatistics = await prisma.poolStatistic.findMany()
+     * // Get all TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.findMany()
      * 
-     * // Get first 10 PoolStatistics
-     * const poolStatistics = await prisma.poolStatistic.findMany({ take: 10 })
+     * // Get first 10 TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.findMany({ take: 10 })
      * 
-     * // Only select the `id`
-     * const poolStatisticWithIdOnly = await prisma.poolStatistic.findMany({ select: { id: true } })
+     * // Only select the `tokenAddress`
+     * const tokenDailyStatsWithTokenAddressOnly = await prisma.tokenDailyStats.findMany({ select: { tokenAddress: true } })
      * 
      */
-    findMany<T extends PoolStatisticFindManyArgs>(args?: SelectSubset<T, PoolStatisticFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "findMany">>
+    findMany<T extends TokenDailyStatsFindManyArgs>(args?: SelectSubset<T, TokenDailyStatsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "findMany">>
 
     /**
-     * Create a PoolStatistic.
-     * @param {PoolStatisticCreateArgs} args - Arguments to create a PoolStatistic.
+     * Create a TokenDailyStats.
+     * @param {TokenDailyStatsCreateArgs} args - Arguments to create a TokenDailyStats.
      * @example
-     * // Create one PoolStatistic
-     * const PoolStatistic = await prisma.poolStatistic.create({
+     * // Create one TokenDailyStats
+     * const TokenDailyStats = await prisma.tokenDailyStats.create({
      *   data: {
-     *     // ... data to create a PoolStatistic
+     *     // ... data to create a TokenDailyStats
      *   }
      * })
      * 
      */
-    create<T extends PoolStatisticCreateArgs>(args: SelectSubset<T, PoolStatisticCreateArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "create">, never, ExtArgs>
+    create<T extends TokenDailyStatsCreateArgs>(args: SelectSubset<T, TokenDailyStatsCreateArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "create">, never, ExtArgs>
 
     /**
-     * Create many PoolStatistics.
-     * @param {PoolStatisticCreateManyArgs} args - Arguments to create many PoolStatistics.
+     * Create many TokenDailyStats.
+     * @param {TokenDailyStatsCreateManyArgs} args - Arguments to create many TokenDailyStats.
      * @example
-     * // Create many PoolStatistics
-     * const poolStatistic = await prisma.poolStatistic.createMany({
+     * // Create many TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends PoolStatisticCreateManyArgs>(args?: SelectSubset<T, PoolStatisticCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends TokenDailyStatsCreateManyArgs>(args?: SelectSubset<T, TokenDailyStatsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many PoolStatistics and returns the data saved in the database.
-     * @param {PoolStatisticCreateManyAndReturnArgs} args - Arguments to create many PoolStatistics.
+     * Create many TokenDailyStats and returns the data saved in the database.
+     * @param {TokenDailyStatsCreateManyAndReturnArgs} args - Arguments to create many TokenDailyStats.
      * @example
-     * // Create many PoolStatistics
-     * const poolStatistic = await prisma.poolStatistic.createManyAndReturn({
+     * // Create many TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many PoolStatistics and only return the `id`
-     * const poolStatisticWithIdOnly = await prisma.poolStatistic.createManyAndReturn({ 
-     *   select: { id: true },
+     * // Create many TokenDailyStats and only return the `tokenAddress`
+     * const tokenDailyStatsWithTokenAddressOnly = await prisma.tokenDailyStats.createManyAndReturn({ 
+     *   select: { tokenAddress: true },
      *   data: [
      *     // ... provide data here
      *   ]
@@ -7019,28 +3835,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends PoolStatisticCreateManyAndReturnArgs>(args?: SelectSubset<T, PoolStatisticCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "createManyAndReturn">>
+    createManyAndReturn<T extends TokenDailyStatsCreateManyAndReturnArgs>(args?: SelectSubset<T, TokenDailyStatsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "createManyAndReturn">>
 
     /**
-     * Delete a PoolStatistic.
-     * @param {PoolStatisticDeleteArgs} args - Arguments to delete one PoolStatistic.
+     * Delete a TokenDailyStats.
+     * @param {TokenDailyStatsDeleteArgs} args - Arguments to delete one TokenDailyStats.
      * @example
-     * // Delete one PoolStatistic
-     * const PoolStatistic = await prisma.poolStatistic.delete({
+     * // Delete one TokenDailyStats
+     * const TokenDailyStats = await prisma.tokenDailyStats.delete({
      *   where: {
-     *     // ... filter to delete one PoolStatistic
+     *     // ... filter to delete one TokenDailyStats
      *   }
      * })
      * 
      */
-    delete<T extends PoolStatisticDeleteArgs>(args: SelectSubset<T, PoolStatisticDeleteArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+    delete<T extends TokenDailyStatsDeleteArgs>(args: SelectSubset<T, TokenDailyStatsDeleteArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "delete">, never, ExtArgs>
 
     /**
-     * Update one PoolStatistic.
-     * @param {PoolStatisticUpdateArgs} args - Arguments to update one PoolStatistic.
+     * Update one TokenDailyStats.
+     * @param {TokenDailyStatsUpdateArgs} args - Arguments to update one TokenDailyStats.
      * @example
-     * // Update one PoolStatistic
-     * const poolStatistic = await prisma.poolStatistic.update({
+     * // Update one TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -7050,30 +3866,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends PoolStatisticUpdateArgs>(args: SelectSubset<T, PoolStatisticUpdateArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "update">, never, ExtArgs>
+    update<T extends TokenDailyStatsUpdateArgs>(args: SelectSubset<T, TokenDailyStatsUpdateArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "update">, never, ExtArgs>
 
     /**
-     * Delete zero or more PoolStatistics.
-     * @param {PoolStatisticDeleteManyArgs} args - Arguments to filter PoolStatistics to delete.
+     * Delete zero or more TokenDailyStats.
+     * @param {TokenDailyStatsDeleteManyArgs} args - Arguments to filter TokenDailyStats to delete.
      * @example
-     * // Delete a few PoolStatistics
-     * const { count } = await prisma.poolStatistic.deleteMany({
+     * // Delete a few TokenDailyStats
+     * const { count } = await prisma.tokenDailyStats.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends PoolStatisticDeleteManyArgs>(args?: SelectSubset<T, PoolStatisticDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends TokenDailyStatsDeleteManyArgs>(args?: SelectSubset<T, TokenDailyStatsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more PoolStatistics.
+     * Update zero or more TokenDailyStats.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {TokenDailyStatsUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many PoolStatistics
-     * const poolStatistic = await prisma.poolStatistic.updateMany({
+     * // Update many TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -7083,56 +3899,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends PoolStatisticUpdateManyArgs>(args: SelectSubset<T, PoolStatisticUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends TokenDailyStatsUpdateManyArgs>(args: SelectSubset<T, TokenDailyStatsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one PoolStatistic.
-     * @param {PoolStatisticUpsertArgs} args - Arguments to update or create a PoolStatistic.
+     * Create or update one TokenDailyStats.
+     * @param {TokenDailyStatsUpsertArgs} args - Arguments to update or create a TokenDailyStats.
      * @example
-     * // Update or create a PoolStatistic
-     * const poolStatistic = await prisma.poolStatistic.upsert({
+     * // Update or create a TokenDailyStats
+     * const tokenDailyStats = await prisma.tokenDailyStats.upsert({
      *   create: {
-     *     // ... data to create a PoolStatistic
+     *     // ... data to create a TokenDailyStats
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the PoolStatistic we want to update
+     *     // ... the filter for the TokenDailyStats we want to update
      *   }
      * })
      */
-    upsert<T extends PoolStatisticUpsertArgs>(args: SelectSubset<T, PoolStatisticUpsertArgs<ExtArgs>>): Prisma__PoolStatisticClient<$Result.GetResult<Prisma.$PoolStatisticPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+    upsert<T extends TokenDailyStatsUpsertArgs>(args: SelectSubset<T, TokenDailyStatsUpsertArgs<ExtArgs>>): Prisma__TokenDailyStatsClient<$Result.GetResult<Prisma.$TokenDailyStatsPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
 
 
     /**
-     * Count the number of PoolStatistics.
+     * Count the number of TokenDailyStats.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticCountArgs} args - Arguments to filter PoolStatistics to count.
+     * @param {TokenDailyStatsCountArgs} args - Arguments to filter TokenDailyStats to count.
      * @example
-     * // Count the number of PoolStatistics
-     * const count = await prisma.poolStatistic.count({
+     * // Count the number of TokenDailyStats
+     * const count = await prisma.tokenDailyStats.count({
      *   where: {
-     *     // ... the filter for the PoolStatistics we want to count
+     *     // ... the filter for the TokenDailyStats we want to count
      *   }
      * })
     **/
-    count<T extends PoolStatisticCountArgs>(
-      args?: Subset<T, PoolStatisticCountArgs>,
+    count<T extends TokenDailyStatsCountArgs>(
+      args?: Subset<T, TokenDailyStatsCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], PoolStatisticCountAggregateOutputType>
+          : GetScalarType<T['select'], TokenDailyStatsCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a PoolStatistic.
+     * Allows you to perform aggregations operations on a TokenDailyStats.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {TokenDailyStatsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -7152,13 +3968,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends PoolStatisticAggregateArgs>(args: Subset<T, PoolStatisticAggregateArgs>): Prisma.PrismaPromise<GetPoolStatisticAggregateType<T>>
+    aggregate<T extends TokenDailyStatsAggregateArgs>(args: Subset<T, TokenDailyStatsAggregateArgs>): Prisma.PrismaPromise<GetTokenDailyStatsAggregateType<T>>
 
     /**
-     * Group by PoolStatistic.
+     * Group by TokenDailyStats.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PoolStatisticGroupByArgs} args - Group by arguments.
+     * @param {TokenDailyStatsGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -7173,14 +3989,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends PoolStatisticGroupByArgs,
+      T extends TokenDailyStatsGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PoolStatisticGroupByArgs['orderBy'] }
-        : { orderBy?: PoolStatisticGroupByArgs['orderBy'] },
+        ? { orderBy: TokenDailyStatsGroupByArgs['orderBy'] }
+        : { orderBy?: TokenDailyStatsGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -7229,22 +4045,22 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, PoolStatisticGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPoolStatisticGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, TokenDailyStatsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTokenDailyStatsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the PoolStatistic model
+   * Fields of the TokenDailyStats model
    */
-  readonly fields: PoolStatisticFieldRefs;
+  readonly fields: TokenDailyStatsFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for PoolStatistic.
+   * The delegate class that acts as a "Promise-like" for TokenDailyStats.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__PoolStatisticClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__TokenDailyStatsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    pool<T extends PoolDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PoolDefaultArgs<ExtArgs>>): Prisma__PoolClient<$Result.GetResult<Prisma.$PoolPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    token<T extends TokenDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TokenDefaultArgs<ExtArgs>>): Prisma__TokenClient<$Result.GetResult<Prisma.$TokenPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7271,347 +4087,357 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the PoolStatistic model
+   * Fields of the TokenDailyStats model
    */ 
-  interface PoolStatisticFieldRefs {
-    readonly id: FieldRef<"PoolStatistic", 'String'>
-    readonly poolId: FieldRef<"PoolStatistic", 'String'>
-    readonly apr: FieldRef<"PoolStatistic", 'Float'>
-    readonly tvlUSD: FieldRef<"PoolStatistic", 'Float'>
-    readonly volOneDay: FieldRef<"PoolStatistic", 'String'>
-    readonly volOneMonth: FieldRef<"PoolStatistic", 'String'>
-    readonly impermanentLoss: FieldRef<"PoolStatistic", 'Float'>
-    readonly healthScore: FieldRef<"PoolStatistic", 'Int'>
-    readonly createdAt: FieldRef<"PoolStatistic", 'DateTime'>
+  interface TokenDailyStatsFieldRefs {
+    readonly tokenAddress: FieldRef<"TokenDailyStats", 'String'>
+    readonly date: FieldRef<"TokenDailyStats", 'String'>
+    readonly price: FieldRef<"TokenDailyStats", 'Float'>
+    readonly priceChange1h: FieldRef<"TokenDailyStats", 'Float'>
+    readonly priceChange24h: FieldRef<"TokenDailyStats", 'Float'>
+    readonly volume24h: FieldRef<"TokenDailyStats", 'Float'>
+    readonly volumeUSD24h: FieldRef<"TokenDailyStats", 'Float'>
+    readonly tvlInPools: FieldRef<"TokenDailyStats", 'Float'>
+    readonly marketCap: FieldRef<"TokenDailyStats", 'Float'>
+    readonly fdv: FieldRef<"TokenDailyStats", 'Float'>
+    readonly rankByTvl: FieldRef<"TokenDailyStats", 'Int'>
+    readonly rankByVolume: FieldRef<"TokenDailyStats", 'Int'>
+    readonly rankByMarketCap: FieldRef<"TokenDailyStats", 'Int'>
+    readonly swapCount24h: FieldRef<"TokenDailyStats", 'Int'>
+    readonly uniqueTraders24h: FieldRef<"TokenDailyStats", 'Int'>
+    readonly createdAt: FieldRef<"TokenDailyStats", 'DateTime'>
+    readonly updatedAt: FieldRef<"TokenDailyStats", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * PoolStatistic findUnique
+   * TokenDailyStats findUnique
    */
-  export type PoolStatisticFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * Filter, which PoolStatistic to fetch.
+     * Filter, which TokenDailyStats to fetch.
      */
-    where: PoolStatisticWhereUniqueInput
+    where: TokenDailyStatsWhereUniqueInput
   }
 
   /**
-   * PoolStatistic findUniqueOrThrow
+   * TokenDailyStats findUniqueOrThrow
    */
-  export type PoolStatisticFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * Filter, which PoolStatistic to fetch.
+     * Filter, which TokenDailyStats to fetch.
      */
-    where: PoolStatisticWhereUniqueInput
+    where: TokenDailyStatsWhereUniqueInput
   }
 
   /**
-   * PoolStatistic findFirst
+   * TokenDailyStats findFirst
    */
-  export type PoolStatisticFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * Filter, which PoolStatistic to fetch.
+     * Filter, which TokenDailyStats to fetch.
      */
-    where?: PoolStatisticWhereInput
+    where?: TokenDailyStatsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PoolStatistics to fetch.
+     * Determine the order of TokenDailyStats to fetch.
      */
-    orderBy?: PoolStatisticOrderByWithRelationInput | PoolStatisticOrderByWithRelationInput[]
+    orderBy?: TokenDailyStatsOrderByWithRelationInput | TokenDailyStatsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for PoolStatistics.
+     * Sets the position for searching for TokenDailyStats.
      */
-    cursor?: PoolStatisticWhereUniqueInput
+    cursor?: TokenDailyStatsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PoolStatistics from the position of the cursor.
+     * Take `±n` TokenDailyStats from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PoolStatistics.
+     * Skip the first `n` TokenDailyStats.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of PoolStatistics.
+     * Filter by unique combinations of TokenDailyStats.
      */
-    distinct?: PoolStatisticScalarFieldEnum | PoolStatisticScalarFieldEnum[]
+    distinct?: TokenDailyStatsScalarFieldEnum | TokenDailyStatsScalarFieldEnum[]
   }
 
   /**
-   * PoolStatistic findFirstOrThrow
+   * TokenDailyStats findFirstOrThrow
    */
-  export type PoolStatisticFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * Filter, which PoolStatistic to fetch.
+     * Filter, which TokenDailyStats to fetch.
      */
-    where?: PoolStatisticWhereInput
+    where?: TokenDailyStatsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PoolStatistics to fetch.
+     * Determine the order of TokenDailyStats to fetch.
      */
-    orderBy?: PoolStatisticOrderByWithRelationInput | PoolStatisticOrderByWithRelationInput[]
+    orderBy?: TokenDailyStatsOrderByWithRelationInput | TokenDailyStatsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for PoolStatistics.
+     * Sets the position for searching for TokenDailyStats.
      */
-    cursor?: PoolStatisticWhereUniqueInput
+    cursor?: TokenDailyStatsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PoolStatistics from the position of the cursor.
+     * Take `±n` TokenDailyStats from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PoolStatistics.
+     * Skip the first `n` TokenDailyStats.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of PoolStatistics.
+     * Filter by unique combinations of TokenDailyStats.
      */
-    distinct?: PoolStatisticScalarFieldEnum | PoolStatisticScalarFieldEnum[]
+    distinct?: TokenDailyStatsScalarFieldEnum | TokenDailyStatsScalarFieldEnum[]
   }
 
   /**
-   * PoolStatistic findMany
+   * TokenDailyStats findMany
    */
-  export type PoolStatisticFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * Filter, which PoolStatistics to fetch.
+     * Filter, which TokenDailyStats to fetch.
      */
-    where?: PoolStatisticWhereInput
+    where?: TokenDailyStatsWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PoolStatistics to fetch.
+     * Determine the order of TokenDailyStats to fetch.
      */
-    orderBy?: PoolStatisticOrderByWithRelationInput | PoolStatisticOrderByWithRelationInput[]
+    orderBy?: TokenDailyStatsOrderByWithRelationInput | TokenDailyStatsOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing PoolStatistics.
+     * Sets the position for listing TokenDailyStats.
      */
-    cursor?: PoolStatisticWhereUniqueInput
+    cursor?: TokenDailyStatsWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PoolStatistics from the position of the cursor.
+     * Take `±n` TokenDailyStats from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PoolStatistics.
+     * Skip the first `n` TokenDailyStats.
      */
     skip?: number
-    distinct?: PoolStatisticScalarFieldEnum | PoolStatisticScalarFieldEnum[]
+    distinct?: TokenDailyStatsScalarFieldEnum | TokenDailyStatsScalarFieldEnum[]
   }
 
   /**
-   * PoolStatistic create
+   * TokenDailyStats create
    */
-  export type PoolStatisticCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * The data needed to create a PoolStatistic.
+     * The data needed to create a TokenDailyStats.
      */
-    data: XOR<PoolStatisticCreateInput, PoolStatisticUncheckedCreateInput>
+    data: XOR<TokenDailyStatsCreateInput, TokenDailyStatsUncheckedCreateInput>
   }
 
   /**
-   * PoolStatistic createMany
+   * TokenDailyStats createMany
    */
-  export type PoolStatisticCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many PoolStatistics.
+     * The data used to create many TokenDailyStats.
      */
-    data: PoolStatisticCreateManyInput | PoolStatisticCreateManyInput[]
+    data: TokenDailyStatsCreateManyInput | TokenDailyStatsCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * PoolStatistic createManyAndReturn
+   * TokenDailyStats createManyAndReturn
    */
-  export type PoolStatisticCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelectCreateManyAndReturn<ExtArgs> | null
+    select?: TokenDailyStatsSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * The data used to create many PoolStatistics.
+     * The data used to create many TokenDailyStats.
      */
-    data: PoolStatisticCreateManyInput | PoolStatisticCreateManyInput[]
+    data: TokenDailyStatsCreateManyInput | TokenDailyStatsCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: TokenDailyStatsIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * PoolStatistic update
+   * TokenDailyStats update
    */
-  export type PoolStatisticUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * The data needed to update a PoolStatistic.
+     * The data needed to update a TokenDailyStats.
      */
-    data: XOR<PoolStatisticUpdateInput, PoolStatisticUncheckedUpdateInput>
+    data: XOR<TokenDailyStatsUpdateInput, TokenDailyStatsUncheckedUpdateInput>
     /**
-     * Choose, which PoolStatistic to update.
+     * Choose, which TokenDailyStats to update.
      */
-    where: PoolStatisticWhereUniqueInput
+    where: TokenDailyStatsWhereUniqueInput
   }
 
   /**
-   * PoolStatistic updateMany
+   * TokenDailyStats updateMany
    */
-  export type PoolStatisticUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update PoolStatistics.
+     * The data used to update TokenDailyStats.
      */
-    data: XOR<PoolStatisticUpdateManyMutationInput, PoolStatisticUncheckedUpdateManyInput>
+    data: XOR<TokenDailyStatsUpdateManyMutationInput, TokenDailyStatsUncheckedUpdateManyInput>
     /**
-     * Filter which PoolStatistics to update
+     * Filter which TokenDailyStats to update
      */
-    where?: PoolStatisticWhereInput
+    where?: TokenDailyStatsWhereInput
+    limit?: number
   }
 
   /**
-   * PoolStatistic upsert
+   * TokenDailyStats upsert
    */
-  export type PoolStatisticUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * The filter to search for the PoolStatistic to update in case it exists.
+     * The filter to search for the TokenDailyStats to update in case it exists.
      */
-    where: PoolStatisticWhereUniqueInput
+    where: TokenDailyStatsWhereUniqueInput
     /**
-     * In case the PoolStatistic found by the `where` argument doesn't exist, create a new PoolStatistic with this data.
+     * In case the TokenDailyStats found by the `where` argument doesn't exist, create a new TokenDailyStats with this data.
      */
-    create: XOR<PoolStatisticCreateInput, PoolStatisticUncheckedCreateInput>
+    create: XOR<TokenDailyStatsCreateInput, TokenDailyStatsUncheckedCreateInput>
     /**
-     * In case the PoolStatistic was found with the provided `where` argument, update it with this data.
+     * In case the TokenDailyStats was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<PoolStatisticUpdateInput, PoolStatisticUncheckedUpdateInput>
+    update: XOR<TokenDailyStatsUpdateInput, TokenDailyStatsUncheckedUpdateInput>
   }
 
   /**
-   * PoolStatistic delete
+   * TokenDailyStats delete
    */
-  export type PoolStatisticDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
     /**
-     * Filter which PoolStatistic to delete.
+     * Filter which TokenDailyStats to delete.
      */
-    where: PoolStatisticWhereUniqueInput
+    where: TokenDailyStatsWhereUniqueInput
   }
 
   /**
-   * PoolStatistic deleteMany
+   * TokenDailyStats deleteMany
    */
-  export type PoolStatisticDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which PoolStatistics to delete
+     * Filter which TokenDailyStats to delete
      */
-    where?: PoolStatisticWhereInput
+    where?: TokenDailyStatsWhereInput
+    limit?: number
   }
 
   /**
-   * PoolStatistic without action
+   * TokenDailyStats without action
    */
-  export type PoolStatisticDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type TokenDailyStatsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PoolStatistic
+     * Select specific fields to fetch from the TokenDailyStats
      */
-    select?: PoolStatisticSelect<ExtArgs> | null
+    select?: TokenDailyStatsSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PoolStatisticInclude<ExtArgs> | null
+    include?: TokenDailyStatsInclude<ExtArgs> | null
   }
 
 
@@ -7629,99 +4455,67 @@ export namespace Prisma {
   export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-  export const PoolScalarFieldEnum: {
-    id: 'id',
-    address: 'address',
-    token0Id: 'token0Id',
-    token1Id: 'token1Id',
-    fee: 'fee',
-    liquidity: 'liquidity',
-    tick: 'tick',
-    sqrtPriceX96: 'sqrtPriceX96',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type PoolScalarFieldEnum = (typeof PoolScalarFieldEnum)[keyof typeof PoolScalarFieldEnum]
-
-
-  export const SwapScalarFieldEnum: {
-    id: 'id',
-    sender: 'sender',
-    recipient: 'recipient',
-    amount0: 'amount0',
-    amount1: 'amount1',
-    sqrtPriceX96: 'sqrtPriceX96',
-    tick: 'tick',
-    transactionHash: 'transactionHash',
-    logIndex: 'logIndex',
-    poolAddress: 'poolAddress',
-    poolId: 'poolId',
-    gasUsed: 'gasUsed',
-    gasPrice: 'gasPrice',
-    createdAt: 'createdAt'
-  };
-
-  export type SwapScalarFieldEnum = (typeof SwapScalarFieldEnum)[keyof typeof SwapScalarFieldEnum]
-
-
-  export const IndexerStateScalarFieldEnum: {
-    id: 'id',
-    lastBlock: 'lastBlock',
-    lastUpdate: 'lastUpdate'
-  };
-
-  export type IndexerStateScalarFieldEnum = (typeof IndexerStateScalarFieldEnum)[keyof typeof IndexerStateScalarFieldEnum]
-
-
   export const TokenScalarFieldEnum: {
-    id: 'id',
     address: 'address',
     symbol: 'symbol',
     name: 'name',
     decimals: 'decimals',
     logoUri: 'logoUri',
-    coingeckoId: 'coingeckoId',
-    tags: 'tags',
-    totalSupply: 'totalSupply',
-    circulatingSupply: 'circulatingSupply',
     website: 'website',
     twitter: 'twitter',
     description: 'description',
-    createdAt: 'createdAt'
+    coingeckoId: 'coingeckoId',
+    totalSupply: 'totalSupply',
+    status: 'status',
+    discoveredAt: 'discoveredAt',
+    lastEnrichmentAt: 'lastEnrichmentAt',
+    lastActivityAt: 'lastActivityAt',
+    isStableCoin: 'isStableCoin',
+    isVerifiedManually: 'isVerifiedManually',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type TokenScalarFieldEnum = (typeof TokenScalarFieldEnum)[keyof typeof TokenScalarFieldEnum]
 
 
-  export const TokenStatisticScalarFieldEnum: {
-    id: 'id',
-    tokenId: 'tokenId',
+  export const TokenPriceScalarFieldEnum: {
+    tokenAddress: 'tokenAddress',
+    timestamp: 'timestamp',
     price: 'price',
-    oneHourEvolution: 'oneHourEvolution',
-    oneDayEvolution: 'oneDayEvolution',
-    volume: 'volume',
-    fdv: 'fdv',
+    priceSource: 'priceSource',
+    confidence: 'confidence',
+    volumeUSD: 'volumeUSD',
+    liquidityPath: 'liquidityPath',
+    poolsInvolved: 'poolsInvolved',
+    createdAt: 'createdAt'
+  };
+
+  export type TokenPriceScalarFieldEnum = (typeof TokenPriceScalarFieldEnum)[keyof typeof TokenPriceScalarFieldEnum]
+
+
+  export const TokenDailyStatsScalarFieldEnum: {
+    tokenAddress: 'tokenAddress',
+    date: 'date',
+    price: 'price',
+    priceChange1h: 'priceChange1h',
+    priceChange24h: 'priceChange24h',
+    volume24h: 'volume24h',
+    volumeUSD24h: 'volumeUSD24h',
+    tvlInPools: 'tvlInPools',
     marketCap: 'marketCap',
-    createdAt: 'createdAt'
+    fdv: 'fdv',
+    rankByTvl: 'rankByTvl',
+    rankByVolume: 'rankByVolume',
+    rankByMarketCap: 'rankByMarketCap',
+    swapCount24h: 'swapCount24h',
+    uniqueTraders24h: 'uniqueTraders24h',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
-  export type TokenStatisticScalarFieldEnum = (typeof TokenStatisticScalarFieldEnum)[keyof typeof TokenStatisticScalarFieldEnum]
-
-
-  export const PoolStatisticScalarFieldEnum: {
-    id: 'id',
-    poolId: 'poolId',
-    apr: 'apr',
-    tvlUSD: 'tvlUSD',
-    volOneDay: 'volOneDay',
-    volOneMonth: 'volOneMonth',
-    impermanentLoss: 'impermanentLoss',
-    healthScore: 'healthScore',
-    createdAt: 'createdAt'
-  };
-
-  export type PoolStatisticScalarFieldEnum = (typeof PoolStatisticScalarFieldEnum)[keyof typeof PoolStatisticScalarFieldEnum]
+  export type TokenDailyStatsScalarFieldEnum = (typeof TokenDailyStatsScalarFieldEnum)[keyof typeof TokenDailyStatsScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7732,12 +4526,29 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
   };
 
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   export const NullsOrder: {
@@ -7782,6 +4593,34 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'BigInt'
+   */
+  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+  /**
+   * Reference to a field of type 'BigInt[]'
+   */
+  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TokenState'
+   */
+  export type EnumTokenStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TokenState'>
+    
+
+
+  /**
+   * Reference to a field of type 'TokenState[]'
+   */
+  export type ListEnumTokenStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TokenState[]'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -7796,16 +4635,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'BigInt'
+   * Reference to a field of type 'Boolean'
    */
-  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
   /**
-   * Reference to a field of type 'BigInt[]'
+   * Reference to a field of type 'Json'
    */
-  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -7821,294 +4660,77 @@ export namespace Prisma {
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
+
+
+  /**
+   * Reference to a field of type 'PriceSource'
+   */
+  export type EnumPriceSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PriceSource'>
+    
+
+
+  /**
+   * Reference to a field of type 'PriceSource[]'
+   */
+  export type ListEnumPriceSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PriceSource[]'>
+    
   /**
    * Deep Input Types
    */
 
 
-  export type PoolWhereInput = {
-    AND?: PoolWhereInput | PoolWhereInput[]
-    OR?: PoolWhereInput[]
-    NOT?: PoolWhereInput | PoolWhereInput[]
-    id?: StringFilter<"Pool"> | string
-    address?: StringFilter<"Pool"> | string
-    token0Id?: StringFilter<"Pool"> | string
-    token1Id?: StringFilter<"Pool"> | string
-    fee?: IntFilter<"Pool"> | number
-    liquidity?: StringNullableFilter<"Pool"> | string | null
-    tick?: IntNullableFilter<"Pool"> | number | null
-    sqrtPriceX96?: StringNullableFilter<"Pool"> | string | null
-    createdAt?: DateTimeFilter<"Pool"> | Date | string
-    updatedAt?: DateTimeFilter<"Pool"> | Date | string
-    token0?: XOR<TokenRelationFilter, TokenWhereInput>
-    token1?: XOR<TokenRelationFilter, TokenWhereInput>
-    swaps?: SwapListRelationFilter
-    PoolStatistic?: PoolStatisticListRelationFilter
-  }
-
-  export type PoolOrderByWithRelationInput = {
-    id?: SortOrder
-    address?: SortOrder
-    token0Id?: SortOrder
-    token1Id?: SortOrder
-    fee?: SortOrder
-    liquidity?: SortOrderInput | SortOrder
-    tick?: SortOrderInput | SortOrder
-    sqrtPriceX96?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    token0?: TokenOrderByWithRelationInput
-    token1?: TokenOrderByWithRelationInput
-    swaps?: SwapOrderByRelationAggregateInput
-    PoolStatistic?: PoolStatisticOrderByRelationAggregateInput
-  }
-
-  export type PoolWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    address?: string
-    AND?: PoolWhereInput | PoolWhereInput[]
-    OR?: PoolWhereInput[]
-    NOT?: PoolWhereInput | PoolWhereInput[]
-    token0Id?: StringFilter<"Pool"> | string
-    token1Id?: StringFilter<"Pool"> | string
-    fee?: IntFilter<"Pool"> | number
-    liquidity?: StringNullableFilter<"Pool"> | string | null
-    tick?: IntNullableFilter<"Pool"> | number | null
-    sqrtPriceX96?: StringNullableFilter<"Pool"> | string | null
-    createdAt?: DateTimeFilter<"Pool"> | Date | string
-    updatedAt?: DateTimeFilter<"Pool"> | Date | string
-    token0?: XOR<TokenRelationFilter, TokenWhereInput>
-    token1?: XOR<TokenRelationFilter, TokenWhereInput>
-    swaps?: SwapListRelationFilter
-    PoolStatistic?: PoolStatisticListRelationFilter
-  }, "id" | "address">
-
-  export type PoolOrderByWithAggregationInput = {
-    id?: SortOrder
-    address?: SortOrder
-    token0Id?: SortOrder
-    token1Id?: SortOrder
-    fee?: SortOrder
-    liquidity?: SortOrderInput | SortOrder
-    tick?: SortOrderInput | SortOrder
-    sqrtPriceX96?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: PoolCountOrderByAggregateInput
-    _avg?: PoolAvgOrderByAggregateInput
-    _max?: PoolMaxOrderByAggregateInput
-    _min?: PoolMinOrderByAggregateInput
-    _sum?: PoolSumOrderByAggregateInput
-  }
-
-  export type PoolScalarWhereWithAggregatesInput = {
-    AND?: PoolScalarWhereWithAggregatesInput | PoolScalarWhereWithAggregatesInput[]
-    OR?: PoolScalarWhereWithAggregatesInput[]
-    NOT?: PoolScalarWhereWithAggregatesInput | PoolScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Pool"> | string
-    address?: StringWithAggregatesFilter<"Pool"> | string
-    token0Id?: StringWithAggregatesFilter<"Pool"> | string
-    token1Id?: StringWithAggregatesFilter<"Pool"> | string
-    fee?: IntWithAggregatesFilter<"Pool"> | number
-    liquidity?: StringNullableWithAggregatesFilter<"Pool"> | string | null
-    tick?: IntNullableWithAggregatesFilter<"Pool"> | number | null
-    sqrtPriceX96?: StringNullableWithAggregatesFilter<"Pool"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"Pool"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Pool"> | Date | string
-  }
-
-  export type SwapWhereInput = {
-    AND?: SwapWhereInput | SwapWhereInput[]
-    OR?: SwapWhereInput[]
-    NOT?: SwapWhereInput | SwapWhereInput[]
-    id?: StringFilter<"Swap"> | string
-    sender?: StringFilter<"Swap"> | string
-    recipient?: StringFilter<"Swap"> | string
-    amount0?: StringFilter<"Swap"> | string
-    amount1?: StringFilter<"Swap"> | string
-    sqrtPriceX96?: StringFilter<"Swap"> | string
-    tick?: IntFilter<"Swap"> | number
-    transactionHash?: StringFilter<"Swap"> | string
-    logIndex?: IntFilter<"Swap"> | number
-    poolAddress?: StringFilter<"Swap"> | string
-    poolId?: StringFilter<"Swap"> | string
-    gasUsed?: IntFilter<"Swap"> | number
-    gasPrice?: StringFilter<"Swap"> | string
-    createdAt?: DateTimeFilter<"Swap"> | Date | string
-    pool?: XOR<PoolRelationFilter, PoolWhereInput>
-  }
-
-  export type SwapOrderByWithRelationInput = {
-    id?: SortOrder
-    sender?: SortOrder
-    recipient?: SortOrder
-    amount0?: SortOrder
-    amount1?: SortOrder
-    sqrtPriceX96?: SortOrder
-    tick?: SortOrder
-    transactionHash?: SortOrder
-    logIndex?: SortOrder
-    poolAddress?: SortOrder
-    poolId?: SortOrder
-    gasUsed?: SortOrder
-    gasPrice?: SortOrder
-    createdAt?: SortOrder
-    pool?: PoolOrderByWithRelationInput
-  }
-
-  export type SwapWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    transactionHash_logIndex?: SwapTransactionHashLogIndexCompoundUniqueInput
-    AND?: SwapWhereInput | SwapWhereInput[]
-    OR?: SwapWhereInput[]
-    NOT?: SwapWhereInput | SwapWhereInput[]
-    sender?: StringFilter<"Swap"> | string
-    recipient?: StringFilter<"Swap"> | string
-    amount0?: StringFilter<"Swap"> | string
-    amount1?: StringFilter<"Swap"> | string
-    sqrtPriceX96?: StringFilter<"Swap"> | string
-    tick?: IntFilter<"Swap"> | number
-    transactionHash?: StringFilter<"Swap"> | string
-    logIndex?: IntFilter<"Swap"> | number
-    poolAddress?: StringFilter<"Swap"> | string
-    poolId?: StringFilter<"Swap"> | string
-    gasUsed?: IntFilter<"Swap"> | number
-    gasPrice?: StringFilter<"Swap"> | string
-    createdAt?: DateTimeFilter<"Swap"> | Date | string
-    pool?: XOR<PoolRelationFilter, PoolWhereInput>
-  }, "id" | "transactionHash_logIndex">
-
-  export type SwapOrderByWithAggregationInput = {
-    id?: SortOrder
-    sender?: SortOrder
-    recipient?: SortOrder
-    amount0?: SortOrder
-    amount1?: SortOrder
-    sqrtPriceX96?: SortOrder
-    tick?: SortOrder
-    transactionHash?: SortOrder
-    logIndex?: SortOrder
-    poolAddress?: SortOrder
-    poolId?: SortOrder
-    gasUsed?: SortOrder
-    gasPrice?: SortOrder
-    createdAt?: SortOrder
-    _count?: SwapCountOrderByAggregateInput
-    _avg?: SwapAvgOrderByAggregateInput
-    _max?: SwapMaxOrderByAggregateInput
-    _min?: SwapMinOrderByAggregateInput
-    _sum?: SwapSumOrderByAggregateInput
-  }
-
-  export type SwapScalarWhereWithAggregatesInput = {
-    AND?: SwapScalarWhereWithAggregatesInput | SwapScalarWhereWithAggregatesInput[]
-    OR?: SwapScalarWhereWithAggregatesInput[]
-    NOT?: SwapScalarWhereWithAggregatesInput | SwapScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Swap"> | string
-    sender?: StringWithAggregatesFilter<"Swap"> | string
-    recipient?: StringWithAggregatesFilter<"Swap"> | string
-    amount0?: StringWithAggregatesFilter<"Swap"> | string
-    amount1?: StringWithAggregatesFilter<"Swap"> | string
-    sqrtPriceX96?: StringWithAggregatesFilter<"Swap"> | string
-    tick?: IntWithAggregatesFilter<"Swap"> | number
-    transactionHash?: StringWithAggregatesFilter<"Swap"> | string
-    logIndex?: IntWithAggregatesFilter<"Swap"> | number
-    poolAddress?: StringWithAggregatesFilter<"Swap"> | string
-    poolId?: StringWithAggregatesFilter<"Swap"> | string
-    gasUsed?: IntWithAggregatesFilter<"Swap"> | number
-    gasPrice?: StringWithAggregatesFilter<"Swap"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Swap"> | Date | string
-  }
-
-  export type IndexerStateWhereInput = {
-    AND?: IndexerStateWhereInput | IndexerStateWhereInput[]
-    OR?: IndexerStateWhereInput[]
-    NOT?: IndexerStateWhereInput | IndexerStateWhereInput[]
-    id?: StringFilter<"IndexerState"> | string
-    lastBlock?: BigIntFilter<"IndexerState"> | bigint | number
-    lastUpdate?: DateTimeFilter<"IndexerState"> | Date | string
-  }
-
-  export type IndexerStateOrderByWithRelationInput = {
-    id?: SortOrder
-    lastBlock?: SortOrder
-    lastUpdate?: SortOrder
-  }
-
-  export type IndexerStateWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: IndexerStateWhereInput | IndexerStateWhereInput[]
-    OR?: IndexerStateWhereInput[]
-    NOT?: IndexerStateWhereInput | IndexerStateWhereInput[]
-    lastBlock?: BigIntFilter<"IndexerState"> | bigint | number
-    lastUpdate?: DateTimeFilter<"IndexerState"> | Date | string
-  }, "id">
-
-  export type IndexerStateOrderByWithAggregationInput = {
-    id?: SortOrder
-    lastBlock?: SortOrder
-    lastUpdate?: SortOrder
-    _count?: IndexerStateCountOrderByAggregateInput
-    _avg?: IndexerStateAvgOrderByAggregateInput
-    _max?: IndexerStateMaxOrderByAggregateInput
-    _min?: IndexerStateMinOrderByAggregateInput
-    _sum?: IndexerStateSumOrderByAggregateInput
-  }
-
-  export type IndexerStateScalarWhereWithAggregatesInput = {
-    AND?: IndexerStateScalarWhereWithAggregatesInput | IndexerStateScalarWhereWithAggregatesInput[]
-    OR?: IndexerStateScalarWhereWithAggregatesInput[]
-    NOT?: IndexerStateScalarWhereWithAggregatesInput | IndexerStateScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"IndexerState"> | string
-    lastBlock?: BigIntWithAggregatesFilter<"IndexerState"> | bigint | number
-    lastUpdate?: DateTimeWithAggregatesFilter<"IndexerState"> | Date | string
-  }
-
   export type TokenWhereInput = {
     AND?: TokenWhereInput | TokenWhereInput[]
     OR?: TokenWhereInput[]
     NOT?: TokenWhereInput | TokenWhereInput[]
-    id?: StringFilter<"Token"> | string
     address?: StringFilter<"Token"> | string
     symbol?: StringFilter<"Token"> | string
     name?: StringFilter<"Token"> | string
     decimals?: IntFilter<"Token"> | number
     logoUri?: StringNullableFilter<"Token"> | string | null
-    coingeckoId?: StringNullableFilter<"Token"> | string | null
-    tags?: StringNullableListFilter<"Token">
-    totalSupply?: StringNullableFilter<"Token"> | string | null
-    circulatingSupply?: StringNullableFilter<"Token"> | string | null
     website?: StringNullableFilter<"Token"> | string | null
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
+    coingeckoId?: StringNullableFilter<"Token"> | string | null
+    totalSupply?: BigIntFilter<"Token"> | bigint | number
+    status?: EnumTokenStateFilter<"Token"> | $Enums.TokenState
+    discoveredAt?: DateTimeFilter<"Token"> | Date | string
+    lastEnrichmentAt?: DateTimeNullableFilter<"Token"> | Date | string | null
+    lastActivityAt?: DateTimeNullableFilter<"Token"> | Date | string | null
+    isStableCoin?: BoolFilter<"Token"> | boolean
+    isVerifiedManually?: BoolFilter<"Token"> | boolean
+    metadata?: JsonNullableFilter<"Token">
     createdAt?: DateTimeFilter<"Token"> | Date | string
-    poolsAsToken0?: PoolListRelationFilter
-    poolsAsToken1?: PoolListRelationFilter
-    Statistic?: TokenStatisticListRelationFilter
+    updatedAt?: DateTimeFilter<"Token"> | Date | string
+    TokenPrice?: TokenPriceListRelationFilter
+    TokenDailyStats?: TokenDailyStatsListRelationFilter
   }
 
   export type TokenOrderByWithRelationInput = {
-    id?: SortOrder
     address?: SortOrder
     symbol?: SortOrder
     name?: SortOrder
     decimals?: SortOrder
     logoUri?: SortOrderInput | SortOrder
-    coingeckoId?: SortOrderInput | SortOrder
-    tags?: SortOrder
-    totalSupply?: SortOrderInput | SortOrder
-    circulatingSupply?: SortOrderInput | SortOrder
     website?: SortOrderInput | SortOrder
     twitter?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
+    coingeckoId?: SortOrderInput | SortOrder
+    totalSupply?: SortOrder
+    status?: SortOrder
+    discoveredAt?: SortOrder
+    lastEnrichmentAt?: SortOrderInput | SortOrder
+    lastActivityAt?: SortOrderInput | SortOrder
+    isStableCoin?: SortOrder
+    isVerifiedManually?: SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    poolsAsToken0?: PoolOrderByRelationAggregateInput
-    poolsAsToken1?: PoolOrderByRelationAggregateInput
-    Statistic?: TokenStatisticOrderByRelationAggregateInput
+    updatedAt?: SortOrder
+    TokenPrice?: TokenPriceOrderByRelationAggregateInput
+    TokenDailyStats?: TokenDailyStatsOrderByRelationAggregateInput
   }
 
   export type TokenWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
     address?: string
     AND?: TokenWhereInput | TokenWhereInput[]
     OR?: TokenWhereInput[]
@@ -8117,34 +4739,44 @@ export namespace Prisma {
     name?: StringFilter<"Token"> | string
     decimals?: IntFilter<"Token"> | number
     logoUri?: StringNullableFilter<"Token"> | string | null
-    coingeckoId?: StringNullableFilter<"Token"> | string | null
-    tags?: StringNullableListFilter<"Token">
-    totalSupply?: StringNullableFilter<"Token"> | string | null
-    circulatingSupply?: StringNullableFilter<"Token"> | string | null
     website?: StringNullableFilter<"Token"> | string | null
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
+    coingeckoId?: StringNullableFilter<"Token"> | string | null
+    totalSupply?: BigIntFilter<"Token"> | bigint | number
+    status?: EnumTokenStateFilter<"Token"> | $Enums.TokenState
+    discoveredAt?: DateTimeFilter<"Token"> | Date | string
+    lastEnrichmentAt?: DateTimeNullableFilter<"Token"> | Date | string | null
+    lastActivityAt?: DateTimeNullableFilter<"Token"> | Date | string | null
+    isStableCoin?: BoolFilter<"Token"> | boolean
+    isVerifiedManually?: BoolFilter<"Token"> | boolean
+    metadata?: JsonNullableFilter<"Token">
     createdAt?: DateTimeFilter<"Token"> | Date | string
-    poolsAsToken0?: PoolListRelationFilter
-    poolsAsToken1?: PoolListRelationFilter
-    Statistic?: TokenStatisticListRelationFilter
-  }, "id" | "address">
+    updatedAt?: DateTimeFilter<"Token"> | Date | string
+    TokenPrice?: TokenPriceListRelationFilter
+    TokenDailyStats?: TokenDailyStatsListRelationFilter
+  }, "address">
 
   export type TokenOrderByWithAggregationInput = {
-    id?: SortOrder
     address?: SortOrder
     symbol?: SortOrder
     name?: SortOrder
     decimals?: SortOrder
     logoUri?: SortOrderInput | SortOrder
-    coingeckoId?: SortOrderInput | SortOrder
-    tags?: SortOrder
-    totalSupply?: SortOrderInput | SortOrder
-    circulatingSupply?: SortOrderInput | SortOrder
     website?: SortOrderInput | SortOrder
     twitter?: SortOrderInput | SortOrder
     description?: SortOrderInput | SortOrder
+    coingeckoId?: SortOrderInput | SortOrder
+    totalSupply?: SortOrder
+    status?: SortOrder
+    discoveredAt?: SortOrder
+    lastEnrichmentAt?: SortOrderInput | SortOrder
+    lastActivityAt?: SortOrderInput | SortOrder
+    isStableCoin?: SortOrder
+    isVerifiedManually?: SortOrder
+    metadata?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: TokenCountOrderByAggregateInput
     _avg?: TokenAvgOrderByAggregateInput
     _max?: TokenMaxOrderByAggregateInput
@@ -8156,728 +4788,605 @@ export namespace Prisma {
     AND?: TokenScalarWhereWithAggregatesInput | TokenScalarWhereWithAggregatesInput[]
     OR?: TokenScalarWhereWithAggregatesInput[]
     NOT?: TokenScalarWhereWithAggregatesInput | TokenScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Token"> | string
     address?: StringWithAggregatesFilter<"Token"> | string
     symbol?: StringWithAggregatesFilter<"Token"> | string
     name?: StringWithAggregatesFilter<"Token"> | string
     decimals?: IntWithAggregatesFilter<"Token"> | number
     logoUri?: StringNullableWithAggregatesFilter<"Token"> | string | null
-    coingeckoId?: StringNullableWithAggregatesFilter<"Token"> | string | null
-    tags?: StringNullableListFilter<"Token">
-    totalSupply?: StringNullableWithAggregatesFilter<"Token"> | string | null
-    circulatingSupply?: StringNullableWithAggregatesFilter<"Token"> | string | null
     website?: StringNullableWithAggregatesFilter<"Token"> | string | null
     twitter?: StringNullableWithAggregatesFilter<"Token"> | string | null
     description?: StringNullableWithAggregatesFilter<"Token"> | string | null
+    coingeckoId?: StringNullableWithAggregatesFilter<"Token"> | string | null
+    totalSupply?: BigIntWithAggregatesFilter<"Token"> | bigint | number
+    status?: EnumTokenStateWithAggregatesFilter<"Token"> | $Enums.TokenState
+    discoveredAt?: DateTimeWithAggregatesFilter<"Token"> | Date | string
+    lastEnrichmentAt?: DateTimeNullableWithAggregatesFilter<"Token"> | Date | string | null
+    lastActivityAt?: DateTimeNullableWithAggregatesFilter<"Token"> | Date | string | null
+    isStableCoin?: BoolWithAggregatesFilter<"Token"> | boolean
+    isVerifiedManually?: BoolWithAggregatesFilter<"Token"> | boolean
+    metadata?: JsonNullableWithAggregatesFilter<"Token">
     createdAt?: DateTimeWithAggregatesFilter<"Token"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Token"> | Date | string
   }
 
-  export type TokenStatisticWhereInput = {
-    AND?: TokenStatisticWhereInput | TokenStatisticWhereInput[]
-    OR?: TokenStatisticWhereInput[]
-    NOT?: TokenStatisticWhereInput | TokenStatisticWhereInput[]
-    id?: StringFilter<"TokenStatistic"> | string
-    tokenId?: StringFilter<"TokenStatistic"> | string
-    price?: FloatFilter<"TokenStatistic"> | number
-    oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
-    oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
-    volume?: FloatFilter<"TokenStatistic"> | number
-    fdv?: FloatNullableFilter<"TokenStatistic"> | number | null
-    marketCap?: FloatNullableFilter<"TokenStatistic"> | number | null
-    createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
-    token?: XOR<TokenRelationFilter, TokenWhereInput>
+  export type TokenPriceWhereInput = {
+    AND?: TokenPriceWhereInput | TokenPriceWhereInput[]
+    OR?: TokenPriceWhereInput[]
+    NOT?: TokenPriceWhereInput | TokenPriceWhereInput[]
+    tokenAddress?: StringFilter<"TokenPrice"> | string
+    timestamp?: DateTimeFilter<"TokenPrice"> | Date | string
+    price?: FloatFilter<"TokenPrice"> | number
+    priceSource?: EnumPriceSourceFilter<"TokenPrice"> | $Enums.PriceSource
+    confidence?: FloatFilter<"TokenPrice"> | number
+    volumeUSD?: FloatFilter<"TokenPrice"> | number
+    liquidityPath?: JsonNullableFilter<"TokenPrice">
+    poolsInvolved?: StringNullableListFilter<"TokenPrice">
+    createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
+    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
   }
 
-  export type TokenStatisticOrderByWithRelationInput = {
-    id?: SortOrder
-    tokenId?: SortOrder
+  export type TokenPriceOrderByWithRelationInput = {
+    tokenAddress?: SortOrder
+    timestamp?: SortOrder
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrderInput | SortOrder
-    marketCap?: SortOrderInput | SortOrder
+    priceSource?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
+    liquidityPath?: SortOrderInput | SortOrder
+    poolsInvolved?: SortOrder
     createdAt?: SortOrder
     token?: TokenOrderByWithRelationInput
   }
 
-  export type TokenStatisticWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: TokenStatisticWhereInput | TokenStatisticWhereInput[]
-    OR?: TokenStatisticWhereInput[]
-    NOT?: TokenStatisticWhereInput | TokenStatisticWhereInput[]
-    tokenId?: StringFilter<"TokenStatistic"> | string
-    price?: FloatFilter<"TokenStatistic"> | number
-    oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
-    oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
-    volume?: FloatFilter<"TokenStatistic"> | number
-    fdv?: FloatNullableFilter<"TokenStatistic"> | number | null
-    marketCap?: FloatNullableFilter<"TokenStatistic"> | number | null
-    createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
-    token?: XOR<TokenRelationFilter, TokenWhereInput>
-  }, "id">
+  export type TokenPriceWhereUniqueInput = Prisma.AtLeast<{
+    tokenAddress_timestamp?: TokenPriceTokenAddressTimestampCompoundUniqueInput
+    AND?: TokenPriceWhereInput | TokenPriceWhereInput[]
+    OR?: TokenPriceWhereInput[]
+    NOT?: TokenPriceWhereInput | TokenPriceWhereInput[]
+    tokenAddress?: StringFilter<"TokenPrice"> | string
+    timestamp?: DateTimeFilter<"TokenPrice"> | Date | string
+    price?: FloatFilter<"TokenPrice"> | number
+    priceSource?: EnumPriceSourceFilter<"TokenPrice"> | $Enums.PriceSource
+    confidence?: FloatFilter<"TokenPrice"> | number
+    volumeUSD?: FloatFilter<"TokenPrice"> | number
+    liquidityPath?: JsonNullableFilter<"TokenPrice">
+    poolsInvolved?: StringNullableListFilter<"TokenPrice">
+    createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
+    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+  }, "tokenAddress_timestamp">
 
-  export type TokenStatisticOrderByWithAggregationInput = {
-    id?: SortOrder
-    tokenId?: SortOrder
+  export type TokenPriceOrderByWithAggregationInput = {
+    tokenAddress?: SortOrder
+    timestamp?: SortOrder
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrderInput | SortOrder
+    priceSource?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
+    liquidityPath?: SortOrderInput | SortOrder
+    poolsInvolved?: SortOrder
+    createdAt?: SortOrder
+    _count?: TokenPriceCountOrderByAggregateInput
+    _avg?: TokenPriceAvgOrderByAggregateInput
+    _max?: TokenPriceMaxOrderByAggregateInput
+    _min?: TokenPriceMinOrderByAggregateInput
+    _sum?: TokenPriceSumOrderByAggregateInput
+  }
+
+  export type TokenPriceScalarWhereWithAggregatesInput = {
+    AND?: TokenPriceScalarWhereWithAggregatesInput | TokenPriceScalarWhereWithAggregatesInput[]
+    OR?: TokenPriceScalarWhereWithAggregatesInput[]
+    NOT?: TokenPriceScalarWhereWithAggregatesInput | TokenPriceScalarWhereWithAggregatesInput[]
+    tokenAddress?: StringWithAggregatesFilter<"TokenPrice"> | string
+    timestamp?: DateTimeWithAggregatesFilter<"TokenPrice"> | Date | string
+    price?: FloatWithAggregatesFilter<"TokenPrice"> | number
+    priceSource?: EnumPriceSourceWithAggregatesFilter<"TokenPrice"> | $Enums.PriceSource
+    confidence?: FloatWithAggregatesFilter<"TokenPrice"> | number
+    volumeUSD?: FloatWithAggregatesFilter<"TokenPrice"> | number
+    liquidityPath?: JsonNullableWithAggregatesFilter<"TokenPrice">
+    poolsInvolved?: StringNullableListFilter<"TokenPrice">
+    createdAt?: DateTimeWithAggregatesFilter<"TokenPrice"> | Date | string
+  }
+
+  export type TokenDailyStatsWhereInput = {
+    AND?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
+    OR?: TokenDailyStatsWhereInput[]
+    NOT?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
+    tokenAddress?: StringFilter<"TokenDailyStats"> | string
+    date?: StringFilter<"TokenDailyStats"> | string
+    price?: FloatFilter<"TokenDailyStats"> | number
+    priceChange1h?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    priceChange24h?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    volume24h?: FloatFilter<"TokenDailyStats"> | number
+    volumeUSD24h?: FloatFilter<"TokenDailyStats"> | number
+    tvlInPools?: FloatFilter<"TokenDailyStats"> | number
+    marketCap?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    fdv?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    rankByTvl?: IntNullableFilter<"TokenDailyStats"> | number | null
+    rankByVolume?: IntNullableFilter<"TokenDailyStats"> | number | null
+    rankByMarketCap?: IntNullableFilter<"TokenDailyStats"> | number | null
+    swapCount24h?: IntFilter<"TokenDailyStats"> | number
+    uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
+    createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
+    updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
+    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+  }
+
+  export type TokenDailyStatsOrderByWithRelationInput = {
+    tokenAddress?: SortOrder
+    date?: SortOrder
+    price?: SortOrder
+    priceChange1h?: SortOrderInput | SortOrder
+    priceChange24h?: SortOrderInput | SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
     marketCap?: SortOrderInput | SortOrder
+    fdv?: SortOrderInput | SortOrder
+    rankByTvl?: SortOrderInput | SortOrder
+    rankByVolume?: SortOrderInput | SortOrder
+    rankByMarketCap?: SortOrderInput | SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
-    _count?: TokenStatisticCountOrderByAggregateInput
-    _avg?: TokenStatisticAvgOrderByAggregateInput
-    _max?: TokenStatisticMaxOrderByAggregateInput
-    _min?: TokenStatisticMinOrderByAggregateInput
-    _sum?: TokenStatisticSumOrderByAggregateInput
+    updatedAt?: SortOrder
+    token?: TokenOrderByWithRelationInput
   }
 
-  export type TokenStatisticScalarWhereWithAggregatesInput = {
-    AND?: TokenStatisticScalarWhereWithAggregatesInput | TokenStatisticScalarWhereWithAggregatesInput[]
-    OR?: TokenStatisticScalarWhereWithAggregatesInput[]
-    NOT?: TokenStatisticScalarWhereWithAggregatesInput | TokenStatisticScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"TokenStatistic"> | string
-    tokenId?: StringWithAggregatesFilter<"TokenStatistic"> | string
-    price?: FloatWithAggregatesFilter<"TokenStatistic"> | number
-    oneHourEvolution?: FloatWithAggregatesFilter<"TokenStatistic"> | number
-    oneDayEvolution?: FloatWithAggregatesFilter<"TokenStatistic"> | number
-    volume?: FloatWithAggregatesFilter<"TokenStatistic"> | number
-    fdv?: FloatNullableWithAggregatesFilter<"TokenStatistic"> | number | null
-    marketCap?: FloatNullableWithAggregatesFilter<"TokenStatistic"> | number | null
-    createdAt?: DateTimeWithAggregatesFilter<"TokenStatistic"> | Date | string
-  }
+  export type TokenDailyStatsWhereUniqueInput = Prisma.AtLeast<{
+    tokenAddress_date?: TokenDailyStatsTokenAddressDateCompoundUniqueInput
+    AND?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
+    OR?: TokenDailyStatsWhereInput[]
+    NOT?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
+    tokenAddress?: StringFilter<"TokenDailyStats"> | string
+    date?: StringFilter<"TokenDailyStats"> | string
+    price?: FloatFilter<"TokenDailyStats"> | number
+    priceChange1h?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    priceChange24h?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    volume24h?: FloatFilter<"TokenDailyStats"> | number
+    volumeUSD24h?: FloatFilter<"TokenDailyStats"> | number
+    tvlInPools?: FloatFilter<"TokenDailyStats"> | number
+    marketCap?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    fdv?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    rankByTvl?: IntNullableFilter<"TokenDailyStats"> | number | null
+    rankByVolume?: IntNullableFilter<"TokenDailyStats"> | number | null
+    rankByMarketCap?: IntNullableFilter<"TokenDailyStats"> | number | null
+    swapCount24h?: IntFilter<"TokenDailyStats"> | number
+    uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
+    createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
+    updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
+    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+  }, "tokenAddress_date">
 
-  export type PoolStatisticWhereInput = {
-    AND?: PoolStatisticWhereInput | PoolStatisticWhereInput[]
-    OR?: PoolStatisticWhereInput[]
-    NOT?: PoolStatisticWhereInput | PoolStatisticWhereInput[]
-    id?: StringFilter<"PoolStatistic"> | string
-    poolId?: StringFilter<"PoolStatistic"> | string
-    apr?: FloatFilter<"PoolStatistic"> | number
-    tvlUSD?: FloatFilter<"PoolStatistic"> | number
-    volOneDay?: StringFilter<"PoolStatistic"> | string
-    volOneMonth?: StringFilter<"PoolStatistic"> | string
-    impermanentLoss?: FloatFilter<"PoolStatistic"> | number
-    healthScore?: IntFilter<"PoolStatistic"> | number
-    createdAt?: DateTimeFilter<"PoolStatistic"> | Date | string
-    pool?: XOR<PoolRelationFilter, PoolWhereInput>
-  }
-
-  export type PoolStatisticOrderByWithRelationInput = {
-    id?: SortOrder
-    poolId?: SortOrder
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    volOneDay?: SortOrder
-    volOneMonth?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
+  export type TokenDailyStatsOrderByWithAggregationInput = {
+    tokenAddress?: SortOrder
+    date?: SortOrder
+    price?: SortOrder
+    priceChange1h?: SortOrderInput | SortOrder
+    priceChange24h?: SortOrderInput | SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
+    marketCap?: SortOrderInput | SortOrder
+    fdv?: SortOrderInput | SortOrder
+    rankByTvl?: SortOrderInput | SortOrder
+    rankByVolume?: SortOrderInput | SortOrder
+    rankByMarketCap?: SortOrderInput | SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
-    pool?: PoolOrderByWithRelationInput
+    updatedAt?: SortOrder
+    _count?: TokenDailyStatsCountOrderByAggregateInput
+    _avg?: TokenDailyStatsAvgOrderByAggregateInput
+    _max?: TokenDailyStatsMaxOrderByAggregateInput
+    _min?: TokenDailyStatsMinOrderByAggregateInput
+    _sum?: TokenDailyStatsSumOrderByAggregateInput
   }
 
-  export type PoolStatisticWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: PoolStatisticWhereInput | PoolStatisticWhereInput[]
-    OR?: PoolStatisticWhereInput[]
-    NOT?: PoolStatisticWhereInput | PoolStatisticWhereInput[]
-    poolId?: StringFilter<"PoolStatistic"> | string
-    apr?: FloatFilter<"PoolStatistic"> | number
-    tvlUSD?: FloatFilter<"PoolStatistic"> | number
-    volOneDay?: StringFilter<"PoolStatistic"> | string
-    volOneMonth?: StringFilter<"PoolStatistic"> | string
-    impermanentLoss?: FloatFilter<"PoolStatistic"> | number
-    healthScore?: IntFilter<"PoolStatistic"> | number
-    createdAt?: DateTimeFilter<"PoolStatistic"> | Date | string
-    pool?: XOR<PoolRelationFilter, PoolWhereInput>
-  }, "id">
-
-  export type PoolStatisticOrderByWithAggregationInput = {
-    id?: SortOrder
-    poolId?: SortOrder
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    volOneDay?: SortOrder
-    volOneMonth?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
-    createdAt?: SortOrder
-    _count?: PoolStatisticCountOrderByAggregateInput
-    _avg?: PoolStatisticAvgOrderByAggregateInput
-    _max?: PoolStatisticMaxOrderByAggregateInput
-    _min?: PoolStatisticMinOrderByAggregateInput
-    _sum?: PoolStatisticSumOrderByAggregateInput
-  }
-
-  export type PoolStatisticScalarWhereWithAggregatesInput = {
-    AND?: PoolStatisticScalarWhereWithAggregatesInput | PoolStatisticScalarWhereWithAggregatesInput[]
-    OR?: PoolStatisticScalarWhereWithAggregatesInput[]
-    NOT?: PoolStatisticScalarWhereWithAggregatesInput | PoolStatisticScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"PoolStatistic"> | string
-    poolId?: StringWithAggregatesFilter<"PoolStatistic"> | string
-    apr?: FloatWithAggregatesFilter<"PoolStatistic"> | number
-    tvlUSD?: FloatWithAggregatesFilter<"PoolStatistic"> | number
-    volOneDay?: StringWithAggregatesFilter<"PoolStatistic"> | string
-    volOneMonth?: StringWithAggregatesFilter<"PoolStatistic"> | string
-    impermanentLoss?: FloatWithAggregatesFilter<"PoolStatistic"> | number
-    healthScore?: IntWithAggregatesFilter<"PoolStatistic"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"PoolStatistic"> | Date | string
-  }
-
-  export type PoolCreateInput = {
-    id?: string
-    address: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    token0: TokenCreateNestedOneWithoutPoolsAsToken0Input
-    token1: TokenCreateNestedOneWithoutPoolsAsToken1Input
-    swaps?: SwapCreateNestedManyWithoutPoolInput
-    PoolStatistic?: PoolStatisticCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolUncheckedCreateInput = {
-    id?: string
-    address: string
-    token0Id: string
-    token1Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    swaps?: SwapUncheckedCreateNestedManyWithoutPoolInput
-    PoolStatistic?: PoolStatisticUncheckedCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    token0?: TokenUpdateOneRequiredWithoutPoolsAsToken0NestedInput
-    token1?: TokenUpdateOneRequiredWithoutPoolsAsToken1NestedInput
-    swaps?: SwapUpdateManyWithoutPoolNestedInput
-    PoolStatistic?: PoolStatisticUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token0Id?: StringFieldUpdateOperationsInput | string
-    token1Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    swaps?: SwapUncheckedUpdateManyWithoutPoolNestedInput
-    PoolStatistic?: PoolStatisticUncheckedUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolCreateManyInput = {
-    id?: string
-    address: string
-    token0Id: string
-    token1Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PoolUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token0Id?: StringFieldUpdateOperationsInput | string
-    token1Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SwapCreateInput = {
-    id?: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    gasUsed: number
-    gasPrice: string
-    createdAt?: Date | string
-    pool: PoolCreateNestedOneWithoutSwapsInput
-  }
-
-  export type SwapUncheckedCreateInput = {
-    id?: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    poolId: string
-    gasUsed: number
-    gasPrice: string
-    createdAt?: Date | string
-  }
-
-  export type SwapUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    pool?: PoolUpdateOneRequiredWithoutSwapsNestedInput
-  }
-
-  export type SwapUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    poolId?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SwapCreateManyInput = {
-    id?: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    poolId: string
-    gasUsed: number
-    gasPrice: string
-    createdAt?: Date | string
-  }
-
-  export type SwapUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SwapUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    poolId?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type IndexerStateCreateInput = {
-    id?: string
-    lastBlock?: bigint | number
-    lastUpdate?: Date | string
-  }
-
-  export type IndexerStateUncheckedCreateInput = {
-    id?: string
-    lastBlock?: bigint | number
-    lastUpdate?: Date | string
-  }
-
-  export type IndexerStateUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
-    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type IndexerStateUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
-    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type IndexerStateCreateManyInput = {
-    id?: string
-    lastBlock?: bigint | number
-    lastUpdate?: Date | string
-  }
-
-  export type IndexerStateUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
-    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type IndexerStateUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    lastBlock?: BigIntFieldUpdateOperationsInput | bigint | number
-    lastUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type TokenDailyStatsScalarWhereWithAggregatesInput = {
+    AND?: TokenDailyStatsScalarWhereWithAggregatesInput | TokenDailyStatsScalarWhereWithAggregatesInput[]
+    OR?: TokenDailyStatsScalarWhereWithAggregatesInput[]
+    NOT?: TokenDailyStatsScalarWhereWithAggregatesInput | TokenDailyStatsScalarWhereWithAggregatesInput[]
+    tokenAddress?: StringWithAggregatesFilter<"TokenDailyStats"> | string
+    date?: StringWithAggregatesFilter<"TokenDailyStats"> | string
+    price?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
+    priceChange1h?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    priceChange24h?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    volume24h?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
+    volumeUSD24h?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
+    tvlInPools?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
+    marketCap?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    fdv?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    rankByTvl?: IntNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    rankByVolume?: IntNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    rankByMarketCap?: IntNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
+    swapCount24h?: IntWithAggregatesFilter<"TokenDailyStats"> | number
+    uniqueTraders24h?: IntWithAggregatesFilter<"TokenDailyStats"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"TokenDailyStats"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TokenDailyStats"> | Date | string
   }
 
   export type TokenCreateInput = {
-    id?: string
     address: string
     symbol: string
     name: string
     decimals: number
     logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
-    poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
-    Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
+    updatedAt?: Date | string
+    TokenPrice?: TokenPriceCreateNestedManyWithoutTokenInput
+    TokenDailyStats?: TokenDailyStatsCreateNestedManyWithoutTokenInput
   }
 
   export type TokenUncheckedCreateInput = {
-    id?: string
     address: string
     symbol: string
     name: string
     decimals: number
     logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
-    poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
-    Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
+    updatedAt?: Date | string
+    TokenPrice?: TokenPriceUncheckedCreateNestedManyWithoutTokenInput
+    TokenDailyStats?: TokenDailyStatsUncheckedCreateNestedManyWithoutTokenInput
   }
 
   export type TokenUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     address?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     decimals?: IntFieldUpdateOperationsInput | number
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
-    poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
-    Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    TokenPrice?: TokenPriceUpdateManyWithoutTokenNestedInput
+    TokenDailyStats?: TokenDailyStatsUpdateManyWithoutTokenNestedInput
   }
 
   export type TokenUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     address?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     decimals?: IntFieldUpdateOperationsInput | number
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
-    poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
-    Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    TokenPrice?: TokenPriceUncheckedUpdateManyWithoutTokenNestedInput
+    TokenDailyStats?: TokenDailyStatsUncheckedUpdateManyWithoutTokenNestedInput
   }
 
   export type TokenCreateManyInput = {
-    id?: string
     address: string
     symbol: string
     name: string
     decimals: number
     logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
     website?: string | null
     twitter?: string | null
     description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TokenUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     address?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     decimals?: IntFieldUpdateOperationsInput | number
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     address?: StringFieldUpdateOperationsInput | string
     symbol?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     decimals?: IntFieldUpdateOperationsInput | number
     logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
     website?: NullableStringFieldUpdateOperationsInput | string | null
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TokenStatisticCreateInput = {
-    id?: string
+  export type TokenPriceCreateInput = {
+    timestamp: Date | string
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume?: number
-    fdv?: number | null
-    marketCap?: number | null
+    priceSource?: $Enums.PriceSource
+    confidence?: number
+    volumeUSD?: number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
-    token: TokenCreateNestedOneWithoutStatisticInput
+    token: TokenCreateNestedOneWithoutTokenPriceInput
   }
 
-  export type TokenStatisticUncheckedCreateInput = {
-    id?: string
-    tokenId: string
+  export type TokenPriceUncheckedCreateInput = {
+    tokenAddress: string
+    timestamp: Date | string
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume?: number
-    fdv?: number | null
-    marketCap?: number | null
+    priceSource?: $Enums.PriceSource
+    confidence?: number
+    volumeUSD?: number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
-  export type TokenStatisticUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
+  export type TokenPriceUpdateInput = {
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    token?: TokenUpdateOneRequiredWithoutStatisticNestedInput
+    token?: TokenUpdateOneRequiredWithoutTokenPriceNestedInput
   }
 
-  export type TokenStatisticUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tokenId?: StringFieldUpdateOperationsInput | string
+  export type TokenPriceUncheckedUpdateInput = {
+    tokenAddress?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TokenStatisticCreateManyInput = {
-    id?: string
-    tokenId: string
+  export type TokenPriceCreateManyInput = {
+    tokenAddress: string
+    timestamp: Date | string
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume?: number
-    fdv?: number | null
+    priceSource?: $Enums.PriceSource
+    confidence?: number
+    volumeUSD?: number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
+    createdAt?: Date | string
+  }
+
+  export type TokenPriceUpdateManyMutationInput = {
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TokenPriceUncheckedUpdateManyInput = {
+    tokenAddress?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TokenDailyStatsCreateInput = {
+    date: string
+    price: number
+    priceChange1h?: number | null
+    priceChange24h?: number | null
+    volume24h?: number
+    volumeUSD24h?: number
+    tvlInPools?: number
     marketCap?: number | null
+    fdv?: number | null
+    rankByTvl?: number | null
+    rankByVolume?: number | null
+    rankByMarketCap?: number | null
+    swapCount24h?: number
+    uniqueTraders24h?: number
     createdAt?: Date | string
+    updatedAt?: Date | string
+    token: TokenCreateNestedOneWithoutTokenDailyStatsInput
   }
 
-  export type TokenStatisticUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
+  export type TokenDailyStatsUncheckedCreateInput = {
+    tokenAddress: string
+    date: string
+    price: number
+    priceChange1h?: number | null
+    priceChange24h?: number | null
+    volume24h?: number
+    volumeUSD24h?: number
+    tvlInPools?: number
+    marketCap?: number | null
+    fdv?: number | null
+    rankByTvl?: number | null
+    rankByVolume?: number | null
+    rankByMarketCap?: number | null
+    swapCount24h?: number
+    uniqueTraders24h?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TokenDailyStatsUpdateInput = {
+    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    token?: TokenUpdateOneRequiredWithoutTokenDailyStatsNestedInput
   }
 
-  export type TokenStatisticUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    tokenId?: StringFieldUpdateOperationsInput | string
+  export type TokenDailyStatsUncheckedUpdateInput = {
+    tokenAddress?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PoolStatisticCreateInput = {
-    id?: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
+  export type TokenDailyStatsCreateManyInput = {
+    tokenAddress: string
+    date: string
+    price: number
+    priceChange1h?: number | null
+    priceChange24h?: number | null
+    volume24h?: number
+    volumeUSD24h?: number
+    tvlInPools?: number
+    marketCap?: number | null
+    fdv?: number | null
+    rankByTvl?: number | null
+    rankByVolume?: number | null
+    rankByMarketCap?: number | null
+    swapCount24h?: number
+    uniqueTraders24h?: number
     createdAt?: Date | string
-    pool: PoolCreateNestedOneWithoutPoolStatisticInput
+    updatedAt?: Date | string
   }
 
-  export type PoolStatisticUncheckedCreateInput = {
-    id?: string
-    poolId: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
-    createdAt?: Date | string
-  }
-
-  export type PoolStatisticUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
+  export type TokenDailyStatsUpdateManyMutationInput = {
+    date?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    pool?: PoolUpdateOneRequiredWithoutPoolStatisticNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PoolStatisticUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    poolId?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
+  export type TokenDailyStatsUncheckedUpdateManyInput = {
+    tokenAddress?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolStatisticCreateManyInput = {
-    id?: string
-    poolId: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
-    createdAt?: Date | string
-  }
-
-  export type PoolStatisticUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolStatisticUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    poolId?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -8921,15 +5430,22 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  export type BigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type EnumTokenStateFilter<$PrismaModel = never> = {
+    equals?: $Enums.TokenState | EnumTokenStateFieldRefInput<$PrismaModel>
+    in?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumTokenStateFilter<$PrismaModel> | $Enums.TokenState
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -8943,21 +5459,54 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type TokenRelationFilter = {
-    is?: TokenWhereInput
-    isNot?: TokenWhereInput
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type SwapListRelationFilter = {
-    every?: SwapWhereInput
-    some?: SwapWhereInput
-    none?: SwapWhereInput
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+  export type JsonNullableFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type PoolStatisticListRelationFilter = {
-    every?: PoolStatisticWhereInput
-    some?: PoolStatisticWhereInput
-    none?: PoolStatisticWhereInput
+  export type TokenPriceListRelationFilter = {
+    every?: TokenPriceWhereInput
+    some?: TokenPriceWhereInput
+    none?: TokenPriceWhereInput
+  }
+
+  export type TokenDailyStatsListRelationFilter = {
+    every?: TokenDailyStatsWhereInput
+    some?: TokenDailyStatsWhereInput
+    none?: TokenDailyStatsWhereInput
   }
 
   export type SortOrderInput = {
@@ -8965,61 +5514,86 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type SwapOrderByRelationAggregateInput = {
+  export type TokenPriceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type PoolStatisticOrderByRelationAggregateInput = {
+  export type TokenDailyStatsOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type PoolCountOrderByAggregateInput = {
-    id?: SortOrder
+  export type TokenCountOrderByAggregateInput = {
     address?: SortOrder
-    token0Id?: SortOrder
-    token1Id?: SortOrder
-    fee?: SortOrder
-    liquidity?: SortOrder
-    tick?: SortOrder
-    sqrtPriceX96?: SortOrder
+    symbol?: SortOrder
+    name?: SortOrder
+    decimals?: SortOrder
+    logoUri?: SortOrder
+    website?: SortOrder
+    twitter?: SortOrder
+    description?: SortOrder
+    coingeckoId?: SortOrder
+    totalSupply?: SortOrder
+    status?: SortOrder
+    discoveredAt?: SortOrder
+    lastEnrichmentAt?: SortOrder
+    lastActivityAt?: SortOrder
+    isStableCoin?: SortOrder
+    isVerifiedManually?: SortOrder
+    metadata?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type PoolAvgOrderByAggregateInput = {
-    fee?: SortOrder
-    tick?: SortOrder
+  export type TokenAvgOrderByAggregateInput = {
+    decimals?: SortOrder
+    totalSupply?: SortOrder
   }
 
-  export type PoolMaxOrderByAggregateInput = {
-    id?: SortOrder
+  export type TokenMaxOrderByAggregateInput = {
     address?: SortOrder
-    token0Id?: SortOrder
-    token1Id?: SortOrder
-    fee?: SortOrder
-    liquidity?: SortOrder
-    tick?: SortOrder
-    sqrtPriceX96?: SortOrder
+    symbol?: SortOrder
+    name?: SortOrder
+    decimals?: SortOrder
+    logoUri?: SortOrder
+    website?: SortOrder
+    twitter?: SortOrder
+    description?: SortOrder
+    coingeckoId?: SortOrder
+    totalSupply?: SortOrder
+    status?: SortOrder
+    discoveredAt?: SortOrder
+    lastEnrichmentAt?: SortOrder
+    lastActivityAt?: SortOrder
+    isStableCoin?: SortOrder
+    isVerifiedManually?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type PoolMinOrderByAggregateInput = {
-    id?: SortOrder
+  export type TokenMinOrderByAggregateInput = {
     address?: SortOrder
-    token0Id?: SortOrder
-    token1Id?: SortOrder
-    fee?: SortOrder
-    liquidity?: SortOrder
-    tick?: SortOrder
-    sqrtPriceX96?: SortOrder
+    symbol?: SortOrder
+    name?: SortOrder
+    decimals?: SortOrder
+    logoUri?: SortOrder
+    website?: SortOrder
+    twitter?: SortOrder
+    description?: SortOrder
+    coingeckoId?: SortOrder
+    totalSupply?: SortOrder
+    status?: SortOrder
+    discoveredAt?: SortOrder
+    lastEnrichmentAt?: SortOrder
+    lastActivityAt?: SortOrder
+    isStableCoin?: SortOrder
+    isVerifiedManually?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type PoolSumOrderByAggregateInput = {
-    fee?: SortOrder
-    tick?: SortOrder
+  export type TokenSumOrderByAggregateInput = {
+    decimals?: SortOrder
+    totalSupply?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -9074,146 +5648,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type PoolRelationFilter = {
-    is?: PoolWhereInput
-    isNot?: PoolWhereInput
-  }
-
-  export type SwapTransactionHashLogIndexCompoundUniqueInput = {
-    transactionHash: string
-    logIndex: number
-  }
-
-  export type SwapCountOrderByAggregateInput = {
-    id?: SortOrder
-    sender?: SortOrder
-    recipient?: SortOrder
-    amount0?: SortOrder
-    amount1?: SortOrder
-    sqrtPriceX96?: SortOrder
-    tick?: SortOrder
-    transactionHash?: SortOrder
-    logIndex?: SortOrder
-    poolAddress?: SortOrder
-    poolId?: SortOrder
-    gasUsed?: SortOrder
-    gasPrice?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type SwapAvgOrderByAggregateInput = {
-    tick?: SortOrder
-    logIndex?: SortOrder
-    gasUsed?: SortOrder
-  }
-
-  export type SwapMaxOrderByAggregateInput = {
-    id?: SortOrder
-    sender?: SortOrder
-    recipient?: SortOrder
-    amount0?: SortOrder
-    amount1?: SortOrder
-    sqrtPriceX96?: SortOrder
-    tick?: SortOrder
-    transactionHash?: SortOrder
-    logIndex?: SortOrder
-    poolAddress?: SortOrder
-    poolId?: SortOrder
-    gasUsed?: SortOrder
-    gasPrice?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type SwapMinOrderByAggregateInput = {
-    id?: SortOrder
-    sender?: SortOrder
-    recipient?: SortOrder
-    amount0?: SortOrder
-    amount1?: SortOrder
-    sqrtPriceX96?: SortOrder
-    tick?: SortOrder
-    transactionHash?: SortOrder
-    logIndex?: SortOrder
-    poolAddress?: SortOrder
-    poolId?: SortOrder
-    gasUsed?: SortOrder
-    gasPrice?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type SwapSumOrderByAggregateInput = {
-    tick?: SortOrder
-    logIndex?: SortOrder
-    gasUsed?: SortOrder
-  }
-
-  export type BigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
-  }
-
-  export type IndexerStateCountOrderByAggregateInput = {
-    id?: SortOrder
-    lastBlock?: SortOrder
-    lastUpdate?: SortOrder
-  }
-
-  export type IndexerStateAvgOrderByAggregateInput = {
-    lastBlock?: SortOrder
-  }
-
-  export type IndexerStateMaxOrderByAggregateInput = {
-    id?: SortOrder
-    lastBlock?: SortOrder
-    lastUpdate?: SortOrder
-  }
-
-  export type IndexerStateMinOrderByAggregateInput = {
-    id?: SortOrder
-    lastBlock?: SortOrder
-    lastUpdate?: SortOrder
-  }
-
-  export type IndexerStateSumOrderByAggregateInput = {
-    lastBlock?: SortOrder
-  }
-
   export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
     in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
@@ -9230,89 +5664,75 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
+  export type EnumTokenStateWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TokenState | EnumTokenStateFieldRefInput<$PrismaModel>
+    in?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumTokenStateWithAggregatesFilter<$PrismaModel> | $Enums.TokenState
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTokenStateFilter<$PrismaModel>
+    _max?: NestedEnumTokenStateFilter<$PrismaModel>
   }
 
-  export type PoolListRelationFilter = {
-    every?: PoolWhereInput
-    some?: PoolWhereInput
-    none?: PoolWhereInput
+  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type TokenStatisticListRelationFilter = {
-    every?: TokenStatisticWhereInput
-    some?: TokenStatisticWhereInput
-    none?: TokenStatisticWhereInput
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type PoolOrderByRelationAggregateInput = {
-    _count?: SortOrder
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
 
-  export type TokenStatisticOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type TokenCountOrderByAggregateInput = {
-    id?: SortOrder
-    address?: SortOrder
-    symbol?: SortOrder
-    name?: SortOrder
-    decimals?: SortOrder
-    logoUri?: SortOrder
-    coingeckoId?: SortOrder
-    tags?: SortOrder
-    totalSupply?: SortOrder
-    circulatingSupply?: SortOrder
-    website?: SortOrder
-    twitter?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type TokenAvgOrderByAggregateInput = {
-    decimals?: SortOrder
-  }
-
-  export type TokenMaxOrderByAggregateInput = {
-    id?: SortOrder
-    address?: SortOrder
-    symbol?: SortOrder
-    name?: SortOrder
-    decimals?: SortOrder
-    logoUri?: SortOrder
-    coingeckoId?: SortOrder
-    totalSupply?: SortOrder
-    circulatingSupply?: SortOrder
-    website?: SortOrder
-    twitter?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type TokenMinOrderByAggregateInput = {
-    id?: SortOrder
-    address?: SortOrder
-    symbol?: SortOrder
-    name?: SortOrder
-    decimals?: SortOrder
-    logoUri?: SortOrder
-    coingeckoId?: SortOrder
-    totalSupply?: SortOrder
-    circulatingSupply?: SortOrder
-    website?: SortOrder
-    twitter?: SortOrder
-    description?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type TokenSumOrderByAggregateInput = {
-    decimals?: SortOrder
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -9326,69 +5746,73 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  export type EnumPriceSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriceSource | EnumPriceSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriceSourceFilter<$PrismaModel> | $Enums.PriceSource
   }
 
-  export type TokenStatisticCountOrderByAggregateInput = {
-    id?: SortOrder
-    tokenId?: SortOrder
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type TokenScalarRelationFilter = {
+    is?: TokenWhereInput
+    isNot?: TokenWhereInput
+  }
+
+  export type TokenPriceTokenAddressTimestampCompoundUniqueInput = {
+    tokenAddress: string
+    timestamp: Date | string
+  }
+
+  export type TokenPriceCountOrderByAggregateInput = {
+    tokenAddress?: SortOrder
+    timestamp?: SortOrder
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrder
-    marketCap?: SortOrder
+    priceSource?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
+    liquidityPath?: SortOrder
+    poolsInvolved?: SortOrder
     createdAt?: SortOrder
   }
 
-  export type TokenStatisticAvgOrderByAggregateInput = {
+  export type TokenPriceAvgOrderByAggregateInput = {
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrder
-    marketCap?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
   }
 
-  export type TokenStatisticMaxOrderByAggregateInput = {
-    id?: SortOrder
-    tokenId?: SortOrder
+  export type TokenPriceMaxOrderByAggregateInput = {
+    tokenAddress?: SortOrder
+    timestamp?: SortOrder
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrder
-    marketCap?: SortOrder
+    priceSource?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
     createdAt?: SortOrder
   }
 
-  export type TokenStatisticMinOrderByAggregateInput = {
-    id?: SortOrder
-    tokenId?: SortOrder
+  export type TokenPriceMinOrderByAggregateInput = {
+    tokenAddress?: SortOrder
+    timestamp?: SortOrder
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrder
-    marketCap?: SortOrder
+    priceSource?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
     createdAt?: SortOrder
   }
 
-  export type TokenStatisticSumOrderByAggregateInput = {
+  export type TokenPriceSumOrderByAggregateInput = {
     price?: SortOrder
-    oneHourEvolution?: SortOrder
-    oneDayEvolution?: SortOrder
-    volume?: SortOrder
-    fdv?: SortOrder
-    marketCap?: SortOrder
+    confidence?: SortOrder
+    volumeUSD?: SortOrder
   }
 
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -9407,6 +5831,135 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type EnumPriceSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriceSource | EnumPriceSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriceSourceWithAggregatesFilter<$PrismaModel> | $Enums.PriceSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPriceSourceFilter<$PrismaModel>
+    _max?: NestedEnumPriceSourceFilter<$PrismaModel>
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type TokenDailyStatsTokenAddressDateCompoundUniqueInput = {
+    tokenAddress: string
+    date: string
+  }
+
+  export type TokenDailyStatsCountOrderByAggregateInput = {
+    tokenAddress?: SortOrder
+    date?: SortOrder
+    price?: SortOrder
+    priceChange1h?: SortOrder
+    priceChange24h?: SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
+    marketCap?: SortOrder
+    fdv?: SortOrder
+    rankByTvl?: SortOrder
+    rankByVolume?: SortOrder
+    rankByMarketCap?: SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TokenDailyStatsAvgOrderByAggregateInput = {
+    price?: SortOrder
+    priceChange1h?: SortOrder
+    priceChange24h?: SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
+    marketCap?: SortOrder
+    fdv?: SortOrder
+    rankByTvl?: SortOrder
+    rankByVolume?: SortOrder
+    rankByMarketCap?: SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
+  }
+
+  export type TokenDailyStatsMaxOrderByAggregateInput = {
+    tokenAddress?: SortOrder
+    date?: SortOrder
+    price?: SortOrder
+    priceChange1h?: SortOrder
+    priceChange24h?: SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
+    marketCap?: SortOrder
+    fdv?: SortOrder
+    rankByTvl?: SortOrder
+    rankByVolume?: SortOrder
+    rankByMarketCap?: SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TokenDailyStatsMinOrderByAggregateInput = {
+    tokenAddress?: SortOrder
+    date?: SortOrder
+    price?: SortOrder
+    priceChange1h?: SortOrder
+    priceChange24h?: SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
+    marketCap?: SortOrder
+    fdv?: SortOrder
+    rankByTvl?: SortOrder
+    rankByVolume?: SortOrder
+    rankByMarketCap?: SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TokenDailyStatsSumOrderByAggregateInput = {
+    price?: SortOrder
+    priceChange1h?: SortOrder
+    priceChange24h?: SortOrder
+    volume24h?: SortOrder
+    volumeUSD24h?: SortOrder
+    tvlInPools?: SortOrder
+    marketCap?: SortOrder
+    fdv?: SortOrder
+    rankByTvl?: SortOrder
+    rankByVolume?: SortOrder
+    rankByMarketCap?: SortOrder
+    swapCount24h?: SortOrder
+    uniqueTraders24h?: SortOrder
+  }
+
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -9423,94 +5976,48 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type PoolStatisticCountOrderByAggregateInput = {
-    id?: SortOrder
-    poolId?: SortOrder
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    volOneDay?: SortOrder
-    volOneMonth?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
-    createdAt?: SortOrder
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type PoolStatisticAvgOrderByAggregateInput = {
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
+  export type TokenPriceCreateNestedManyWithoutTokenInput = {
+    create?: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput> | TokenPriceCreateWithoutTokenInput[] | TokenPriceUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenPriceCreateOrConnectWithoutTokenInput | TokenPriceCreateOrConnectWithoutTokenInput[]
+    createMany?: TokenPriceCreateManyTokenInputEnvelope
+    connect?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
   }
 
-  export type PoolStatisticMaxOrderByAggregateInput = {
-    id?: SortOrder
-    poolId?: SortOrder
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    volOneDay?: SortOrder
-    volOneMonth?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
-    createdAt?: SortOrder
+  export type TokenDailyStatsCreateNestedManyWithoutTokenInput = {
+    create?: XOR<TokenDailyStatsCreateWithoutTokenInput, TokenDailyStatsUncheckedCreateWithoutTokenInput> | TokenDailyStatsCreateWithoutTokenInput[] | TokenDailyStatsUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenDailyStatsCreateOrConnectWithoutTokenInput | TokenDailyStatsCreateOrConnectWithoutTokenInput[]
+    createMany?: TokenDailyStatsCreateManyTokenInputEnvelope
+    connect?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
   }
 
-  export type PoolStatisticMinOrderByAggregateInput = {
-    id?: SortOrder
-    poolId?: SortOrder
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    volOneDay?: SortOrder
-    volOneMonth?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
-    createdAt?: SortOrder
+  export type TokenPriceUncheckedCreateNestedManyWithoutTokenInput = {
+    create?: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput> | TokenPriceCreateWithoutTokenInput[] | TokenPriceUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenPriceCreateOrConnectWithoutTokenInput | TokenPriceCreateOrConnectWithoutTokenInput[]
+    createMany?: TokenPriceCreateManyTokenInputEnvelope
+    connect?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
   }
 
-  export type PoolStatisticSumOrderByAggregateInput = {
-    apr?: SortOrder
-    tvlUSD?: SortOrder
-    impermanentLoss?: SortOrder
-    healthScore?: SortOrder
-  }
-
-  export type TokenCreateNestedOneWithoutPoolsAsToken0Input = {
-    create?: XOR<TokenCreateWithoutPoolsAsToken0Input, TokenUncheckedCreateWithoutPoolsAsToken0Input>
-    connectOrCreate?: TokenCreateOrConnectWithoutPoolsAsToken0Input
-    connect?: TokenWhereUniqueInput
-  }
-
-  export type TokenCreateNestedOneWithoutPoolsAsToken1Input = {
-    create?: XOR<TokenCreateWithoutPoolsAsToken1Input, TokenUncheckedCreateWithoutPoolsAsToken1Input>
-    connectOrCreate?: TokenCreateOrConnectWithoutPoolsAsToken1Input
-    connect?: TokenWhereUniqueInput
-  }
-
-  export type SwapCreateNestedManyWithoutPoolInput = {
-    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
-    createMany?: SwapCreateManyPoolInputEnvelope
-    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-  }
-
-  export type PoolStatisticCreateNestedManyWithoutPoolInput = {
-    create?: XOR<PoolStatisticCreateWithoutPoolInput, PoolStatisticUncheckedCreateWithoutPoolInput> | PoolStatisticCreateWithoutPoolInput[] | PoolStatisticUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: PoolStatisticCreateOrConnectWithoutPoolInput | PoolStatisticCreateOrConnectWithoutPoolInput[]
-    createMany?: PoolStatisticCreateManyPoolInputEnvelope
-    connect?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-  }
-
-  export type SwapUncheckedCreateNestedManyWithoutPoolInput = {
-    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
-    createMany?: SwapCreateManyPoolInputEnvelope
-    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-  }
-
-  export type PoolStatisticUncheckedCreateNestedManyWithoutPoolInput = {
-    create?: XOR<PoolStatisticCreateWithoutPoolInput, PoolStatisticUncheckedCreateWithoutPoolInput> | PoolStatisticCreateWithoutPoolInput[] | PoolStatisticUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: PoolStatisticCreateOrConnectWithoutPoolInput | PoolStatisticCreateOrConnectWithoutPoolInput[]
-    createMany?: PoolStatisticCreateManyPoolInputEnvelope
-    connect?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
+  export type TokenDailyStatsUncheckedCreateNestedManyWithoutTokenInput = {
+    create?: XOR<TokenDailyStatsCreateWithoutTokenInput, TokenDailyStatsUncheckedCreateWithoutTokenInput> | TokenDailyStatsCreateWithoutTokenInput[] | TokenDailyStatsUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenDailyStatsCreateOrConnectWithoutTokenInput | TokenDailyStatsCreateOrConnectWithoutTokenInput[]
+    createMany?: TokenDailyStatsCreateManyTokenInputEnvelope
+    connect?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -9529,104 +6036,6 @@ export namespace Prisma {
     set?: string | null
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type DateTimeFieldUpdateOperationsInput = {
-    set?: Date | string
-  }
-
-  export type TokenUpdateOneRequiredWithoutPoolsAsToken0NestedInput = {
-    create?: XOR<TokenCreateWithoutPoolsAsToken0Input, TokenUncheckedCreateWithoutPoolsAsToken0Input>
-    connectOrCreate?: TokenCreateOrConnectWithoutPoolsAsToken0Input
-    upsert?: TokenUpsertWithoutPoolsAsToken0Input
-    connect?: TokenWhereUniqueInput
-    update?: XOR<XOR<TokenUpdateToOneWithWhereWithoutPoolsAsToken0Input, TokenUpdateWithoutPoolsAsToken0Input>, TokenUncheckedUpdateWithoutPoolsAsToken0Input>
-  }
-
-  export type TokenUpdateOneRequiredWithoutPoolsAsToken1NestedInput = {
-    create?: XOR<TokenCreateWithoutPoolsAsToken1Input, TokenUncheckedCreateWithoutPoolsAsToken1Input>
-    connectOrCreate?: TokenCreateOrConnectWithoutPoolsAsToken1Input
-    upsert?: TokenUpsertWithoutPoolsAsToken1Input
-    connect?: TokenWhereUniqueInput
-    update?: XOR<XOR<TokenUpdateToOneWithWhereWithoutPoolsAsToken1Input, TokenUpdateWithoutPoolsAsToken1Input>, TokenUncheckedUpdateWithoutPoolsAsToken1Input>
-  }
-
-  export type SwapUpdateManyWithoutPoolNestedInput = {
-    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
-    upsert?: SwapUpsertWithWhereUniqueWithoutPoolInput | SwapUpsertWithWhereUniqueWithoutPoolInput[]
-    createMany?: SwapCreateManyPoolInputEnvelope
-    set?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    disconnect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    delete?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    update?: SwapUpdateWithWhereUniqueWithoutPoolInput | SwapUpdateWithWhereUniqueWithoutPoolInput[]
-    updateMany?: SwapUpdateManyWithWhereWithoutPoolInput | SwapUpdateManyWithWhereWithoutPoolInput[]
-    deleteMany?: SwapScalarWhereInput | SwapScalarWhereInput[]
-  }
-
-  export type PoolStatisticUpdateManyWithoutPoolNestedInput = {
-    create?: XOR<PoolStatisticCreateWithoutPoolInput, PoolStatisticUncheckedCreateWithoutPoolInput> | PoolStatisticCreateWithoutPoolInput[] | PoolStatisticUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: PoolStatisticCreateOrConnectWithoutPoolInput | PoolStatisticCreateOrConnectWithoutPoolInput[]
-    upsert?: PoolStatisticUpsertWithWhereUniqueWithoutPoolInput | PoolStatisticUpsertWithWhereUniqueWithoutPoolInput[]
-    createMany?: PoolStatisticCreateManyPoolInputEnvelope
-    set?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    disconnect?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    delete?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    connect?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    update?: PoolStatisticUpdateWithWhereUniqueWithoutPoolInput | PoolStatisticUpdateWithWhereUniqueWithoutPoolInput[]
-    updateMany?: PoolStatisticUpdateManyWithWhereWithoutPoolInput | PoolStatisticUpdateManyWithWhereWithoutPoolInput[]
-    deleteMany?: PoolStatisticScalarWhereInput | PoolStatisticScalarWhereInput[]
-  }
-
-  export type SwapUncheckedUpdateManyWithoutPoolNestedInput = {
-    create?: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput> | SwapCreateWithoutPoolInput[] | SwapUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: SwapCreateOrConnectWithoutPoolInput | SwapCreateOrConnectWithoutPoolInput[]
-    upsert?: SwapUpsertWithWhereUniqueWithoutPoolInput | SwapUpsertWithWhereUniqueWithoutPoolInput[]
-    createMany?: SwapCreateManyPoolInputEnvelope
-    set?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    disconnect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    delete?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    connect?: SwapWhereUniqueInput | SwapWhereUniqueInput[]
-    update?: SwapUpdateWithWhereUniqueWithoutPoolInput | SwapUpdateWithWhereUniqueWithoutPoolInput[]
-    updateMany?: SwapUpdateManyWithWhereWithoutPoolInput | SwapUpdateManyWithWhereWithoutPoolInput[]
-    deleteMany?: SwapScalarWhereInput | SwapScalarWhereInput[]
-  }
-
-  export type PoolStatisticUncheckedUpdateManyWithoutPoolNestedInput = {
-    create?: XOR<PoolStatisticCreateWithoutPoolInput, PoolStatisticUncheckedCreateWithoutPoolInput> | PoolStatisticCreateWithoutPoolInput[] | PoolStatisticUncheckedCreateWithoutPoolInput[]
-    connectOrCreate?: PoolStatisticCreateOrConnectWithoutPoolInput | PoolStatisticCreateOrConnectWithoutPoolInput[]
-    upsert?: PoolStatisticUpsertWithWhereUniqueWithoutPoolInput | PoolStatisticUpsertWithWhereUniqueWithoutPoolInput[]
-    createMany?: PoolStatisticCreateManyPoolInputEnvelope
-    set?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    disconnect?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    delete?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    connect?: PoolStatisticWhereUniqueInput | PoolStatisticWhereUniqueInput[]
-    update?: PoolStatisticUpdateWithWhereUniqueWithoutPoolInput | PoolStatisticUpdateWithWhereUniqueWithoutPoolInput[]
-    updateMany?: PoolStatisticUpdateManyWithWhereWithoutPoolInput | PoolStatisticUpdateManyWithWhereWithoutPoolInput[]
-    deleteMany?: PoolStatisticScalarWhereInput | PoolStatisticScalarWhereInput[]
-  }
-
-  export type PoolCreateNestedOneWithoutSwapsInput = {
-    create?: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
-    connectOrCreate?: PoolCreateOrConnectWithoutSwapsInput
-    connect?: PoolWhereUniqueInput
-  }
-
-  export type PoolUpdateOneRequiredWithoutSwapsNestedInput = {
-    create?: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
-    connectOrCreate?: PoolCreateOrConnectWithoutSwapsInput
-    upsert?: PoolUpsertWithoutSwapsInput
-    connect?: PoolWhereUniqueInput
-    update?: XOR<XOR<PoolUpdateToOneWithWhereWithoutSwapsInput, PoolUpdateWithoutSwapsInput>, PoolUncheckedUpdateWithoutSwapsInput>
-  }
-
   export type BigIntFieldUpdateOperationsInput = {
     set?: bigint | number
     increment?: bigint | number
@@ -9635,144 +6044,85 @@ export namespace Prisma {
     divide?: bigint | number
   }
 
-  export type TokenCreatetagsInput = {
+  export type EnumTokenStateFieldUpdateOperationsInput = {
+    set?: $Enums.TokenState
+  }
+
+  export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type TokenPriceUpdateManyWithoutTokenNestedInput = {
+    create?: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput> | TokenPriceCreateWithoutTokenInput[] | TokenPriceUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenPriceCreateOrConnectWithoutTokenInput | TokenPriceCreateOrConnectWithoutTokenInput[]
+    upsert?: TokenPriceUpsertWithWhereUniqueWithoutTokenInput | TokenPriceUpsertWithWhereUniqueWithoutTokenInput[]
+    createMany?: TokenPriceCreateManyTokenInputEnvelope
+    set?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    disconnect?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    delete?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    connect?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    update?: TokenPriceUpdateWithWhereUniqueWithoutTokenInput | TokenPriceUpdateWithWhereUniqueWithoutTokenInput[]
+    updateMany?: TokenPriceUpdateManyWithWhereWithoutTokenInput | TokenPriceUpdateManyWithWhereWithoutTokenInput[]
+    deleteMany?: TokenPriceScalarWhereInput | TokenPriceScalarWhereInput[]
+  }
+
+  export type TokenDailyStatsUpdateManyWithoutTokenNestedInput = {
+    create?: XOR<TokenDailyStatsCreateWithoutTokenInput, TokenDailyStatsUncheckedCreateWithoutTokenInput> | TokenDailyStatsCreateWithoutTokenInput[] | TokenDailyStatsUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenDailyStatsCreateOrConnectWithoutTokenInput | TokenDailyStatsCreateOrConnectWithoutTokenInput[]
+    upsert?: TokenDailyStatsUpsertWithWhereUniqueWithoutTokenInput | TokenDailyStatsUpsertWithWhereUniqueWithoutTokenInput[]
+    createMany?: TokenDailyStatsCreateManyTokenInputEnvelope
+    set?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    disconnect?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    delete?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    connect?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    update?: TokenDailyStatsUpdateWithWhereUniqueWithoutTokenInput | TokenDailyStatsUpdateWithWhereUniqueWithoutTokenInput[]
+    updateMany?: TokenDailyStatsUpdateManyWithWhereWithoutTokenInput | TokenDailyStatsUpdateManyWithWhereWithoutTokenInput[]
+    deleteMany?: TokenDailyStatsScalarWhereInput | TokenDailyStatsScalarWhereInput[]
+  }
+
+  export type TokenPriceUncheckedUpdateManyWithoutTokenNestedInput = {
+    create?: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput> | TokenPriceCreateWithoutTokenInput[] | TokenPriceUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenPriceCreateOrConnectWithoutTokenInput | TokenPriceCreateOrConnectWithoutTokenInput[]
+    upsert?: TokenPriceUpsertWithWhereUniqueWithoutTokenInput | TokenPriceUpsertWithWhereUniqueWithoutTokenInput[]
+    createMany?: TokenPriceCreateManyTokenInputEnvelope
+    set?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    disconnect?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    delete?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    connect?: TokenPriceWhereUniqueInput | TokenPriceWhereUniqueInput[]
+    update?: TokenPriceUpdateWithWhereUniqueWithoutTokenInput | TokenPriceUpdateWithWhereUniqueWithoutTokenInput[]
+    updateMany?: TokenPriceUpdateManyWithWhereWithoutTokenInput | TokenPriceUpdateManyWithWhereWithoutTokenInput[]
+    deleteMany?: TokenPriceScalarWhereInput | TokenPriceScalarWhereInput[]
+  }
+
+  export type TokenDailyStatsUncheckedUpdateManyWithoutTokenNestedInput = {
+    create?: XOR<TokenDailyStatsCreateWithoutTokenInput, TokenDailyStatsUncheckedCreateWithoutTokenInput> | TokenDailyStatsCreateWithoutTokenInput[] | TokenDailyStatsUncheckedCreateWithoutTokenInput[]
+    connectOrCreate?: TokenDailyStatsCreateOrConnectWithoutTokenInput | TokenDailyStatsCreateOrConnectWithoutTokenInput[]
+    upsert?: TokenDailyStatsUpsertWithWhereUniqueWithoutTokenInput | TokenDailyStatsUpsertWithWhereUniqueWithoutTokenInput[]
+    createMany?: TokenDailyStatsCreateManyTokenInputEnvelope
+    set?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    disconnect?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    delete?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    connect?: TokenDailyStatsWhereUniqueInput | TokenDailyStatsWhereUniqueInput[]
+    update?: TokenDailyStatsUpdateWithWhereUniqueWithoutTokenInput | TokenDailyStatsUpdateWithWhereUniqueWithoutTokenInput[]
+    updateMany?: TokenDailyStatsUpdateManyWithWhereWithoutTokenInput | TokenDailyStatsUpdateManyWithWhereWithoutTokenInput[]
+    deleteMany?: TokenDailyStatsScalarWhereInput | TokenDailyStatsScalarWhereInput[]
+  }
+
+  export type TokenPriceCreatepoolsInvolvedInput = {
     set: string[]
   }
 
-  export type PoolCreateNestedManyWithoutToken0Input = {
-    create?: XOR<PoolCreateWithoutToken0Input, PoolUncheckedCreateWithoutToken0Input> | PoolCreateWithoutToken0Input[] | PoolUncheckedCreateWithoutToken0Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken0Input | PoolCreateOrConnectWithoutToken0Input[]
-    createMany?: PoolCreateManyToken0InputEnvelope
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-  }
-
-  export type PoolCreateNestedManyWithoutToken1Input = {
-    create?: XOR<PoolCreateWithoutToken1Input, PoolUncheckedCreateWithoutToken1Input> | PoolCreateWithoutToken1Input[] | PoolUncheckedCreateWithoutToken1Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken1Input | PoolCreateOrConnectWithoutToken1Input[]
-    createMany?: PoolCreateManyToken1InputEnvelope
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-  }
-
-  export type TokenStatisticCreateNestedManyWithoutTokenInput = {
-    create?: XOR<TokenStatisticCreateWithoutTokenInput, TokenStatisticUncheckedCreateWithoutTokenInput> | TokenStatisticCreateWithoutTokenInput[] | TokenStatisticUncheckedCreateWithoutTokenInput[]
-    connectOrCreate?: TokenStatisticCreateOrConnectWithoutTokenInput | TokenStatisticCreateOrConnectWithoutTokenInput[]
-    createMany?: TokenStatisticCreateManyTokenInputEnvelope
-    connect?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-  }
-
-  export type PoolUncheckedCreateNestedManyWithoutToken0Input = {
-    create?: XOR<PoolCreateWithoutToken0Input, PoolUncheckedCreateWithoutToken0Input> | PoolCreateWithoutToken0Input[] | PoolUncheckedCreateWithoutToken0Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken0Input | PoolCreateOrConnectWithoutToken0Input[]
-    createMany?: PoolCreateManyToken0InputEnvelope
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-  }
-
-  export type PoolUncheckedCreateNestedManyWithoutToken1Input = {
-    create?: XOR<PoolCreateWithoutToken1Input, PoolUncheckedCreateWithoutToken1Input> | PoolCreateWithoutToken1Input[] | PoolUncheckedCreateWithoutToken1Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken1Input | PoolCreateOrConnectWithoutToken1Input[]
-    createMany?: PoolCreateManyToken1InputEnvelope
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-  }
-
-  export type TokenStatisticUncheckedCreateNestedManyWithoutTokenInput = {
-    create?: XOR<TokenStatisticCreateWithoutTokenInput, TokenStatisticUncheckedCreateWithoutTokenInput> | TokenStatisticCreateWithoutTokenInput[] | TokenStatisticUncheckedCreateWithoutTokenInput[]
-    connectOrCreate?: TokenStatisticCreateOrConnectWithoutTokenInput | TokenStatisticCreateOrConnectWithoutTokenInput[]
-    createMany?: TokenStatisticCreateManyTokenInputEnvelope
-    connect?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-  }
-
-  export type TokenUpdatetagsInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type PoolUpdateManyWithoutToken0NestedInput = {
-    create?: XOR<PoolCreateWithoutToken0Input, PoolUncheckedCreateWithoutToken0Input> | PoolCreateWithoutToken0Input[] | PoolUncheckedCreateWithoutToken0Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken0Input | PoolCreateOrConnectWithoutToken0Input[]
-    upsert?: PoolUpsertWithWhereUniqueWithoutToken0Input | PoolUpsertWithWhereUniqueWithoutToken0Input[]
-    createMany?: PoolCreateManyToken0InputEnvelope
-    set?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    disconnect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    delete?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    update?: PoolUpdateWithWhereUniqueWithoutToken0Input | PoolUpdateWithWhereUniqueWithoutToken0Input[]
-    updateMany?: PoolUpdateManyWithWhereWithoutToken0Input | PoolUpdateManyWithWhereWithoutToken0Input[]
-    deleteMany?: PoolScalarWhereInput | PoolScalarWhereInput[]
-  }
-
-  export type PoolUpdateManyWithoutToken1NestedInput = {
-    create?: XOR<PoolCreateWithoutToken1Input, PoolUncheckedCreateWithoutToken1Input> | PoolCreateWithoutToken1Input[] | PoolUncheckedCreateWithoutToken1Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken1Input | PoolCreateOrConnectWithoutToken1Input[]
-    upsert?: PoolUpsertWithWhereUniqueWithoutToken1Input | PoolUpsertWithWhereUniqueWithoutToken1Input[]
-    createMany?: PoolCreateManyToken1InputEnvelope
-    set?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    disconnect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    delete?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    update?: PoolUpdateWithWhereUniqueWithoutToken1Input | PoolUpdateWithWhereUniqueWithoutToken1Input[]
-    updateMany?: PoolUpdateManyWithWhereWithoutToken1Input | PoolUpdateManyWithWhereWithoutToken1Input[]
-    deleteMany?: PoolScalarWhereInput | PoolScalarWhereInput[]
-  }
-
-  export type TokenStatisticUpdateManyWithoutTokenNestedInput = {
-    create?: XOR<TokenStatisticCreateWithoutTokenInput, TokenStatisticUncheckedCreateWithoutTokenInput> | TokenStatisticCreateWithoutTokenInput[] | TokenStatisticUncheckedCreateWithoutTokenInput[]
-    connectOrCreate?: TokenStatisticCreateOrConnectWithoutTokenInput | TokenStatisticCreateOrConnectWithoutTokenInput[]
-    upsert?: TokenStatisticUpsertWithWhereUniqueWithoutTokenInput | TokenStatisticUpsertWithWhereUniqueWithoutTokenInput[]
-    createMany?: TokenStatisticCreateManyTokenInputEnvelope
-    set?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    disconnect?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    delete?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    connect?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    update?: TokenStatisticUpdateWithWhereUniqueWithoutTokenInput | TokenStatisticUpdateWithWhereUniqueWithoutTokenInput[]
-    updateMany?: TokenStatisticUpdateManyWithWhereWithoutTokenInput | TokenStatisticUpdateManyWithWhereWithoutTokenInput[]
-    deleteMany?: TokenStatisticScalarWhereInput | TokenStatisticScalarWhereInput[]
-  }
-
-  export type PoolUncheckedUpdateManyWithoutToken0NestedInput = {
-    create?: XOR<PoolCreateWithoutToken0Input, PoolUncheckedCreateWithoutToken0Input> | PoolCreateWithoutToken0Input[] | PoolUncheckedCreateWithoutToken0Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken0Input | PoolCreateOrConnectWithoutToken0Input[]
-    upsert?: PoolUpsertWithWhereUniqueWithoutToken0Input | PoolUpsertWithWhereUniqueWithoutToken0Input[]
-    createMany?: PoolCreateManyToken0InputEnvelope
-    set?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    disconnect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    delete?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    update?: PoolUpdateWithWhereUniqueWithoutToken0Input | PoolUpdateWithWhereUniqueWithoutToken0Input[]
-    updateMany?: PoolUpdateManyWithWhereWithoutToken0Input | PoolUpdateManyWithWhereWithoutToken0Input[]
-    deleteMany?: PoolScalarWhereInput | PoolScalarWhereInput[]
-  }
-
-  export type PoolUncheckedUpdateManyWithoutToken1NestedInput = {
-    create?: XOR<PoolCreateWithoutToken1Input, PoolUncheckedCreateWithoutToken1Input> | PoolCreateWithoutToken1Input[] | PoolUncheckedCreateWithoutToken1Input[]
-    connectOrCreate?: PoolCreateOrConnectWithoutToken1Input | PoolCreateOrConnectWithoutToken1Input[]
-    upsert?: PoolUpsertWithWhereUniqueWithoutToken1Input | PoolUpsertWithWhereUniqueWithoutToken1Input[]
-    createMany?: PoolCreateManyToken1InputEnvelope
-    set?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    disconnect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    delete?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    connect?: PoolWhereUniqueInput | PoolWhereUniqueInput[]
-    update?: PoolUpdateWithWhereUniqueWithoutToken1Input | PoolUpdateWithWhereUniqueWithoutToken1Input[]
-    updateMany?: PoolUpdateManyWithWhereWithoutToken1Input | PoolUpdateManyWithWhereWithoutToken1Input[]
-    deleteMany?: PoolScalarWhereInput | PoolScalarWhereInput[]
-  }
-
-  export type TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput = {
-    create?: XOR<TokenStatisticCreateWithoutTokenInput, TokenStatisticUncheckedCreateWithoutTokenInput> | TokenStatisticCreateWithoutTokenInput[] | TokenStatisticUncheckedCreateWithoutTokenInput[]
-    connectOrCreate?: TokenStatisticCreateOrConnectWithoutTokenInput | TokenStatisticCreateOrConnectWithoutTokenInput[]
-    upsert?: TokenStatisticUpsertWithWhereUniqueWithoutTokenInput | TokenStatisticUpsertWithWhereUniqueWithoutTokenInput[]
-    createMany?: TokenStatisticCreateManyTokenInputEnvelope
-    set?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    disconnect?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    delete?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    connect?: TokenStatisticWhereUniqueInput | TokenStatisticWhereUniqueInput[]
-    update?: TokenStatisticUpdateWithWhereUniqueWithoutTokenInput | TokenStatisticUpdateWithWhereUniqueWithoutTokenInput[]
-    updateMany?: TokenStatisticUpdateManyWithWhereWithoutTokenInput | TokenStatisticUpdateManyWithWhereWithoutTokenInput[]
-    deleteMany?: TokenStatisticScalarWhereInput | TokenStatisticScalarWhereInput[]
-  }
-
-  export type TokenCreateNestedOneWithoutStatisticInput = {
-    create?: XOR<TokenCreateWithoutStatisticInput, TokenUncheckedCreateWithoutStatisticInput>
-    connectOrCreate?: TokenCreateOrConnectWithoutStatisticInput
+  export type TokenCreateNestedOneWithoutTokenPriceInput = {
+    create?: XOR<TokenCreateWithoutTokenPriceInput, TokenUncheckedCreateWithoutTokenPriceInput>
+    connectOrCreate?: TokenCreateOrConnectWithoutTokenPriceInput
     connect?: TokenWhereUniqueInput
   }
 
@@ -9784,6 +6134,29 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type EnumPriceSourceFieldUpdateOperationsInput = {
+    set?: $Enums.PriceSource
+  }
+
+  export type TokenPriceUpdatepoolsInvolvedInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type TokenUpdateOneRequiredWithoutTokenPriceNestedInput = {
+    create?: XOR<TokenCreateWithoutTokenPriceInput, TokenUncheckedCreateWithoutTokenPriceInput>
+    connectOrCreate?: TokenCreateOrConnectWithoutTokenPriceInput
+    upsert?: TokenUpsertWithoutTokenPriceInput
+    connect?: TokenWhereUniqueInput
+    update?: XOR<XOR<TokenUpdateToOneWithWhereWithoutTokenPriceInput, TokenUpdateWithoutTokenPriceInput>, TokenUncheckedUpdateWithoutTokenPriceInput>
+  }
+
+  export type TokenCreateNestedOneWithoutTokenDailyStatsInput = {
+    create?: XOR<TokenCreateWithoutTokenDailyStatsInput, TokenUncheckedCreateWithoutTokenDailyStatsInput>
+    connectOrCreate?: TokenCreateOrConnectWithoutTokenDailyStatsInput
+    connect?: TokenWhereUniqueInput
+  }
+
   export type NullableFloatFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -9792,26 +6165,20 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type TokenUpdateOneRequiredWithoutStatisticNestedInput = {
-    create?: XOR<TokenCreateWithoutStatisticInput, TokenUncheckedCreateWithoutStatisticInput>
-    connectOrCreate?: TokenCreateOrConnectWithoutStatisticInput
-    upsert?: TokenUpsertWithoutStatisticInput
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type TokenUpdateOneRequiredWithoutTokenDailyStatsNestedInput = {
+    create?: XOR<TokenCreateWithoutTokenDailyStatsInput, TokenUncheckedCreateWithoutTokenDailyStatsInput>
+    connectOrCreate?: TokenCreateOrConnectWithoutTokenDailyStatsInput
+    upsert?: TokenUpsertWithoutTokenDailyStatsInput
     connect?: TokenWhereUniqueInput
-    update?: XOR<XOR<TokenUpdateToOneWithWhereWithoutStatisticInput, TokenUpdateWithoutStatisticInput>, TokenUncheckedUpdateWithoutStatisticInput>
-  }
-
-  export type PoolCreateNestedOneWithoutPoolStatisticInput = {
-    create?: XOR<PoolCreateWithoutPoolStatisticInput, PoolUncheckedCreateWithoutPoolStatisticInput>
-    connectOrCreate?: PoolCreateOrConnectWithoutPoolStatisticInput
-    connect?: PoolWhereUniqueInput
-  }
-
-  export type PoolUpdateOneRequiredWithoutPoolStatisticNestedInput = {
-    create?: XOR<PoolCreateWithoutPoolStatisticInput, PoolUncheckedCreateWithoutPoolStatisticInput>
-    connectOrCreate?: PoolCreateOrConnectWithoutPoolStatisticInput
-    upsert?: PoolUpsertWithoutPoolStatisticInput
-    connect?: PoolWhereUniqueInput
-    update?: XOR<XOR<PoolUpdateToOneWithWhereWithoutPoolStatisticInput, PoolUpdateWithoutPoolStatisticInput>, PoolUncheckedUpdateWithoutPoolStatisticInput>
+    update?: XOR<XOR<TokenUpdateToOneWithWhereWithoutTokenDailyStatsInput, TokenUpdateWithoutTokenDailyStatsInput>, TokenUncheckedUpdateWithoutTokenDailyStatsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -9853,15 +6220,22 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  export type NestedBigIntFilter<$PrismaModel = never> = {
+    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
+    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
+    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+  }
+
+  export type NestedEnumTokenStateFilter<$PrismaModel = never> = {
+    equals?: $Enums.TokenState | EnumTokenStateFieldRefInput<$PrismaModel>
+    in?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumTokenStateFilter<$PrismaModel> | $Enums.TokenState
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -9873,6 +6247,22 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -9936,7 +6326,7 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -9944,48 +6334,7 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type NestedBigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -10004,6 +6353,81 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
+  export type NestedEnumTokenStateWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TokenState | EnumTokenStateFieldRefInput<$PrismaModel>
+    in?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
+    not?: NestedEnumTokenStateWithAggregatesFilter<$PrismaModel> | $Enums.TokenState
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTokenStateFilter<$PrismaModel>
+    _max?: NestedEnumTokenStateFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedEnumPriceSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriceSource | EnumPriceSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriceSourceFilter<$PrismaModel> | $Enums.PriceSource
+  }
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -10018,6 +6442,27 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPriceSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PriceSource | EnumPriceSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PriceSource[] | ListEnumPriceSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumPriceSourceWithAggregatesFilter<$PrismaModel> | $Enums.PriceSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPriceSourceFilter<$PrismaModel>
+    _max?: NestedEnumPriceSourceFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -10036,1008 +6481,506 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type TokenCreateWithoutPoolsAsToken0Input = {
-    id?: string
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
-    website?: string | null
-    twitter?: string | null
-    description?: string | null
-    createdAt?: Date | string
-    poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
-    Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type TokenUncheckedCreateWithoutPoolsAsToken0Input = {
-    id?: string
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
-    website?: string | null
-    twitter?: string | null
-    description?: string | null
-    createdAt?: Date | string
-    poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
-    Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
-  }
-
-  export type TokenCreateOrConnectWithoutPoolsAsToken0Input = {
-    where: TokenWhereUniqueInput
-    create: XOR<TokenCreateWithoutPoolsAsToken0Input, TokenUncheckedCreateWithoutPoolsAsToken0Input>
-  }
-
-  export type TokenCreateWithoutPoolsAsToken1Input = {
-    id?: string
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
-    website?: string | null
-    twitter?: string | null
-    description?: string | null
-    createdAt?: Date | string
-    poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
-    Statistic?: TokenStatisticCreateNestedManyWithoutTokenInput
-  }
-
-  export type TokenUncheckedCreateWithoutPoolsAsToken1Input = {
-    id?: string
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
-    website?: string | null
-    twitter?: string | null
-    description?: string | null
-    createdAt?: Date | string
-    poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
-    Statistic?: TokenStatisticUncheckedCreateNestedManyWithoutTokenInput
-  }
-
-  export type TokenCreateOrConnectWithoutPoolsAsToken1Input = {
-    where: TokenWhereUniqueInput
-    create: XOR<TokenCreateWithoutPoolsAsToken1Input, TokenUncheckedCreateWithoutPoolsAsToken1Input>
-  }
-
-  export type SwapCreateWithoutPoolInput = {
-    id?: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    gasUsed: number
-    gasPrice: string
-    createdAt?: Date | string
-  }
-
-  export type SwapUncheckedCreateWithoutPoolInput = {
-    id?: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    gasUsed: number
-    gasPrice: string
-    createdAt?: Date | string
-  }
-
-  export type SwapCreateOrConnectWithoutPoolInput = {
-    where: SwapWhereUniqueInput
-    create: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput>
-  }
-
-  export type SwapCreateManyPoolInputEnvelope = {
-    data: SwapCreateManyPoolInput | SwapCreateManyPoolInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PoolStatisticCreateWithoutPoolInput = {
-    id?: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
-    createdAt?: Date | string
-  }
-
-  export type PoolStatisticUncheckedCreateWithoutPoolInput = {
-    id?: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
-    createdAt?: Date | string
-  }
-
-  export type PoolStatisticCreateOrConnectWithoutPoolInput = {
-    where: PoolStatisticWhereUniqueInput
-    create: XOR<PoolStatisticCreateWithoutPoolInput, PoolStatisticUncheckedCreateWithoutPoolInput>
-  }
-
-  export type PoolStatisticCreateManyPoolInputEnvelope = {
-    data: PoolStatisticCreateManyPoolInput | PoolStatisticCreateManyPoolInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type TokenUpsertWithoutPoolsAsToken0Input = {
-    update: XOR<TokenUpdateWithoutPoolsAsToken0Input, TokenUncheckedUpdateWithoutPoolsAsToken0Input>
-    create: XOR<TokenCreateWithoutPoolsAsToken0Input, TokenUncheckedCreateWithoutPoolsAsToken0Input>
-    where?: TokenWhereInput
-  }
-
-  export type TokenUpdateToOneWithWhereWithoutPoolsAsToken0Input = {
-    where?: TokenWhereInput
-    data: XOR<TokenUpdateWithoutPoolsAsToken0Input, TokenUncheckedUpdateWithoutPoolsAsToken0Input>
-  }
-
-  export type TokenUpdateWithoutPoolsAsToken0Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    symbol?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    decimals?: IntFieldUpdateOperationsInput | number
-    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    website?: NullableStringFieldUpdateOperationsInput | string | null
-    twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
-    Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
-  }
-
-  export type TokenUncheckedUpdateWithoutPoolsAsToken0Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    symbol?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    decimals?: IntFieldUpdateOperationsInput | number
-    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    website?: NullableStringFieldUpdateOperationsInput | string | null
-    twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
-    Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
-  }
-
-  export type TokenUpsertWithoutPoolsAsToken1Input = {
-    update: XOR<TokenUpdateWithoutPoolsAsToken1Input, TokenUncheckedUpdateWithoutPoolsAsToken1Input>
-    create: XOR<TokenCreateWithoutPoolsAsToken1Input, TokenUncheckedCreateWithoutPoolsAsToken1Input>
-    where?: TokenWhereInput
-  }
-
-  export type TokenUpdateToOneWithWhereWithoutPoolsAsToken1Input = {
-    where?: TokenWhereInput
-    data: XOR<TokenUpdateWithoutPoolsAsToken1Input, TokenUncheckedUpdateWithoutPoolsAsToken1Input>
-  }
-
-  export type TokenUpdateWithoutPoolsAsToken1Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    symbol?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    decimals?: IntFieldUpdateOperationsInput | number
-    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    website?: NullableStringFieldUpdateOperationsInput | string | null
-    twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
-    Statistic?: TokenStatisticUpdateManyWithoutTokenNestedInput
-  }
-
-  export type TokenUncheckedUpdateWithoutPoolsAsToken1Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    symbol?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    decimals?: IntFieldUpdateOperationsInput | number
-    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    website?: NullableStringFieldUpdateOperationsInput | string | null
-    twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
-    Statistic?: TokenStatisticUncheckedUpdateManyWithoutTokenNestedInput
-  }
-
-  export type SwapUpsertWithWhereUniqueWithoutPoolInput = {
-    where: SwapWhereUniqueInput
-    update: XOR<SwapUpdateWithoutPoolInput, SwapUncheckedUpdateWithoutPoolInput>
-    create: XOR<SwapCreateWithoutPoolInput, SwapUncheckedCreateWithoutPoolInput>
-  }
-
-  export type SwapUpdateWithWhereUniqueWithoutPoolInput = {
-    where: SwapWhereUniqueInput
-    data: XOR<SwapUpdateWithoutPoolInput, SwapUncheckedUpdateWithoutPoolInput>
-  }
-
-  export type SwapUpdateManyWithWhereWithoutPoolInput = {
-    where: SwapScalarWhereInput
-    data: XOR<SwapUpdateManyMutationInput, SwapUncheckedUpdateManyWithoutPoolInput>
-  }
-
-  export type SwapScalarWhereInput = {
-    AND?: SwapScalarWhereInput | SwapScalarWhereInput[]
-    OR?: SwapScalarWhereInput[]
-    NOT?: SwapScalarWhereInput | SwapScalarWhereInput[]
-    id?: StringFilter<"Swap"> | string
-    sender?: StringFilter<"Swap"> | string
-    recipient?: StringFilter<"Swap"> | string
-    amount0?: StringFilter<"Swap"> | string
-    amount1?: StringFilter<"Swap"> | string
-    sqrtPriceX96?: StringFilter<"Swap"> | string
-    tick?: IntFilter<"Swap"> | number
-    transactionHash?: StringFilter<"Swap"> | string
-    logIndex?: IntFilter<"Swap"> | number
-    poolAddress?: StringFilter<"Swap"> | string
-    poolId?: StringFilter<"Swap"> | string
-    gasUsed?: IntFilter<"Swap"> | number
-    gasPrice?: StringFilter<"Swap"> | string
-    createdAt?: DateTimeFilter<"Swap"> | Date | string
-  }
-
-  export type PoolStatisticUpsertWithWhereUniqueWithoutPoolInput = {
-    where: PoolStatisticWhereUniqueInput
-    update: XOR<PoolStatisticUpdateWithoutPoolInput, PoolStatisticUncheckedUpdateWithoutPoolInput>
-    create: XOR<PoolStatisticCreateWithoutPoolInput, PoolStatisticUncheckedCreateWithoutPoolInput>
-  }
-
-  export type PoolStatisticUpdateWithWhereUniqueWithoutPoolInput = {
-    where: PoolStatisticWhereUniqueInput
-    data: XOR<PoolStatisticUpdateWithoutPoolInput, PoolStatisticUncheckedUpdateWithoutPoolInput>
-  }
-
-  export type PoolStatisticUpdateManyWithWhereWithoutPoolInput = {
-    where: PoolStatisticScalarWhereInput
-    data: XOR<PoolStatisticUpdateManyMutationInput, PoolStatisticUncheckedUpdateManyWithoutPoolInput>
-  }
-
-  export type PoolStatisticScalarWhereInput = {
-    AND?: PoolStatisticScalarWhereInput | PoolStatisticScalarWhereInput[]
-    OR?: PoolStatisticScalarWhereInput[]
-    NOT?: PoolStatisticScalarWhereInput | PoolStatisticScalarWhereInput[]
-    id?: StringFilter<"PoolStatistic"> | string
-    poolId?: StringFilter<"PoolStatistic"> | string
-    apr?: FloatFilter<"PoolStatistic"> | number
-    tvlUSD?: FloatFilter<"PoolStatistic"> | number
-    volOneDay?: StringFilter<"PoolStatistic"> | string
-    volOneMonth?: StringFilter<"PoolStatistic"> | string
-    impermanentLoss?: FloatFilter<"PoolStatistic"> | number
-    healthScore?: IntFilter<"PoolStatistic"> | number
-    createdAt?: DateTimeFilter<"PoolStatistic"> | Date | string
-  }
-
-  export type PoolCreateWithoutSwapsInput = {
-    id?: string
-    address: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    token0: TokenCreateNestedOneWithoutPoolsAsToken0Input
-    token1: TokenCreateNestedOneWithoutPoolsAsToken1Input
-    PoolStatistic?: PoolStatisticCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolUncheckedCreateWithoutSwapsInput = {
-    id?: string
-    address: string
-    token0Id: string
-    token1Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    PoolStatistic?: PoolStatisticUncheckedCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolCreateOrConnectWithoutSwapsInput = {
-    where: PoolWhereUniqueInput
-    create: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
-  }
-
-  export type PoolUpsertWithoutSwapsInput = {
-    update: XOR<PoolUpdateWithoutSwapsInput, PoolUncheckedUpdateWithoutSwapsInput>
-    create: XOR<PoolCreateWithoutSwapsInput, PoolUncheckedCreateWithoutSwapsInput>
-    where?: PoolWhereInput
-  }
-
-  export type PoolUpdateToOneWithWhereWithoutSwapsInput = {
-    where?: PoolWhereInput
-    data: XOR<PoolUpdateWithoutSwapsInput, PoolUncheckedUpdateWithoutSwapsInput>
-  }
-
-  export type PoolUpdateWithoutSwapsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    token0?: TokenUpdateOneRequiredWithoutPoolsAsToken0NestedInput
-    token1?: TokenUpdateOneRequiredWithoutPoolsAsToken1NestedInput
-    PoolStatistic?: PoolStatisticUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolUncheckedUpdateWithoutSwapsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token0Id?: StringFieldUpdateOperationsInput | string
-    token1Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    PoolStatistic?: PoolStatisticUncheckedUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolCreateWithoutToken0Input = {
-    id?: string
-    address: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    token1: TokenCreateNestedOneWithoutPoolsAsToken1Input
-    swaps?: SwapCreateNestedManyWithoutPoolInput
-    PoolStatistic?: PoolStatisticCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolUncheckedCreateWithoutToken0Input = {
-    id?: string
-    address: string
-    token1Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    swaps?: SwapUncheckedCreateNestedManyWithoutPoolInput
-    PoolStatistic?: PoolStatisticUncheckedCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolCreateOrConnectWithoutToken0Input = {
-    where: PoolWhereUniqueInput
-    create: XOR<PoolCreateWithoutToken0Input, PoolUncheckedCreateWithoutToken0Input>
-  }
-
-  export type PoolCreateManyToken0InputEnvelope = {
-    data: PoolCreateManyToken0Input | PoolCreateManyToken0Input[]
-    skipDuplicates?: boolean
-  }
-
-  export type PoolCreateWithoutToken1Input = {
-    id?: string
-    address: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    token0: TokenCreateNestedOneWithoutPoolsAsToken0Input
-    swaps?: SwapCreateNestedManyWithoutPoolInput
-    PoolStatistic?: PoolStatisticCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolUncheckedCreateWithoutToken1Input = {
-    id?: string
-    address: string
-    token0Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    swaps?: SwapUncheckedCreateNestedManyWithoutPoolInput
-    PoolStatistic?: PoolStatisticUncheckedCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolCreateOrConnectWithoutToken1Input = {
-    where: PoolWhereUniqueInput
-    create: XOR<PoolCreateWithoutToken1Input, PoolUncheckedCreateWithoutToken1Input>
-  }
-
-  export type PoolCreateManyToken1InputEnvelope = {
-    data: PoolCreateManyToken1Input | PoolCreateManyToken1Input[]
-    skipDuplicates?: boolean
-  }
-
-  export type TokenStatisticCreateWithoutTokenInput = {
-    id?: string
+  export type TokenPriceCreateWithoutTokenInput = {
+    timestamp: Date | string
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume?: number
-    fdv?: number | null
-    marketCap?: number | null
+    priceSource?: $Enums.PriceSource
+    confidence?: number
+    volumeUSD?: number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
-  export type TokenStatisticUncheckedCreateWithoutTokenInput = {
-    id?: string
+  export type TokenPriceUncheckedCreateWithoutTokenInput = {
+    timestamp: Date | string
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume?: number
-    fdv?: number | null
-    marketCap?: number | null
+    priceSource?: $Enums.PriceSource
+    confidence?: number
+    volumeUSD?: number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
-  export type TokenStatisticCreateOrConnectWithoutTokenInput = {
-    where: TokenStatisticWhereUniqueInput
-    create: XOR<TokenStatisticCreateWithoutTokenInput, TokenStatisticUncheckedCreateWithoutTokenInput>
+  export type TokenPriceCreateOrConnectWithoutTokenInput = {
+    where: TokenPriceWhereUniqueInput
+    create: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput>
   }
 
-  export type TokenStatisticCreateManyTokenInputEnvelope = {
-    data: TokenStatisticCreateManyTokenInput | TokenStatisticCreateManyTokenInput[]
+  export type TokenPriceCreateManyTokenInputEnvelope = {
+    data: TokenPriceCreateManyTokenInput | TokenPriceCreateManyTokenInput[]
     skipDuplicates?: boolean
   }
 
-  export type PoolUpsertWithWhereUniqueWithoutToken0Input = {
-    where: PoolWhereUniqueInput
-    update: XOR<PoolUpdateWithoutToken0Input, PoolUncheckedUpdateWithoutToken0Input>
-    create: XOR<PoolCreateWithoutToken0Input, PoolUncheckedCreateWithoutToken0Input>
-  }
-
-  export type PoolUpdateWithWhereUniqueWithoutToken0Input = {
-    where: PoolWhereUniqueInput
-    data: XOR<PoolUpdateWithoutToken0Input, PoolUncheckedUpdateWithoutToken0Input>
-  }
-
-  export type PoolUpdateManyWithWhereWithoutToken0Input = {
-    where: PoolScalarWhereInput
-    data: XOR<PoolUpdateManyMutationInput, PoolUncheckedUpdateManyWithoutToken0Input>
-  }
-
-  export type PoolScalarWhereInput = {
-    AND?: PoolScalarWhereInput | PoolScalarWhereInput[]
-    OR?: PoolScalarWhereInput[]
-    NOT?: PoolScalarWhereInput | PoolScalarWhereInput[]
-    id?: StringFilter<"Pool"> | string
-    address?: StringFilter<"Pool"> | string
-    token0Id?: StringFilter<"Pool"> | string
-    token1Id?: StringFilter<"Pool"> | string
-    fee?: IntFilter<"Pool"> | number
-    liquidity?: StringNullableFilter<"Pool"> | string | null
-    tick?: IntNullableFilter<"Pool"> | number | null
-    sqrtPriceX96?: StringNullableFilter<"Pool"> | string | null
-    createdAt?: DateTimeFilter<"Pool"> | Date | string
-    updatedAt?: DateTimeFilter<"Pool"> | Date | string
-  }
-
-  export type PoolUpsertWithWhereUniqueWithoutToken1Input = {
-    where: PoolWhereUniqueInput
-    update: XOR<PoolUpdateWithoutToken1Input, PoolUncheckedUpdateWithoutToken1Input>
-    create: XOR<PoolCreateWithoutToken1Input, PoolUncheckedCreateWithoutToken1Input>
-  }
-
-  export type PoolUpdateWithWhereUniqueWithoutToken1Input = {
-    where: PoolWhereUniqueInput
-    data: XOR<PoolUpdateWithoutToken1Input, PoolUncheckedUpdateWithoutToken1Input>
-  }
-
-  export type PoolUpdateManyWithWhereWithoutToken1Input = {
-    where: PoolScalarWhereInput
-    data: XOR<PoolUpdateManyMutationInput, PoolUncheckedUpdateManyWithoutToken1Input>
-  }
-
-  export type TokenStatisticUpsertWithWhereUniqueWithoutTokenInput = {
-    where: TokenStatisticWhereUniqueInput
-    update: XOR<TokenStatisticUpdateWithoutTokenInput, TokenStatisticUncheckedUpdateWithoutTokenInput>
-    create: XOR<TokenStatisticCreateWithoutTokenInput, TokenStatisticUncheckedCreateWithoutTokenInput>
-  }
-
-  export type TokenStatisticUpdateWithWhereUniqueWithoutTokenInput = {
-    where: TokenStatisticWhereUniqueInput
-    data: XOR<TokenStatisticUpdateWithoutTokenInput, TokenStatisticUncheckedUpdateWithoutTokenInput>
-  }
-
-  export type TokenStatisticUpdateManyWithWhereWithoutTokenInput = {
-    where: TokenStatisticScalarWhereInput
-    data: XOR<TokenStatisticUpdateManyMutationInput, TokenStatisticUncheckedUpdateManyWithoutTokenInput>
-  }
-
-  export type TokenStatisticScalarWhereInput = {
-    AND?: TokenStatisticScalarWhereInput | TokenStatisticScalarWhereInput[]
-    OR?: TokenStatisticScalarWhereInput[]
-    NOT?: TokenStatisticScalarWhereInput | TokenStatisticScalarWhereInput[]
-    id?: StringFilter<"TokenStatistic"> | string
-    tokenId?: StringFilter<"TokenStatistic"> | string
-    price?: FloatFilter<"TokenStatistic"> | number
-    oneHourEvolution?: FloatFilter<"TokenStatistic"> | number
-    oneDayEvolution?: FloatFilter<"TokenStatistic"> | number
-    volume?: FloatFilter<"TokenStatistic"> | number
-    fdv?: FloatNullableFilter<"TokenStatistic"> | number | null
-    marketCap?: FloatNullableFilter<"TokenStatistic"> | number | null
-    createdAt?: DateTimeFilter<"TokenStatistic"> | Date | string
-  }
-
-  export type TokenCreateWithoutStatisticInput = {
-    id?: string
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
-    website?: string | null
-    twitter?: string | null
-    description?: string | null
-    createdAt?: Date | string
-    poolsAsToken0?: PoolCreateNestedManyWithoutToken0Input
-    poolsAsToken1?: PoolCreateNestedManyWithoutToken1Input
-  }
-
-  export type TokenUncheckedCreateWithoutStatisticInput = {
-    id?: string
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoUri?: string | null
-    coingeckoId?: string | null
-    tags?: TokenCreatetagsInput | string[]
-    totalSupply?: string | null
-    circulatingSupply?: string | null
-    website?: string | null
-    twitter?: string | null
-    description?: string | null
-    createdAt?: Date | string
-    poolsAsToken0?: PoolUncheckedCreateNestedManyWithoutToken0Input
-    poolsAsToken1?: PoolUncheckedCreateNestedManyWithoutToken1Input
-  }
-
-  export type TokenCreateOrConnectWithoutStatisticInput = {
-    where: TokenWhereUniqueInput
-    create: XOR<TokenCreateWithoutStatisticInput, TokenUncheckedCreateWithoutStatisticInput>
-  }
-
-  export type TokenUpsertWithoutStatisticInput = {
-    update: XOR<TokenUpdateWithoutStatisticInput, TokenUncheckedUpdateWithoutStatisticInput>
-    create: XOR<TokenCreateWithoutStatisticInput, TokenUncheckedCreateWithoutStatisticInput>
-    where?: TokenWhereInput
-  }
-
-  export type TokenUpdateToOneWithWhereWithoutStatisticInput = {
-    where?: TokenWhereInput
-    data: XOR<TokenUpdateWithoutStatisticInput, TokenUncheckedUpdateWithoutStatisticInput>
-  }
-
-  export type TokenUpdateWithoutStatisticInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    symbol?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    decimals?: IntFieldUpdateOperationsInput | number
-    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    website?: NullableStringFieldUpdateOperationsInput | string | null
-    twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken0?: PoolUpdateManyWithoutToken0NestedInput
-    poolsAsToken1?: PoolUpdateManyWithoutToken1NestedInput
-  }
-
-  export type TokenUncheckedUpdateWithoutStatisticInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    symbol?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    decimals?: IntFieldUpdateOperationsInput | number
-    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
-    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    tags?: TokenUpdatetagsInput | string[]
-    totalSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    circulatingSupply?: NullableStringFieldUpdateOperationsInput | string | null
-    website?: NullableStringFieldUpdateOperationsInput | string | null
-    twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    poolsAsToken0?: PoolUncheckedUpdateManyWithoutToken0NestedInput
-    poolsAsToken1?: PoolUncheckedUpdateManyWithoutToken1NestedInput
-  }
-
-  export type PoolCreateWithoutPoolStatisticInput = {
-    id?: string
-    address: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    token0: TokenCreateNestedOneWithoutPoolsAsToken0Input
-    token1: TokenCreateNestedOneWithoutPoolsAsToken1Input
-    swaps?: SwapCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolUncheckedCreateWithoutPoolStatisticInput = {
-    id?: string
-    address: string
-    token0Id: string
-    token1Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    swaps?: SwapUncheckedCreateNestedManyWithoutPoolInput
-  }
-
-  export type PoolCreateOrConnectWithoutPoolStatisticInput = {
-    where: PoolWhereUniqueInput
-    create: XOR<PoolCreateWithoutPoolStatisticInput, PoolUncheckedCreateWithoutPoolStatisticInput>
-  }
-
-  export type PoolUpsertWithoutPoolStatisticInput = {
-    update: XOR<PoolUpdateWithoutPoolStatisticInput, PoolUncheckedUpdateWithoutPoolStatisticInput>
-    create: XOR<PoolCreateWithoutPoolStatisticInput, PoolUncheckedCreateWithoutPoolStatisticInput>
-    where?: PoolWhereInput
-  }
-
-  export type PoolUpdateToOneWithWhereWithoutPoolStatisticInput = {
-    where?: PoolWhereInput
-    data: XOR<PoolUpdateWithoutPoolStatisticInput, PoolUncheckedUpdateWithoutPoolStatisticInput>
-  }
-
-  export type PoolUpdateWithoutPoolStatisticInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    token0?: TokenUpdateOneRequiredWithoutPoolsAsToken0NestedInput
-    token1?: TokenUpdateOneRequiredWithoutPoolsAsToken1NestedInput
-    swaps?: SwapUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolUncheckedUpdateWithoutPoolStatisticInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token0Id?: StringFieldUpdateOperationsInput | string
-    token1Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    swaps?: SwapUncheckedUpdateManyWithoutPoolNestedInput
-  }
-
-  export type SwapCreateManyPoolInput = {
-    id?: string
-    sender: string
-    recipient: string
-    amount0: string
-    amount1: string
-    sqrtPriceX96: string
-    tick: number
-    transactionHash: string
-    logIndex: number
-    poolAddress: string
-    gasUsed: number
-    gasPrice: string
-    createdAt?: Date | string
-  }
-
-  export type PoolStatisticCreateManyPoolInput = {
-    id?: string
-    apr: number
-    tvlUSD: number
-    volOneDay: string
-    volOneMonth: string
-    impermanentLoss: number
-    healthScore: number
-    createdAt?: Date | string
-  }
-
-  export type SwapUpdateWithoutPoolInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SwapUncheckedUpdateWithoutPoolInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SwapUncheckedUpdateManyWithoutPoolInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sender?: StringFieldUpdateOperationsInput | string
-    recipient?: StringFieldUpdateOperationsInput | string
-    amount0?: StringFieldUpdateOperationsInput | string
-    amount1?: StringFieldUpdateOperationsInput | string
-    sqrtPriceX96?: StringFieldUpdateOperationsInput | string
-    tick?: IntFieldUpdateOperationsInput | number
-    transactionHash?: StringFieldUpdateOperationsInput | string
-    logIndex?: IntFieldUpdateOperationsInput | number
-    poolAddress?: StringFieldUpdateOperationsInput | string
-    gasUsed?: IntFieldUpdateOperationsInput | number
-    gasPrice?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolStatisticUpdateWithoutPoolInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolStatisticUncheckedUpdateWithoutPoolInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolStatisticUncheckedUpdateManyWithoutPoolInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    apr?: FloatFieldUpdateOperationsInput | number
-    tvlUSD?: FloatFieldUpdateOperationsInput | number
-    volOneDay?: StringFieldUpdateOperationsInput | string
-    volOneMonth?: StringFieldUpdateOperationsInput | string
-    impermanentLoss?: FloatFieldUpdateOperationsInput | number
-    healthScore?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolCreateManyToken0Input = {
-    id?: string
-    address: string
-    token1Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PoolCreateManyToken1Input = {
-    id?: string
-    address: string
-    token0Id: string
-    fee: number
-    liquidity?: string | null
-    tick?: number | null
-    sqrtPriceX96?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TokenStatisticCreateManyTokenInput = {
-    id?: string
+  export type TokenDailyStatsCreateWithoutTokenInput = {
+    date: string
     price: number
-    oneHourEvolution: number
-    oneDayEvolution: number
-    volume?: number
-    fdv?: number | null
+    priceChange1h?: number | null
+    priceChange24h?: number | null
+    volume24h?: number
+    volumeUSD24h?: number
+    tvlInPools?: number
     marketCap?: number | null
+    fdv?: number | null
+    rankByTvl?: number | null
+    rankByVolume?: number | null
+    rankByMarketCap?: number | null
+    swapCount24h?: number
+    uniqueTraders24h?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TokenDailyStatsUncheckedCreateWithoutTokenInput = {
+    date: string
+    price: number
+    priceChange1h?: number | null
+    priceChange24h?: number | null
+    volume24h?: number
+    volumeUSD24h?: number
+    tvlInPools?: number
+    marketCap?: number | null
+    fdv?: number | null
+    rankByTvl?: number | null
+    rankByVolume?: number | null
+    rankByMarketCap?: number | null
+    swapCount24h?: number
+    uniqueTraders24h?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TokenDailyStatsCreateOrConnectWithoutTokenInput = {
+    where: TokenDailyStatsWhereUniqueInput
+    create: XOR<TokenDailyStatsCreateWithoutTokenInput, TokenDailyStatsUncheckedCreateWithoutTokenInput>
+  }
+
+  export type TokenDailyStatsCreateManyTokenInputEnvelope = {
+    data: TokenDailyStatsCreateManyTokenInput | TokenDailyStatsCreateManyTokenInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TokenPriceUpsertWithWhereUniqueWithoutTokenInput = {
+    where: TokenPriceWhereUniqueInput
+    update: XOR<TokenPriceUpdateWithoutTokenInput, TokenPriceUncheckedUpdateWithoutTokenInput>
+    create: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput>
+  }
+
+  export type TokenPriceUpdateWithWhereUniqueWithoutTokenInput = {
+    where: TokenPriceWhereUniqueInput
+    data: XOR<TokenPriceUpdateWithoutTokenInput, TokenPriceUncheckedUpdateWithoutTokenInput>
+  }
+
+  export type TokenPriceUpdateManyWithWhereWithoutTokenInput = {
+    where: TokenPriceScalarWhereInput
+    data: XOR<TokenPriceUpdateManyMutationInput, TokenPriceUncheckedUpdateManyWithoutTokenInput>
+  }
+
+  export type TokenPriceScalarWhereInput = {
+    AND?: TokenPriceScalarWhereInput | TokenPriceScalarWhereInput[]
+    OR?: TokenPriceScalarWhereInput[]
+    NOT?: TokenPriceScalarWhereInput | TokenPriceScalarWhereInput[]
+    tokenAddress?: StringFilter<"TokenPrice"> | string
+    timestamp?: DateTimeFilter<"TokenPrice"> | Date | string
+    price?: FloatFilter<"TokenPrice"> | number
+    priceSource?: EnumPriceSourceFilter<"TokenPrice"> | $Enums.PriceSource
+    confidence?: FloatFilter<"TokenPrice"> | number
+    volumeUSD?: FloatFilter<"TokenPrice"> | number
+    liquidityPath?: JsonNullableFilter<"TokenPrice">
+    poolsInvolved?: StringNullableListFilter<"TokenPrice">
+    createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
+  }
+
+  export type TokenDailyStatsUpsertWithWhereUniqueWithoutTokenInput = {
+    where: TokenDailyStatsWhereUniqueInput
+    update: XOR<TokenDailyStatsUpdateWithoutTokenInput, TokenDailyStatsUncheckedUpdateWithoutTokenInput>
+    create: XOR<TokenDailyStatsCreateWithoutTokenInput, TokenDailyStatsUncheckedCreateWithoutTokenInput>
+  }
+
+  export type TokenDailyStatsUpdateWithWhereUniqueWithoutTokenInput = {
+    where: TokenDailyStatsWhereUniqueInput
+    data: XOR<TokenDailyStatsUpdateWithoutTokenInput, TokenDailyStatsUncheckedUpdateWithoutTokenInput>
+  }
+
+  export type TokenDailyStatsUpdateManyWithWhereWithoutTokenInput = {
+    where: TokenDailyStatsScalarWhereInput
+    data: XOR<TokenDailyStatsUpdateManyMutationInput, TokenDailyStatsUncheckedUpdateManyWithoutTokenInput>
+  }
+
+  export type TokenDailyStatsScalarWhereInput = {
+    AND?: TokenDailyStatsScalarWhereInput | TokenDailyStatsScalarWhereInput[]
+    OR?: TokenDailyStatsScalarWhereInput[]
+    NOT?: TokenDailyStatsScalarWhereInput | TokenDailyStatsScalarWhereInput[]
+    tokenAddress?: StringFilter<"TokenDailyStats"> | string
+    date?: StringFilter<"TokenDailyStats"> | string
+    price?: FloatFilter<"TokenDailyStats"> | number
+    priceChange1h?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    priceChange24h?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    volume24h?: FloatFilter<"TokenDailyStats"> | number
+    volumeUSD24h?: FloatFilter<"TokenDailyStats"> | number
+    tvlInPools?: FloatFilter<"TokenDailyStats"> | number
+    marketCap?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    fdv?: FloatNullableFilter<"TokenDailyStats"> | number | null
+    rankByTvl?: IntNullableFilter<"TokenDailyStats"> | number | null
+    rankByVolume?: IntNullableFilter<"TokenDailyStats"> | number | null
+    rankByMarketCap?: IntNullableFilter<"TokenDailyStats"> | number | null
+    swapCount24h?: IntFilter<"TokenDailyStats"> | number
+    uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
+    createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
+    updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
+  }
+
+  export type TokenCreateWithoutTokenPriceInput = {
+    address: string
+    symbol: string
+    name: string
+    decimals: number
+    logoUri?: string | null
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    TokenDailyStats?: TokenDailyStatsCreateNestedManyWithoutTokenInput
+  }
+
+  export type TokenUncheckedCreateWithoutTokenPriceInput = {
+    address: string
+    symbol: string
+    name: string
+    decimals: number
+    logoUri?: string | null
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    TokenDailyStats?: TokenDailyStatsUncheckedCreateNestedManyWithoutTokenInput
+  }
+
+  export type TokenCreateOrConnectWithoutTokenPriceInput = {
+    where: TokenWhereUniqueInput
+    create: XOR<TokenCreateWithoutTokenPriceInput, TokenUncheckedCreateWithoutTokenPriceInput>
+  }
+
+  export type TokenUpsertWithoutTokenPriceInput = {
+    update: XOR<TokenUpdateWithoutTokenPriceInput, TokenUncheckedUpdateWithoutTokenPriceInput>
+    create: XOR<TokenCreateWithoutTokenPriceInput, TokenUncheckedCreateWithoutTokenPriceInput>
+    where?: TokenWhereInput
+  }
+
+  export type TokenUpdateToOneWithWhereWithoutTokenPriceInput = {
+    where?: TokenWhereInput
+    data: XOR<TokenUpdateWithoutTokenPriceInput, TokenUncheckedUpdateWithoutTokenPriceInput>
+  }
+
+  export type TokenUpdateWithoutTokenPriceInput = {
+    address?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    decimals?: IntFieldUpdateOperationsInput | number
+    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    TokenDailyStats?: TokenDailyStatsUpdateManyWithoutTokenNestedInput
+  }
+
+  export type TokenUncheckedUpdateWithoutTokenPriceInput = {
+    address?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    decimals?: IntFieldUpdateOperationsInput | number
+    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    TokenDailyStats?: TokenDailyStatsUncheckedUpdateManyWithoutTokenNestedInput
+  }
+
+  export type TokenCreateWithoutTokenDailyStatsInput = {
+    address: string
+    symbol: string
+    name: string
+    decimals: number
+    logoUri?: string | null
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    TokenPrice?: TokenPriceCreateNestedManyWithoutTokenInput
+  }
+
+  export type TokenUncheckedCreateWithoutTokenDailyStatsInput = {
+    address: string
+    symbol: string
+    name: string
+    decimals: number
+    logoUri?: string | null
+    website?: string | null
+    twitter?: string | null
+    description?: string | null
+    coingeckoId?: string | null
+    totalSupply: bigint | number
+    status?: $Enums.TokenState
+    discoveredAt?: Date | string
+    lastEnrichmentAt?: Date | string | null
+    lastActivityAt?: Date | string | null
+    isStableCoin?: boolean
+    isVerifiedManually?: boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    TokenPrice?: TokenPriceUncheckedCreateNestedManyWithoutTokenInput
+  }
+
+  export type TokenCreateOrConnectWithoutTokenDailyStatsInput = {
+    where: TokenWhereUniqueInput
+    create: XOR<TokenCreateWithoutTokenDailyStatsInput, TokenUncheckedCreateWithoutTokenDailyStatsInput>
+  }
+
+  export type TokenUpsertWithoutTokenDailyStatsInput = {
+    update: XOR<TokenUpdateWithoutTokenDailyStatsInput, TokenUncheckedUpdateWithoutTokenDailyStatsInput>
+    create: XOR<TokenCreateWithoutTokenDailyStatsInput, TokenUncheckedCreateWithoutTokenDailyStatsInput>
+    where?: TokenWhereInput
+  }
+
+  export type TokenUpdateToOneWithWhereWithoutTokenDailyStatsInput = {
+    where?: TokenWhereInput
+    data: XOR<TokenUpdateWithoutTokenDailyStatsInput, TokenUncheckedUpdateWithoutTokenDailyStatsInput>
+  }
+
+  export type TokenUpdateWithoutTokenDailyStatsInput = {
+    address?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    decimals?: IntFieldUpdateOperationsInput | number
+    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    TokenPrice?: TokenPriceUpdateManyWithoutTokenNestedInput
+  }
+
+  export type TokenUncheckedUpdateWithoutTokenDailyStatsInput = {
+    address?: StringFieldUpdateOperationsInput | string
+    symbol?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    decimals?: IntFieldUpdateOperationsInput | number
+    logoUri?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    twitter?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
+    discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isStableCoin?: BoolFieldUpdateOperationsInput | boolean
+    isVerifiedManually?: BoolFieldUpdateOperationsInput | boolean
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    TokenPrice?: TokenPriceUncheckedUpdateManyWithoutTokenNestedInput
+  }
+
+  export type TokenPriceCreateManyTokenInput = {
+    timestamp: Date | string
+    price: number
+    priceSource?: $Enums.PriceSource
+    confidence?: number
+    volumeUSD?: number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
-  export type PoolUpdateWithoutToken0Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    token1?: TokenUpdateOneRequiredWithoutPoolsAsToken1NestedInput
-    swaps?: SwapUpdateManyWithoutPoolNestedInput
-    PoolStatistic?: PoolStatisticUpdateManyWithoutPoolNestedInput
+  export type TokenDailyStatsCreateManyTokenInput = {
+    date: string
+    price: number
+    priceChange1h?: number | null
+    priceChange24h?: number | null
+    volume24h?: number
+    volumeUSD24h?: number
+    tvlInPools?: number
+    marketCap?: number | null
+    fdv?: number | null
+    rankByTvl?: number | null
+    rankByVolume?: number | null
+    rankByMarketCap?: number | null
+    swapCount24h?: number
+    uniqueTraders24h?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type PoolUncheckedUpdateWithoutToken0Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token1Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    swaps?: SwapUncheckedUpdateManyWithoutPoolNestedInput
-    PoolStatistic?: PoolStatisticUncheckedUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolUncheckedUpdateManyWithoutToken0Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token1Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PoolUpdateWithoutToken1Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    token0?: TokenUpdateOneRequiredWithoutPoolsAsToken0NestedInput
-    swaps?: SwapUpdateManyWithoutPoolNestedInput
-    PoolStatistic?: PoolStatisticUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolUncheckedUpdateWithoutToken1Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token0Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    swaps?: SwapUncheckedUpdateManyWithoutPoolNestedInput
-    PoolStatistic?: PoolStatisticUncheckedUpdateManyWithoutPoolNestedInput
-  }
-
-  export type PoolUncheckedUpdateManyWithoutToken1Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
-    token0Id?: StringFieldUpdateOperationsInput | string
-    fee?: IntFieldUpdateOperationsInput | number
-    liquidity?: NullableStringFieldUpdateOperationsInput | string | null
-    tick?: NullableIntFieldUpdateOperationsInput | number | null
-    sqrtPriceX96?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TokenStatisticUpdateWithoutTokenInput = {
-    id?: StringFieldUpdateOperationsInput | string
+  export type TokenPriceUpdateWithoutTokenInput = {
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TokenStatisticUncheckedUpdateWithoutTokenInput = {
-    id?: StringFieldUpdateOperationsInput | string
+  export type TokenPriceUncheckedUpdateWithoutTokenInput = {
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type TokenStatisticUncheckedUpdateManyWithoutTokenInput = {
-    id?: StringFieldUpdateOperationsInput | string
+  export type TokenPriceUncheckedUpdateManyWithoutTokenInput = {
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
-    oneHourEvolution?: FloatFieldUpdateOperationsInput | number
-    oneDayEvolution?: FloatFieldUpdateOperationsInput | number
-    volume?: FloatFieldUpdateOperationsInput | number
-    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
+    confidence?: FloatFieldUpdateOperationsInput | number
+    volumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
+    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TokenDailyStatsUpdateWithoutTokenInput = {
+    date?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TokenDailyStatsUncheckedUpdateWithoutTokenInput = {
+    date?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TokenDailyStatsUncheckedUpdateManyWithoutTokenInput = {
+    date?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
+    priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
+    volume24h?: FloatFieldUpdateOperationsInput | number
+    volumeUSD24h?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
+    fdv?: NullableFloatFieldUpdateOperationsInput | number | null
+    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
+    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
+    swapCount24h?: IntFieldUpdateOperationsInput | number
+    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
@@ -11046,37 +6989,21 @@ export namespace Prisma {
    * Aliases for legacy arg types
    */
     /**
-     * @deprecated Use PoolCountOutputTypeDefaultArgs instead
-     */
-    export type PoolCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PoolCountOutputTypeDefaultArgs<ExtArgs>
-    /**
      * @deprecated Use TokenCountOutputTypeDefaultArgs instead
      */
     export type TokenCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TokenCountOutputTypeDefaultArgs<ExtArgs>
-    /**
-     * @deprecated Use PoolDefaultArgs instead
-     */
-    export type PoolArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PoolDefaultArgs<ExtArgs>
-    /**
-     * @deprecated Use SwapDefaultArgs instead
-     */
-    export type SwapArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SwapDefaultArgs<ExtArgs>
-    /**
-     * @deprecated Use IndexerStateDefaultArgs instead
-     */
-    export type IndexerStateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = IndexerStateDefaultArgs<ExtArgs>
     /**
      * @deprecated Use TokenDefaultArgs instead
      */
     export type TokenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TokenDefaultArgs<ExtArgs>
     /**
-     * @deprecated Use TokenStatisticDefaultArgs instead
+     * @deprecated Use TokenPriceDefaultArgs instead
      */
-    export type TokenStatisticArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TokenStatisticDefaultArgs<ExtArgs>
+    export type TokenPriceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TokenPriceDefaultArgs<ExtArgs>
     /**
-     * @deprecated Use PoolStatisticDefaultArgs instead
+     * @deprecated Use TokenDailyStatsDefaultArgs instead
      */
-    export type PoolStatisticArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PoolStatisticDefaultArgs<ExtArgs>
+    export type TokenDailyStatsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TokenDailyStatsDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

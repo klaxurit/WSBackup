@@ -1,15 +1,15 @@
 import { ponder } from "ponder:registry";
-import { liquidityEvent, liquidityEventTypeEnum, pools, positions, swaps } from "ponder:schema";
+import { liquidityEvent, pools, positions, swaps } from "ponder:schema";
 
 ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
   const { token0, token1, pool, fee, tickSpacing } = event.args;
 
   await context.db.insert(pools).values({
     address: pool,
-    token0: token0.toLowerCase(),
-    token1: token1.toLowerCase(),
-    fee: Number(fee),
-    tickSpacing: Number(tickSpacing),
+    token0Address: token0.toLowerCase(),
+    token1Address: token1.toLowerCase(),
+    fee,
+    tickSpacing,
     createdAt: event.block.timestamp,
     createdAtBlock: event.block.number
   })
@@ -28,7 +28,7 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
     sqrtPriceX96,
     liquidity,
     tick,
-    timestamp: event.block.timestamp,
+    createdAt: event.block.timestamp,
     blockNumber: event.block.number,
     transactionHash: event.transaction.hash,
   });
@@ -47,7 +47,7 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
     amount,
     amount0,
     amount1,
-    timestamp: event.block.timestamp,
+    createdAt: event.block.timestamp,
     blockNumber: event.block.number,
     transactionHash: event.transaction.hash
   })
@@ -83,7 +83,7 @@ ponder.on("WinniePool:Burn", async ({ event, context }) => {
     amount,
     amount0,
     amount1,
-    timestamp: event.block.timestamp,
+    createdAt: event.block.timestamp,
     blockNumber: event.block.number,
     transactionHash: event.transaction.hash
   })

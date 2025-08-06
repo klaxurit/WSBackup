@@ -18,11 +18,11 @@ exports.$Enums = {}
 
 /**
  * Prisma Client JS version: 5.22.0
- * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
+ * Query Engine version: acc0b9dd43eb689cbd20c9470515d719db10d0b0
  */
 Prisma.prismaVersion = {
   client: "5.22.0",
-  engine: "605197351a3c8bdd595af2d2a9bc3025bca48ea2"
+  engine: "acc0b9dd43eb689cbd20c9470515d719db10d0b0"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -122,81 +122,58 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.PoolScalarFieldEnum = {
-  id: 'id',
-  address: 'address',
-  token0Id: 'token0Id',
-  token1Id: 'token1Id',
-  fee: 'fee',
-  liquidity: 'liquidity',
-  tick: 'tick',
-  sqrtPriceX96: 'sqrtPriceX96',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.SwapScalarFieldEnum = {
-  id: 'id',
-  sender: 'sender',
-  recipient: 'recipient',
-  amount0: 'amount0',
-  amount1: 'amount1',
-  sqrtPriceX96: 'sqrtPriceX96',
-  tick: 'tick',
-  transactionHash: 'transactionHash',
-  logIndex: 'logIndex',
-  poolAddress: 'poolAddress',
-  poolId: 'poolId',
-  gasUsed: 'gasUsed',
-  gasPrice: 'gasPrice',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.IndexerStateScalarFieldEnum = {
-  id: 'id',
-  lastBlock: 'lastBlock',
-  lastUpdate: 'lastUpdate'
-};
-
 exports.Prisma.TokenScalarFieldEnum = {
-  id: 'id',
   address: 'address',
   symbol: 'symbol',
   name: 'name',
   decimals: 'decimals',
   logoUri: 'logoUri',
-  coingeckoId: 'coingeckoId',
-  tags: 'tags',
-  totalSupply: 'totalSupply',
-  circulatingSupply: 'circulatingSupply',
   website: 'website',
   twitter: 'twitter',
   description: 'description',
-  createdAt: 'createdAt'
+  coingeckoId: 'coingeckoId',
+  totalSupply: 'totalSupply',
+  status: 'status',
+  discoveredAt: 'discoveredAt',
+  lastEnrichmentAt: 'lastEnrichmentAt',
+  lastActivityAt: 'lastActivityAt',
+  isStableCoin: 'isStableCoin',
+  isVerifiedManually: 'isVerifiedManually',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.TokenStatisticScalarFieldEnum = {
-  id: 'id',
-  tokenId: 'tokenId',
+exports.Prisma.TokenPriceScalarFieldEnum = {
+  tokenAddress: 'tokenAddress',
+  timestamp: 'timestamp',
   price: 'price',
-  oneHourEvolution: 'oneHourEvolution',
-  oneDayEvolution: 'oneDayEvolution',
-  volume: 'volume',
-  fdv: 'fdv',
-  marketCap: 'marketCap',
+  priceSource: 'priceSource',
+  confidence: 'confidence',
+  volumeUSD: 'volumeUSD',
+  liquidityPath: 'liquidityPath',
+  poolsInvolved: 'poolsInvolved',
   createdAt: 'createdAt'
 };
 
-exports.Prisma.PoolStatisticScalarFieldEnum = {
-  id: 'id',
-  poolId: 'poolId',
-  apr: 'apr',
-  tvlUSD: 'tvlUSD',
-  volOneDay: 'volOneDay',
-  volOneMonth: 'volOneMonth',
-  impermanentLoss: 'impermanentLoss',
-  healthScore: 'healthScore',
-  createdAt: 'createdAt'
+exports.Prisma.TokenDailyStatsScalarFieldEnum = {
+  tokenAddress: 'tokenAddress',
+  date: 'date',
+  price: 'price',
+  priceChange1h: 'priceChange1h',
+  priceChange24h: 'priceChange24h',
+  volume24h: 'volume24h',
+  volumeUSD24h: 'volumeUSD24h',
+  tvlInPools: 'tvlInPools',
+  marketCap: 'marketCap',
+  fdv: 'fdv',
+  rankByTvl: 'rankByTvl',
+  rankByVolume: 'rankByVolume',
+  rankByMarketCap: 'rankByMarketCap',
+  swapCount24h: 'swapCount24h',
+  uniqueTraders24h: 'uniqueTraders24h',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -204,24 +181,44 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.TokenState = exports.$Enums.TokenState = {
+  DISCOVERED: 'DISCOVERED',
+  ENRICHING: 'ENRICHING',
+  IN_POOL: 'IN_POOL',
+  VERIFIED: 'VERIFIED',
+  DEPRECATED: 'DEPRECATED'
+};
 
+exports.PriceSource = exports.$Enums.PriceSource = {
+  POOL_CALCULATION: 'POOL_CALCULATION',
+  COINGECKO_FALLBACK: 'COINGECKO_FALLBACK',
+  MANUAL_OVERRIDE: 'MANUAL_OVERRIDE'
+};
 
 exports.Prisma.ModelName = {
-  Pool: 'Pool',
-  Swap: 'Swap',
-  IndexerState: 'IndexerState',
   Token: 'Token',
-  TokenStatistic: 'TokenStatistic',
-  PoolStatistic: 'PoolStatistic'
+  TokenPrice: 'TokenPrice',
+  TokenDailyStats: 'TokenDailyStats'
 };
 
 /**

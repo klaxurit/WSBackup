@@ -1,13 +1,11 @@
 import { onchainEnum, onchainTable, primaryKey, relations } from "ponder";
 
-export const pools = onchainTable("i_pools", (t) => ({
+export const pools = onchainTable("pools", (t) => ({
   address: t.text().primaryKey(),
-  token0: t.text().notNull(),
-  token1: t.text().notNull(),
+  token0Address: t.text().notNull(),
+  token1Address: t.text().notNull(),
   tickSpacing: t.integer(),
   fee: t.integer(),
-  tvlUSD: t.real().default(0),
-  volume24h: t.real().default(0),
   createdAt: t.bigint().notNull(),
   createdAtBlock: t.bigint().notNull(),
 }));
@@ -17,7 +15,7 @@ export const poolsRelations = relations(pools, ({ many }) => ({
   liquidityEvent: many(liquidityEvent)
 }))
 
-export const swaps = onchainTable("i_swaps", (t) => ({
+export const swaps = onchainTable("swaps", (t) => ({
   id: t.text().primaryKey(),
   poolAddress: t.text(),
   sender: t.text().notNull(),
@@ -27,7 +25,7 @@ export const swaps = onchainTable("i_swaps", (t) => ({
   sqrtPriceX96: t.bigint().notNull(),
   liquidity: t.bigint().notNull(),
   tick: t.integer().notNull(),
-  timestamp: t.bigint().notNull(),
+  createdAt: t.bigint().notNull(),
   blockNumber: t.bigint().notNull(),
   transactionHash: t.text().notNull(),
 }));
@@ -35,7 +33,7 @@ export const swapsRelations = relations(swaps, ({ one }) => ({
   pool: one(pools, { fields: [swaps.poolAddress], references: [pools.address] })
 }))
 
-export const positions = onchainTable("i_positions", (t) => ({
+export const positions = onchainTable("positions", (t) => ({
   poolAddress: t.text(),
   owner: t.text().notNull(),
   tickLower: t.integer().notNull(),
@@ -51,7 +49,7 @@ export const positionsRelations = relations(positions, ({ one }) => ({
 }))
 
 export const liquidityEventTypeEnum = onchainEnum("type", ["MINT", "BURN"])
-export const liquidityEvent = onchainTable("i_liquidityEvents", (t) => ({
+export const liquidityEvent = onchainTable("liquidityEvents", (t) => ({
   id: t.text().primaryKey(),
   poolAddress: t.text(),
   owner: t.text().notNull(),
@@ -61,7 +59,7 @@ export const liquidityEvent = onchainTable("i_liquidityEvents", (t) => ({
   amount: t.bigint().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
-  timestamp: t.bigint().notNull(),
+  createdAt: t.bigint().notNull(),
   blockNumber: t.bigint().notNull(),
   transactionHash: t.text().notNull(),
 }))
