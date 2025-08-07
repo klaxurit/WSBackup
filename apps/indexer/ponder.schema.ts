@@ -9,6 +9,7 @@ export const pools = onchainTable("pools", (t) => ({
   createdAt: t.bigint().notNull(),
   createdAtBlock: t.bigint().notNull(),
 }));
+
 export const poolsRelations = relations(pools, ({ many }) => ({
   swaps: many(swaps),
   positions: many(positions),
@@ -29,6 +30,7 @@ export const swaps = onchainTable("swaps", (t) => ({
   blockNumber: t.bigint().notNull(),
   transactionHash: t.text().notNull(),
 }));
+
 export const swapsRelations = relations(swaps, ({ one }) => ({
   pool: one(pools, { fields: [swaps.poolAddress], references: [pools.address] })
 }))
@@ -44,12 +46,13 @@ export const positions = onchainTable("positions", (t) => ({
   createdAt: t.bigint().notNull(),
   updatedAt: t.bigint().notNull()
 }), (table) => ({ pk: primaryKey({ columns: [table.poolAddress, table.owner, table.tickLower, table.tickUpper] }) }))
+
 export const positionsRelations = relations(positions, ({ one }) => ({
   pool: one(pools, { fields: [positions.poolAddress], references: [pools.address] })
 }))
 
 export const liquidityEventTypeEnum = onchainEnum("type", ["MINT", "BURN"])
-export const liquidityEvent = onchainTable("liquidityEvents", (t) => ({
+export const liquidityEvent = onchainTable("liquidity_events", (t) => ({
   id: t.text().primaryKey(),
   poolAddress: t.text(),
   owner: t.text().notNull(),
@@ -63,6 +66,7 @@ export const liquidityEvent = onchainTable("liquidityEvents", (t) => ({
   blockNumber: t.bigint().notNull(),
   transactionHash: t.text().notNull(),
 }))
+
 export const liquidityEventRelations = relations(liquidityEvent, ({ one }) => ({
   pool: one(pools, { fields: [liquidityEvent.poolAddress], references: [pools.address] })
 }))

@@ -274,7 +274,7 @@ export namespace Prisma {
 
   /**
    * Prisma Client JS version: 5.22.0
-   * Query Engine version: acc0b9dd43eb689cbd20c9470515d719db10d0b0
+   * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
    */
   export type PrismaVersion = {
     client: string
@@ -2150,7 +2150,6 @@ export namespace Prisma {
      * Filter which Tokens to update
      */
     where?: TokenWhereInput
-    limit?: number
   }
 
   /**
@@ -2205,7 +2204,6 @@ export namespace Prisma {
      * Filter which Tokens to delete
      */
     where?: TokenWhereInput
-    limit?: number
   }
 
   /**
@@ -3207,7 +3205,6 @@ export namespace Prisma {
      * Filter which TokenPrices to update
      */
     where?: TokenPriceWhereInput
-    limit?: number
   }
 
   /**
@@ -3262,7 +3259,6 @@ export namespace Prisma {
      * Filter which TokenPrices to delete
      */
     where?: TokenPriceWhereInput
-    limit?: number
   }
 
   /**
@@ -4368,7 +4364,6 @@ export namespace Prisma {
      * Filter which TokenDailyStats to update
      */
     where?: TokenDailyStatsWhereInput
-    limit?: number
   }
 
   /**
@@ -4423,7 +4418,6 @@ export namespace Prisma {
      * Filter which TokenDailyStats to delete
      */
     where?: TokenDailyStatsWhereInput
-    limit?: number
   }
 
   /**
@@ -4822,7 +4816,7 @@ export namespace Prisma {
     liquidityPath?: JsonNullableFilter<"TokenPrice">
     poolsInvolved?: StringNullableListFilter<"TokenPrice">
     createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
-    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+    token?: XOR<TokenRelationFilter, TokenWhereInput>
   }
 
   export type TokenPriceOrderByWithRelationInput = {
@@ -4852,7 +4846,7 @@ export namespace Prisma {
     liquidityPath?: JsonNullableFilter<"TokenPrice">
     poolsInvolved?: StringNullableListFilter<"TokenPrice">
     createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
-    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+    token?: XOR<TokenRelationFilter, TokenWhereInput>
   }, "tokenAddress_timestamp">
 
   export type TokenPriceOrderByWithAggregationInput = {
@@ -4908,7 +4902,7 @@ export namespace Prisma {
     uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
     createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
-    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+    token?: XOR<TokenRelationFilter, TokenWhereInput>
   }
 
   export type TokenDailyStatsOrderByWithRelationInput = {
@@ -4954,7 +4948,7 @@ export namespace Prisma {
     uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
     createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
-    token?: XOR<TokenScalarRelationFilter, TokenWhereInput>
+    token?: XOR<TokenRelationFilter, TokenWhereInput>
   }, "tokenAddress_date">
 
   export type TokenDailyStatsOrderByWithAggregationInput = {
@@ -5487,9 +5481,9 @@ export namespace Prisma {
     string_contains?: string | StringFieldRefInput<$PrismaModel>
     string_starts_with?: string | StringFieldRefInput<$PrismaModel>
     string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
@@ -5722,9 +5716,9 @@ export namespace Prisma {
     string_contains?: string | StringFieldRefInput<$PrismaModel>
     string_starts_with?: string | StringFieldRefInput<$PrismaModel>
     string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
@@ -5761,7 +5755,7 @@ export namespace Prisma {
     isEmpty?: boolean
   }
 
-  export type TokenScalarRelationFilter = {
+  export type TokenRelationFilter = {
     is?: TokenWhereInput
     isNot?: TokenWhereInput
   }
@@ -6411,9 +6405,9 @@ export namespace Prisma {
     string_contains?: string | StringFieldRefInput<$PrismaModel>
     string_starts_with?: string | StringFieldRefInput<$PrismaModel>
     string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
     lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
