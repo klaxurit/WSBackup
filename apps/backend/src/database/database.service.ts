@@ -10,24 +10,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     await disconnectDB();
   }
 
-  get indexerState() {
-    return prisma.indexerState;
-  }
-
-  get pool() {
-    return prisma.pool;
-  }
-
-  get swap() {
-    return prisma.swap;
-  }
-
   get token() {
     return prisma.token;
-  }
-
-  get tokenStats() {
-    return prisma.tokenStatistic;
   }
 
   get poolStats() {
