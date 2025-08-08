@@ -15,7 +15,7 @@ CREATE TABLE "tokens" (
     "twitter" TEXT,
     "description" TEXT,
     "coingeckoId" TEXT,
-    "totalSupply" BIGINT NOT NULL,
+    "totalSupply" TEXT NOT NULL,
     "status" "token_status" NOT NULL DEFAULT 'DISCOVERED',
     "discoveredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastEnrichmentAt" TIMESTAMP(3),
@@ -32,16 +32,13 @@ CREATE TABLE "tokens" (
 -- CreateTable
 CREATE TABLE "token_prices" (
     "tokenAddress" TEXT NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "priceSource" "price_source" NOT NULL DEFAULT 'POOL_CALCULATION',
     "confidence" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
     "volumeUSD" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "liquidityPath" JSONB,
-    "poolsInvolved" TEXT[],
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "token_prices_pkey" PRIMARY KEY ("tokenAddress","timestamp")
+    CONSTRAINT "token_prices_pkey" PRIMARY KEY ("tokenAddress","createdAt")
 );
 
 -- CreateTable
@@ -80,10 +77,10 @@ CREATE INDEX "tokens_discoveredAt_idx" ON "tokens"("discoveredAt" DESC);
 CREATE INDEX "tokens_lastActivityAt_idx" ON "tokens"("lastActivityAt" DESC);
 
 -- CreateIndex
-CREATE INDEX "token_prices_tokenAddress_timestamp_idx" ON "token_prices"("tokenAddress", "timestamp" DESC);
+CREATE INDEX "token_prices_tokenAddress_createdAt_idx" ON "token_prices"("tokenAddress", "createdAt" DESC);
 
 -- CreateIndex
-CREATE INDEX "token_prices_timestamp_idx" ON "token_prices"("timestamp" DESC);
+CREATE INDEX "token_prices_createdAt_idx" ON "token_prices"("createdAt" DESC);
 
 -- CreateIndex
 CREATE INDEX "token_prices_priceSource_idx" ON "token_prices"("priceSource");
@@ -105,12 +102,3 @@ ALTER TABLE "token_prices" ADD CONSTRAINT "token_prices_tokenAddress_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "token_daily_stats" ADD CONSTRAINT "token_daily_stats_tokenAddress_fkey" FOREIGN KEY ("tokenAddress") REFERENCES "tokens"("address") ON DELETE CASCADE ON UPDATE CASCADE;
-
-CREATE EXTENSION IF NOT EXISTS timescaledb;
-
-SELECT create_hypertable(
-  'token_prices',
-  'timestamp',
-  chunk_time_interval => INTERVAL '1 day'
-);
-

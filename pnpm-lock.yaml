@@ -66,9 +66,6 @@ importers:
       '@nestjs/schedule':
         specifier: ^6.0.0
         version: 6.0.0(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)
-      '@ponder/client':
-        specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.3)
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -87,12 +84,21 @@ importers:
       class-validator:
         specifier: ^0.14.2
         version: 0.14.2
+      drizzle-orm:
+        specifier: 0.41.0
+        version: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)
+      eventsource:
+        specifier: ^4.0.0
+        version: 4.0.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      superjson:
+        specifier: ^2.2.2
+        version: 2.2.2
       viem:
         specifier: ^2.30.0
         version: 2.31.3(typescript@5.8.3)
@@ -3316,49 +3322,6 @@ packages:
     resolution: {integrity: sha512-YLT9Zo3oNPJoBjBc4q8G2mjU4tqIbf5CEOORbUUr48dCD9q3umJ3IPlVqOqDakPfd2HuwccBaqlGhN4Gmr5OWg==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
     dev: true
-
-  /@ponder/client@0.12.0(typescript@5.8.3):
-    resolution: {integrity: sha512-5F8TZzNeUGaEenuL6HFIb2xymKch+XJSMDy7dUOCDVyWaEAxl/95fjkoqau78flubGdJU4oH9FdYes7bCA7qVA==}
-    peerDependencies:
-      typescript: '>=5.0.4'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      drizzle-orm: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)
-      eventsource: 3.0.7
-      superjson: 2.2.2
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@aws-sdk/client-rds-data'
-      - '@cloudflare/workers-types'
-      - '@electric-sql/pglite'
-      - '@libsql/client'
-      - '@libsql/client-wasm'
-      - '@neondatabase/serverless'
-      - '@op-engineering/op-sqlite'
-      - '@opentelemetry/api'
-      - '@planetscale/database'
-      - '@prisma/client'
-      - '@tidbcloud/serverless'
-      - '@types/better-sqlite3'
-      - '@types/pg'
-      - '@types/sql.js'
-      - '@vercel/postgres'
-      - '@xata.io/client'
-      - better-sqlite3
-      - bun-types
-      - expo-sqlite
-      - gel
-      - knex
-      - kysely
-      - mysql2
-      - pg
-      - postgres
-      - prisma
-      - sql.js
-      - sqlite3
-    dev: false
 
   /@ponder/utils@0.2.10(typescript@5.8.3)(viem@2.31.3):
     resolution: {integrity: sha512-h9y+L+dUEOkLn0oh0GECJ1kWJNzrFtLoMPODR7NsvqGcovq5ZaGFvFxb7+iDOUN6f6xn2M+cUoYjkmMsskw8+A==}
@@ -9393,9 +9356,9 @@ packages:
     engines: {node: '>=20.0.0'}
     dev: false
 
-  /eventsource@3.0.7:
-    resolution: {integrity: sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==}
-    engines: {node: '>=18.0.0'}
+  /eventsource@4.0.0:
+    resolution: {integrity: sha512-fvIkb9qZzdMxgZrEQDyll+9oJsyaVvY92I2Re+qK0qEJ+w5s0X3dtz+M0VAPOjP1gtU3iqWyjQ0G3nvd5CLZ2g==}
+    engines: {node: '>=20.0.0'}
     dependencies:
       eventsource-parser: 3.0.3
     dev: false

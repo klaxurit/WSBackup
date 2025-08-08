@@ -1101,12 +1101,10 @@ export namespace Prisma {
 
   export type TokenAvgAggregateOutputType = {
     decimals: number | null
-    totalSupply: number | null
   }
 
   export type TokenSumAggregateOutputType = {
     decimals: number | null
-    totalSupply: bigint | null
   }
 
   export type TokenMinAggregateOutputType = {
@@ -1119,7 +1117,7 @@ export namespace Prisma {
     twitter: string | null
     description: string | null
     coingeckoId: string | null
-    totalSupply: bigint | null
+    totalSupply: string | null
     status: $Enums.TokenState | null
     discoveredAt: Date | null
     lastEnrichmentAt: Date | null
@@ -1140,7 +1138,7 @@ export namespace Prisma {
     twitter: string | null
     description: string | null
     coingeckoId: string | null
-    totalSupply: bigint | null
+    totalSupply: string | null
     status: $Enums.TokenState | null
     discoveredAt: Date | null
     lastEnrichmentAt: Date | null
@@ -1177,12 +1175,10 @@ export namespace Prisma {
 
   export type TokenAvgAggregateInputType = {
     decimals?: true
-    totalSupply?: true
   }
 
   export type TokenSumAggregateInputType = {
     decimals?: true
-    totalSupply?: true
   }
 
   export type TokenMinAggregateInputType = {
@@ -1346,7 +1342,7 @@ export namespace Prisma {
     twitter: string | null
     description: string | null
     coingeckoId: string | null
-    totalSupply: bigint
+    totalSupply: string
     status: $Enums.TokenState
     discoveredAt: Date
     lastEnrichmentAt: Date | null
@@ -1469,7 +1465,7 @@ export namespace Prisma {
       twitter: string | null
       description: string | null
       coingeckoId: string | null
-      totalSupply: bigint
+      totalSupply: string
       status: $Enums.TokenState
       discoveredAt: Date
       lastEnrichmentAt: Date | null
@@ -1883,7 +1879,7 @@ export namespace Prisma {
     readonly twitter: FieldRef<"Token", 'String'>
     readonly description: FieldRef<"Token", 'String'>
     readonly coingeckoId: FieldRef<"Token", 'String'>
-    readonly totalSupply: FieldRef<"Token", 'BigInt'>
+    readonly totalSupply: FieldRef<"Token", 'String'>
     readonly status: FieldRef<"Token", 'TokenState'>
     readonly discoveredAt: FieldRef<"Token", 'DateTime'>
     readonly lastEnrichmentAt: FieldRef<"Token", 'DateTime'>
@@ -2287,7 +2283,6 @@ export namespace Prisma {
 
   export type TokenPriceMinAggregateOutputType = {
     tokenAddress: string | null
-    timestamp: Date | null
     price: number | null
     priceSource: $Enums.PriceSource | null
     confidence: number | null
@@ -2297,7 +2292,6 @@ export namespace Prisma {
 
   export type TokenPriceMaxAggregateOutputType = {
     tokenAddress: string | null
-    timestamp: Date | null
     price: number | null
     priceSource: $Enums.PriceSource | null
     confidence: number | null
@@ -2307,13 +2301,10 @@ export namespace Prisma {
 
   export type TokenPriceCountAggregateOutputType = {
     tokenAddress: number
-    timestamp: number
     price: number
     priceSource: number
     confidence: number
     volumeUSD: number
-    liquidityPath: number
-    poolsInvolved: number
     createdAt: number
     _all: number
   }
@@ -2333,7 +2324,6 @@ export namespace Prisma {
 
   export type TokenPriceMinAggregateInputType = {
     tokenAddress?: true
-    timestamp?: true
     price?: true
     priceSource?: true
     confidence?: true
@@ -2343,7 +2333,6 @@ export namespace Prisma {
 
   export type TokenPriceMaxAggregateInputType = {
     tokenAddress?: true
-    timestamp?: true
     price?: true
     priceSource?: true
     confidence?: true
@@ -2353,13 +2342,10 @@ export namespace Prisma {
 
   export type TokenPriceCountAggregateInputType = {
     tokenAddress?: true
-    timestamp?: true
     price?: true
     priceSource?: true
     confidence?: true
     volumeUSD?: true
-    liquidityPath?: true
-    poolsInvolved?: true
     createdAt?: true
     _all?: true
   }
@@ -2452,13 +2438,10 @@ export namespace Prisma {
 
   export type TokenPriceGroupByOutputType = {
     tokenAddress: string
-    timestamp: Date
     price: number
     priceSource: $Enums.PriceSource
     confidence: number
     volumeUSD: number
-    liquidityPath: JsonValue | null
-    poolsInvolved: string[]
     createdAt: Date
     _count: TokenPriceCountAggregateOutputType | null
     _avg: TokenPriceAvgAggregateOutputType | null
@@ -2483,39 +2466,30 @@ export namespace Prisma {
 
   export type TokenPriceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     tokenAddress?: boolean
-    timestamp?: boolean
     price?: boolean
     priceSource?: boolean
     confidence?: boolean
     volumeUSD?: boolean
-    liquidityPath?: boolean
-    poolsInvolved?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenPrice"]>
 
   export type TokenPriceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     tokenAddress?: boolean
-    timestamp?: boolean
     price?: boolean
     priceSource?: boolean
     confidence?: boolean
     volumeUSD?: boolean
-    liquidityPath?: boolean
-    poolsInvolved?: boolean
     createdAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tokenPrice"]>
 
   export type TokenPriceSelectScalar = {
     tokenAddress?: boolean
-    timestamp?: boolean
     price?: boolean
     priceSource?: boolean
     confidence?: boolean
     volumeUSD?: boolean
-    liquidityPath?: boolean
-    poolsInvolved?: boolean
     createdAt?: boolean
   }
 
@@ -2533,13 +2507,10 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       tokenAddress: string
-      timestamp: Date
       price: number
       priceSource: $Enums.PriceSource
       confidence: number
       volumeUSD: number
-      liquidityPath: Prisma.JsonValue | null
-      poolsInvolved: string[]
       createdAt: Date
     }, ExtArgs["result"]["tokenPrice"]>
     composites: {}
@@ -2936,13 +2907,10 @@ export namespace Prisma {
    */ 
   interface TokenPriceFieldRefs {
     readonly tokenAddress: FieldRef<"TokenPrice", 'String'>
-    readonly timestamp: FieldRef<"TokenPrice", 'DateTime'>
     readonly price: FieldRef<"TokenPrice", 'Float'>
     readonly priceSource: FieldRef<"TokenPrice", 'PriceSource'>
     readonly confidence: FieldRef<"TokenPrice", 'Float'>
     readonly volumeUSD: FieldRef<"TokenPrice", 'Float'>
-    readonly liquidityPath: FieldRef<"TokenPrice", 'Json'>
-    readonly poolsInvolved: FieldRef<"TokenPrice", 'String[]'>
     readonly createdAt: FieldRef<"TokenPrice", 'DateTime'>
   }
     
@@ -4476,13 +4444,10 @@ export namespace Prisma {
 
   export const TokenPriceScalarFieldEnum: {
     tokenAddress: 'tokenAddress',
-    timestamp: 'timestamp',
     price: 'price',
     priceSource: 'priceSource',
     confidence: 'confidence',
     volumeUSD: 'volumeUSD',
-    liquidityPath: 'liquidityPath',
-    poolsInvolved: 'poolsInvolved',
     createdAt: 'createdAt'
   };
 
@@ -4587,20 +4552,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'BigInt'
-   */
-  export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
-    
-
-
-  /**
-   * Reference to a field of type 'BigInt[]'
-   */
-  export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
-    
-
-
-  /**
    * Reference to a field of type 'TokenState'
    */
   export type EnumTokenStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TokenState'>
@@ -4686,7 +4637,7 @@ export namespace Prisma {
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
     coingeckoId?: StringNullableFilter<"Token"> | string | null
-    totalSupply?: BigIntFilter<"Token"> | bigint | number
+    totalSupply?: StringFilter<"Token"> | string
     status?: EnumTokenStateFilter<"Token"> | $Enums.TokenState
     discoveredAt?: DateTimeFilter<"Token"> | Date | string
     lastEnrichmentAt?: DateTimeNullableFilter<"Token"> | Date | string | null
@@ -4737,7 +4688,7 @@ export namespace Prisma {
     twitter?: StringNullableFilter<"Token"> | string | null
     description?: StringNullableFilter<"Token"> | string | null
     coingeckoId?: StringNullableFilter<"Token"> | string | null
-    totalSupply?: BigIntFilter<"Token"> | bigint | number
+    totalSupply?: StringFilter<"Token"> | string
     status?: EnumTokenStateFilter<"Token"> | $Enums.TokenState
     discoveredAt?: DateTimeFilter<"Token"> | Date | string
     lastEnrichmentAt?: DateTimeNullableFilter<"Token"> | Date | string | null
@@ -4791,7 +4742,7 @@ export namespace Prisma {
     twitter?: StringNullableWithAggregatesFilter<"Token"> | string | null
     description?: StringNullableWithAggregatesFilter<"Token"> | string | null
     coingeckoId?: StringNullableWithAggregatesFilter<"Token"> | string | null
-    totalSupply?: BigIntWithAggregatesFilter<"Token"> | bigint | number
+    totalSupply?: StringWithAggregatesFilter<"Token"> | string
     status?: EnumTokenStateWithAggregatesFilter<"Token"> | $Enums.TokenState
     discoveredAt?: DateTimeWithAggregatesFilter<"Token"> | Date | string
     lastEnrichmentAt?: DateTimeNullableWithAggregatesFilter<"Token"> | Date | string | null
@@ -4808,56 +4759,44 @@ export namespace Prisma {
     OR?: TokenPriceWhereInput[]
     NOT?: TokenPriceWhereInput | TokenPriceWhereInput[]
     tokenAddress?: StringFilter<"TokenPrice"> | string
-    timestamp?: DateTimeFilter<"TokenPrice"> | Date | string
     price?: FloatFilter<"TokenPrice"> | number
     priceSource?: EnumPriceSourceFilter<"TokenPrice"> | $Enums.PriceSource
     confidence?: FloatFilter<"TokenPrice"> | number
     volumeUSD?: FloatFilter<"TokenPrice"> | number
-    liquidityPath?: JsonNullableFilter<"TokenPrice">
-    poolsInvolved?: StringNullableListFilter<"TokenPrice">
     createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
   }
 
   export type TokenPriceOrderByWithRelationInput = {
     tokenAddress?: SortOrder
-    timestamp?: SortOrder
     price?: SortOrder
     priceSource?: SortOrder
     confidence?: SortOrder
     volumeUSD?: SortOrder
-    liquidityPath?: SortOrderInput | SortOrder
-    poolsInvolved?: SortOrder
     createdAt?: SortOrder
     token?: TokenOrderByWithRelationInput
   }
 
   export type TokenPriceWhereUniqueInput = Prisma.AtLeast<{
-    tokenAddress_timestamp?: TokenPriceTokenAddressTimestampCompoundUniqueInput
+    tokenAddress_createdAt?: TokenPriceTokenAddressCreatedAtCompoundUniqueInput
     AND?: TokenPriceWhereInput | TokenPriceWhereInput[]
     OR?: TokenPriceWhereInput[]
     NOT?: TokenPriceWhereInput | TokenPriceWhereInput[]
     tokenAddress?: StringFilter<"TokenPrice"> | string
-    timestamp?: DateTimeFilter<"TokenPrice"> | Date | string
     price?: FloatFilter<"TokenPrice"> | number
     priceSource?: EnumPriceSourceFilter<"TokenPrice"> | $Enums.PriceSource
     confidence?: FloatFilter<"TokenPrice"> | number
     volumeUSD?: FloatFilter<"TokenPrice"> | number
-    liquidityPath?: JsonNullableFilter<"TokenPrice">
-    poolsInvolved?: StringNullableListFilter<"TokenPrice">
     createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
-  }, "tokenAddress_timestamp">
+  }, "tokenAddress_createdAt">
 
   export type TokenPriceOrderByWithAggregationInput = {
     tokenAddress?: SortOrder
-    timestamp?: SortOrder
     price?: SortOrder
     priceSource?: SortOrder
     confidence?: SortOrder
     volumeUSD?: SortOrder
-    liquidityPath?: SortOrderInput | SortOrder
-    poolsInvolved?: SortOrder
     createdAt?: SortOrder
     _count?: TokenPriceCountOrderByAggregateInput
     _avg?: TokenPriceAvgOrderByAggregateInput
@@ -4871,13 +4810,10 @@ export namespace Prisma {
     OR?: TokenPriceScalarWhereWithAggregatesInput[]
     NOT?: TokenPriceScalarWhereWithAggregatesInput | TokenPriceScalarWhereWithAggregatesInput[]
     tokenAddress?: StringWithAggregatesFilter<"TokenPrice"> | string
-    timestamp?: DateTimeWithAggregatesFilter<"TokenPrice"> | Date | string
     price?: FloatWithAggregatesFilter<"TokenPrice"> | number
     priceSource?: EnumPriceSourceWithAggregatesFilter<"TokenPrice"> | $Enums.PriceSource
     confidence?: FloatWithAggregatesFilter<"TokenPrice"> | number
     volumeUSD?: FloatWithAggregatesFilter<"TokenPrice"> | number
-    liquidityPath?: JsonNullableWithAggregatesFilter<"TokenPrice">
-    poolsInvolved?: StringNullableListFilter<"TokenPrice">
     createdAt?: DateTimeWithAggregatesFilter<"TokenPrice"> | Date | string
   }
 
@@ -5009,7 +4945,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -5033,7 +4969,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -5057,7 +4993,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5081,7 +5017,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5105,7 +5041,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -5127,7 +5063,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5149,7 +5085,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5162,85 +5098,64 @@ export namespace Prisma {
   }
 
   export type TokenPriceCreateInput = {
-    timestamp: Date | string
     price: number
     priceSource?: $Enums.PriceSource
     confidence?: number
     volumeUSD?: number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
     token: TokenCreateNestedOneWithoutTokenPriceInput
   }
 
   export type TokenPriceUncheckedCreateInput = {
     tokenAddress: string
-    timestamp: Date | string
     price: number
     priceSource?: $Enums.PriceSource
     confidence?: number
     volumeUSD?: number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
   export type TokenPriceUpdateInput = {
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     token?: TokenUpdateOneRequiredWithoutTokenPriceNestedInput
   }
 
   export type TokenPriceUncheckedUpdateInput = {
     tokenAddress?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenPriceCreateManyInput = {
     tokenAddress: string
-    timestamp: Date | string
     price: number
     priceSource?: $Enums.PriceSource
     confidence?: number
     volumeUSD?: number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
   export type TokenPriceUpdateManyMutationInput = {
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenPriceUncheckedUpdateManyInput = {
     tokenAddress?: StringFieldUpdateOperationsInput | string
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5424,17 +5339,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type BigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
-  }
-
   export type EnumTokenStateFilter<$PrismaModel = never> = {
     equals?: $Enums.TokenState | EnumTokenStateFieldRefInput<$PrismaModel>
     in?: $Enums.TokenState[] | ListEnumTokenStateFieldRefInput<$PrismaModel>
@@ -5540,7 +5444,6 @@ export namespace Prisma {
 
   export type TokenAvgOrderByAggregateInput = {
     decimals?: SortOrder
-    totalSupply?: SortOrder
   }
 
   export type TokenMaxOrderByAggregateInput = {
@@ -5587,7 +5490,6 @@ export namespace Prisma {
 
   export type TokenSumOrderByAggregateInput = {
     decimals?: SortOrder
-    totalSupply?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5640,22 +5542,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedBigIntFilter<$PrismaModel>
-    _min?: NestedBigIntFilter<$PrismaModel>
-    _max?: NestedBigIntFilter<$PrismaModel>
   }
 
   export type EnumTokenStateWithAggregatesFilter<$PrismaModel = never> = {
@@ -5747,33 +5633,22 @@ export namespace Prisma {
     not?: NestedEnumPriceSourceFilter<$PrismaModel> | $Enums.PriceSource
   }
 
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
-  }
-
   export type TokenRelationFilter = {
     is?: TokenWhereInput
     isNot?: TokenWhereInput
   }
 
-  export type TokenPriceTokenAddressTimestampCompoundUniqueInput = {
+  export type TokenPriceTokenAddressCreatedAtCompoundUniqueInput = {
     tokenAddress: string
-    timestamp: Date | string
+    createdAt: Date | string
   }
 
   export type TokenPriceCountOrderByAggregateInput = {
     tokenAddress?: SortOrder
-    timestamp?: SortOrder
     price?: SortOrder
     priceSource?: SortOrder
     confidence?: SortOrder
     volumeUSD?: SortOrder
-    liquidityPath?: SortOrder
-    poolsInvolved?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5785,7 +5660,6 @@ export namespace Prisma {
 
   export type TokenPriceMaxOrderByAggregateInput = {
     tokenAddress?: SortOrder
-    timestamp?: SortOrder
     price?: SortOrder
     priceSource?: SortOrder
     confidence?: SortOrder
@@ -5795,7 +5669,6 @@ export namespace Prisma {
 
   export type TokenPriceMinOrderByAggregateInput = {
     tokenAddress?: SortOrder
-    timestamp?: SortOrder
     price?: SortOrder
     priceSource?: SortOrder
     confidence?: SortOrder
@@ -6030,14 +5903,6 @@ export namespace Prisma {
     set?: string | null
   }
 
-  export type BigIntFieldUpdateOperationsInput = {
-    set?: bigint | number
-    increment?: bigint | number
-    decrement?: bigint | number
-    multiply?: bigint | number
-    divide?: bigint | number
-  }
-
   export type EnumTokenStateFieldUpdateOperationsInput = {
     set?: $Enums.TokenState
   }
@@ -6110,10 +5975,6 @@ export namespace Prisma {
     deleteMany?: TokenDailyStatsScalarWhereInput | TokenDailyStatsScalarWhereInput[]
   }
 
-  export type TokenPriceCreatepoolsInvolvedInput = {
-    set: string[]
-  }
-
   export type TokenCreateNestedOneWithoutTokenPriceInput = {
     create?: XOR<TokenCreateWithoutTokenPriceInput, TokenUncheckedCreateWithoutTokenPriceInput>
     connectOrCreate?: TokenCreateOrConnectWithoutTokenPriceInput
@@ -6130,11 +5991,6 @@ export namespace Prisma {
 
   export type EnumPriceSourceFieldUpdateOperationsInput = {
     set?: $Enums.PriceSource
-  }
-
-  export type TokenPriceUpdatepoolsInvolvedInput = {
-    set?: string[]
-    push?: string | string[]
   }
 
   export type TokenUpdateOneRequiredWithoutTokenPriceNestedInput = {
@@ -6212,17 +6068,6 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedBigIntFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntFilter<$PrismaModel> | bigint | number
   }
 
   export type NestedEnumTokenStateFilter<$PrismaModel = never> = {
@@ -6329,22 +6174,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntWithAggregatesFilter<$PrismaModel> | bigint | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedBigIntFilter<$PrismaModel>
-    _min?: NestedBigIntFilter<$PrismaModel>
-    _max?: NestedBigIntFilter<$PrismaModel>
   }
 
   export type NestedEnumTokenStateWithAggregatesFilter<$PrismaModel = never> = {
@@ -6492,24 +6321,18 @@ export namespace Prisma {
   }
 
   export type TokenPriceCreateWithoutTokenInput = {
-    timestamp: Date | string
     price: number
     priceSource?: $Enums.PriceSource
     confidence?: number
     volumeUSD?: number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
   export type TokenPriceUncheckedCreateWithoutTokenInput = {
-    timestamp: Date | string
     price: number
     priceSource?: $Enums.PriceSource
     confidence?: number
     volumeUSD?: number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
@@ -6592,13 +6415,10 @@ export namespace Prisma {
     OR?: TokenPriceScalarWhereInput[]
     NOT?: TokenPriceScalarWhereInput | TokenPriceScalarWhereInput[]
     tokenAddress?: StringFilter<"TokenPrice"> | string
-    timestamp?: DateTimeFilter<"TokenPrice"> | Date | string
     price?: FloatFilter<"TokenPrice"> | number
     priceSource?: EnumPriceSourceFilter<"TokenPrice"> | $Enums.PriceSource
     confidence?: FloatFilter<"TokenPrice"> | number
     volumeUSD?: FloatFilter<"TokenPrice"> | number
-    liquidityPath?: JsonNullableFilter<"TokenPrice">
-    poolsInvolved?: StringNullableListFilter<"TokenPrice">
     createdAt?: DateTimeFilter<"TokenPrice"> | Date | string
   }
 
@@ -6651,7 +6471,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -6674,7 +6494,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -6713,7 +6533,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6736,7 +6556,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6759,7 +6579,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -6782,7 +6602,7 @@ export namespace Prisma {
     twitter?: string | null
     description?: string | null
     coingeckoId?: string | null
-    totalSupply: bigint | number
+    totalSupply: string
     status?: $Enums.TokenState
     discoveredAt?: Date | string
     lastEnrichmentAt?: Date | string | null
@@ -6821,7 +6641,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6844,7 +6664,7 @@ export namespace Prisma {
     twitter?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     coingeckoId?: NullableStringFieldUpdateOperationsInput | string | null
-    totalSupply?: BigIntFieldUpdateOperationsInput | bigint | number
+    totalSupply?: StringFieldUpdateOperationsInput | string
     status?: EnumTokenStateFieldUpdateOperationsInput | $Enums.TokenState
     discoveredAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastEnrichmentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6858,13 +6678,10 @@ export namespace Prisma {
   }
 
   export type TokenPriceCreateManyTokenInput = {
-    timestamp: Date | string
     price: number
     priceSource?: $Enums.PriceSource
     confidence?: number
     volumeUSD?: number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceCreatepoolsInvolvedInput | string[]
     createdAt?: Date | string
   }
 
@@ -6888,35 +6705,26 @@ export namespace Prisma {
   }
 
   export type TokenPriceUpdateWithoutTokenInput = {
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenPriceUncheckedUpdateWithoutTokenInput = {
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenPriceUncheckedUpdateManyWithoutTokenInput = {
-    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     price?: FloatFieldUpdateOperationsInput | number
     priceSource?: EnumPriceSourceFieldUpdateOperationsInput | $Enums.PriceSource
     confidence?: FloatFieldUpdateOperationsInput | number
     volumeUSD?: FloatFieldUpdateOperationsInput | number
-    liquidityPath?: NullableJsonNullValueInput | InputJsonValue
-    poolsInvolved?: TokenPriceUpdatepoolsInvolvedInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

@@ -146,13 +146,10 @@ exports.Prisma.TokenScalarFieldEnum = {
 
 exports.Prisma.TokenPriceScalarFieldEnum = {
   tokenAddress: 'tokenAddress',
-  timestamp: 'timestamp',
   price: 'price',
   priceSource: 'priceSource',
   confidence: 'confidence',
   volumeUSD: 'volumeUSD',
-  liquidityPath: 'liquidityPath',
-  poolsInvolved: 'poolsInvolved',
   createdAt: 'createdAt'
 };
 
