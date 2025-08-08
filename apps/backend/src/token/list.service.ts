@@ -1,13 +1,14 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
 import { pools } from 'src/ponder/ponder.schema';
 import { PonderService } from 'src/ponder/ponder.service';
 import { BerachainMeta } from 'src/ponder/ponder.type';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
-export class TokenListService implements OnModuleInit {
+export class TokenListService {
   private readonly logger = new Logger(TokenListService.name);
   private network = 'mainnet';
   private BerachainMetasURL = `https://raw.githubusercontent.com/berachain/metadata/main/src/tokens/${this.network}.json`;
@@ -19,21 +20,8 @@ export class TokenListService implements OnModuleInit {
     private readonly cgs: CoinGeckoService,
   ) {}
 
-  async onModuleInit() {
-    // this.ponder.live(
-    //   (db) => db.select().from(pools),
-    //   (result) => {
-    //     this.handleNewPool(result);
-    //   },
-    //   (error) => {
-    //     this.logger.error("Canno't subscribe to new pool event.", error);
-    //   },
-    // );
-
-    await this.updateGeneralList();
-  }
-
   // Fetch all tokens from berachain metadata
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   private async updateGeneralList() {
     const currentPools = await this.ponder.database.select().from(pools);
     const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
