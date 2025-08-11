@@ -60,7 +60,7 @@ const PoolDetailPage: React.FC = () => {
   // Find the specific pool
   const pool: Pool | null = useMemo(() => {
     if (!pools || !poolAddress) return null;
-    return pools.find((p: Pool) => p.address?.toLowerCase() === poolAddress.toLowerCase()) || null;
+    return pools.data.find((p: Pool) => p.address?.toLowerCase() === poolAddress.toLowerCase()) || null;
   }, [pools, poolAddress]);
 
   // Pool chart data query
