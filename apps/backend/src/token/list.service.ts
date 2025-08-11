@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
@@ -8,7 +8,7 @@ import { BerachainMeta } from 'src/ponder/ponder.type';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
-export class TokenListService {
+export class TokenListService implements OnModuleInit {
   private readonly logger = new Logger(TokenListService.name);
   private network = 'mainnet';
   private BerachainMetasURL = `https://raw.githubusercontent.com/berachain/metadata/main/src/tokens/${this.network}.json`;
@@ -18,20 +18,25 @@ export class TokenListService {
     private readonly db: DatabaseService,
     private readonly bc: BlockchainService,
     private readonly cgs: CoinGeckoService,
-  ) {}
+  ) { }
+
+  async onModuleInit() {
+    // await this.updateGeneralList();
+  }
 
   // Fetch all tokens from berachain metadata
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   private async updateGeneralList() {
     const currentPools = await this.ponder.database.select().from(pools);
     const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
+
       if (!tokensAddr.includes(pool.token0Address)) {
-        tokensAddr.push(pool.token0Address);
+        tokensAddr.push(pool.token0Address.toLowerCase());
       }
       if (!tokensAddr.includes(pool.token1Address)) {
-        tokensAddr.push(pool.token1Address);
+        tokensAddr.push(pool.token1Address.toLowerCase());
       }
-
+      console.log(tokensAddr, pool.token0Address, pool.token1Address)
       return tokensAddr;
     }, [] as string[]);
 
@@ -42,7 +47,7 @@ export class TokenListService {
 
     await this.db.client.$transaction(async (tx) => {
       for (const token of tokens.tokens) {
-        const inPool = tokensInPools.includes(token.address);
+        const inPool = tokensInPools.includes(token.address.toLowerCase());
 
         let totalSupply = 0n;
         if (inPool) {
@@ -57,10 +62,10 @@ export class TokenListService {
 
         await tx.token.upsert({
           where: {
-            address: token.address,
+            address: token.address.toLowerCase(),
           },
           create: {
-            address: token.address,
+            address: token.address.toLowerCase(),
 
             name: token.name,
             symbol: token.symbol,
@@ -86,8 +91,8 @@ export class TokenListService {
             status: inPool ? 'IN_POOL' : 'DISCOVERED',
             ...(totalSupply &&
               totalSupply > 0n && {
-                totalSupply: totalSupply.toString(),
-              }),
+              totalSupply: totalSupply.toString(),
+            }),
           },
         });
       }

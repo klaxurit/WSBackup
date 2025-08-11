@@ -5,7 +5,7 @@ ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
   const { token0, token1, pool, fee, tickSpacing } = event.args;
 
   await context.db.insert(pools).values({
-    address: pool,
+    address: pool.toLowerCase(),
     token0Address: token0.toLowerCase(),
     token1Address: token1.toLowerCase(),
     fee,

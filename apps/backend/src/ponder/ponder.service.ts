@@ -23,7 +23,7 @@ export class PonderService implements OnModuleInit, OnModuleDestroy {
   private dialect: PgDialect;
   private superjson: any;
 
-  constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
 
   async onModuleInit() {
     this.baseUrl =
