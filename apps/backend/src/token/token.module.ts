@@ -6,6 +6,7 @@ import { BlockchainModule } from 'src/blockchain/blockchain.module';
 import { CoingeckoModule } from 'src/coingecko/coingecko.module';
 import { PriceTokenService } from './price.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TokenController } from './token.controller';
 
 @Module({
   imports: [
@@ -17,5 +18,6 @@ import { ScheduleModule } from '@nestjs/schedule';
   ],
   providers: [TokenListService, PriceTokenService],
   exports: [],
+  controllers: [TokenController],
 })
 export class TokenModule {}

@@ -6,7 +6,7 @@ import {
   UseInterceptors,
   Get,
   Post,
-  Body
+  Body,
 } from '@nestjs/common';
 import { Prisma, TokenState } from '@repo/db';
 import { DatabaseService } from 'src/database/database.service';
@@ -15,7 +15,7 @@ import { NewTokenDTO } from './token.dto';
 @Controller('token')
 @UseInterceptors(CacheInterceptor)
 export class TokenController {
-  constructor(private readonly db: DatabaseService) { }
+  constructor(private readonly db: DatabaseService) {}
 
   @Get('/')
   @CacheKey('token:list')
@@ -24,7 +24,7 @@ export class TokenController {
     @Query('currentPage', new ParseIntPipe({ optional: true }))
     currentPage: number = 1,
     @Query('itemByPage', new ParseIntPipe({ optional: true }))
-    itemByPage: number = 1,
+    itemByPage: number = 50,
     @Query('searchValue') searchValue?: string,
   ) {
     const page = Math.max(1, currentPage);
@@ -33,21 +33,21 @@ export class TokenController {
 
     const searchFilter = searchValue
       ? {
-        OR: [
-          {
-            name: {
-              contains: searchValue,
-              mode: Prisma.QueryMode.insensitive,
+          OR: [
+            {
+              name: {
+                contains: searchValue,
+                mode: Prisma.QueryMode.insensitive,
+              },
             },
-          },
-          {
-            symbol: {
-              contains: searchValue,
-              mode: Prisma.QueryMode.insensitive,
+            {
+              symbol: {
+                contains: searchValue,
+                mode: Prisma.QueryMode.insensitive,
+              },
             },
-          },
-        ],
-      }
+          ],
+        }
       : {};
 
     const count = await this.db.token.count({ where: searchFilter });
@@ -80,7 +80,7 @@ export class TokenController {
     @Query('currentPage', new ParseIntPipe({ optional: true }))
     currentPage: number = 1,
     @Query('itemByPage', new ParseIntPipe({ optional: true }))
-    itemByPage: number = 1,
+    itemByPage: number = 50,
     @Query('searchValue') searchValue?: string,
   ) {
     const page = Math.max(1, currentPage);
@@ -89,27 +89,31 @@ export class TokenController {
 
     const searchFilter = searchValue
       ? {
-        OR: [
-          {
-            name: {
-              contains: searchValue,
-              mode: Prisma.QueryMode.insensitive,
+          OR: [
+            {
+              name: {
+                contains: searchValue,
+                mode: Prisma.QueryMode.insensitive,
+              },
             },
-          },
-          {
-            symbol: {
-              contains: searchValue,
-              mode: Prisma.QueryMode.insensitive,
+            {
+              symbol: {
+                contains: searchValue,
+                mode: Prisma.QueryMode.insensitive,
+              },
             },
-          },
-        ],
-        status: TokenState.IN_POOL
-      }
+          ],
+          status: TokenState.IN_POOL,
+        }
       : { status: TokenState.IN_POOL };
 
     const count = await this.db.token.count({ where: searchFilter });
+    console.log(page, limit, skip, searchFilter);
     const tokens = await this.db.token.findMany({
       where: searchFilter,
+      include: {
+        TokenPrice: true,
+      },
       take: limit,
       skip: skip,
     });
@@ -133,7 +137,7 @@ export class TokenController {
   @Post('/')
   async createToken(@Body() newTokenDTO: NewTokenDTO) {
     return this.db.token.create({
-      data: { ...newTokenDTO }
-    })
+      data: { ...newTokenDTO },
+    });
   }
 }
