@@ -12,10 +12,19 @@ import NewBanner from '../../components/Common/NewBanner';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import { getAmountsForPosition } from '../../utils/positionManager';
 import { usePrice } from '../../hooks/usePrice';
+import { FallbackImg } from '../../components/utils/FallbackImg';
 
+// Composant pour afficher la taille de position avec valeur USD
 const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
   const price0 = usePrice(row.pool.token0);
   const price1 = usePrice(row.pool.token1);
+
+  const display0 = getPoolDisplayToken(row.pool.token0.address);
+  const display1 = getPoolDisplayToken(row.pool.token1.address);
+  const logo0 = display0.logoUri || row.pool.token0.logoUri;
+  const logo1 = display1.logoUri || row.pool.token1.logoUri;
+  const symbol0 = display0.symbol || row.pool.token0.symbol;
+  const symbol1 = display1.symbol || row.pool.token1.symbol;
 
   const value0 = parseFloat(row.__amount0 || '0') * (price0.data || 0);
   const value1 = parseFloat(row.__amount1 || '0') * (price1.data || 0);
@@ -23,7 +32,25 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
 
   return (
     <div>
-      <div>{row.__amount0} {row.__symbol0} · {row.__amount1} {row.__symbol1}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {row.__amount0}
+          {logo0 ? (
+            <img src={logo0} alt={symbol0} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          ) : (
+            <FallbackImg content={symbol0} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          )}
+        </span>
+        <span style={{ opacity: 0.6 }}>·</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {row.__amount1}
+          {logo1 ? (
+            <img src={logo1} alt={symbol1} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          ) : (
+            <FallbackImg content={symbol1} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          )}
+        </span>
+      </div>
       <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
         ${totalValue.toFixed(2)}
       </div>
@@ -43,7 +70,6 @@ const isPositionOpen = (row: any) => {
 const PoolPage: React.FC = () => {
   const { isConnected } = useAccount()
   const { positions, isLoading } = usePositions()
-
   const [statusFilter, setStatusFilter] = useState<'open' | 'closed'>('open')
 
   const positionsWithAmounts = useMemo(() => {
