@@ -129,7 +129,10 @@ const PoolDetailPage: React.FC = () => {
                     <TokenPairLogos
                       token0={pool.token0}
                       token1={pool.token1}
-                      size={32}
+                      size={28}
+                      gap={3}
+                      borderWidth={2}
+                      separatorWidth={1.5}
                     />
                     <span className="Pool__Name" title={`${pool.token0.name}/${pool.token1.name}`}>
                       {pool.token0.symbol}/{pool.token1.symbol}

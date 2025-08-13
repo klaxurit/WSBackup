@@ -12,12 +12,18 @@ interface TokenPairLogosProps {
   token0: Token;
   token1: Token;
   size?: number;
+  gap?: number;
+  borderWidth?: number;
+  separatorWidth?: number;
 }
 
 export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
   token0,
   token1,
   size = 40,
+  gap = 6,
+  borderWidth,
+  separatorWidth,
 }) => {
 
   const getTokenDisplay = (token: Token) => {
@@ -31,77 +37,84 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
   const displayToken0 = getTokenDisplay(token0);
   const displayToken1 = getTokenDisplay(token1);
 
+  const computedBorderWidth =
+    typeof borderWidth === 'number' ? borderWidth : Math.max(2, Math.round(size * 0.075));
+
+  const sepWidth =
+    typeof separatorWidth === 'number' ? separatorWidth : (typeof gap === 'number' ? gap : 0);
+
   const containerStyle: React.CSSProperties = {
-    display: 'flex',
+    position: 'relative',
+    display: 'inline-block',
     width: `${size}px`,
     height: `${size}px`,
-    justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: '1000px',
-    border: '3px solid #FFC164',
+    border: `${computedBorderWidth}px solid #FFC164`,
     background: '#FFC164',
     overflow: 'hidden',
-    gap: '6px'
+    verticalAlign: 'middle'
   };
 
-  const tokenStyle: React.CSSProperties = {
+  const baseHalfStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     display: 'flex',
-    height: `45px`,
-    flexDirection: 'column',
-    justifyContent: 'center',
     alignItems: 'center',
-    width: `40px`,
-    flexShrink: 0,
-    aspectRatio: '1/1'
+    justifyContent: 'center'
   };
 
   const imageStyle: React.CSSProperties = {
-    width: '90%',
-    height: '80%',
+    width: '100%',
+    height: '100%',
     objectFit: 'cover'
   };
 
   return (
     <div style={containerStyle}>
-      {/* Token Left - Moitié gauche */}
-      <div style={{
-        ...tokenStyle,
-        clipPath: 'polygon(0 0, 49% 0, 49% 100%, 0% 100%)',
-        marginRight: '-65%'
-      }}>
+      {/* Moitié gauche */}
+      <div
+        style={{
+          ...baseHalfStyle,
+          clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0% 100%)'
+        }}
+      >
         {displayToken0.logoUri ? (
-          <img
-            src={displayToken0.logoUri}
-            style={imageStyle}
-            alt={displayToken0.symbol}
-          />
+          <img src={displayToken0.logoUri} style={imageStyle} alt={displayToken0.symbol} />
         ) : (
-          <FallbackImg
-            content={displayToken0.symbol}
-            style={imageStyle}
-          />
+          <FallbackImg content={displayToken0.symbol} style={imageStyle} />
         )}
       </div>
 
-      {/* Token Right - Moitié droite */}
-      <div style={{
-        ...tokenStyle,
-        clipPath: 'polygon(51% 0, 100% 0, 100% 100%, 51% 100%)',
-        marginLeft: '-65%'
-      }}>
+      {/* Moitié droite */}
+      <div
+        style={{
+          ...baseHalfStyle,
+          clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)'
+        }}
+      >
         {displayToken1.logoUri ? (
-          <img
-            src={displayToken1.logoUri}
-            style={imageStyle}
-            alt={displayToken1.symbol}
-          />
+          <img src={displayToken1.logoUri} style={imageStyle} alt={displayToken1.symbol} />
         ) : (
-          <FallbackImg
-            content={displayToken1.symbol}
-            style={imageStyle}
-          />
+          <FallbackImg content={displayToken1.symbol} style={imageStyle} />
         )}
       </div>
+
+      {/* Séparateur central contrôlé par gap */}
+      {sepWidth > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `calc(50% - ${sepWidth / 2}px)`,
+            width: `${sepWidth}px`,
+            background: '#FFC164'
+          }}
+        />
+      )}
     </div>
   );
 };

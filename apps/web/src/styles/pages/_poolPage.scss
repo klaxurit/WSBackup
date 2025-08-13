@@ -21,14 +21,14 @@
     background-size: 100%;
     background-position: center;
     background-repeat: no-repeat;
-  
+
     &:hover {
       background-image: url('/src/assets/bear_btn_hover.svg');
       background-size: 100%;
       background-position: center;
       background-repeat: no-repeat;
     }
-  
+
     &:active {
       background-image: url('/src/assets/bear_btn_click.svg');
       background-size: 100%;
@@ -92,14 +92,14 @@
 
   &__Content {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
     gap: 24px;
 
     @media (max-width: 1024px) {
       grid-template-columns: 1fr;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       display: flex;
       flex-direction: column;
       align-items: stretch;
@@ -108,6 +108,7 @@
   }
 
   &__Left {
+    min-width: 0;
     border-radius: 16px;
 
     @media (max-width: 600px) {
@@ -120,11 +121,12 @@
   }
 
   &__Right {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 24px;
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       width: 100%;
       min-width: 0;
       max-width: 100%;
@@ -383,6 +385,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+
     a {
       line-height: 11px;
     }
@@ -408,7 +411,7 @@
       color: $beryl-pure;
     }
   }
-  
+
   &__ExplorerButton {
     color: #8A8984;
     text-decoration: none;
@@ -421,6 +424,7 @@
   &__TokenInfoDetailed {
     display: flex;
     gap: 8px;
+
     img {
       width: 32px;
       height: 32px;
@@ -474,5 +478,31 @@
     height: 16px;
     border-radius: 50%;
     object-fit: cover;
+  }
+}
+
+// Harmonisation responsive (aligné avec Token/Explore):
+// Ajouter du padding interne gauche/droite sur mobile pour les sections principales
+@media (max-width: 600px) {
+  .Pool {
+
+    &__Chart,
+    &__Statistics,
+    &__Transactions,
+    &__InfoSection,
+    &__SwapForm {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      border-radius: 10px;
+      padding-left: 12px;
+      padding-right: 12px;
+      box-sizing: border-box;
+    }
+
+    // S'assurer que les composants internes ne débordent pas
+    &__Chart {
+      overflow: hidden;
+    }
   }
 }
