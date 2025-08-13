@@ -113,3 +113,33 @@ model TokenDailyStats {
   @@index([tokenAddress, date(sort: Desc)])
   @@map("token_daily_stats")
 }
+
+model PoolStats {
+  address        String
+  tickSpacing    Int
+  fee            Int
+  createdAt      String
+  createdAtBlock String
+
+  token0Address String
+  token1Address String
+  token0Symbol  String
+  token1Symbol  String
+  token0LogoUri String?
+  token1LogoUri String?
+
+  sqrtPriceX96   String
+  liquidity      String
+  isValid        Boolean
+  dayVolumeUSD   Float
+  monthVolumeUSD Float
+  apr            Float
+  tvlUSD         Float
+
+  @@id([address])
+  @@index([createdAt, apr(sort: Desc)])
+  @@index([createdAt, dayVolumeUSD(sort: Desc)])
+  @@index([createdAt, monthVolumeUSD(sort: Desc)])
+  @@index([createdAt, tvlUSD(sort: Desc)])
+  @@map("pool_stats")
+}

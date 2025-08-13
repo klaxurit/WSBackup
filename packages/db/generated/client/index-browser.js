@@ -173,6 +173,27 @@ exports.Prisma.TokenDailyStatsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PoolStatsScalarFieldEnum = {
+  address: 'address',
+  tickSpacing: 'tickSpacing',
+  fee: 'fee',
+  createdAt: 'createdAt',
+  createdAtBlock: 'createdAtBlock',
+  token0Address: 'token0Address',
+  token1Address: 'token1Address',
+  token0Symbol: 'token0Symbol',
+  token1Symbol: 'token1Symbol',
+  token0LogoUri: 'token0LogoUri',
+  token1LogoUri: 'token1LogoUri',
+  sqrtPriceX96: 'sqrtPriceX96',
+  liquidity: 'liquidity',
+  isValid: 'isValid',
+  dayVolumeUSD: 'dayVolumeUSD',
+  monthVolumeUSD: 'monthVolumeUSD',
+  apr: 'apr',
+  tvlUSD: 'tvlUSD'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -215,7 +236,8 @@ exports.PriceSource = exports.$Enums.PriceSource = {
 exports.Prisma.ModelName = {
   Token: 'Token',
   TokenPrice: 'TokenPrice',
-  TokenDailyStats: 'TokenDailyStats'
+  TokenDailyStats: 'TokenDailyStats',
+  PoolStats: 'PoolStats'
 };
 
 /**

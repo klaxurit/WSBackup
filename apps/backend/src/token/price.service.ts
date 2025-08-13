@@ -2,12 +2,13 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
-import { pools } from 'src/ponder/ponder.schema';
+import { pools, swaps } from 'src/ponder/ponder.schema';
 import { PonderService } from 'src/ponder/ponder.service';
-import { eq } from 'drizzle-orm';
-import { getContract, ResourceUnavailableRpcError } from 'viem';
+import { eq, and, or, gte, sql } from 'drizzle-orm';
+import { getContract, formatUnits } from 'viem';
 import { V3_POOL_ABI } from 'src/blockchain/abis/V3_POOL_ABI';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { Token, TokenState } from '@repo/db';
 
 interface PoolConnection {
   poolAddress: string;
@@ -48,13 +49,65 @@ export class PriceTokenService implements OnModuleInit {
 
   async onModuleInit() {
     await this.getHoneyPrice();
-    await this.updateTokenPrice();
+    await this.buildPathGraph();
+    // await this.updateTokensStats();
   }
 
+  @Cron(CronExpression.EVERY_MINUTE)
   async updateTokenPrice() {
-    await this.buildPathGraph();
     const prices = await this.calculateAllTokenPrices();
     await this.savePrices(prices);
+  }
+
+  async updateTokensStats() {
+    const tokens = await this.db.token.findMany({
+      where: {
+        status: TokenState.IN_POOL,
+      },
+    });
+
+    await Promise.all(tokens.map((t) => this.updateTokenStats(t)));
+  }
+
+  private async updateTokenStats(token: Token) {
+    this.logger.debug('Start update stat of token:' + token.symbol);
+    // tokenAddress String
+    // date         String // Format YYYY-MM-DD
+    // price          Float
+    // priceChange1h  Float?
+    // priceChange24h Float?
+    // volume24h    Float @default(0)
+    // volumeUSD24h Float @default(0)
+    // tvlInPools Float  @default(0)
+    // marketCap  Float?
+    // fdv        Float?
+    // rankByTvl       Int?
+    // rankByVolume    Int?
+    // rankByMarketCap Int?
+    // swapCount24h     Int @default(0)
+    // uniqueTraders24h Int @default(0)
+    // createdAt DateTime @default(now())
+    // updatedAt DateTime @updatedAt
+
+    // current price + change 1h + change 24h
+    const priceAndEvo = await this.getPricesEvolution(token.address);
+    if (!priceAndEvo?.current) return;
+    // volumes
+    const volumes = await this.getTokenVolumes(
+      token.address,
+      priceAndEvo.current,
+      token.decimals,
+    );
+    // fdv and totalSupply
+    const supply = await this.getTotalSupplyAndFDV(
+      token.address,
+      priceAndEvo.current,
+      token.decimals,
+    );
+    // tvlInPool
+    const tvlInPool = await this.getTokenTVLInPool(token.address);
+
+    console.log(priceAndEvo, volumes, supply);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -408,5 +461,148 @@ export class PriceTokenService implements OnModuleInit {
     } catch (error) {
       this.logger.error("Can't save prices in Database", error.message);
     }
+  }
+
+  private async getPricesEvolution(tokenAddr: string) {
+    const [current, oneHour, oneDay] = await Promise.all([
+      // Last price
+      this.db.tokenPrice.findFirst({
+        where: { tokenAddress: tokenAddr },
+        orderBy: { createdAt: 'desc' },
+        select: { price: true, createdAt: true },
+      }),
+      // One Hour ago
+      this.db.tokenPrice.findFirst({
+        where: {
+          tokenAddress: tokenAddr,
+          createdAt: { lte: new Date(Date.now() - 60 * 60 * 1000) },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { price: true, createdAt: true },
+      }),
+      // 24h ago
+
+      this.db.tokenPrice.findFirst({
+        where: {
+          tokenAddress: tokenAddr,
+          createdAt: { lte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { price: true, createdAt: true },
+      }),
+    ]);
+
+    const evo1h =
+      current && oneHour
+        ? ((current.price - oneHour.price) / oneHour.price) * 100
+        : null;
+    const evo24h =
+      current && oneDay
+        ? ((current.price - oneDay.price) / oneDay.price) * 100
+        : null;
+
+    return {
+      current: current?.price,
+      evo1h,
+      evo24h,
+    };
+  }
+
+  private async getTokenVolumes(
+    tokenAddress: string,
+    currentPrice: number,
+    decimal: number = 18,
+  ) {
+    try {
+      const oneDayAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000);
+
+      const result = await this.ponder.database
+        .select({
+          poolAddress: swaps.poolAddress,
+          amount0: swaps.amount0,
+          amount1: swaps.amount1,
+          token0Address: pools.token0Address,
+          token1Address: pools.token1Address,
+        })
+        .from(swaps)
+        .innerJoin(pools, eq(swaps.poolAddress, pools.address))
+        .where(
+          and(
+            or(
+              eq(pools.token0Address, tokenAddress),
+              eq(pools.token1Address, tokenAddress),
+            ),
+            gte(swaps.createdAt, BigInt(oneDayAgo)),
+          ),
+        );
+
+      // const result = await this.ponder.database.execute(sql`
+      // SELECT
+      //   SUM(
+      //     CASE
+      //       WHEN ${pools.token0Address} = ${tokenAddress.toLowerCase()} THEN ABS(${swaps.amount0}::numeric)
+      //       WHEN ${pools.token1Address} = ${tokenAddress.toLowerCase()} THEN ABS(${swaps.amount1}::numeric)
+      //       ELSE 0
+      //     END
+      //   )::text as volume_token,
+      //   COUNT(*)::text as swap_count
+      // FROM ${swaps}
+      // JOIN ${pools} ON ${swaps.poolAddress} = ${pools.address}
+      // WHERE (${pools.token0Address} = ${tokenAddress.toLowerCase()} OR ${pools.token1Address} = ${tokenAddress.toLowerCase()})
+      // AND ${swaps.createdAt} >= ${oneDayAgo}
+      //  `);
+
+      let totalVolume = 0n;
+      for (const row of result) {
+        if (row.token0Address === tokenAddress) {
+          totalVolume += row.amount0 < 0 ? -row.amount0 : row.amount0;
+        }
+        if (row.token1Address === tokenAddress) {
+          totalVolume += row.amount1 < 0 ? -row.amount1 : row.amount1;
+        }
+      }
+
+      return {
+        volumeToken: totalVolume,
+        volumeUSD: parseFloat(formatUnits(totalVolume, decimal)) * currentPrice,
+        swapCount: result.length,
+      };
+    } catch (error) {
+      this.logger.error('Cant calculate token volumes', error?.message);
+      return null;
+    }
+  }
+
+  private getTokenTVLInPool(tokenAddress: string) {
+    return {
+      tvlInPool: 0,
+    };
+  }
+
+  private async getTotalSupplyAndFDV(
+    tokenAddress: string,
+    currentPrice: number,
+    decimal: number = 18,
+  ) {
+    const totalSupply = await this.blockchain.client.readContract({
+      address: tokenAddress as `0x${string}`,
+      abi: [
+        {
+          inputs: [],
+          name: 'totalSupply',
+          outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+          stateMutability: 'view',
+          type: 'function',
+        },
+      ],
+      functionName: 'totalSupply',
+    });
+
+    if (!totalSupply) return null;
+
+    return {
+      totalSupply,
+      fdv: parseFloat(formatUnits(totalSupply, decimal)) * currentPrice,
+    };
   }
 }

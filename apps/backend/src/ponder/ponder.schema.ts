@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { InferSelectModel, relations } from 'drizzle-orm';
 import {
   bigint,
   integer,
@@ -23,6 +23,7 @@ export const poolsRelations = relations(pools, ({ many }) => ({
   positions: many(positions),
   liquidityEvent: many(liquidityEvent),
 }));
+export type Pool = InferSelectModel<typeof pools>;
 
 export const swaps = pgTable('swaps', {
   id: text().primaryKey(),
@@ -45,6 +46,7 @@ export const swapsRelations = relations(swaps, ({ one }) => ({
     references: [pools.address],
   }),
 }));
+export type Swap = InferSelectModel<typeof swaps>;
 
 export const positions = pgTable(
   'positions',
