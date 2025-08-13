@@ -75,6 +75,29 @@
     }
   }
 
+  &__FilterBtn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: transparent;
+    color: #aaa;
+    border: 1.5px solid #333;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: var(--accent1, #e39229);
+      color: var(--accent1, #e39229);
+    }
+
+    &.is-active {
+      background: var(--accent1, #e39229);
+      border-color: var(--accent1, #e39229);
+      color: #fff;
+    }
+  }
+
   &__TableWrapper {
     margin-bottom: 16px;
     overflow-x: auto;

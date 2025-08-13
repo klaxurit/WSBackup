@@ -76,7 +76,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       sortValue: (row) => `${row.token0.symbol}/${row.token1.symbol}`,
       render: (row) => (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <TokenPairLogos token0={row.token0} token1={row.token1} />
+          <TokenPairLogos
+            token0={row.token0}
+            token1={row.token1}
+            borderWidth={3}
+            separatorWidth={2.5}
+          />
           <span style={{ fontWeight: 600 }}>{row.pool}</span>
         </span>
       )
