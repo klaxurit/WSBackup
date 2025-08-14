@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
-import { pools, swaps } from 'src/ponder/ponder.schema';
+import { pools, positions, swaps } from 'src/ponder/ponder.schema';
 import { PonderService } from 'src/ponder/ponder.service';
 import { eq, and, or, gte, sql } from 'drizzle-orm';
 import { getContract, formatUnits } from 'viem';
@@ -50,7 +50,6 @@ export class PriceTokenService implements OnModuleInit {
   async onModuleInit() {
     await this.getHoneyPrice();
     await this.buildPathGraph();
-    // await this.updateTokensStats();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -59,6 +58,7 @@ export class PriceTokenService implements OnModuleInit {
     await this.savePrices(prices);
   }
 
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async updateTokensStats() {
     const tokens = await this.db.token.findMany({
       where: {
@@ -67,47 +67,63 @@ export class PriceTokenService implements OnModuleInit {
     });
 
     await Promise.all(tokens.map((t) => this.updateTokenStats(t)));
+
+    this.logger.debug(`${tokens.length} tokens stats updated`);
   }
 
   private async updateTokenStats(token: Token) {
     this.logger.debug('Start update stat of token:' + token.symbol);
-    // tokenAddress String
-    // date         String // Format YYYY-MM-DD
-    // price          Float
-    // priceChange1h  Float?
-    // priceChange24h Float?
-    // volume24h    Float @default(0)
-    // volumeUSD24h Float @default(0)
-    // tvlInPools Float  @default(0)
-    // marketCap  Float?
-    // fdv        Float?
-    // rankByTvl       Int?
-    // rankByVolume    Int?
-    // rankByMarketCap Int?
-    // swapCount24h     Int @default(0)
-    // uniqueTraders24h Int @default(0)
-    // createdAt DateTime @default(now())
-    // updatedAt DateTime @updatedAt
 
     // current price + change 1h + change 24h
     const priceAndEvo = await this.getPricesEvolution(token.address);
     if (!priceAndEvo?.current) return;
+
     // volumes
     const volumes = await this.getTokenVolumes(
       token.address,
       priceAndEvo.current,
       token.decimals,
     );
+    if (!volumes) return;
+
     // fdv and totalSupply
     const supply = await this.getTotalSupplyAndFDV(
       token.address,
       priceAndEvo.current,
       token.decimals,
     );
+    if (!supply) return;
+
     // tvlInPool
     const tvlInPool = await this.getTokenTVLInPool(token.address);
+    if (!tvlInPool) return;
 
-    console.log(priceAndEvo, volumes, supply);
+    await this.db.tokenDailyStats.upsert({
+      where: { tokenAddress: token.address },
+      create: {
+        tokenAddress: token.address,
+        price: priceAndEvo.current,
+        priceChange1h: priceAndEvo.evo1h,
+        priceChange24h: priceAndEvo.evo24h,
+        volume24h: volumes.volumeToken.toString(),
+        volumeUSD24h: volumes.volumeUSD,
+        tvlInPools: tvlInPool,
+        marketCap: supply.fdv,
+        fdv: supply.fdv,
+        swapCount24h: volumes.swapCount,
+      },
+      update: {
+        price: priceAndEvo.current,
+        priceChange1h: priceAndEvo.evo1h,
+        priceChange24h: priceAndEvo.evo24h,
+        volume24h: volumes.volumeToken.toString(),
+        volumeUSD24h: volumes.volumeUSD,
+        tvlInPools: tvlInPool,
+        marketCap: supply.fdv,
+        fdv: supply.fdv,
+        swapCount24h: volumes.swapCount,
+      },
+    });
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -117,6 +133,7 @@ export class PriceTokenService implements OnModuleInit {
     this.logger.debug('Honey Price updated @' + this.HoneyPrice);
   }
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async buildPathGraph() {
     const tokensGraphSave = this.tokensGraph;
     this.tokensGraph = {};
@@ -536,22 +553,6 @@ export class PriceTokenService implements OnModuleInit {
           ),
         );
 
-      // const result = await this.ponder.database.execute(sql`
-      // SELECT
-      //   SUM(
-      //     CASE
-      //       WHEN ${pools.token0Address} = ${tokenAddress.toLowerCase()} THEN ABS(${swaps.amount0}::numeric)
-      //       WHEN ${pools.token1Address} = ${tokenAddress.toLowerCase()} THEN ABS(${swaps.amount1}::numeric)
-      //       ELSE 0
-      //     END
-      //   )::text as volume_token,
-      //   COUNT(*)::text as swap_count
-      // FROM ${swaps}
-      // JOIN ${pools} ON ${swaps.poolAddress} = ${pools.address}
-      // WHERE (${pools.token0Address} = ${tokenAddress.toLowerCase()} OR ${pools.token1Address} = ${tokenAddress.toLowerCase()})
-      // AND ${swaps.createdAt} >= ${oneDayAgo}
-      //  `);
-
       let totalVolume = 0n;
       for (const row of result) {
         if (row.token0Address === tokenAddress) {
@@ -561,6 +562,8 @@ export class PriceTokenService implements OnModuleInit {
           totalVolume += row.amount1 < 0 ? -row.amount1 : row.amount1;
         }
       }
+
+      if (totalVolume === 0n) return null;
 
       return {
         volumeToken: totalVolume,
@@ -573,10 +576,29 @@ export class PriceTokenService implements OnModuleInit {
     }
   }
 
-  private getTokenTVLInPool(tokenAddress: string) {
-    return {
-      tvlInPool: 0,
-    };
+  private async getTokenTVLInPool(tokenAddress: string) {
+    const tokensPools = await this.ponder.database
+      .select({
+        tvl: sql<string>`
+          SUM(
+            CASE 
+              WHEN ${pools.token0Address} = ${tokenAddress} THEN ${positions.amount0}
+              WHEN ${pools.token1Address} = ${tokenAddress} THEN ${positions.amount1}
+              ELSE 0
+            END
+          )
+        `.as('tvl'),
+      })
+      .from(pools)
+      .innerJoin(positions, eq(pools.address, positions.poolAddress))
+      .where(
+        or(
+          eq(pools.token0Address, tokenAddress),
+          eq(pools.token1Address, tokenAddress),
+        ),
+      );
+
+    return tokensPools?.[0]?.tvl || null;
   }
 
   private async getTotalSupplyAndFDV(

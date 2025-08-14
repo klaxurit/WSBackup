@@ -3346,77 +3346,54 @@ export namespace Prisma {
     price: number | null
     priceChange1h: number | null
     priceChange24h: number | null
-    volume24h: number | null
     volumeUSD24h: number | null
-    tvlInPools: number | null
     marketCap: number | null
     fdv: number | null
-    rankByTvl: number | null
-    rankByVolume: number | null
-    rankByMarketCap: number | null
     swapCount24h: number | null
-    uniqueTraders24h: number | null
   }
 
   export type TokenDailyStatsSumAggregateOutputType = {
     price: number | null
     priceChange1h: number | null
     priceChange24h: number | null
-    volume24h: number | null
     volumeUSD24h: number | null
-    tvlInPools: number | null
     marketCap: number | null
     fdv: number | null
-    rankByTvl: number | null
-    rankByVolume: number | null
-    rankByMarketCap: number | null
     swapCount24h: number | null
-    uniqueTraders24h: number | null
   }
 
   export type TokenDailyStatsMinAggregateOutputType = {
     tokenAddress: string | null
-    date: string | null
     price: number | null
     priceChange1h: number | null
     priceChange24h: number | null
-    volume24h: number | null
+    volume24h: string | null
     volumeUSD24h: number | null
-    tvlInPools: number | null
+    tvlInPools: string | null
     marketCap: number | null
     fdv: number | null
-    rankByTvl: number | null
-    rankByVolume: number | null
-    rankByMarketCap: number | null
     swapCount24h: number | null
-    uniqueTraders24h: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
 
   export type TokenDailyStatsMaxAggregateOutputType = {
     tokenAddress: string | null
-    date: string | null
     price: number | null
     priceChange1h: number | null
     priceChange24h: number | null
-    volume24h: number | null
+    volume24h: string | null
     volumeUSD24h: number | null
-    tvlInPools: number | null
+    tvlInPools: string | null
     marketCap: number | null
     fdv: number | null
-    rankByTvl: number | null
-    rankByVolume: number | null
-    rankByMarketCap: number | null
     swapCount24h: number | null
-    uniqueTraders24h: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
 
   export type TokenDailyStatsCountAggregateOutputType = {
     tokenAddress: number
-    date: number
     price: number
     priceChange1h: number
     priceChange24h: number
@@ -3425,11 +3402,7 @@ export namespace Prisma {
     tvlInPools: number
     marketCap: number
     fdv: number
-    rankByTvl: number
-    rankByVolume: number
-    rankByMarketCap: number
     swapCount24h: number
-    uniqueTraders24h: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3440,37 +3413,24 @@ export namespace Prisma {
     price?: true
     priceChange1h?: true
     priceChange24h?: true
-    volume24h?: true
     volumeUSD24h?: true
-    tvlInPools?: true
     marketCap?: true
     fdv?: true
-    rankByTvl?: true
-    rankByVolume?: true
-    rankByMarketCap?: true
     swapCount24h?: true
-    uniqueTraders24h?: true
   }
 
   export type TokenDailyStatsSumAggregateInputType = {
     price?: true
     priceChange1h?: true
     priceChange24h?: true
-    volume24h?: true
     volumeUSD24h?: true
-    tvlInPools?: true
     marketCap?: true
     fdv?: true
-    rankByTvl?: true
-    rankByVolume?: true
-    rankByMarketCap?: true
     swapCount24h?: true
-    uniqueTraders24h?: true
   }
 
   export type TokenDailyStatsMinAggregateInputType = {
     tokenAddress?: true
-    date?: true
     price?: true
     priceChange1h?: true
     priceChange24h?: true
@@ -3479,18 +3439,13 @@ export namespace Prisma {
     tvlInPools?: true
     marketCap?: true
     fdv?: true
-    rankByTvl?: true
-    rankByVolume?: true
-    rankByMarketCap?: true
     swapCount24h?: true
-    uniqueTraders24h?: true
     createdAt?: true
     updatedAt?: true
   }
 
   export type TokenDailyStatsMaxAggregateInputType = {
     tokenAddress?: true
-    date?: true
     price?: true
     priceChange1h?: true
     priceChange24h?: true
@@ -3499,18 +3454,13 @@ export namespace Prisma {
     tvlInPools?: true
     marketCap?: true
     fdv?: true
-    rankByTvl?: true
-    rankByVolume?: true
-    rankByMarketCap?: true
     swapCount24h?: true
-    uniqueTraders24h?: true
     createdAt?: true
     updatedAt?: true
   }
 
   export type TokenDailyStatsCountAggregateInputType = {
     tokenAddress?: true
-    date?: true
     price?: true
     priceChange1h?: true
     priceChange24h?: true
@@ -3519,11 +3469,7 @@ export namespace Prisma {
     tvlInPools?: true
     marketCap?: true
     fdv?: true
-    rankByTvl?: true
-    rankByVolume?: true
-    rankByMarketCap?: true
     swapCount24h?: true
-    uniqueTraders24h?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3617,20 +3563,15 @@ export namespace Prisma {
 
   export type TokenDailyStatsGroupByOutputType = {
     tokenAddress: string
-    date: string
     price: number
     priceChange1h: number | null
     priceChange24h: number | null
-    volume24h: number
+    volume24h: string
     volumeUSD24h: number
-    tvlInPools: number
+    tvlInPools: string
     marketCap: number | null
     fdv: number | null
-    rankByTvl: number | null
-    rankByVolume: number | null
-    rankByMarketCap: number | null
     swapCount24h: number
-    uniqueTraders24h: number
     createdAt: Date
     updatedAt: Date
     _count: TokenDailyStatsCountAggregateOutputType | null
@@ -3656,7 +3597,6 @@ export namespace Prisma {
 
   export type TokenDailyStatsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     tokenAddress?: boolean
-    date?: boolean
     price?: boolean
     priceChange1h?: boolean
     priceChange24h?: boolean
@@ -3665,11 +3605,7 @@ export namespace Prisma {
     tvlInPools?: boolean
     marketCap?: boolean
     fdv?: boolean
-    rankByTvl?: boolean
-    rankByVolume?: boolean
-    rankByMarketCap?: boolean
     swapCount24h?: boolean
-    uniqueTraders24h?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
@@ -3677,7 +3613,6 @@ export namespace Prisma {
 
   export type TokenDailyStatsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     tokenAddress?: boolean
-    date?: boolean
     price?: boolean
     priceChange1h?: boolean
     priceChange24h?: boolean
@@ -3686,11 +3621,7 @@ export namespace Prisma {
     tvlInPools?: boolean
     marketCap?: boolean
     fdv?: boolean
-    rankByTvl?: boolean
-    rankByVolume?: boolean
-    rankByMarketCap?: boolean
     swapCount24h?: boolean
-    uniqueTraders24h?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     token?: boolean | TokenDefaultArgs<ExtArgs>
@@ -3698,7 +3629,6 @@ export namespace Prisma {
 
   export type TokenDailyStatsSelectScalar = {
     tokenAddress?: boolean
-    date?: boolean
     price?: boolean
     priceChange1h?: boolean
     priceChange24h?: boolean
@@ -3707,11 +3637,7 @@ export namespace Prisma {
     tvlInPools?: boolean
     marketCap?: boolean
     fdv?: boolean
-    rankByTvl?: boolean
-    rankByVolume?: boolean
-    rankByMarketCap?: boolean
     swapCount24h?: boolean
-    uniqueTraders24h?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -3730,20 +3656,15 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       tokenAddress: string
-      date: string
       price: number
       priceChange1h: number | null
       priceChange24h: number | null
-      volume24h: number
+      volume24h: string
       volumeUSD24h: number
-      tvlInPools: number
+      tvlInPools: string
       marketCap: number | null
       fdv: number | null
-      rankByTvl: number | null
-      rankByVolume: number | null
-      rankByMarketCap: number | null
       swapCount24h: number
-      uniqueTraders24h: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["tokenDailyStats"]>
@@ -4141,20 +4062,15 @@ export namespace Prisma {
    */ 
   interface TokenDailyStatsFieldRefs {
     readonly tokenAddress: FieldRef<"TokenDailyStats", 'String'>
-    readonly date: FieldRef<"TokenDailyStats", 'String'>
     readonly price: FieldRef<"TokenDailyStats", 'Float'>
     readonly priceChange1h: FieldRef<"TokenDailyStats", 'Float'>
     readonly priceChange24h: FieldRef<"TokenDailyStats", 'Float'>
-    readonly volume24h: FieldRef<"TokenDailyStats", 'Float'>
+    readonly volume24h: FieldRef<"TokenDailyStats", 'String'>
     readonly volumeUSD24h: FieldRef<"TokenDailyStats", 'Float'>
-    readonly tvlInPools: FieldRef<"TokenDailyStats", 'Float'>
+    readonly tvlInPools: FieldRef<"TokenDailyStats", 'String'>
     readonly marketCap: FieldRef<"TokenDailyStats", 'Float'>
     readonly fdv: FieldRef<"TokenDailyStats", 'Float'>
-    readonly rankByTvl: FieldRef<"TokenDailyStats", 'Int'>
-    readonly rankByVolume: FieldRef<"TokenDailyStats", 'Int'>
-    readonly rankByMarketCap: FieldRef<"TokenDailyStats", 'Int'>
     readonly swapCount24h: FieldRef<"TokenDailyStats", 'Int'>
-    readonly uniqueTraders24h: FieldRef<"TokenDailyStats", 'Int'>
     readonly createdAt: FieldRef<"TokenDailyStats", 'DateTime'>
     readonly updatedAt: FieldRef<"TokenDailyStats", 'DateTime'>
   }
@@ -5630,7 +5546,6 @@ export namespace Prisma {
 
   export const TokenDailyStatsScalarFieldEnum: {
     tokenAddress: 'tokenAddress',
-    date: 'date',
     price: 'price',
     priceChange1h: 'priceChange1h',
     priceChange24h: 'priceChange24h',
@@ -5639,11 +5554,7 @@ export namespace Prisma {
     tvlInPools: 'tvlInPools',
     marketCap: 'marketCap',
     fdv: 'fdv',
-    rankByTvl: 'rankByTvl',
-    rankByVolume: 'rankByVolume',
-    rankByMarketCap: 'rankByMarketCap',
     swapCount24h: 'swapCount24h',
-    uniqueTraders24h: 'uniqueTraders24h',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -6020,20 +5931,15 @@ export namespace Prisma {
     OR?: TokenDailyStatsWhereInput[]
     NOT?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
     tokenAddress?: StringFilter<"TokenDailyStats"> | string
-    date?: StringFilter<"TokenDailyStats"> | string
     price?: FloatFilter<"TokenDailyStats"> | number
     priceChange1h?: FloatNullableFilter<"TokenDailyStats"> | number | null
     priceChange24h?: FloatNullableFilter<"TokenDailyStats"> | number | null
-    volume24h?: FloatFilter<"TokenDailyStats"> | number
+    volume24h?: StringFilter<"TokenDailyStats"> | string
     volumeUSD24h?: FloatFilter<"TokenDailyStats"> | number
-    tvlInPools?: FloatFilter<"TokenDailyStats"> | number
+    tvlInPools?: StringFilter<"TokenDailyStats"> | string
     marketCap?: FloatNullableFilter<"TokenDailyStats"> | number | null
     fdv?: FloatNullableFilter<"TokenDailyStats"> | number | null
-    rankByTvl?: IntNullableFilter<"TokenDailyStats"> | number | null
-    rankByVolume?: IntNullableFilter<"TokenDailyStats"> | number | null
-    rankByMarketCap?: IntNullableFilter<"TokenDailyStats"> | number | null
     swapCount24h?: IntFilter<"TokenDailyStats"> | number
-    uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
     createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
@@ -6041,7 +5947,6 @@ export namespace Prisma {
 
   export type TokenDailyStatsOrderByWithRelationInput = {
     tokenAddress?: SortOrder
-    date?: SortOrder
     price?: SortOrder
     priceChange1h?: SortOrderInput | SortOrder
     priceChange24h?: SortOrderInput | SortOrder
@@ -6050,44 +5955,33 @@ export namespace Prisma {
     tvlInPools?: SortOrder
     marketCap?: SortOrderInput | SortOrder
     fdv?: SortOrderInput | SortOrder
-    rankByTvl?: SortOrderInput | SortOrder
-    rankByVolume?: SortOrderInput | SortOrder
-    rankByMarketCap?: SortOrderInput | SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     token?: TokenOrderByWithRelationInput
   }
 
   export type TokenDailyStatsWhereUniqueInput = Prisma.AtLeast<{
-    tokenAddress_date?: TokenDailyStatsTokenAddressDateCompoundUniqueInput
+    tokenAddress?: string
     AND?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
     OR?: TokenDailyStatsWhereInput[]
     NOT?: TokenDailyStatsWhereInput | TokenDailyStatsWhereInput[]
-    tokenAddress?: StringFilter<"TokenDailyStats"> | string
-    date?: StringFilter<"TokenDailyStats"> | string
     price?: FloatFilter<"TokenDailyStats"> | number
     priceChange1h?: FloatNullableFilter<"TokenDailyStats"> | number | null
     priceChange24h?: FloatNullableFilter<"TokenDailyStats"> | number | null
-    volume24h?: FloatFilter<"TokenDailyStats"> | number
+    volume24h?: StringFilter<"TokenDailyStats"> | string
     volumeUSD24h?: FloatFilter<"TokenDailyStats"> | number
-    tvlInPools?: FloatFilter<"TokenDailyStats"> | number
+    tvlInPools?: StringFilter<"TokenDailyStats"> | string
     marketCap?: FloatNullableFilter<"TokenDailyStats"> | number | null
     fdv?: FloatNullableFilter<"TokenDailyStats"> | number | null
-    rankByTvl?: IntNullableFilter<"TokenDailyStats"> | number | null
-    rankByVolume?: IntNullableFilter<"TokenDailyStats"> | number | null
-    rankByMarketCap?: IntNullableFilter<"TokenDailyStats"> | number | null
     swapCount24h?: IntFilter<"TokenDailyStats"> | number
-    uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
     createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     token?: XOR<TokenRelationFilter, TokenWhereInput>
-  }, "tokenAddress_date">
+  }, "tokenAddress">
 
   export type TokenDailyStatsOrderByWithAggregationInput = {
     tokenAddress?: SortOrder
-    date?: SortOrder
     price?: SortOrder
     priceChange1h?: SortOrderInput | SortOrder
     priceChange24h?: SortOrderInput | SortOrder
@@ -6096,11 +5990,7 @@ export namespace Prisma {
     tvlInPools?: SortOrder
     marketCap?: SortOrderInput | SortOrder
     fdv?: SortOrderInput | SortOrder
-    rankByTvl?: SortOrderInput | SortOrder
-    rankByVolume?: SortOrderInput | SortOrder
-    rankByMarketCap?: SortOrderInput | SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TokenDailyStatsCountOrderByAggregateInput
@@ -6115,20 +6005,15 @@ export namespace Prisma {
     OR?: TokenDailyStatsScalarWhereWithAggregatesInput[]
     NOT?: TokenDailyStatsScalarWhereWithAggregatesInput | TokenDailyStatsScalarWhereWithAggregatesInput[]
     tokenAddress?: StringWithAggregatesFilter<"TokenDailyStats"> | string
-    date?: StringWithAggregatesFilter<"TokenDailyStats"> | string
     price?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
     priceChange1h?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
     priceChange24h?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
-    volume24h?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
+    volume24h?: StringWithAggregatesFilter<"TokenDailyStats"> | string
     volumeUSD24h?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
-    tvlInPools?: FloatWithAggregatesFilter<"TokenDailyStats"> | number
+    tvlInPools?: StringWithAggregatesFilter<"TokenDailyStats"> | string
     marketCap?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
     fdv?: FloatNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
-    rankByTvl?: IntNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
-    rankByVolume?: IntNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
-    rankByMarketCap?: IntNullableWithAggregatesFilter<"TokenDailyStats"> | number | null
     swapCount24h?: IntWithAggregatesFilter<"TokenDailyStats"> | number
-    uniqueTraders24h?: IntWithAggregatesFilter<"TokenDailyStats"> | number
     createdAt?: DateTimeWithAggregatesFilter<"TokenDailyStats"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"TokenDailyStats"> | Date | string
   }
@@ -6477,20 +6362,15 @@ export namespace Prisma {
   }
 
   export type TokenDailyStatsCreateInput = {
-    date: string
     price: number
     priceChange1h?: number | null
     priceChange24h?: number | null
-    volume24h?: number
-    volumeUSD24h?: number
-    tvlInPools?: number
+    volume24h: string
+    volumeUSD24h: number
+    tvlInPools: string
     marketCap?: number | null
     fdv?: number | null
-    rankByTvl?: number | null
-    rankByVolume?: number | null
-    rankByMarketCap?: number | null
     swapCount24h?: number
-    uniqueTraders24h?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     token: TokenCreateNestedOneWithoutTokenDailyStatsInput
@@ -6498,39 +6378,29 @@ export namespace Prisma {
 
   export type TokenDailyStatsUncheckedCreateInput = {
     tokenAddress: string
-    date: string
     price: number
     priceChange1h?: number | null
     priceChange24h?: number | null
-    volume24h?: number
-    volumeUSD24h?: number
-    tvlInPools?: number
+    volume24h: string
+    volumeUSD24h: number
+    tvlInPools: string
     marketCap?: number | null
     fdv?: number | null
-    rankByTvl?: number | null
-    rankByVolume?: number | null
-    rankByMarketCap?: number | null
     swapCount24h?: number
-    uniqueTraders24h?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type TokenDailyStatsUpdateInput = {
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     token?: TokenUpdateOneRequiredWithoutTokenDailyStatsNestedInput
@@ -6538,79 +6408,59 @@ export namespace Prisma {
 
   export type TokenDailyStatsUncheckedUpdateInput = {
     tokenAddress?: StringFieldUpdateOperationsInput | string
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenDailyStatsCreateManyInput = {
     tokenAddress: string
-    date: string
     price: number
     priceChange1h?: number | null
     priceChange24h?: number | null
-    volume24h?: number
-    volumeUSD24h?: number
-    tvlInPools?: number
+    volume24h: string
+    volumeUSD24h: number
+    tvlInPools: string
     marketCap?: number | null
     fdv?: number | null
-    rankByTvl?: number | null
-    rankByVolume?: number | null
-    rankByMarketCap?: number | null
     swapCount24h?: number
-    uniqueTraders24h?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type TokenDailyStatsUpdateManyMutationInput = {
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenDailyStatsUncheckedUpdateManyInput = {
     tokenAddress?: StringFieldUpdateOperationsInput | string
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7183,25 +7033,8 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type TokenDailyStatsTokenAddressDateCompoundUniqueInput = {
-    tokenAddress: string
-    date: string
-  }
-
   export type TokenDailyStatsCountOrderByAggregateInput = {
     tokenAddress?: SortOrder
-    date?: SortOrder
     price?: SortOrder
     priceChange1h?: SortOrder
     priceChange24h?: SortOrder
@@ -7210,11 +7043,7 @@ export namespace Prisma {
     tvlInPools?: SortOrder
     marketCap?: SortOrder
     fdv?: SortOrder
-    rankByTvl?: SortOrder
-    rankByVolume?: SortOrder
-    rankByMarketCap?: SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7223,21 +7052,14 @@ export namespace Prisma {
     price?: SortOrder
     priceChange1h?: SortOrder
     priceChange24h?: SortOrder
-    volume24h?: SortOrder
     volumeUSD24h?: SortOrder
-    tvlInPools?: SortOrder
     marketCap?: SortOrder
     fdv?: SortOrder
-    rankByTvl?: SortOrder
-    rankByVolume?: SortOrder
-    rankByMarketCap?: SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
   }
 
   export type TokenDailyStatsMaxOrderByAggregateInput = {
     tokenAddress?: SortOrder
-    date?: SortOrder
     price?: SortOrder
     priceChange1h?: SortOrder
     priceChange24h?: SortOrder
@@ -7246,18 +7068,13 @@ export namespace Prisma {
     tvlInPools?: SortOrder
     marketCap?: SortOrder
     fdv?: SortOrder
-    rankByTvl?: SortOrder
-    rankByVolume?: SortOrder
-    rankByMarketCap?: SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type TokenDailyStatsMinOrderByAggregateInput = {
     tokenAddress?: SortOrder
-    date?: SortOrder
     price?: SortOrder
     priceChange1h?: SortOrder
     priceChange24h?: SortOrder
@@ -7266,11 +7083,7 @@ export namespace Prisma {
     tvlInPools?: SortOrder
     marketCap?: SortOrder
     fdv?: SortOrder
-    rankByTvl?: SortOrder
-    rankByVolume?: SortOrder
-    rankByMarketCap?: SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7279,16 +7092,10 @@ export namespace Prisma {
     price?: SortOrder
     priceChange1h?: SortOrder
     priceChange24h?: SortOrder
-    volume24h?: SortOrder
     volumeUSD24h?: SortOrder
-    tvlInPools?: SortOrder
     marketCap?: SortOrder
     fdv?: SortOrder
-    rankByTvl?: SortOrder
-    rankByVolume?: SortOrder
-    rankByMarketCap?: SortOrder
     swapCount24h?: SortOrder
-    uniqueTraders24h?: SortOrder
   }
 
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7305,22 +7112,6 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type PoolStatsCountOrderByAggregateInput = {
@@ -7553,14 +7344,6 @@ export namespace Prisma {
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
     decrement?: number
@@ -7849,22 +7632,6 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
   export type TokenPriceCreateWithoutTokenInput = {
     price: number
     priceSource?: $Enums.PriceSource
@@ -7892,39 +7659,29 @@ export namespace Prisma {
   }
 
   export type TokenDailyStatsCreateWithoutTokenInput = {
-    date: string
     price: number
     priceChange1h?: number | null
     priceChange24h?: number | null
-    volume24h?: number
-    volumeUSD24h?: number
-    tvlInPools?: number
+    volume24h: string
+    volumeUSD24h: number
+    tvlInPools: string
     marketCap?: number | null
     fdv?: number | null
-    rankByTvl?: number | null
-    rankByVolume?: number | null
-    rankByMarketCap?: number | null
     swapCount24h?: number
-    uniqueTraders24h?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type TokenDailyStatsUncheckedCreateWithoutTokenInput = {
-    date: string
     price: number
     priceChange1h?: number | null
     priceChange24h?: number | null
-    volume24h?: number
-    volumeUSD24h?: number
-    tvlInPools?: number
+    volume24h: string
+    volumeUSD24h: number
+    tvlInPools: string
     marketCap?: number | null
     fdv?: number | null
-    rankByTvl?: number | null
-    rankByVolume?: number | null
-    rankByMarketCap?: number | null
     swapCount24h?: number
-    uniqueTraders24h?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -7988,20 +7745,15 @@ export namespace Prisma {
     OR?: TokenDailyStatsScalarWhereInput[]
     NOT?: TokenDailyStatsScalarWhereInput | TokenDailyStatsScalarWhereInput[]
     tokenAddress?: StringFilter<"TokenDailyStats"> | string
-    date?: StringFilter<"TokenDailyStats"> | string
     price?: FloatFilter<"TokenDailyStats"> | number
     priceChange1h?: FloatNullableFilter<"TokenDailyStats"> | number | null
     priceChange24h?: FloatNullableFilter<"TokenDailyStats"> | number | null
-    volume24h?: FloatFilter<"TokenDailyStats"> | number
+    volume24h?: StringFilter<"TokenDailyStats"> | string
     volumeUSD24h?: FloatFilter<"TokenDailyStats"> | number
-    tvlInPools?: FloatFilter<"TokenDailyStats"> | number
+    tvlInPools?: StringFilter<"TokenDailyStats"> | string
     marketCap?: FloatNullableFilter<"TokenDailyStats"> | number | null
     fdv?: FloatNullableFilter<"TokenDailyStats"> | number | null
-    rankByTvl?: IntNullableFilter<"TokenDailyStats"> | number | null
-    rankByVolume?: IntNullableFilter<"TokenDailyStats"> | number | null
-    rankByMarketCap?: IntNullableFilter<"TokenDailyStats"> | number | null
     swapCount24h?: IntFilter<"TokenDailyStats"> | number
-    uniqueTraders24h?: IntFilter<"TokenDailyStats"> | number
     createdAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
     updatedAt?: DateTimeFilter<"TokenDailyStats"> | Date | string
   }
@@ -8231,20 +7983,15 @@ export namespace Prisma {
   }
 
   export type TokenDailyStatsCreateManyTokenInput = {
-    date: string
     price: number
     priceChange1h?: number | null
     priceChange24h?: number | null
-    volume24h?: number
-    volumeUSD24h?: number
-    tvlInPools?: number
+    volume24h: string
+    volumeUSD24h: number
+    tvlInPools: string
     marketCap?: number | null
     fdv?: number | null
-    rankByTvl?: number | null
-    rankByVolume?: number | null
-    rankByMarketCap?: number | null
     swapCount24h?: number
-    uniqueTraders24h?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -8274,58 +8021,43 @@ export namespace Prisma {
   }
 
   export type TokenDailyStatsUpdateWithoutTokenInput = {
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenDailyStatsUncheckedUpdateWithoutTokenInput = {
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TokenDailyStatsUncheckedUpdateManyWithoutTokenInput = {
-    date?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     priceChange1h?: NullableFloatFieldUpdateOperationsInput | number | null
     priceChange24h?: NullableFloatFieldUpdateOperationsInput | number | null
-    volume24h?: FloatFieldUpdateOperationsInput | number
+    volume24h?: StringFieldUpdateOperationsInput | string
     volumeUSD24h?: FloatFieldUpdateOperationsInput | number
-    tvlInPools?: FloatFieldUpdateOperationsInput | number
+    tvlInPools?: StringFieldUpdateOperationsInput | string
     marketCap?: NullableFloatFieldUpdateOperationsInput | number | null
     fdv?: NullableFloatFieldUpdateOperationsInput | number | null
-    rankByTvl?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByVolume?: NullableIntFieldUpdateOperationsInput | number | null
-    rankByMarketCap?: NullableIntFieldUpdateOperationsInput | number | null
     swapCount24h?: IntFieldUpdateOperationsInput | number
-    uniqueTraders24h?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

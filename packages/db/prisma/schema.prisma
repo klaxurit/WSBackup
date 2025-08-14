@@ -81,36 +81,29 @@ model TokenPrice {
 
 model TokenDailyStats {
   tokenAddress String
-  date         String // Format YYYY-MM-DD
 
   price          Float
   priceChange1h  Float?
   priceChange24h Float?
 
-  volume24h    Float @default(0)
-  volumeUSD24h Float @default(0)
+  volume24h    String
+  volumeUSD24h Float
 
-  tvlInPools Float  @default(0)
+  tvlInPools String
   marketCap  Float?
   fdv        Float?
 
-  rankByTvl       Int?
-  rankByVolume    Int?
-  rankByMarketCap Int?
-
-  swapCount24h     Int @default(0)
-  uniqueTraders24h Int @default(0)
+  swapCount24h Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   token Token @relation(fields: [tokenAddress], references: [address], onDelete: Cascade)
 
-  @@id([tokenAddress, date])
-  @@index([date, tvlInPools(sort: Desc)])
-  @@index([date, volumeUSD24h(sort: Desc)])
-  @@index([date, marketCap(sort: Desc)])
-  @@index([tokenAddress, date(sort: Desc)])
+  @@id([tokenAddress])
+  @@index([tvlInPools(sort: Desc)])
+  @@index([volumeUSD24h(sort: Desc)])
+  @@index([marketCap(sort: Desc)])
   @@map("token_daily_stats")
 }
 

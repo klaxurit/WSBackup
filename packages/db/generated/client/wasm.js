@@ -155,7 +155,6 @@ exports.Prisma.TokenPriceScalarFieldEnum = {
 
 exports.Prisma.TokenDailyStatsScalarFieldEnum = {
   tokenAddress: 'tokenAddress',
-  date: 'date',
   price: 'price',
   priceChange1h: 'priceChange1h',
   priceChange24h: 'priceChange24h',
@@ -164,11 +163,7 @@ exports.Prisma.TokenDailyStatsScalarFieldEnum = {
   tvlInPools: 'tvlInPools',
   marketCap: 'marketCap',
   fdv: 'fdv',
-  rankByTvl: 'rankByTvl',
-  rankByVolume: 'rankByVolume',
-  rankByMarketCap: 'rankByMarketCap',
   swapCount24h: 'swapCount24h',
-  uniqueTraders24h: 'uniqueTraders24h',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
