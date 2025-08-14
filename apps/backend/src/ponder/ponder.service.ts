@@ -23,17 +23,17 @@ export class PonderService implements OnModuleInit, OnModuleDestroy {
   private dialect: PgDialect;
   private superjson: any;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   async onModuleInit() {
     this.baseUrl =
       this.configService.get<string>('PONDER_SQL_URL') ||
       'http://localhost:42069/sql';
 
-    this.logger.log(`Ponder SQL client initialized with URL: ${this.baseUrl}`);
     this.superjson = await eval('import("superjson")');
     this.schema = { pools, swaps, positions, liquidityEvent };
     this.setupDatabase();
+    this.logger.log(`Ponder SQL client initialized with URL: ${this.baseUrl}`);
   }
   onModuleDestroy() {
     this.cleanup();
