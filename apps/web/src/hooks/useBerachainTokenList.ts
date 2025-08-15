@@ -22,7 +22,7 @@ export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
   return useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const url = `${import.meta.env.VITE_API_URL}/tokens`
+      const url = `${import.meta.env.VITE_API_URL}/token`
       const response = await fetch(url)
       if (!response.ok) {
         throw new Error('Can\'t fetch token list')
