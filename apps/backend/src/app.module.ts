@@ -4,11 +4,13 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { CoingeckoModule } from './coingecko/coingecko.module';
-import { TrackerModule } from './tracker/tracker.module';
-import { StatisticsModule } from './statistics/statistics.module';
 
 import appConfig from './app.config';
 import { DatabaseModule } from './database/database.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { PonderModule } from './ponder/ponder.module';
+import { TokenModule } from './token/token.module';
+import { PoolModule } from './pool/pool.module';
 
 @Module({
   imports: [
@@ -16,11 +18,16 @@ import { DatabaseModule } from './database/database.module';
       isGlobal: true,
       load: [appConfig],
     }),
+    CacheModule.register({
+      ttl: 2000,
+      isGlobal: true,
+    }),
     BlockchainModule,
     CoingeckoModule,
-    TrackerModule,
-    StatisticsModule,
     DatabaseModule,
+    PonderModule,
+    TokenModule,
+    PoolModule,
   ],
   controllers: [AppController],
   providers: [AppService],

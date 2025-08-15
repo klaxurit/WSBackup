@@ -4,16 +4,16 @@ import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
+import { useMemo } from "react";
 import { getPoolDisplayToken } from "../../utils/tokenMapping";
 
 
 interface PoolsTableProps {
-  data?: any[];
-  isLoading?: boolean;
+  searchValue: string
 }
 
-export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
-  const query = useQuery({
+export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
+  const { data, isLoading } = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`)
@@ -21,8 +21,18 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
       return resp.json()
     }
   });
-  const pools = data ?? query.data ?? [];
-  const loading = isLoading ?? query.isLoading;
+
+  const pools = useMemo(() => {
+    if (!data) return []
+    if (!searchValue) return data.data;
+    return data.data.filter((pool: any) =>
+      (pool.pool && pool.pool.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (pool.address && pool.address.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (pool.token1?.symbol && pool.token1.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+    );
+  }, [searchValue, data]);
+
   const getDisplayName = (token0: any, token1: any) => {
     const displayToken0 = getPoolDisplayToken(token0.address);
     const displayToken1 = getPoolDisplayToken(token1.address);
@@ -66,7 +76,12 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
       sortValue: (row) => `${row.token0.symbol}/${row.token1.symbol}`,
       render: (row) => (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <TokenPairLogos token0={row.token0} token1={row.token1} />
+          <TokenPairLogos
+            token0={row.token0}
+            token1={row.token1}
+            borderWidth={3}
+            separatorWidth={2.5}
+          />
           <span style={{ fontWeight: 600 }}>{row.pool}</span>
         </span>
       )
@@ -149,7 +164,7 @@ export const PoolsTable = ({ data, isLoading }: PoolsTableProps) => {
     <Table
       columns={columns}
       data={pools}
-      isLoading={loading}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"

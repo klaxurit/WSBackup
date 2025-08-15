@@ -1,4 +1,5 @@
 import React, { useState, useMemo, type ChangeEvent, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
@@ -13,6 +14,8 @@ import { useTokens } from '../../../hooks/useBerachainTokenList';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { FallbackImg } from '../../../components/utils/FallbackImg'; // Import ajouté
+import { getStatsAddress } from '../../../utils/tokenMapping';
+import { formatNumber } from '../../../utils/formatNumber';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -51,6 +54,33 @@ const CreatePoolPage: React.FC = () => {
     token: token1?.address as Address | undefined,
     query: {
       enabled: !!token1
+    }
+  });
+
+  const { data: tvlByFee = {}, isLoading: isLoadingTvl } = useQuery({
+    queryKey: ['feeTVL', token0?.address, token1?.address],
+    enabled: !!token0 && !!token1,
+    queryFn: async () => {
+      const fees = [100, 500, 3000, 10000];
+      const addr0 = getStatsAddress(token0!.address as Address);
+      const addr1 = getStatsAddress(token1!.address as Address);
+      const [t0, t1] = addr0.toLowerCase() < addr1.toLowerCase() ? [addr0, addr1] : [addr1, addr0];
+
+      const results = await Promise.all(
+        fees.map(async (f) => {
+          try {
+            const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/poolByTokens/${t0}/${t1}/${f}`);
+            if (!resp.ok) return { fee: f, tvlUSD: 0 };
+            const data = await resp.json();
+            const tvl = data?.PoolStatistic?.[0]?.tvlUSD ?? 0;
+            return { fee: f, tvlUSD: tvl };
+          } catch {
+            return { fee: f, tvlUSD: 0 };
+          }
+        })
+      );
+
+      return Object.fromEntries(results.map(r => [r.fee, r.tvlUSD]));
     }
   });
 
@@ -378,7 +408,9 @@ const CreatePoolPage: React.FC = () => {
                   >
                     <div className="PoolPage__FeeTierLabel">{tier.label}</div>
                     <div className="PoolPage__FeeTierDesc">{tier.desc}</div>
-                    <div className="PoolPage__FeeTierTVL">{tier.tvl}</div>
+                    <div className="PoolPage__FeeTierTVL">
+                      {isLoadingTvl ? 'Loading TVL…' : `$${formatNumber((tvlByFee as any)[tier.fee] || 0)} TVL`}
+                    </div>
                   </button>
                 ))}
               </div>

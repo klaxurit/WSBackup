@@ -7,7 +7,7 @@ import { formatNumber } from "../../utils/formatNumber";
 import { formatUnits } from "viem";
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
-  const { data = [], isLoading: isLoading } = useQuery({
+  const { data, isLoading: isLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
@@ -17,7 +17,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   });
 
   const tokens = useMemo(() => {
-    const inPoolTokens = data.filter((t: any) => t.inPool)
+    if (!data) return []
+    const inPoolTokens = data.data.filter((t: any) => t.inPool)
     if (!searchValue || searchValue === '') return inPoolTokens
 
     return inPoolTokens.filter((token: any) =>

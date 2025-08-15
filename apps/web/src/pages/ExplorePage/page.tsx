@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
-import { useQuery } from '@tanstack/react-query';
 import { NewBanner } from '../../components/Common/NewBanner';
 import beeIcon from '../../assets/bee_icon.png';
 import { useLocation } from 'react-router-dom';
@@ -24,24 +23,6 @@ const ExplorePage: React.FC = () => {
   );
   const [search, setSearch] = useState('');
 
-  const { data: pools = [], isLoading: poolsLoading } = useQuery({
-    queryKey: ['pools'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
-      if (!resp.ok) return [];
-      return resp.json();
-    }
-  });
-
-  const filteredPools = useMemo(() => {
-    if (!search) return pools;
-    return pools.filter((pool: any) =>
-      (pool.pool && pool.pool.toLowerCase().includes(search.toLowerCase())) ||
-      (pool.address && pool.address.toLowerCase().includes(search.toLowerCase())) ||
-      (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(search.toLowerCase())) ||
-      (pool.token1?.symbol && pool.token1.symbol.toLowerCase().includes(search.toLowerCase()))
-    );
-  }, [search, pools]);
 
   return (
     <div className="ExplorePage">
@@ -67,7 +48,7 @@ const ExplorePage: React.FC = () => {
         />
       </div>
       {activeTab === 'tokens' && <TokensTable searchValue={search} />}
-      {activeTab === 'pools' && <PoolsTable data={filteredPools} isLoading={poolsLoading} />}
+      {activeTab === 'pools' && <PoolsTable searchValue={search} />}
       {activeTab === 'transactions' && <TransactionsTable searchValue={search} />}
     </div>
   );
