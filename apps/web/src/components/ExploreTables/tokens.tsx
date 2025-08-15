@@ -16,6 +16,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   });
 
   const tokens = useMemo(() => {
+    // Normalement il n'y a plus besoin de ce useMemo, il faut passer toutes les params de paginations 
+    // et de searchValue dans la requête au dessus et il retournera seulement les resultats paginé
     if (!data) return []
     const inPoolTokens = data.data
     if (!searchValue || searchValue === '') return inPoolTokens

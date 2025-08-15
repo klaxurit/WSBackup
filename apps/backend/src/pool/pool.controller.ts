@@ -9,7 +9,7 @@ import {
 import { Prisma } from '@repo/db';
 import { DatabaseService } from 'src/database/database.service';
 
-@Controller('pools')
+@Controller('pool')
 @UseInterceptors(CacheInterceptor)
 export class PoolController {
   constructor(private readonly db: DatabaseService) {}
