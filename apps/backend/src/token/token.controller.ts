@@ -108,11 +108,10 @@ export class TokenController {
       : { status: TokenState.IN_POOL };
 
     const count = await this.db.token.count({ where: searchFilter });
-    console.log(page, limit, skip, searchFilter);
     const tokens = await this.db.token.findMany({
       where: searchFilter,
       include: {
-        TokenPrice: true,
+        TokenDailyStats: true,
       },
       take: limit,
       skip: skip,

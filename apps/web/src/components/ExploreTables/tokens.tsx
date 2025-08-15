@@ -4,13 +4,12 @@ import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
 import { useMemo } from "react";
 import { formatNumber } from "../../utils/formatNumber";
-import { formatUnits } from "viem";
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   const { data, isLoading: isLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/stats`);
       if (!resp.ok) return [];
       return resp.json();
     }
@@ -18,7 +17,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
 
   const tokens = useMemo(() => {
     if (!data) return []
-    const inPoolTokens = data.data.filter((t: any) => t.inPool)
+    const inPoolTokens = data.data
     if (!searchValue || searchValue === '') return inPoolTokens
 
     return inPoolTokens.filter((token: any) =>
@@ -72,10 +71,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'price',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 ? row.Statistic[0].price : 0;
+        return row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].price : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 ? `$${formatNumber(row.Statistic[0].price)}` : '-'
+        return row.TokenDailyStats?.length > 0 ? `$${formatNumber(row.TokenDailyStats[0].price)}` : '-'
       }
     },
     {
@@ -83,10 +82,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1h',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 ? row.Statistic[0].oneHourEvolution : 0;
+        return row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange1h : 0;
       },
       render: (row) => {
-        const evolution = row.Statistic?.length > 0 ? row.Statistic[0].oneHourEvolution : 0;
+        const evolution = row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange1h : 0;
         if (evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
@@ -101,10 +100,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1d',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 ? row.Statistic[0].oneDayEvolution : 0;
+        return row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange24h : 0;
       },
       render: (row) => {
-        const evolution = row.Statistic?.length > 0 ? row.Statistic[0].oneDayEvolution : 0;
+        const evolution = row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange24h : 0;
         if (evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
@@ -119,11 +118,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'fdv',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].fdv ? row.Statistic[0].fdv : 0;
+        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].fdv ? row.TokenDailyStats[0].fdv : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].fdv !== 0 && row.Statistic[0].fdv
-          ? `$${formatNumber(row.Statistic[0].fdv)}`
+        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].fdv !== 0 && row.TokenDailyStats[0].fdv
+          ? `$${formatNumber(row.TokenDailyStats[0].fdv)}`
           : '-'
       }
     },
@@ -132,11 +131,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'mcap',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].marketCap ? row.Statistic[0].marketCap : 0;
+        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].marketCap ? row.TokenDailyStats[0].marketCap : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].marketCap !== 0 && row.Statistic[0].marketCap
-          ? `$${formatNumber(row.Statistic[0].marketCap)}`
+        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].marketCap !== 0 && row.TokenDailyStats[0].marketCap
+          ? `$${formatNumber(row.TokenDailyStats[0].marketCap)}`
           : '-'
       }
     },
@@ -145,13 +144,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'volume',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].volume
-          ? parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimal))
+        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].volumeUSD24h
+          ? row.TokenDailyStats[0].volumeUSD24h
           : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `$${formatNumber(parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimals)))}`
+        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].volumeUSD24h !== 0
+          ? `$${formatNumber(row.TokenDailyStats[0].volumeUSD24h)}`
           : '-'
       }
     },
