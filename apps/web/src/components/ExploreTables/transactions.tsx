@@ -15,7 +15,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps?` + new URLSearchParams({
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps?` + new URLSearchParams({
         currentPage: `${currentPage}`,
         itemByPage: `${itemByPage}`,
         searchValue: searchValue || ""
@@ -25,13 +25,14 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       return resp.json()
     },
     select: (data) => {
+      console.log("tutu", data)
       return {
         pagination: {
           ...data.pagination,
           onPageChange: setCurrentPage
         },
         txs: data.data.map((s: any) => {
-          if (s.amount0 > 0n) {
+          if (BigInt(s.amount0) > 0n) {
             // A -> B
             return {
               ...s,
@@ -59,6 +60,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     refetch()
   }, [currentPage, searchValue])
 
+  console.log(data)
   const txColumns: TableColumn[] = [
     {
       label: 'Time',
