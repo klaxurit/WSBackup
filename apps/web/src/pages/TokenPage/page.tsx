@@ -14,7 +14,7 @@ const TokenPage: React.FC = () => {
   const { data: tokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats`);
       if (!resp.ok) return [];
       return resp.json();
     },
@@ -43,7 +43,7 @@ const TokenPage: React.FC = () => {
   const tvl = useMemo(() => {
     if (!pools || !token) return null;
     let total = 0;
-    for (const pool of pools) {
+    for (const pool of pools.data) {
       if (
         (pool.token0?.address?.toLowerCase() === token?.address?.toLowerCase() ||
           pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase()) &&
@@ -84,7 +84,7 @@ const TokenPage: React.FC = () => {
       queryKey: ['token-line-chart', tokenAddress],
       enabled: !!tokenAddress,
       queryFn: async () => {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/token/${tokenAddress}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/token/stats/${tokenAddress}`);
         if (!res.ok) throw new Error('API error');
         const data = await res.json();
         return data.map((d: any) => ({

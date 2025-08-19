@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatUnits } from "viem";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface TransactionsTableProps {
   searchValue: string | null;
@@ -12,6 +12,35 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1)
   // const [itemByPage, setItemByPage] = useState(20)
   const itemByPage = 20
+
+  // Récupérer la liste des tokens pour enrichir les transactions
+  const { data: tokensList } = useQuery({
+    queryKey: ['tokens'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/`);
+      if (!resp.ok) return [];
+      const result = await resp.json();
+      return result.data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Créer un map des tokens par adresse pour un accès rapide
+  const tokensMap = useMemo(() => {
+    if (!tokensList) return new Map();
+    return new Map(
+      tokensList.map((token: any) => [
+        token.address.toLowerCase(),
+        {
+          symbol: token.symbol,
+          name: token.name,
+          decimals: token.decimals,
+          logoUri: token.logoUri
+        }
+      ])
+    );
+  }, [tokensList]);
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
@@ -32,12 +61,37 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
           onPageChange: setCurrentPage
         },
         txs: data.data.map((s: any) => {
+          // Récupérer les informations des tokens depuis la base de données
+          const getTokenInfo = (address: string) => {
+            const token = tokensMap.get(address.toLowerCase());
+            return token || {
+              symbol: 'Unknown',
+              name: 'Unknown Token',
+              decimals: 18,
+              logoUri: null
+            };
+          };
+
+          // Récupérer les adresses des tokens depuis la pool (si disponible)
+          // Sinon, utiliser des adresses par défaut
+          let token0Address = '0x0000000000000000000000000000000000000000';
+          let token1Address = '0x0000000000000000000000000000000000000000';
+
+          // Essayer de récupérer les adresses depuis la pool si elle existe
+          if (s.pool?.token0?.address) {
+            token0Address = s.pool.token0.address;
+            token1Address = s.pool.token1.address;
+          }
+
+          const token0 = getTokenInfo(token0Address);
+          const token1 = getTokenInfo(token1Address);
+
           if (BigInt(s.amount0) > 0n) {
             // A -> B
             return {
               ...s,
-              tokenIn: s.pool.token0,
-              tokenOut: s.pool.token1,
+              tokenIn: token0,
+              tokenOut: token1,
               amountIn: s.amount0,
               amountOut: s.amount1,
             }
@@ -45,8 +99,8 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
             // B -> A
             return {
               ...s,
-              tokenIn: s.pool.token1,
-              tokenOut: s.pool.token0,
+              tokenIn: token1,
+              tokenOut: token0,
               amountIn: s.amount1,
               amountOut: s.amount0,
             }
@@ -68,7 +122,8 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       render: (row) => {
         let text
         const now = new Date();
-        const txTime = new Date(row.createdAt);
+        // Corriger le timestamp : createdAt est en secondes, pas en millisecondes
+        const txTime = new Date(Number(row.createdAt) * 1000);
         const diffMs = now.getTime() - txTime.getTime();
         const diffMin = Math.floor(diffMs / 60000);
 
@@ -110,16 +165,17 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           Swap
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} />}
+          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />}
           for
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }} />}
+          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />}
         </span>
       ),
     },
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
+        // Vérifier que Statistic existe et a des données
+        if (!row.tokenIn.Statistic || row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
 
         const amount = (parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18)) * row.tokenIn.Statistic[0].price)
         if (amount < 0.01) return "<0.01$"
@@ -138,7 +194,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
+            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} />}
           </span>
         )
       },
@@ -151,7 +207,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
+            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} />}
           </span>
         )
       },

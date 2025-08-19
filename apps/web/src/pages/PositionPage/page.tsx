@@ -125,7 +125,14 @@ const PoolPage: React.FC = () => {
       render: (row) => (
         <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
-            <TokenPairLogos token0={row.pool.token0} token1={row.pool.token1} />
+            <TokenPairLogos 
+              token0={row.pool.token0} 
+              token1={row.pool.token1} 
+              size={28}
+              gap={3}
+              borderWidth={2}
+              separatorWidth={1.5}
+            />
             {`${row.__symbol0} / ${row.__symbol1}`}
           </span>
         </Link>
@@ -214,8 +221,13 @@ const PoolPage: React.FC = () => {
           <div className="PoolPage__TopList">
             {topPools.map((pool: any) => (
               <div className="PoolPage__TopCard" key={pool.id}>
-                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <TokenPairLogos token0={pool.token0} token1={pool.token1} />
+                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <TokenPairLogos 
+                    token0={pool.token0}
+                    token1={pool.token1}
+                    borderWidth={3}
+                    separatorWidth={2.5}
+                  />
                   {(() => {
                     const displayToken0 = getPoolDisplayToken(pool.token0.address);
                     const displayToken1 = getPoolDisplayToken(pool.token1.address);

@@ -127,26 +127,26 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
           {row.tokenIn.logoUri ? (
             <img
               src={row.tokenIn.logoUri}
-              style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }}
+              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
               alt={row.tokenIn.symbol}
             />
           ) : (
             <FallbackImg
               content={row.tokenIn.symbol}
-              style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }}
+              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
             />
           )}
           for
           {row.tokenOut.logoUri ? (
             <img
               src={row.tokenOut.logoUri}
-              style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }}
+              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
               alt={row.tokenOut.symbol}
             />
           ) : (
             <FallbackImg
               content={row.tokenOut.symbol}
-              style={{ width: 24, height: 24, borderRadius: 6, margin: "0 2px" }}
+              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
             />
           )}
         </span>
@@ -174,7 +174,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
+            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} />}
           </span>
         )
       },
@@ -187,7 +187,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 6, marginLeft: 2 }} />}
+            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} />}
           </span>
         )
       },

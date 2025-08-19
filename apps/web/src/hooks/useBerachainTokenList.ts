@@ -1,38 +1,32 @@
-import { type Address } from 'viem';
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export interface BerachainToken {
-  id: number;
+  id: string;
+  address: string;
   symbol: string;
   name: string;
-  address: Address;
   decimals: number;
-  chainId: number;
   logoUri?: string;
-  isVerified: boolean;
-  coingeckoId?: string | null;
-  inPool: boolean;
   website?: string;
   twitter?: string;
   description?: string;
-  lastPrice: number;
+  coingeckoId?: string;
+  totalSupply?: string;
+  lastPrice?: number;
+  inPool?: boolean;
 }
 
-export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
+export const useTokens = () => {
   return useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const url = `${import.meta.env.VITE_API_URL}/token`
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error('Can\'t fetch token list')
-      }
-
-      const result = await response.json()
-      return result
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/`);
+      if (!resp.ok) return { data: [], pagination: {} };
+      const result = await resp.json();
+      // Retourne directement les données, pas l'objet complet
+      return result.data || [];
     },
     staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
-  })
-}
+  });
+};
 

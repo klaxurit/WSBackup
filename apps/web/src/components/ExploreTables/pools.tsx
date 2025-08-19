@@ -5,7 +5,6 @@ import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
-import { getPoolDisplayToken } from "../../utils/tokenMapping";
 
 
 interface PoolsTableProps {
@@ -17,7 +16,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     queryKey: ['poolStats'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool`)
-      if (!resp.ok) return []
+      if (!resp.ok) return { data: [] }
       return resp.json()
     }
   });
@@ -42,11 +41,11 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Link
-            to={`/pool/${row.address}`}
+            to={`/pools/${row.address}`}
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <span className={`Table__Address`}>
-              {row.token0Symbol}/{row.Token1Symbol}
+              {row.token0Symbol}/{row.token1Symbol}
             </span>
           </Link>
           <a

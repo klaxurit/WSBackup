@@ -6,20 +6,19 @@ import { useMemo } from "react";
 import { formatNumber } from "../../utils/formatNumber";
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
-  const { data, isLoading: isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/stats`);
-      if (!resp.ok) return [];
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
+      if (!resp.ok) return { data: [] };
       return resp.json();
     }
   });
 
   const tokens = useMemo(() => {
-    // Normalement il n'y a plus besoin de ce useMemo, il faut passer toutes les params de paginations 
-    // et de searchValue dans la requête au dessus et il retournera seulement les resultats paginé
     if (!data) return []
-    const inPoolTokens = data.data
+    // Filtrer seulement les tokens IN_POOL
+    const inPoolTokens = data.filter((token: any) => token.status === 'IN_POOL')
     if (!searchValue || searchValue === '') return inPoolTokens
 
     return inPoolTokens.filter((token: any) =>

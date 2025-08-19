@@ -310,17 +310,17 @@ const CreatePoolPage: React.FC = () => {
 
     if (token0Address && token1Address) {
       const foundToken0 = tokens.find(
-        (t) => t.address.toLowerCase() === token0Address.toLowerCase()
+        (t: BerachainToken) => t.address.toLowerCase() === token0Address.toLowerCase()
       );
       const foundToken1 = tokens.find(
-        (t) => t.address.toLowerCase() === token1Address.toLowerCase()
+        (t: BerachainToken) => t.address.toLowerCase() === token1Address.toLowerCase()
       );
       if (foundToken0 && foundToken1) {
         handleSelect0(foundToken0);
         handleSelect1(foundToken1);
       }
     } else {
-      const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+      const bera = tokens.find((t: BerachainToken) => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
       if (bera) {
         handleSelect0(bera)
       }

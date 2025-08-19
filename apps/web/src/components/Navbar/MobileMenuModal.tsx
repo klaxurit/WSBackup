@@ -1,9 +1,11 @@
 import React from 'react';
 import { SearchBar } from '../SearchBar/SearchBar';
-import { useTokens } from '../../hooks/useBerachainTokenList';
+import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { FallbackImg } from '../utils/FallbackImg';
+import { SafeImage } from '../utils/SafeImage';
+import { ensureArray } from '../../utils/dataValidation';
 
 interface MobileMenuModalProps {
   open: boolean;
@@ -13,11 +15,11 @@ interface MobileMenuModalProps {
 }
 
 export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose, searchValue, setSearchValue }) => {
-  const { data: tokens = [] } = useTokens();
-  const { data: pools = [] } = useQuery({
+  const { data: tokens } = useTokens();
+  const { data: pools } = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pools`);
       if (!resp.ok) return [];
       return resp.json();
     },
@@ -25,13 +27,17 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
     refetchOnWindowFocus: false
   });
 
-  const filteredTokens = searchValue.length > 0 ? tokens.filter(token =>
+  // S'assurer que tokens et pools sont des tableaux
+  const tokensArray = ensureArray<BerachainToken>(tokens);
+  const poolsArray = ensureArray(pools);
+
+  const filteredTokens = searchValue.length > 0 ? tokensArray.filter(token =>
     token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
     token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
     token.address.toLowerCase().includes(searchValue.toLowerCase())
   ) : [];
 
-  const filteredPools = searchValue.length > 0 ? pools.filter((pool: any) =>
+  const filteredPools = searchValue.length > 0 ? poolsArray.filter((pool: any) =>
     (pool.pool && pool.pool.toLowerCase().includes(searchValue.toLowerCase())) ||
     (pool.address && pool.address.toLowerCase().includes(searchValue.toLowerCase())) ||
     (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
@@ -85,7 +91,14 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
                       }}
                     >
                       {token.logoUri
-                        ? <img src={token.logoUri} alt={token.symbol} style={{ width: 22, height: 22, borderRadius: '50%' }} />
+                        ? <SafeImage
+                          src={token.logoUri}
+                          alt={token.symbol}
+                          fallbackContent={token.symbol}
+                          width={22}
+                          height={22}
+                          style={{ borderRadius: '50%' }}
+                        />
                         : <FallbackImg content={token.symbol} width={22} height={22} />}
                       <span style={{ fontWeight: 600 }}>{token.symbol}</span>
                       <span style={{ color: '#aaa', fontSize: 13 }}>{token.name}</span>
@@ -112,10 +125,38 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
                     >
                       <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
                         {pool.token0?.logoUri
-                          ? <img src={pool.token0.logoUri} alt={pool.token0.symbol} style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
+                          ? <SafeImage
+                            src={pool.token0.logoUri}
+                            alt={pool.token0.symbol}
+                            fallbackContent={pool.token0.symbol}
+                            width={22}
+                            height={22}
+                            style={{
+                              borderRadius: '50%',
+                              border: '2px solid #232323',
+                              background: '#fff',
+                              position: 'absolute',
+                              left: 0,
+                              zIndex: 2
+                            }}
+                          />
                           : <FallbackImg content={pool.token0?.symbol || '?'} width={22} height={22} style={{ position: 'absolute', left: 0, zIndex: 2, border: '2px solid #232323', background: '#fff', borderRadius: '50%' }} />}
                         {pool.token1?.logoUri
-                          ? <img src={pool.token1.logoUri} alt={pool.token1.symbol} style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 14, zIndex: 1 }} />
+                          ? <SafeImage
+                            src={pool.token1.logoUri}
+                            alt={pool.token1.symbol}
+                            fallbackContent={pool.token1.symbol}
+                            width={22}
+                            height={22}
+                            style={{
+                              borderRadius: '50%',
+                              border: '2px solid #232323',
+                              background: '#fff',
+                              position: 'absolute',
+                              left: 14,
+                              zIndex: 1
+                            }}
+                          />
                           : <FallbackImg content={pool.token1?.symbol || '?'} width={22} height={22} style={{ position: 'absolute', left: 14, zIndex: 1, border: '2px solid #232323', background: '#fff', borderRadius: '50%' }} />}
                       </span>
                       <span style={{ fontWeight: 600 }}>{pool.token0?.symbol}/{pool.token1?.symbol}</span>

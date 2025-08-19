@@ -48,7 +48,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
       };
     }
 
-    const statsAddress = getStatsAddress(selectedToken.address);
+    const statsAddress = getStatsAddress(selectedToken.address as `0x${string}`);
     return {
       type: 'single-token',
       tokenAddress: statsAddress,

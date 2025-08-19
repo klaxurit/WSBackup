@@ -55,7 +55,7 @@ export function useChartData<T extends ChartType>(
       }
 
       // Récupération des données depuis l'API
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/token/${tokenAddress}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/token/stats/${tokenAddress}`);
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
@@ -242,7 +242,7 @@ export function usePaginatedChartData(
     enabled: !!tokenAddress,
     queryFn: async () => {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/stats/token/${tokenAddress}?page=${page}&limit=${limit}`
+        `${import.meta.env.VITE_API_URL}/token/stats/${tokenAddress}?page=${page}&limit=${limit}`
       );
 
       if (!response.ok) {

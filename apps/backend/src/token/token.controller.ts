@@ -11,12 +11,65 @@ import {
 } from '@nestjs/common';
 import { Prisma, TokenState } from '@repo/db';
 import { DatabaseService } from 'src/database/database.service';
+import { TokenListService } from './list.service';
 import { NewTokenDTO } from './token.dto';
+import { NotFoundException } from '@nestjs/common';
 
 @Controller('token')
 @UseInterceptors(CacheInterceptor)
 export class TokenController {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly tokenListService: TokenListService,
+  ) { }
+
+  @Get('/list')
+  @CacheKey('token:list')
+  @CacheTTL(5 * 60 * 1000) // 5 minutes
+  async getTokenList() {
+    try {
+      // Récupérer tous les tokens depuis la base de données
+      const tokens = await this.db.token.findMany({
+        include: {
+          TokenDailyStats: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+        orderBy: [
+          { status: 'desc' }, // IN_POOL en premier
+          { lastActivityAt: 'desc' },
+          { discoveredAt: 'desc' },
+        ],
+      });
+
+      if (tokens.length === 0) {
+        // Si aucun token, déclencher la synchronisation
+        await this.tokenListService.updateGeneralList();
+
+        // Retry après sync
+        const tokensAfterSync = await this.db.token.findMany({
+          include: {
+            TokenDailyStats: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
+          },
+          orderBy: [
+            { status: 'desc' },
+            { lastActivityAt: 'desc' },
+            { discoveredAt: 'desc' },
+          ],
+        });
+
+        return tokensAfterSync;
+      }
+
+      return tokens;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Get('/')
   @CacheKey('token:list')
@@ -24,21 +77,21 @@ export class TokenController {
   async getAllTokens(@Query('searchValue') searchValue?: string) {
     const searchFilter = searchValue
       ? {
-          OR: [
-            {
-              name: {
-                contains: searchValue,
-                mode: Prisma.QueryMode.insensitive,
-              },
+        OR: [
+          {
+            name: {
+              contains: searchValue,
+              mode: Prisma.QueryMode.insensitive,
             },
-            {
-              symbol: {
-                contains: searchValue,
-                mode: Prisma.QueryMode.insensitive,
-              },
+          },
+          {
+            symbol: {
+              contains: searchValue,
+              mode: Prisma.QueryMode.insensitive,
             },
-          ],
-        }
+          },
+        ],
+      }
       : {};
 
     return await this.db.token.findMany({
@@ -53,6 +106,37 @@ export class TokenController {
     return await this.db.token.findUnique({
       where: { address },
     });
+  }
+
+  @Get('/stats/:address')
+  @CacheTTL(2 * 60 * 1000)
+  async getTokenStatsByAddress(@Param('address') address: string) {
+    const normalizedAddress = address.toLowerCase();
+
+    const token = await this.db.token.findFirst({
+      where: {
+        address: normalizedAddress,
+      },
+      include: {
+        TokenPrice: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!token) {
+      throw new NotFoundException(`Token with address ${address} not found`);
+    }
+
+    return {
+      data: token,
+      meta: {
+        address: normalizedAddress,
+        hasPrice: token.TokenPrice.length > 0,
+        lastPriceUpdate: token.TokenPrice[0]?.createdAt || null,
+      },
+    };
   }
 
   @Get('/stats')
@@ -71,22 +155,22 @@ export class TokenController {
 
     const searchFilter = searchValue
       ? {
-          OR: [
-            {
-              name: {
-                contains: searchValue,
-                mode: Prisma.QueryMode.insensitive,
-              },
+        OR: [
+          {
+            name: {
+              contains: searchValue,
+              mode: Prisma.QueryMode.insensitive,
             },
-            {
-              symbol: {
-                contains: searchValue,
-                mode: Prisma.QueryMode.insensitive,
-              },
+          },
+          {
+            symbol: {
+              contains: searchValue,
+              mode: Prisma.QueryMode.insensitive,
             },
-          ],
-          status: TokenState.IN_POOL,
-        }
+          },
+        ],
+        status: TokenState.IN_POOL,
+      }
       : { status: TokenState.IN_POOL };
 
     const count = await this.db.token.count({ where: searchFilter });
@@ -113,6 +197,16 @@ export class TokenController {
         hasPreviousPage: hasPreviousPage,
       },
     };
+  }
+
+  @Get('/sync')
+  async syncTokens() {
+    try {
+      await this.tokenListService.updateGeneralList();
+      return { success: true, message: 'Token sync completed' };
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('/')

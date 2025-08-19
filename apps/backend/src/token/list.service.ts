@@ -21,12 +21,12 @@ export class TokenListService implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    // await this.updateGeneralList();
+    await this.updateGeneralList();
   }
 
   // Fetch all tokens from berachain metadata
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  private async updateGeneralList() {
+  public async updateGeneralList() {
     const currentPools = await this.ponder.database.select().from(pools);
     const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
 

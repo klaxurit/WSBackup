@@ -10,6 +10,7 @@ import { useAccount } from "wagmi";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
 import { useQuery } from "@tanstack/react-query";
 import { getStatsAddress } from "../../utils/tokenMapping";
+import { ensureArray } from "../../utils/dataValidation";
 
 interface NetworksListProps {
   isOpen: boolean;
@@ -27,18 +28,21 @@ export const TokenList = ({
   onlyPoolToken
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
-  const { data: tokens = [] } = useTokens()
+  const { data: tokens } = useTokens()
   const { address, isConnected } = useAccount()
 
   const { data: tokensStats } = useQuery({
     queryKey: ["tokensStatsForList"],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/stats`)
       if (!resp.ok) return { data: [] as any[] }
       return resp.json()
     },
     staleTime: 60_000
   })
+
+  // S'assurer que tokens est un tableau
+  const tokensArray = ensureArray<BerachainToken>(tokens);
 
   const handleTokenSelect = (token: BerachainToken) => {
     onSelect(token);
@@ -47,31 +51,20 @@ export const TokenList = ({
 
   const filteredTokens = useMemo(() => {
     const onlyPoolOrAllTokens = onlyPoolToken
-      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
-      : tokens
+      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokensArray
     if (searchValue === "") return onlyPoolOrAllTokens;
     return onlyPoolOrAllTokens.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchValue.toLowerCase())
     );
-  }, [searchValue, tokens, onlyPoolToken]);
+  }, [searchValue, tokensArray, onlyPoolToken]);
 
   const availableTokensForPopular = useMemo(() => {
     return onlyPoolToken
-      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
-      : tokens;
-  }, [tokens, onlyPoolToken]);
-
-  const marketCapByAddress = useMemo(() => {
-    const map = new Map<string, number>()
-    const statsArray: any[] = tokensStats?.data || []
-    for (const t of statsArray) {
-      const addr: string | undefined = t.address || t.token?.address
-      const mc: number = t?.Statistic?.[0]?.marketCap || 0
-      if (addr) map.set(String(addr).toLowerCase(), Number(mc) || 0)
-    }
-    return map
-  }, [tokensStats])
+      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokensArray;
+  }, [tokensArray, onlyPoolToken]);
 
   const balanceInputTokens = useMemo(() => {
     return filteredTokens.map(t => ({
@@ -88,34 +81,61 @@ export const TokenList = ({
 
     const getBalanceUsd = (token: BerachainToken): number => {
       const balanceStr = (balances as Record<string, string | undefined>)[token.symbol]
-      const amount = balanceStr ? parseFloat(balanceStr) : 0
+      if (!balanceStr) return 0
+
+      const amount = parseFloat(balanceStr)
       if (!amount || !isFinite(amount) || amount <= 0) return 0
-      const price = token.lastPrice || 0
-      return amount * price
+
+      // Utiliser le prix depuis les stats plutôt que lastPrice qui peut être 0
+      const statsAddr = token.address ? getStatsAddress(token.address as Address) : undefined
+      if (statsAddr) {
+        const tokenStats = tokensStats?.data?.find((t: any) =>
+          (t.address || t.token?.address)?.toLowerCase() === String(statsAddr).toLowerCase()
+        )
+        const price = tokenStats?.Statistic?.[0]?.priceUSD || 0
+        return amount * price
+      }
+
+      // Fallback sur lastPrice si pas de stats
+      return amount * (token.lastPrice || 0)
     }
 
     const getMarketCap = (token: BerachainToken): number => {
       const statsAddr = token.address ? getStatsAddress(token.address as Address) : undefined
       if (!statsAddr) return 0
-      return marketCapByAddress.get(String(statsAddr).toLowerCase()) || 0
+
+      // Chercher dans les stats par adresse exacte
+      const tokenStats = tokensStats?.data?.find((t: any) =>
+        (t.address || t.token?.address)?.toLowerCase() === String(statsAddr).toLowerCase()
+      )
+      return tokenStats?.Statistic?.[0]?.marketCap || 0
     }
 
     if (isConnected) {
       const withBalance: BerachainToken[] = []
       const withoutBalance: BerachainToken[] = []
+
       for (const t of filteredTokens) {
         const usd = getBalanceUsd(t)
-        if (usd > 0) withBalance.push(t)
-        else withoutBalance.push(t)
+        if (usd > 0) {
+          withBalance.push(t)
+        } else {
+          withoutBalance.push(t)
+        }
       }
 
+      // Trier par valeur USD décroissante pour les tokens avec balance
       withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a))
+
+      // Trier par market cap décroissant pour les tokens sans balance
       withoutBalance.sort((a, b) => getMarketCap(b) - getMarketCap(a))
+
       return [...withBalance, ...withoutBalance]
     }
 
+    // Si pas connecté, trier uniquement par market cap
     return [...filteredTokens].sort((a, b) => getMarketCap(b) - getMarketCap(a))
-  }, [filteredTokens, balances, isConnected, marketCapByAddress])
+  }, [filteredTokens, balances, isConnected, tokensStats])
 
   return (
     <Modal open={isOpen} onClose={onClose} className="Modal" overlayClassName="NetworksList">

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import { getStatsAddress } from '../utils/tokenMapping'
+import { ensureArray } from '../utils/dataValidation'
 
 interface TokenStats {
   price?: number
@@ -9,12 +10,19 @@ interface TokenStats {
   marketCap?: number
 }
 
+interface TokenWithStats {
+  address?: string
+  Statistic?: Array<{
+    priceUSD?: number
+  }>
+}
+
 export function useTokenStats(displayTokenAddress: Address | null) {
   const statsAddress = displayTokenAddress ? getStatsAddress(displayTokenAddress) : null
   const { data: allTokens } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats`)
       if (!resp.ok) return []
       return resp.json()
     },
@@ -28,8 +36,10 @@ export function useTokenStats(displayTokenAddress: Address | null) {
       if (!statsAddress) throw new Error('No stats address')
 
       try {
-        if (allTokens) {
-          const token = allTokens.find((t: any) =>
+        const tokensArray = ensureArray<TokenWithStats>(allTokens);
+
+        if (tokensArray.length > 0) {
+          const token = tokensArray.find((t: TokenWithStats) =>
             t.address?.toLowerCase() === statsAddress.toLowerCase()
           )
 
@@ -43,7 +53,7 @@ export function useTokenStats(displayTokenAddress: Address | null) {
             }
           }
         }
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/stats/token/${statsAddress}`)
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/token/stats/${statsAddress}`)
 
         if (!response.ok) {
           return { price: 0 }
