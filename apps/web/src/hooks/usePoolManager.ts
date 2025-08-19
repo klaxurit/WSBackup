@@ -115,7 +115,6 @@ export const usePoolManager = ({
   const pool = useMemo(() => {
     try {
       if (poolAlreadyExist && poolData) {
-
         if (poolData[0]?.status !== "success" || poolData[1]?.status !== "success") return null
 
         const sqrtPriceX96 = poolData[0]?.result?.[0]
@@ -133,6 +132,7 @@ export const usePoolManager = ({
       } else {
         if (!token0 || !token1 || initialPrice === 0n) return null
 
+        // Utilisation des tokens dans l'ordre choisi par l'utilisateur
         const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice)
         if (!sqrtPriceX96) return null
         const tick = priceToTick(token0, token1, initialPrice)
@@ -162,9 +162,11 @@ export const usePoolManager = ({
 
       // Pour l'affichage, calculer le ratio USD si les deux prix sont disponibles
       if (usdPrice0 > 0 && usdPrice1 > 0) {
+        // S'assurer que le prix est calculé dans le bon ordre
         return usdPrice0 / usdPrice1;
       }
 
+      // Fallback sur le prix de la pool
       return poolPrice;
     } catch (err) {
       console.error("Error calculating pool price", err);
@@ -178,26 +180,37 @@ export const usePoolManager = ({
   const tickLower = useMemo(() => {
     if (!token0 || !token1 || minPrice === "0") return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
-    const sqrtRatioX96 = encodeSqrtRatioX96(
-      JSBI.BigInt(Math.floor(parseFloat(minPrice) * 10 ** token1.decimals)).toString(),
-      JSBI.BigInt(10 ** token0.decimals).toString()
-    )
-    const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-
-    return nearestUsableTick(rawTick, tickSpacing);
+    
+    try {
+      // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
+      const sqrtRatioX96 = encodeSqrtRatioX96(
+        JSBI.BigInt(Math.floor(parseFloat(minPrice) * 10 ** token1.decimals)).toString(),
+        JSBI.BigInt(10 ** token0.decimals).toString()
+      )
+      const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
+      return nearestUsableTick(rawTick, tickSpacing);
+    } catch (err) {
+      console.error('Error calculating tickLower:', err);
+      return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM);
+    }
   }, [minPrice, fee, token0, token1]);
 
   const tickUpper = useMemo(() => {
     if (!token0 || !token1 || maxPrice === "∞") return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM)
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
 
-    const sqrtRatioX96 = encodeSqrtRatioX96(
-      JSBI.BigInt(Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals)).toString(),
-      JSBI.BigInt(10 ** token0.decimals).toString()
-    )
-
-    const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-    return nearestUsableTick(rawTick, tickSpacing);
+    try {
+      // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
+      const sqrtRatioX96 = encodeSqrtRatioX96(
+        JSBI.BigInt(Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals)).toString(),
+        JSBI.BigInt(10 ** token0.decimals).toString()
+      )
+      const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
+      return nearestUsableTick(rawTick, tickSpacing);
+    } catch (err) {
+      console.error('Error calculating tickUpper:', err);
+      return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM);
+    }
   }, [maxPrice, fee, token0, token1]);
 
   const prices = useMemo(() => {

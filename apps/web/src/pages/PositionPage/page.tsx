@@ -215,7 +215,7 @@ const PoolPage: React.FC = () => {
             {topPools.map((pool: any) => (
               <div className="PoolPage__TopCard" key={pool.id}>
                 <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <TokenPairLogos token0={pool.token0} token1={pool.token1} />
+                  <TokenPairLogos token0={pool.token0} token1={pool.token1} separatorWidth={2.5}/>
                   {(() => {
                     const displayToken0 = getPoolDisplayToken(pool.token0.address);
                     const displayToken1 = getPoolDisplayToken(pool.token1.address);

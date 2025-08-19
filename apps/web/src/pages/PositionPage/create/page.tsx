@@ -240,11 +240,12 @@ const CreatePoolPage: React.FC = () => {
         setToken1(null)
         return
       }
-      if (token.address > token1.address) {
-        setToken0(token1)
-        setToken1(token)
-        return
-      }
+      // Suppression de la logique d'inversion automatique qui causait des problèmes
+      // if (token.address > token1.address) {
+      //   setToken0(token1)
+      //   setToken1(token)
+      //   return
+      // }
     }
 
     setToken0(token);
@@ -256,11 +257,12 @@ const CreatePoolPage: React.FC = () => {
         setToken0(null)
         return
       }
-      if (token.address < token0.address) {
-        setToken1(token0)
-        setToken0(token)
-        return
-      }
+      // Suppression de la logique d'inversion automatique qui causait des problèmes
+      // if (token.address < token0.address) {
+      //   setToken1(token0)
+      //   setToken0(token)
+      //   return
+      // }
     }
 
     setToken1(token);
@@ -336,19 +338,13 @@ const CreatePoolPage: React.FC = () => {
   }, [tokens, searchParams, token0, token1]);
 
   const { selectedToken0, selectedToken1 } = useMemo(() => {
-    const selectedToken0 = poolManager?.pool?.token0.address.toLowerCase() === token0?.address.toLowerCase()
-      ? token0
-      : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0?.address === "0x0000000000000000000000000000000000000000")
-        ? token0
-        : token1
-    const selectedToken1 = poolManager?.pool?.token1.address.toLowerCase() === token1?.address.toLowerCase()
-      ? token1
-      : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1?.address === "0x0000000000000000000000000000000000000000")
-        ? token1
-        : token0
-
-    return { selectedToken0, selectedToken1 }
-  }, [token0, poolManager?.pool, token1])
+    // Simplification de la logique : utiliser directement les tokens sélectionnés par l'utilisateur
+    // au lieu de se baser sur l'ordre du pool qui peut être différent
+    return { 
+      selectedToken0: token0, 
+      selectedToken1: token1 
+    }
+  }, [token0, token1])
 
   return (
     <div className="PoolPage PoolPage--create">
