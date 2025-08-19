@@ -40,37 +40,41 @@ interface Transaction {
 export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ poolAddress }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['pool-transactions', poolAddress],
-    enabled: !!poolAddress,
+    enabled: false, // Désactivé temporairement en attendant que l'endpoint backend soit disponible
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}/swaps`);
-      if (!resp.ok) return [];
-      const allSwaps = await resp.json();
+      // TODO: Réactiver quand l'endpoint backend sera disponible
+      // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}/swaps`);
+      // if (!resp.ok) return [];
+      // const allSwaps = await resp.json();
+      // 
+      // // Filter transactions for this specific pool and transform data
+      // const poolTransactions = allSwaps
+      //   .map((s: any) => {
+      //     if (s.amount0 > 0n) {
+      //       // A -> B
+      //       return {
+      //         ...s,
+      //         tokenIn: s.pool.token0,
+      //         tokenOut: s.pool.token1,
+      //         amountIn: s.amount0,
+      //         amountOut: s.amount1,
+      //     }
+      //   } else {
+      //       // B -> A
+      //       return {
+      //         ...s,
+      //         tokenIn: s.pool.token1,
+      //         tokenOut: s.pool.token0,
+      //         amountIn: s.amount1,
+      //         amountOut: s.amount0,
+      //     }
+      //   }
+      // });
+      // 
+      // return poolTransactions;
 
-      // Filter transactions for this specific pool and transform data
-      const poolTransactions = allSwaps
-        .map((s: any) => {
-          if (s.amount0 > 0n) {
-            // A -> B
-            return {
-              ...s,
-              tokenIn: s.pool.token0,
-              tokenOut: s.pool.token1,
-              amountIn: s.amount0,
-              amountOut: s.amount1,
-            }
-          } else {
-            // B -> A
-            return {
-              ...s,
-              tokenIn: s.pool.token1,
-              tokenOut: s.pool.token0,
-              amountIn: s.amount1,
-              amountOut: s.amount0,
-            }
-          }
-        });
-
-      return poolTransactions;
+      // Données mockées temporaires
+      return [];
     },
     staleTime: 30 * 1000, // 30 seconds
   });

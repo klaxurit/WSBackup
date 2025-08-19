@@ -51,7 +51,7 @@ export const TokenList = ({
 
   const filteredTokens = useMemo(() => {
     const onlyPoolOrAllTokens = onlyPoolToken
-      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
       : tokensArray
     if (searchValue === "") return onlyPoolOrAllTokens;
     return onlyPoolOrAllTokens.filter((token) =>
@@ -62,7 +62,7 @@ export const TokenList = ({
 
   const availableTokensForPopular = useMemo(() => {
     return onlyPoolToken
-      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
       : tokensArray;
   }, [tokensArray, onlyPoolToken]);
 
@@ -173,7 +173,7 @@ export const TokenList = ({
           <TokenItem
             key={token.address || token.symbol}
             token={token}
-            isSelected={selectedToken?.symbol === token.symbol}
+            isSelected={selectedToken?.address === token.address}
             onSelect={handleTokenSelect.bind(null, token)}
           />
         ))}

@@ -125,9 +125,9 @@ const PoolPage: React.FC = () => {
       render: (row) => (
         <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
-            <TokenPairLogos 
-              token0={row.pool.token0} 
-              token1={row.pool.token1} 
+            <TokenPairLogos
+              token0={row.pool.token0}
+              token1={row.pool.token1}
               size={28}
               gap={3}
               borderWidth={2}
@@ -160,7 +160,7 @@ const PoolPage: React.FC = () => {
   const { data: topPools = [] } = useQuery({
     queryKey: ['topPools'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/topPools`)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool/top`)
       if (!resp.ok) return []
 
       return resp.json()
@@ -220,25 +220,33 @@ const PoolPage: React.FC = () => {
           <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
           <div className="PoolPage__TopList">
             {topPools.map((pool: any) => (
-              <div className="PoolPage__TopCard" key={pool.id}>
+              <div className="PoolPage__TopCard" key={pool.address}>
                 <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <TokenPairLogos 
-                    token0={pool.token0}
-                    token1={pool.token1}
+                  <TokenPairLogos
+                    token0={{
+                      address: pool.token0Address,
+                      symbol: pool.token0Symbol,
+                      logoUri: pool.token0LogoUri
+                    }}
+                    token1={{
+                      address: pool.token1Address,
+                      symbol: pool.token1Symbol,
+                      logoUri: pool.token1LogoUri
+                    }}
                     borderWidth={3}
                     separatorWidth={2.5}
                   />
                   {(() => {
-                    const displayToken0 = getPoolDisplayToken(pool.token0.address);
-                    const displayToken1 = getPoolDisplayToken(pool.token1.address);
-                    const symbol0 = displayToken0.symbol || pool.token0.symbol;
-                    const symbol1 = displayToken1.symbol || pool.token1.symbol;
+                    const displayToken0 = getPoolDisplayToken(pool.token0Address);
+                    const displayToken1 = getPoolDisplayToken(pool.token1Address);
+                    const symbol0 = displayToken0.symbol || pool.token0Symbol;
+                    const symbol1 = displayToken1.symbol || pool.token1Symbol;
                     return `${symbol0} / ${symbol1}`;
                   })()} <span className="PoolPage__TopVersion">v3</span>
                 </div>
                 <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
                 <div className="PoolPage__TopApr">
-                  {pool.PoolStatistic[0]?.apr.toFixed(2) || '0'}% APR {pool.aprChange && <span className="PoolPage__TopApr--positive">{pool.aprChange}</span>}
+                  {pool.apr ? pool.apr.toFixed(2) : '0'}% APR
                 </div>
               </div>
             ))}

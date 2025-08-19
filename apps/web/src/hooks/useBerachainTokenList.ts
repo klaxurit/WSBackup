@@ -1,32 +1,52 @@
 import { useQuery } from '@tanstack/react-query';
 
 export interface BerachainToken {
-  id: string;
   address: string;
   symbol: string;
   name: string;
   decimals: number;
-  logoUri?: string;
-  website?: string;
-  twitter?: string;
-  description?: string;
-  coingeckoId?: string;
-  totalSupply?: string;
-  lastPrice?: number;
-  inPool?: boolean;
+  logoUri: string | null;
+  totalSupply: string;
+  lastPrice: number;
+  status: string; // Nouvelle propriété du backend
+  // Propriétés supprimées qui n'existent plus
+  // id: string;
+  // chainId: number;
+  // isVerified: boolean;
+  // coingeckoId: string | null;
+  // inPool: boolean;
 }
 
+export const useBerachainTokenList = () => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['berachainTokenList'],
+    queryFn: async () => {
+      const response = await fetch('https://raw.githubusercontent.com/berachain/metadata/main/src/tokens/berachain.tokenlist.json');
+      if (!response.ok) {
+        throw new Error('Failed to fetch token list');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  return { data, isLoading, error };
+};
+
 export const useTokens = () => {
-  return useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/`);
-      if (!resp.ok) return { data: [], pagination: {} };
-      const result = await resp.json();
-      // Retourne directement les données, pas l'objet complet
-      return result.data || [];
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch tokens');
+      }
+      const result = await response.json();
+      return result; // Retourner directement le tableau
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  return { data, isLoading, error };
 };
 

@@ -25,10 +25,23 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Récupérer la liste des pools pour avoir les adresses des tokens
+  const { data: poolsList } = useQuery({
+    queryKey: ['pools'],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool`);
+      if (!resp.ok) return [];
+      const result = await resp.json();
+      console.log("API /pool response:", result);
+      return result.data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Créer un map des tokens par adresse pour un accès rapide
   const tokensMap = useMemo(() => {
     if (!tokensList) return new Map();
-    return new Map(
+    const map = new Map(
       tokensList.map((token: any) => [
         token.address.toLowerCase(),
         {
@@ -39,7 +52,30 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         }
       ])
     );
+    console.log("TokensMap créé:", Array.from(map.entries()));
+    return map;
   }, [tokensList]);
+
+  // Créer un map des pools par adresse pour récupérer les tokens
+  const poolsMap = useMemo(() => {
+    if (!poolsList || !poolsList.data || !Array.isArray(poolsList.data)) {
+      console.log("poolsList.data n'est pas un tableau:", poolsList);
+      return new Map();
+    }
+    const map = new Map(
+      poolsList.data.map((pool: any) => [
+        pool.address.toLowerCase(),
+        {
+          token0Address: pool.token0Address,
+          token1Address: pool.token1Address,
+          token0Symbol: pool.token0Symbol,
+          token1Symbol: pool.token1Symbol
+        }
+      ])
+    );
+    console.log("PoolsMap créé:", Array.from(map.entries()));
+    return map;
+  }, [poolsList]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions'],
@@ -54,13 +90,16 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       return resp.json()
     },
     select: (data) => {
-      console.log("tutu", data)
+      console.log("Données brutes des swaps:", data)
       return {
         pagination: {
           ...data.pagination,
           onPageChange: setCurrentPage
         },
         txs: data.data.map((s: any) => {
+          // Debug: afficher la structure complète d'un swap
+          console.log("Structure d'un swap:", s);
+
           // Récupérer les informations des tokens depuis la base de données
           const getTokenInfo = (address: string) => {
             const token = tokensMap.get(address.toLowerCase());
@@ -72,15 +111,16 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
             };
           };
 
-          // Récupérer les adresses des tokens depuis la pool (si disponible)
-          // Sinon, utiliser des adresses par défaut
+          // Récupérer les adresses des tokens depuis le pool
+          const poolInfo = poolsMap.get(s.poolAddress.toLowerCase());
           let token0Address = '0x0000000000000000000000000000000000000000';
           let token1Address = '0x0000000000000000000000000000000000000000';
 
-          // Essayer de récupérer les adresses depuis la pool si elle existe
-          if (s.pool?.token0?.address) {
-            token0Address = s.pool.token0.address;
-            token1Address = s.pool.token1.address;
+          if (poolInfo) {
+            token0Address = poolInfo.token0Address;
+            token1Address = poolInfo.token1Address;
+          } else {
+            console.log("Pool non trouvé pour l'adresse:", s.poolAddress);
           }
 
           const token0 = getTokenInfo(token0Address);

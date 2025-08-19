@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PoolListService } from './list.service';
 import { PoolController } from './pool.controller';
 import { PoolsController } from './pools.controller';
+import { PositionsController } from './positions.controller';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { PoolsController } from './pools.controller';
   ],
   providers: [PricePoolService, PoolListService],
   exports: [],
-  controllers: [PoolController, PoolsController],
+  controllers: [PoolController, PoolsController, PositionsController],
 })
-export class PoolModule {}
+export class PoolModule { }

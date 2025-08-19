@@ -21,7 +21,7 @@ interface Pool {
   createdAt: string;
   createdAtBlock: string;
   isValid: boolean;
-  
+
   // Informations des tokens
   token0Address: string;
   token1Address: string;
@@ -29,13 +29,13 @@ interface Pool {
   token1Symbol: string;
   token0LogoUri?: string;
   token1LogoUri?: string;
-  
+
   // Stats du pool
   tvlUSD: number;
   dayVolumeUSD: number;
   monthVolumeUSD: number;
   apr: number;
-  
+
   // Structure legacy pour compatibilité
   token0?: {
     id: string;
@@ -92,18 +92,31 @@ const PoolDetailPage: React.FC = () => {
     }
   }, [pools, poolAddress]);
 
-  // Pool chart data query
+  // Pool chart data query - temporairement désactivé en attendant que l'endpoint backend soit disponible
   const { data: chartData = [], isLoading: chartLoading } = useQuery({
     queryKey: ['pool-chart', poolAddress],
-    enabled: !!poolAddress,
+    enabled: false, // Désactivé temporairement
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}`);
-      if (!res.ok) throw new Error('API error');
-      const data = await res.json();
-      return data.map((d: any) => ({
-        time: Math.floor(d.timestamp / 1000),
-        value: d.price,
-      }));
+      // TODO: Réactiver quand l'endpoint backend sera disponible
+      // const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}`);
+      // if (!res.ok) throw new Error('API error');
+      // const data = await res.json();
+      // return data.map((d: any) => ({
+      //   time: Math.floor(d.timestamp / 1000),
+      //   value: d.price,
+      // }));
+
+      // Données mockées temporaires
+      return [
+        { time: (Math.floor(Date.now() / 1000) - 7 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.001 },
+        { time: (Math.floor(Date.now() / 1000) - 6 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0012 },
+        { time: (Math.floor(Date.now() / 1000) - 5 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0009 },
+        { time: (Math.floor(Date.now() / 1000) - 4 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0011 },
+        { time: (Math.floor(Date.now() / 1000) - 3 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0013 },
+        { time: (Math.floor(Date.now() / 1000) - 2 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.001 },
+        { time: (Math.floor(Date.now() / 1000) - 1 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0014 },
+        { time: (Math.floor(Date.now() / 1000)) as import('lightweight-charts').UTCTimestamp, value: 0.0012 }
+      ];
     },
     staleTime: 60 * 1000,
   });
@@ -122,9 +135,9 @@ const PoolDetailPage: React.FC = () => {
   const volume1d = pool.dayVolumeUSD || (stat?.volOneDay ? Number(stat.volOneDay) : null);
   const volume30d = pool.monthVolumeUSD || (stat?.volOneMonth ? Number(stat.volOneMonth) : null);
   const apr = pool.apr || stat?.apr || null;
-  
+
   // Calculer la liquidité en utilisant les décimaux des tokens si disponibles
-  const liquidity = pool.token0 && pool.token1 
+  const liquidity = pool.token0 && pool.token1
     ? Number(formatUnits(BigInt(pool.liquidity || "0"), (pool.token0.decimals + pool.token1.decimals) / 2))
     : Number(pool.liquidity || "0");
 

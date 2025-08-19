@@ -11,6 +11,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { PonderModule } from './ponder/ponder.module';
 import { TokenModule } from './token/token.module';
 import { PoolModule } from './pool/pool.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -28,8 +29,9 @@ import { PoolModule } from './pool/pool.module';
     PonderModule,
     TokenModule,
     PoolModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

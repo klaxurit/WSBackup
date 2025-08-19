@@ -14,7 +14,7 @@ import { useTokens } from '../../../hooks/useBerachainTokenList';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { FallbackImg } from '../../../components/utils/FallbackImg'; // Import ajouté
-import { getStatsAddress } from '../../../utils/tokenMapping';
+// import { getStatsAddress } from '../../../utils/tokenMapping';
 import { formatNumber } from '../../../utils/formatNumber';
 
 const feeTiers = [
@@ -62,18 +62,22 @@ const CreatePoolPage: React.FC = () => {
     enabled: !!token0 && !!token1,
     queryFn: async () => {
       const fees = [100, 500, 3000, 10000];
-      const addr0 = getStatsAddress(token0!.address as Address);
-      const addr1 = getStatsAddress(token1!.address as Address);
-      const [t0, t1] = addr0.toLowerCase() < addr1.toLowerCase() ? [addr0, addr1] : [addr1, addr0];
+      // const addr0 = getStatsAddress(token0!.address as Address);
+      // const addr1 = getStatsAddress(token1!.address as Address);
+      // const [t0, t1] = addr0.toLowerCase() < addr1.toLowerCase() ? [addr0, addr1] : [addr1, addr0];
 
       const results = await Promise.all(
         fees.map(async (f) => {
           try {
-            const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/poolByTokens/${t0}/${t1}/${f}`);
-            if (!resp.ok) return { fee: f, tvlUSD: 0 };
-            const data = await resp.json();
-            const tvl = data?.PoolStatistic?.[0]?.tvlUSD ?? 0;
-            return { fee: f, tvlUSD: tvl };
+            // TODO: Réactiver quand l'endpoint backend sera disponible
+            // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/poolByTokens/${t0}/${t1}/${f}`);
+            // if (!resp.ok) return { fee: f, tvlUSD: 0 };
+            // const data = await resp.json();
+            // const tvl = data?.PoolStatistic?.[0]?.tvlUSD ?? 0;
+            // return { fee: f, tvlUSD: tvl };
+
+            // Données mockées temporaires
+            return { fee: f, tvlUSD: 0 };
           } catch {
             return { fee: f, tvlUSD: 0 };
           }

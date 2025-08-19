@@ -327,7 +327,7 @@ $chart-button-border-radius: 6px;
 
     &__chart-type {
       .chart-toolbar__button-label {
-            display: inline;
+        display: inline;
       }
 
       svg {
@@ -410,6 +410,7 @@ $chart-button-border-radius: 6px;
       max-width: 100%;
       margin: 0;
       border-radius: 12px 12px 0 0;
+
       &__chart-types {
         padding-top: 25px;
       }

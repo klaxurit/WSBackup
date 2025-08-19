@@ -41,7 +41,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Link
-            to={`/pools/${row.address}`}
+            to={`/pool/${row.address}`}
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <span className={`Table__Address`}>
