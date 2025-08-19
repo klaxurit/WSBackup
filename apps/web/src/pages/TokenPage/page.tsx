@@ -8,11 +8,12 @@ import { formatNumber } from '../../utils/formatNumber';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
 import LineChart from '../../components/Charts/LineChart';
 import { formatUnits } from 'viem';
+import { ensureArray } from '../../utils/dataValidation';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
   const { data: tokens, isLoading: tokensLoading } = useQuery({
-    queryKey: ['tokens'],
+    queryKey: ['tokensStats'],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
       if (!resp.ok) return [];
@@ -32,7 +33,15 @@ const TokenPage: React.FC = () => {
   // Compute token even if tokens are not yet loaded
   const token = useMemo(() => {
     if (!tokens || !tokenAddress) return null;
-    return tokens.find((t: any) => t.address?.toLowerCase() === tokenAddress.toLowerCase());
+
+    // S'assurer que tokens est un tableau et extraire data si nécessaire
+    const tokensData = tokens?.data || tokens;
+    const tokensArray = ensureArray(tokensData) as any[];
+
+    // Filtrer sur les tokens qui sont dans des pools (comme dans tokens.tsx)
+    const inPoolTokens = tokensArray.filter((t: any) => t.inPool);
+
+    return inPoolTokens.find((t: any) => t?.address?.toLowerCase() === tokenAddress.toLowerCase());
   }, [tokens, tokenAddress]);
 
   // Always call the hook, even if token is null
@@ -42,13 +51,18 @@ const TokenPage: React.FC = () => {
   // Fallback TVL from Coingecko if missing in backend
   const tvl = useMemo(() => {
     if (!pools || !token) return null;
+
+    // S'assurer que pools est itérable
+    const poolsArray = ensureArray(pools) as any[];
+
     let total = 0;
-    for (const pool of pools) {
+    for (const pool of poolsArray) {
       if (
+        pool && typeof pool === 'object' &&
         (pool.token0?.address?.toLowerCase() === token?.address?.toLowerCase() ||
           pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase()) &&
         pool.PoolStatistic?.length > 0 &&
-        pool.PoolStatistic[0].tvlUSD &&
+        pool.PoolStatistic[0]?.tvlUSD &&
         !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
       ) {
         total += Number(pool.PoolStatistic[0].tvlUSD);

@@ -10,6 +10,7 @@ import { useAccount } from "wagmi";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
 import { useQuery } from "@tanstack/react-query";
 import { getStatsAddress } from "../../utils/tokenMapping";
+import { ensureArray } from "../../utils/dataValidation";
 
 interface NetworksListProps {
   isOpen: boolean;
@@ -46,20 +47,33 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens) as BerachainToken[];
+
     const onlyPoolOrAllTokens = onlyPoolToken
-      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
-      : tokens
-    if (searchValue === "") return onlyPoolOrAllTokens;
-    return onlyPoolOrAllTokens.filter((token) =>
+      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokensArray
+
+    // Exclure le token BGT qui n'est pas tradable
+    const tokensWithoutBGT = onlyPoolOrAllTokens.filter(t => t.symbol !== 'BGT')
+
+    if (searchValue === "") return tokensWithoutBGT;
+    return tokensWithoutBGT.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [searchValue, tokens, onlyPoolToken]);
 
   const availableTokensForPopular = useMemo(() => {
-    return onlyPoolToken
-      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
-      : tokens;
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens) as BerachainToken[];
+
+    const baseTokens = onlyPoolToken
+      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokensArray
+
+    // Exclure le token BGT qui n'est pas tradable
+    return baseTokens.filter(t => t.symbol !== 'BGT');
   }, [tokens, onlyPoolToken]);
 
   const marketCapByAddress = useMemo(() => {
@@ -103,17 +117,23 @@ export const TokenList = ({
     if (isConnected) {
       const withBalance: BerachainToken[] = []
       const withoutBalance: BerachainToken[] = []
+
       for (const t of filteredTokens) {
         const usd = getBalanceUsd(t)
         if (usd > 0) withBalance.push(t)
         else withoutBalance.push(t)
       }
 
+      // Tri par valeur USD décroissante pour les tokens avec balance
       withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a))
+
+      // Tri par market cap décroissant pour les tokens sans balance
       withoutBalance.sort((a, b) => getMarketCap(b) - getMarketCap(a))
+
       return [...withBalance, ...withoutBalance]
     }
 
+    // Tri par market cap décroissant quand non connecté
     return [...filteredTokens].sort((a, b) => getMarketCap(b) - getMarketCap(a))
   }, [filteredTokens, balances, isConnected, marketCapByAddress])
 

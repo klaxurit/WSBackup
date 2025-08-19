@@ -3,10 +3,11 @@ import { SearchBar } from "../SearchBar/SearchBar";
 import { Menu } from "./Menu";
 import { NavbarConnectButton } from "../Buttons/NavbarConnectButton";
 import { MobileMenuModal } from './MobileMenuModal';
-import { useTokens } from '../../hooks/useBerachainTokenList';
+import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { FallbackImg } from '../utils/FallbackImg';
+import { ensureArray } from '../../utils/dataValidation';
 
 const Navbar = () => {
   const [searchValue, setSearchValue] = useState<string>("");
@@ -25,13 +26,17 @@ const Navbar = () => {
     refetchOnWindowFocus: false
   });
 
-  const filteredTokens = searchValue.length > 0 ? tokens.filter(token =>
+  // S'assurer que tokens et pools sont des tableaux
+  const tokensArray = ensureArray(tokens) as BerachainToken[];
+  const poolsArray = ensureArray(pools);
+
+  const filteredTokens = searchValue.length > 0 ? tokensArray.filter((token: BerachainToken) =>
     token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
     token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
     token.address.toLowerCase().includes(searchValue.toLowerCase())
   ) : [];
 
-  const filteredPools = searchValue.length > 0 ? pools.filter((pool: any) =>
+  const filteredPools = searchValue.length > 0 ? poolsArray.filter((pool: any) =>
     (pool.pool && pool.pool.toLowerCase().includes(searchValue.toLowerCase())) ||
     (pool.address && pool.address.toLowerCase().includes(searchValue.toLowerCase())) ||
     (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||

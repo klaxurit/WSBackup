@@ -79,7 +79,7 @@ export class PriceService {
         },
       },
       orderBy: [
-        { 
+        {
           Statistic: {
             _count: 'desc' // Tokens avec plus de statistiques en premier
           }
@@ -110,78 +110,97 @@ export class PriceService {
    * 2. Fetch Stats from 24h and 1h ago to optimize getPriceVariation function
    */
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async updateTokensPrice() {
+  // Prepare tokens for update
+  private async prepareTokens(): Promise<void> {
+    this.cachedTokens.clear();
+    this.poolsCache.clear();
+
+    // 1. Create token list to update.
+    const tokens = await this.databaseService.token.findMany({
+      include: {
+        Statistic: {
+          orderBy: { createdAt: 'desc' },
+          take: 2,
+        },
+        _count: {
+          select: {
+            poolsAsToken1: true,
+            poolsAsToken0: true,
+          },
+        },
+      },
+    });
+
+    this.logger.debug(`${tokens.length} tokens in DB`);
+    const tokensInPool = tokens.filter((t) => {
+      return t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0;
+    });
+
+    this.logger.debug(`${tokensInPool.length} to update (inPool tokens)`);
+    tokensInPool.forEach((t) => {
+      this.cachedTokens.set(t.id, {
+        tokenId: t.id,
+        fetchedData: t,
+        poolMap: new Set(),
+      });
+    });
+
+    await this.buildTokenPoolsMap();
+  }
+
+  // Cleanup old statistics to prevent database bloat
+  private async cleanupOldStatistics(): Promise<void> {
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const deleteResult = await this.databaseService.client.tokenStatistic.deleteMany({
+        where: {
+          createdAt: {
+            lt: thirtyDaysAgo
+          }
+        }
+      });
+
+      this.logger.log(`Cleaned up ${deleteResult.count} old token statistics (older than 30 days)`);
+    } catch (error) {
+      this.logger.error('Error cleaning up old statistics:', error);
+    }
+  }
+
+  // Main update method with improved error handling
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async updateTokenStats(): Promise<void> {
+    this.logger.log('🕐 Cron job triggered - starting token statistics update...');
+
     if (this.isUpdating) {
-      this.logger.warn('Token price update already in progress, skipping...');
+      this.logger.debug('Update already in progress, skipping...');
       return;
     }
 
     this.isUpdating = true;
     const startTime = Date.now();
-    let processedTokens = 0;
 
     try {
-      this.cachedTokens.clear();
-      this.poolsCache.clear();
+      this.logger.log('Starting token statistics update...');
 
-      // 1. Create token list to update.
-      const tokens = await this.databaseService.token.findMany({
-        include: {
-          Statistic: {
-            orderBy: { createdAt: 'desc' },
-            take: 2,
-          },
-          _count: {
-            select: {
-              poolsAsToken1: true,
-              poolsAsToken0: true,
-            },
-          },
-        },
-      });
-
-      this.logger.debug(`${tokens.length} tokens in DB`);
-      const tokensInPool = tokens.filter((t) => {
-        return t._count.poolsAsToken0 > 0 || t._count.poolsAsToken1 > 0;
-      });
-
-      this.logger.debug(`${tokensInPool.length} to update (inPool tokens)`);
-      tokensInPool.forEach((t) => {
-        this.cachedTokens.set(t.id, {
-          tokenId: t.id,
-          fetchedData: t,
-          poolMap: new Set(),
-        });
-      });
-
-      await this.buildTokenPoolsMap();
-
-      // 2. Procees token updates
+      await this.prepareTokens();
       await this.updatePrices();
       await this.updateTokensSupply();
-      await this.calculateTokenStatistics();
-
-      // 3. Save all
+      await this.calculateStatistics();
       await this.saveCachedTokens();
-      processedTokens = this.cachedTokens.size;
-      this.logger.log(
-        `Price update completed: ${processedTokens}/${tokensInPool.length} tokens`,
-      );
+
+      // Cleanup old data periodically
+      if (Math.random() < 0.2) { // 20% chance each run
+        await this.cleanupOldStatistics();
+      }
+
+      const duration = Date.now() - startTime;
+      this.logger.log(`✅ Token statistics update completed in ${duration}ms`);
+
     } catch (error) {
-      this.logger.error('Critical error in token update:', error);
+      this.logger.error('❌ Error in token statistics update:', error);
     } finally {
       this.isUpdating = false;
-      const duration = Date.now() - startTime;
-      this.logger.log(
-        `Price update took ${duration}ms for ${processedTokens} tokens`,
-      );
-
-      if (duration > 50000) {
-        this.logger.warn(
-          `Price update took ${duration}ms - consider optimization`,
-        );
-      }
     }
   }
 
@@ -435,57 +454,145 @@ export class PriceService {
 
   // Price functions
   private async updateWithCoingecko(tokens: CachedToken[]) {
+    if (tokens.length === 0) return;
+
     const ids = tokens.map((t) => t.fetchedData.coingeckoId).join(',');
-    const prices = await this.coingeckoService.getMultiTokensData(ids);
 
-    if (!prices) return;
+    try {
+      const prices = await this.coingeckoService.getMultiTokensData(ids);
 
-    for (const token of tokens) {
-      const price = prices[token.fetchedData.coingeckoId!];
-      this.logger.debug(
-        `Price (with coingecko) for token ${token.fetchedData.symbol}: ${price?.usd}`,
-      );
-      if (price) {
-        this.cachedTokens.set(token.fetchedData.id, {
-          ...token,
-          ...(price.usd && { price: price.usd }),
-          ...(price.circulating_supply && {
-            circulatingSupply: parseUnits(
-              price.circulating_supply.toString(),
-              token.fetchedData.decimals,
-            ).toString(),
-          }),
-          ...(price.usd_24h_change && {
-            oneDayEvolution: price.usd_24h_change,
-          }),
-          ...(price.usd_market_cap && { marketCap: price.usd_market_cap }),
-        });
+      if (!prices) {
+        this.logger.warn(`No prices received from CoinGecko for ${tokens.length} tokens`);
+        return;
+      }
+
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const token of tokens) {
+        try {
+          const price = prices[token.fetchedData.coingeckoId!];
+
+          if (price) {
+            this.cachedTokens.set(token.fetchedData.id, {
+              ...token,
+              ...(price.usd && { price: price.usd }),
+              ...(price.circulating_supply && {
+                circulatingSupply: parseUnits(
+                  price.circulating_supply.toString(),
+                  token.fetchedData.decimals,
+                ).toString(),
+              }),
+              ...(price.usd_24h_change && {
+                oneDayEvolution: price.usd_24h_change,
+              }),
+              ...(price.usd_market_cap && { marketCap: price.usd_market_cap }),
+            });
+            successCount++;
+
+            this.logger.debug(
+              `Price (with coingecko) for token ${token.fetchedData.symbol}: ${price?.usd}`,
+            );
+          } else {
+            this.logger.warn(`No price data for token ${token.fetchedData.symbol} (ID: ${token.fetchedData.coingeckoId})`);
+            failureCount++;
+          }
+        } catch (error) {
+          this.logger.error(`Error processing token ${token.fetchedData.symbol}:`, error);
+          failureCount++;
+        }
+      }
+
+      this.logger.log(`CoinGecko update completed: ${successCount} success, ${failureCount} failures`);
+
+    } catch (error) {
+      this.logger.error('Error in updateWithCoingecko:', error);
+
+      // Fallback: essayer de récupérer les prix un par un en cas d'échec global
+      this.logger.log('Attempting individual token price updates as fallback...');
+      await this.updateWithCoingeckoFallback(tokens);
+    }
+  }
+
+  private async updateWithCoingeckoFallback(tokens: CachedToken[]) {
+    const BATCH_SIZE = 5; // Traiter par petits groupes pour éviter le rate limiting
+
+    for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
+      const batch = tokens.slice(i, i + BATCH_SIZE);
+
+      const batchPromises = batch.map(async (token) => {
+        try {
+          const price = await this.coingeckoService.getTokenData(token.fetchedData.coingeckoId!);
+
+          if (price) {
+            this.cachedTokens.set(token.fetchedData.id, {
+              ...token,
+              price: price,
+            });
+
+            this.logger.debug(
+              `Fallback price for token ${token.fetchedData.symbol}: ${price}`,
+            );
+          }
+        } catch (error) {
+          this.logger.error(`Fallback error for token ${token.fetchedData.symbol}:`, error);
+        }
+      });
+
+      await Promise.all(batchPromises);
+
+      // Pause entre les batches pour éviter le rate limiting
+      if (i + BATCH_SIZE < tokens.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   }
   private async updateWithPool(tokens: CachedToken[]): Promise<void> {
+    if (tokens.length === 0) return;
+
     const sortedTokens = tokens.sort((a, b) => {
       return b.poolMap.size - a.poolMap.size;
     });
+
+    let successCount = 0;
+    let failureCount = 0;
 
     for (let i = 0; i < sortedTokens.length; i += this.BATCH_SIZE) {
       const batch = sortedTokens.slice(i, i + this.BATCH_SIZE);
 
       const batchPromises = batch.map(async (token) => {
-        const price = await this.getPriceFromPools(token);
-        this.logger.debug(
-          `Price (with pool) for token ${token.fetchedData.symbol}: ${price}`,
-        );
-        if (price) {
-          this.cachedTokens.set(token.fetchedData.id, {
-            ...token,
-            price: price,
-          });
+        try {
+          const price = await this.getPriceFromPools(token);
+
+          if (price) {
+            this.cachedTokens.set(token.fetchedData.id, {
+              ...token,
+              price: price,
+            });
+            successCount++;
+
+            this.logger.debug(
+              `Price (with pool) for token ${token.fetchedData.symbol}: ${price}`,
+            );
+          } else {
+            this.logger.warn(`No price found from pools for token ${token.fetchedData.symbol}`);
+            failureCount++;
+          }
+        } catch (error) {
+          this.logger.error(`Error getting price from pools for token ${token.fetchedData.symbol}:`, error);
+          failureCount++;
         }
       });
 
       await Promise.all(batchPromises);
+
+      // Pause entre les batches pour éviter la surcharge
+      if (i + this.BATCH_SIZE < sortedTokens.length) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
+
+    this.logger.log(`Pool price update completed: ${successCount} success, ${failureCount} failures`);
   }
   private async getPriceFromPools(token: CachedToken): Promise<number | null> {
     const cacheKey = `pools_${token.fetchedData.address}`;
@@ -594,7 +701,7 @@ export class PriceService {
   }
 
   // Stats functions
-  private async calculateTokenStatistics() {
+  private async calculateStatistics() {
     const statisticsPromises = [...this.cachedTokens.values()].map(
       async (token) => {
         const [volume, oneHourEvolution, oneDayEvolution] = await Promise.all([
@@ -733,26 +840,42 @@ export class PriceService {
       const toUpdateToken: Prisma.TokenUpdateArgs[] = [];
 
       toSaveTokens.forEach((t) => {
-        if (
-          t.price &&
-          t.oneHourEvolution &&
-          t.oneDayEvolution &&
-          t.volume &&
-          t.fdv &&
-          t.marketCap
-        ) {
+        // Sauvegarder les statistiques même si certaines données sont manquantes
+        // Cela permet d'avoir au moins un historique partiel
+        if (t.price) { // Prix minimum requis
+          const statData: any = {
+            tokenId: t.tokenId,
+            price: t.price,
+          };
+
+          // Ajouter les données disponibles
+          if (t.oneHourEvolution !== undefined && t.oneHourEvolution !== null) {
+            statData.oneHourEvolution = t.oneHourEvolution;
+          }
+          if (t.oneDayEvolution !== undefined && t.oneDayEvolution !== null) {
+            statData.oneDayEvolution = t.oneDayEvolution;
+          }
+          if (t.volume !== undefined && t.volume !== null) {
+            statData.volume = t.volume;
+          }
+          if (t.fdv !== undefined && t.fdv !== null) {
+            statData.fdv = t.fdv;
+          }
+          if (t.marketCap !== undefined && t.marketCap !== null) {
+            statData.marketCap = t.marketCap;
+          }
+
+          // S'assurer que les champs obligatoires ont des valeurs par défaut
+          if (!statData.oneHourEvolution) statData.oneHourEvolution = 0;
+          if (!statData.oneDayEvolution) statData.oneDayEvolution = 0;
+          if (!statData.volume) statData.volume = 0;
+
           newStatsDatas.push({
-            data: {
-              tokenId: t.tokenId,
-              price: t.price,
-              oneHourEvolution: t.oneHourEvolution,
-              oneDayEvolution: t.oneDayEvolution,
-              volume: t.volume,
-              fdv: t.fdv,
-              marketCap: t.marketCap,
-            },
+            data: statData,
           });
         }
+
+        // Mettre à jour les tokens avec les nouvelles données de supply
         if (t.totalSupply && t.circulatingSupply) {
           toUpdateToken.push({
             where: { id: t.tokenId },
@@ -774,7 +897,7 @@ export class PriceService {
       ]);
 
       this.logger.log(
-        `Saved ${toSaveTokens.length} token statistics to database`,
+        `Saved ${newStatsDatas.length} token statistics to database (${toSaveTokens.length} tokens processed)`,
       );
     } catch (error) {
       this.logger.error('Error saving cached tokens to database:', error);

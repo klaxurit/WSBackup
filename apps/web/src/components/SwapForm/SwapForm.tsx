@@ -13,6 +13,7 @@ import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
 import { Loader } from '../Loader/Loader';
 import { useTokenStats } from "../../hooks/useTokenStats";
+import { ensureArray } from '../../utils/dataValidation';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -211,7 +212,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     useEffect(() => {
       if (!fromToken && tokens) {
-        const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+        // S'assurer que tokens est un tableau
+        const tokensArray = ensureArray(tokens) as BerachainToken[];
+        const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
         if (bera) setFromToken(bera);
       }
     }, [tokens, fromToken]);
