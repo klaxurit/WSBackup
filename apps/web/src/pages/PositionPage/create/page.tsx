@@ -16,6 +16,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FallbackImg } from '../../../components/utils/FallbackImg'; // Import ajouté
 import { getStatsAddress } from '../../../utils/tokenMapping';
 import { formatNumber } from '../../../utils/formatNumber';
+import { ensureArray } from '../../../utils/dataValidation';
 
 const feeTiers = [
   { value: '0.01%', fee: 100, label: '0.01%', desc: 'Best for very stable pairs.', tvl: '0 TVL' },
@@ -306,23 +307,26 @@ const CreatePoolPage: React.FC = () => {
   useEffect(() => {
     if (!tokens || !!token0 || !!token1) return;
 
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens);
+
     const token0Address = searchParams.get('token0');
     const token1Address = searchParams.get('token1');
     const feeParam = searchParams.get('fee');
 
     if (token0Address && token1Address) {
-      const foundToken0 = tokens.find(
-        (t) => t.address.toLowerCase() === token0Address.toLowerCase()
-      );
-      const foundToken1 = tokens.find(
-        (t) => t.address.toLowerCase() === token1Address.toLowerCase()
-      );
+      const foundToken0 = tokensArray.find(
+        (t: any) => t.address?.toLowerCase() === token0Address.toLowerCase()
+      ) as BerachainToken | undefined;
+      const foundToken1 = tokensArray.find(
+        (t: any) => t.address?.toLowerCase() === token1Address.toLowerCase()
+      ) as BerachainToken | undefined;
       if (foundToken0 && foundToken1) {
         handleSelect0(foundToken0);
         handleSelect1(foundToken1);
       }
     } else {
-      const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+      const bera = tokensArray.find((t: any) => t.address?.toLowerCase() === '0x0000000000000000000000000000000000000000') as BerachainToken | undefined;
       if (bera) {
         handleSelect0(bera)
       }
@@ -340,9 +344,9 @@ const CreatePoolPage: React.FC = () => {
   const { selectedToken0, selectedToken1 } = useMemo(() => {
     // Simplification de la logique : utiliser directement les tokens sélectionnés par l'utilisateur
     // au lieu de se baser sur l'ordre du pool qui peut être différent
-    return { 
-      selectedToken0: token0, 
-      selectedToken1: token1 
+    return {
+      selectedToken0: token0,
+      selectedToken1: token1
     }
   }, [token0, token1])
 

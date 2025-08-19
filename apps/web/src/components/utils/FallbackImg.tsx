@@ -4,12 +4,14 @@ export const FallbackImg = ({
   style,
   width = 32,
   height = 32,
+  onClick,
 }: {
   content: string,
   className?: string,
   style?: React.CSSProperties,
   width?: number,
   height?: number,
+  onClick?: () => void,
 }) => {
   return (
     <svg
@@ -18,6 +20,7 @@ export const FallbackImg = ({
       viewBox="0 0 100 100"
       className={className}
       style={style}
+      onClick={onClick}
     >
       <circle cx="50" cy="50" r="50" fill="#000000" />
       <text

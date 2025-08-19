@@ -9,6 +9,9 @@ import { PoolPriceService } from './services/poolPrice.service';
 import { StatisticsController } from './statistics.controller';
 import { CoingeckoModule } from 'src/coingecko/coingecko.module';
 import { BlockchainModule } from 'src/blockchain/blockchain.module';
+import { DatabaseService } from 'src/database/database.service';
+import { CoinGeckoService } from 'src/coingecko/coingecko.service';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 
 @Module({
   imports: [
@@ -24,8 +27,11 @@ import { BlockchainModule } from 'src/blockchain/blockchain.module';
     CoingeckoModule,
     BlockchainModule,
   ],
-  providers: [PriceService, PoolPriceService],
+  providers: [
+    PriceService,
+    PoolPriceService
+  ],
   exports: [PriceService],
   controllers: [StatisticsController],
 })
-export class StatisticsModule {}
+export class StatisticsModule { }

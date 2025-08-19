@@ -10,6 +10,7 @@ import { useAccount } from "wagmi";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
 import { useQuery } from "@tanstack/react-query";
 import { getStatsAddress } from "../../utils/tokenMapping";
+import { ensureArray } from "../../utils/dataValidation";
 
 interface NetworksListProps {
   isOpen: boolean;
@@ -46,9 +47,12 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens) as BerachainToken[];
+
     const onlyPoolOrAllTokens = onlyPoolToken
-      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
-      : tokens
+      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokensArray
 
     // Exclure le token BGT qui n'est pas tradable
     const tokensWithoutBGT = onlyPoolOrAllTokens.filter(t => t.symbol !== 'BGT')
@@ -61,9 +65,12 @@ export const TokenList = ({
   }, [searchValue, tokens, onlyPoolToken]);
 
   const availableTokensForPopular = useMemo(() => {
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens) as BerachainToken[];
+
     const baseTokens = onlyPoolToken
-      ? tokens.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
-      : tokens
+      ? tokensArray.filter(t => t.inPool === onlyPoolToken || t.address === zeroAddress)
+      : tokensArray
 
     // Exclure le token BGT qui n'est pas tradable
     return baseTokens.filter(t => t.symbol !== 'BGT');
