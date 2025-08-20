@@ -485,18 +485,36 @@ export const usePoolManager = ({
     if (!token0 || !token1) return 'idle'
 
     if (isCheckingPool || isGettingPoolData) return 'fetchPool'
-    if (isCheckingToken0Allowance || isCheckingToken1Allowance) return "fetchAllowance"
-
     if (isApprovingToken0 || isApprovingToken1) return "waitUserApprovement"
     if (waitingT0ApproveReceipt || waitingT1ApproveReceipt) return "waitApprovementReceipt"
     if (waitCreatePool || waitMintPosition || waitWrap) return "waitMainUserSign"
     if (waitingCreatePoolReceipt || waitingMintPositionReceipt || waitingWrapReceipt) return "waitMainReceipt"
 
-    if (!poolAlreadyExist && initialPrice === 0n) {
-      return 'waitInitialAmount'
+    // 🔍 LOG DE DIAGNOSTIC pour identifier le problème de validation
+    if (!poolAlreadyExist) {
+      console.log('🔍 usePoolManager - Status check:', {
+        poolAlreadyExist,
+        initialPrice: initialPrice.toString(),
+        initialPriceBigInt: initialPrice,
+        initialPriceType: typeof initialPrice,
+        isZero: initialPrice === 0n,
+        isLessThanZero: initialPrice < 0n,
+        willReturn: initialPrice <= 0n ? 'waitInitialAmount' : 'next'
+      });
+      
+      if (initialPrice <= 0n) {
+        return 'waitInitialAmount'
+      }
     }
 
     if (!prices.position) {
+      // 🔍 LOG DE DIAGNOSTIC pour le calcul des prix
+      console.log('🔍 usePoolManager - Prices check:', {
+        hasPrices: !!prices,
+        pricesObject: prices,
+        hasPosition: !!prices?.position,
+        willReturn: 'waitAmount'
+      });
       return 'waitAmount'
     }
 
