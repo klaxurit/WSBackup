@@ -125,7 +125,7 @@ const PoolPage: React.FC = () => {
       render: (row) => (
         <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
-            <TokenPairLogos token0={row.pool.token0} token1={row.pool.token1} />
+            <TokenPairLogos token0={row.pool.token0} token1={row.pool.token1} borderWidth={3} separatorWidth={2.5} />
             {`${row.__symbol0} / ${row.__symbol1}`}
           </span>
         </Link>
