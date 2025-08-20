@@ -180,7 +180,7 @@ export const usePoolManager = ({
   const tickLower = useMemo(() => {
     if (!token0 || !token1 || minPrice === "0") return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
-    
+
     try {
       // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
       const sqrtRatioX96 = encodeSqrtRatioX96(
@@ -214,8 +214,26 @@ export const usePoolManager = ({
   }, [maxPrice, fee, token0, token1]);
 
   const prices = useMemo(() => {
+    console.log('🔍🔍🔍 CRITICAL: prices calculation started with:', {
+      hasPool: !!pool,
+      poolObject: pool,
+      hasTickLower: !!tickLower,
+      tickLowerValue: tickLower,
+      hasTickUpper: !!tickUpper,
+      tickUpperValue: tickUpper,
+      hasInputAmount: !!inputAmount,
+      inputAmountValue: inputAmount?.toString(),
+      inputToken
+    });
+
     try {
       if (!pool || !tickLower || !tickUpper || !inputAmount || inputAmount === 0n) {
+        console.log('🔍🔍🔍 CRITICAL: Early return because missing data:', {
+          missingPool: !pool,
+          missingTickLower: !tickLower,
+          missingTickUpper: !tickUpper,
+          missingInputAmount: !inputAmount || inputAmount === 0n
+        });
         return {
           amount0: 0n,
           amount1: 0n,
@@ -501,13 +519,21 @@ export const usePoolManager = ({
         isLessThanZero: initialPrice < 0n,
         willReturn: initialPrice <= 0n ? 'waitInitialAmount' : 'next'
       });
-      
+
       if (initialPrice <= 0n) {
         return 'waitInitialAmount'
       }
     }
 
     if (!prices.position) {
+      // 🔍 LOG DE DIAGNOSTIC pour le calcul des prix
+      console.log('🔍🔍🔍 CRITICAL: prices.position is null/undefined!');
+      console.log('🔍🔍🔍 Full prices object:', prices);
+      console.log('🔍🔍🔍 prices type:', typeof prices);
+      console.log('🔍🔍🔍 prices keys:', Object.keys(prices || {}));
+      console.log('🔍🔍🔍 prices.position value:', prices?.position);
+      console.log('🔍🔍🔍 prices.position type:', typeof prices?.position);
+
       // 🔍 LOG DE DIAGNOSTIC pour le calcul des prix
       console.log('🔍 usePoolManager - Prices check:', {
         hasPrices: !!prices,

@@ -19,11 +19,26 @@ export const tickToPrice = (tick: number, token0: Token, token1: Token): number 
 }
 
 export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint) => {
-  console.log('Calculating sqrtPriceX96 for:', token0.symbol, '/', token1.symbol, 'price:', initialPrice.toString())
+  console.log('🔍🔍🔍 getInitialSqrtPriceX96 CALLED with:', {
+    token0Symbol: token0.symbol,
+    token0Decimals: token0.decimals,
+    token1Symbol: token1.symbol,
+    token1Decimals: token1.decimals,
+    initialPrice: initialPrice.toString(),
+    initialPriceType: typeof initialPrice
+  })
+  
   try {
     // 🔧 SOLUTION UNISWAP : Utiliser la classe Price pour calculer sqrtPriceX96
     // Plus sûre et conforme à la documentation officielle
 
+    console.log('🔍🔍🔍 Step 1: Creating Price object with params:', {
+      token0: token0.symbol,
+      token1: token1.symbol,
+      baseAmount: JSBI.BigInt(10 ** token0.decimals).toString(),
+      quoteAmount: JSBI.BigInt(initialPrice.toString()).toString()
+    });
+    
     // Créer un objet Price Uniswap
     const price = new Price(
       token0,                                    // base token
@@ -31,6 +46,11 @@ export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPric
       JSBI.BigInt(10 ** token0.decimals),       // 1 token0 (base)
       JSBI.BigInt(initialPrice.toString())      // prix en token1 (quote) - converti en JSBI via string
     );
+    
+    console.log('🔍🔍🔍 Step 2: Price object created successfully:', {
+      priceObject: price,
+      hasPrice: !!price
+    });
 
     console.log('🔍 sqrtPriceX96 calculation details:', {
       token0Symbol: token0.symbol,
@@ -43,14 +63,34 @@ export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPric
       priceToSignificant: price.toSignificant(6)
     });
 
+    console.log('🔍🔍🔍 Step 3: Getting price ratio from Price object');
+    
     // Utiliser la méthode native de Price pour obtenir sqrtPriceX96
     // Price.toFixed(0) nous donne le ratio brut, puis nous utilisons encodeSqrtRatioX96
     const priceRatio = price.toFixed(0);
+    
+    console.log('🔍🔍🔍 Step 4: Price ratio calculated:', {
+      priceRatio,
+      priceRatioType: typeof priceRatio
+    });
 
-    return encodeSqrtRatioX96(
+    console.log('🔍🔍🔍 Step 5: Calling encodeSqrtRatioX96 with:', {
+      amount0: '1',
+      amount1: priceRatio
+    });
+    
+    const result = encodeSqrtRatioX96(
       '1',                    // ✅ 1 token0 (base)
       priceRatio              // ✅ ratio calculé par Price
-    )
+    );
+    
+    console.log('🔍🔍🔍 Step 6: encodeSqrtRatioX96 result:', {
+      result,
+      resultType: typeof result,
+      success: !!result
+    });
+    
+    return result;
   } catch (err) {
     console.error('Error calculate initial sqrtPriceX96', err)
     return null
