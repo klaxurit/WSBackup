@@ -21,11 +21,35 @@ export const tickToPrice = (tick: number, token0: Token, token1: Token): number 
 export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint) => {
   console.log('Calculating sqrtPriceX96 for:', token0.symbol, '/', token1.symbol, 'price:', initialPrice.toString())
   try {
-    // ✅ CORRECTION : ordre correct des paramètres
-    // encodeSqrtRatioX96(amount0, amount1) où amount0 et amount1 sont les quantités de base
+    // 🔧 SOLUTION UNISWAP : Utiliser la classe Price pour calculer sqrtPriceX96
+    // Plus sûre et conforme à la documentation officielle
+
+    // Créer un objet Price Uniswap
+    const price = new Price(
+      token0,                                    // base token
+      token1,                                    // quote token
+      JSBI.BigInt(10 ** token0.decimals),       // 1 token0 (base)
+      JSBI.BigInt(initialPrice.toString())      // prix en token1 (quote) - converti en JSBI via string
+    );
+
+    console.log('🔍 sqrtPriceX96 calculation details:', {
+      token0Symbol: token0.symbol,
+      token0Decimals: token0.decimals,
+      token1Symbol: token1.symbol,
+      token1Decimals: token1.decimals,
+      initialPrice: initialPrice.toString(),
+      priceNumerator: price.numerator.toString(),
+      priceDenominator: price.denominator.toString(),
+      priceToSignificant: price.toSignificant(6)
+    });
+
+    // Utiliser la méthode native de Price pour obtenir sqrtPriceX96
+    // Price.toFixed(0) nous donne le ratio brut, puis nous utilisons encodeSqrtRatioX96
+    const priceRatio = price.toFixed(0);
+
     return encodeSqrtRatioX96(
-      JSBI.BigInt(10 ** token0.decimals).toString(),  // ✅ 1 token0 (ex: 1 WBERA = 10^18)
-      initialPrice.toString()                          // ✅ prix en token1 (ex: 2.18 HONEY)
+      '1',                    // ✅ 1 token0 (base)
+      priceRatio              // ✅ ratio calculé par Price
     )
   } catch (err) {
     console.error('Error calculate initial sqrtPriceX96', err)
