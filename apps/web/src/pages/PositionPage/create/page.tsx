@@ -4,7 +4,7 @@ import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
-import { type Address } from 'viem';
+import { type Address, parseUnits } from 'viem';
 import { ConnectButton } from '../../../components/Buttons/ConnectButton';
 import '../../../styles/pages/_positionPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
