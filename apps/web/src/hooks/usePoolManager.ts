@@ -130,12 +130,26 @@ export const usePoolManager = ({
           tick
         )
       } else {
-        if (!token0 || !token1 || initialPrice === 0n) return null
+        console.log('🔍🔍🔍 Pool creation - initialPrice check:', {
+          initialPrice: initialPrice.toString(),
+          initialPriceType: typeof initialPrice,
+          isZero: initialPrice === 0n,
+          isLessOrEqualZero: initialPrice <= 0n,
+          willCreatePool: !(!token0 || !token1 || initialPrice <= 0n)
+        });
+
+        if (!token0 || !token1 || initialPrice <= 0n) return null
 
         // Utilisation des tokens dans l'ordre choisi par l'utilisateur
         const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice)
         if (!sqrtPriceX96) return null
         const tick = priceToTick(token0, token1, initialPrice)
+
+        console.log('🔍🔍🔍 Pool creation - success:', {
+          sqrtPriceX96: sqrtPriceX96.toString(),
+          tick: tick,
+          poolCreated: true
+        });
 
         return new Pool(
           token0,
