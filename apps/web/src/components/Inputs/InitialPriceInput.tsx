@@ -34,7 +34,17 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
       }
     }
 
-    onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
+    // 🔍 LOG DE DIAGNOSTIC pour identifier le problème
+    const parsedValue = parseUnits(val, selectedToken?.decimals || 18);
+    console.log('🔍 InitialPriceInput - Debug:', {
+      inputValue: val,
+      selectedToken: selectedToken?.symbol,
+      decimals: selectedToken?.decimals,
+      parsedValue: parsedValue.toString(),
+      parsedValueBigInt: parsedValue
+    });
+
+    onAmountChange(parsedValue);
     setInputValue(val)
   };
 
@@ -92,7 +102,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
             </div>
             <div className="From__Details">
               <p className="From__Convertion">
-                {selectedToken.symbol} = 1 {tokens.find(t => (t.id !== selectedToken.id))?.symbol || ""}
+                1 {tokens.find(t => (t.id !== selectedToken.id))?.symbol || ""} = {inputValue} {selectedToken.symbol}
               </p>
             </div>
           </div>
