@@ -35,14 +35,33 @@ const TokenPage: React.FC = () => {
   const token = useMemo(() => {
     if (!tokens || !tokenAddress) return null;
 
+    // 🔍 LOGS DE DIAGNOSTIC - Données des tokens
+    console.log('🔍 TokenPage - Raw tokens data:', tokens);
+    console.log('🔍 TokenPage - TokenAddress from URL:', tokenAddress);
+
     // S'assurer que tokens est un tableau et extraire data si nécessaire
     const tokensData = tokens?.data || tokens;
+    console.log('🔍 TokenPage - TokensData after extraction:', tokensData);
+
     const tokensArray = ensureArray(tokensData) as any[];
+    console.log('🔍 TokenPage - TokensArray after ensureArray:', tokensArray);
 
     // Filtrer sur les tokens qui sont dans des pools (comme dans tokens.tsx)
     const inPoolTokens = tokensArray.filter((t: any) => t.inPool);
+    console.log('🔍 TokenPage - InPool tokens count:', inPoolTokens.length);
+    console.log('🔍 TokenPage - InPool tokens:', inPoolTokens.map(t => ({
+      symbol: t.symbol,
+      address: t.address,
+      inPool: t.inPool,
+      hasStatistic: !!(t.Statistic && t.Statistic.length > 0)
+    })));
 
-    return inPoolTokens.find((t: any) => t?.address?.toLowerCase() === tokenAddress.toLowerCase());
+    const foundToken = inPoolTokens.find((t: any) => t?.address?.toLowerCase() === tokenAddress.toLowerCase());
+    console.log('🔍 TokenPage - Found token:', foundToken);
+    console.log('🔍 TokenPage - Token statistics:', foundToken?.Statistic);
+    console.log('🔍 TokenPage - Token has statistics:', !!(foundToken?.Statistic && foundToken.Statistic.length > 0));
+
+    return foundToken;
   }, [tokens, tokenAddress]);
 
   // Always call the hook, even if token is null
@@ -53,22 +72,53 @@ const TokenPage: React.FC = () => {
   const tvl = useMemo(() => {
     if (!pools || !token) return null;
 
+    // 🔍 LOGS DE DIAGNOSTIC - Données des pools
+    console.log('🔍 TokenPage - Raw pools data:', pools);
+    console.log('🔍 TokenPage - Current token for TVL calculation:', token);
+
     // S'assurer que pools est itérable
     const poolsArray = ensureArray(pools) as any[];
+    console.log('🔍 TokenPage - PoolsArray after ensureArray:', poolsArray);
+    console.log('🔍 TokenPage - Pools count:', poolsArray.length);
 
     let total = 0;
+    let poolsWithToken = 0;
+    let poolsWithStats = 0;
+
     for (const pool of poolsArray) {
       if (
         pool && typeof pool === 'object' &&
         (pool.token0?.address?.toLowerCase() === token?.address?.toLowerCase() ||
-          pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase()) &&
-        pool.PoolStatistic?.length > 0 &&
-        pool.PoolStatistic[0]?.tvlUSD &&
-        !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
+          pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase())
       ) {
-        total += Number(pool.PoolStatistic[0].tvlUSD);
+        poolsWithToken++;
+        console.log('🔍 TokenPage - Pool contains our token:', {
+          poolAddress: pool.address,
+          token0: pool.token0?.symbol,
+          token1: pool.token1?.symbol,
+          hasPoolStatistic: !!(pool.PoolStatistic && pool.PoolStatistic.length > 0),
+          poolStatisticLength: pool.PoolStatistic?.length || 0,
+          tvlUSD: pool.PoolStatistic?.[0]?.tvlUSD
+        });
+
+        if (
+          pool.PoolStatistic?.length > 0 &&
+          pool.PoolStatistic[0]?.tvlUSD &&
+          !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
+        ) {
+          poolsWithStats++;
+          total += Number(pool.PoolStatistic[0].tvlUSD);
+        }
       }
     }
+
+    console.log('🔍 TokenPage - TVL calculation summary:', {
+      poolsWithToken,
+      poolsWithStats,
+      totalTVL: total,
+      fallbackToCoingecko: total === 0 && !!coingeckoTokenData?.market_data?.total_value_locked_usd
+    });
+
     // Fallback to Coingecko if backend TVL is missing or zero
     if (total === 0 && coingeckoTokenData?.market_data?.total_value_locked_usd) {
       return coingeckoTokenData.market_data.total_value_locked_usd;
