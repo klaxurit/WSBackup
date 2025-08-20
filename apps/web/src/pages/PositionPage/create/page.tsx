@@ -37,8 +37,8 @@ const CreatePoolPage: React.FC = () => {
   const [fee, setFee] = useState(feeTiers[2].fee);
 
   // Step 2
-  const [minPrice, setMinPrice] = useState<string>("0");
-  const [maxPrice, setMaxPrice] = useState<string>("∞");
+  const [minPrice, setMinPrice] = useState<string>("0.1");
+  const [maxPrice, setMaxPrice] = useState<string>("1000");
   const [inputAmount, setInputAmount] = useState<bigint>(0n);
   const [inputToken, setInputToken] = useState<"token0" | "token1">("token0");
   const [initialPrice, setInitialPrice] = useState<bigint>(0n)
@@ -57,6 +57,20 @@ const CreatePoolPage: React.FC = () => {
       enabled: !!token1
     }
   });
+
+  // Initialiser le prix initial quand les tokens changent
+  useEffect(() => {
+    if (token0 && token1 && initialPrice === 0n) {
+      // Prix par défaut : 1 token0 = 1 token1 (ratio 1:1)
+      const defaultPrice = parseUnits("1", token1.decimals);
+      setInitialPrice(defaultPrice);
+      console.log('🔍 Auto-initializing initialPrice:', {
+        token0: token0.symbol,
+        token1: token1.symbol,
+        defaultPrice: defaultPrice.toString()
+      });
+    }
+  }, [token0, token1, initialPrice]);
 
   const { data: tvlByFee = {}, isLoading: isLoadingTvl } = useQuery({
     queryKey: ['feeTVL', token0?.address, token1?.address],
