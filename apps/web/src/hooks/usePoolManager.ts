@@ -236,7 +236,7 @@ export const usePoolManager = ({
       return finalTick;
     } catch (err) {
       console.error('🔍🔍🔍 CRITICAL: Error calculating tickLower:', err);
-      console.error('🔍🔍🔍 CRITICAL: tickLower error stack:', err.stack);
+      console.error('🔍🔍🔍 CRITICAL: tickLower error stack:', (err as Error)?.stack);
       return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM);
     }
   }, [minPrice, fee, token0, token1]);
@@ -287,7 +287,7 @@ export const usePoolManager = ({
       return finalTick;
     } catch (err) {
       console.error('🔍🔍🔍 CRITICAL: Error calculating tickUpper:', err);
-      console.error('🔍🔍🔍 CRITICAL: tickUpper error stack:', err.stack);
+      console.error('🔍🔍🔍 CRITICAL: tickUpper error stack:', (err as Error)?.stack);
       return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM);
     }
   }, [maxPrice, fee, token0, token1]);
@@ -382,11 +382,11 @@ export const usePoolManager = ({
 
     } catch (err) {
       console.error('🔍🔍🔍 CRITICAL: Error when calculate price', err);
-      console.error('🔍🔍🔍 CRITICAL: Error stack:', err.stack);
+      console.error('🔍🔍🔍 CRITICAL: Error stack:', (err as Error)?.stack);
       console.error('🔍🔍🔍 CRITICAL: Error details:', {
         errorType: typeof err,
-        errorName: err?.name,
-        errorMessage: err?.message
+        errorName: (err as Error)?.name,
+        errorMessage: (err as Error)?.message
       });
       return {
         amount0: 0n,
