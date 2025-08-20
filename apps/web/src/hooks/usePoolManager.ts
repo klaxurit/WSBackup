@@ -192,37 +192,102 @@ export const usePoolManager = ({
    * PRICE CALCULATION
    */
   const tickLower = useMemo(() => {
-    if (!token0 || !token1 || minPrice === "0") return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
+    console.log('🔍🔍🔍 CRITICAL: tickLower calculation started:', {
+      hasToken0: !!token0,
+      hasToken1: !!token1,
+      minPrice: minPrice,
+      minPriceType: typeof minPrice,
+      fee: fee
+    });
+
+    if (!token0 || !token1 || minPrice === "0") {
+      console.log('🔍🔍🔍 CRITICAL: tickLower early return - using MIN_TICK');
+      return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
+    }
+    
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
+    console.log('🔍🔍🔍 CRITICAL: tickLower tickSpacing:', tickSpacing);
 
     try {
       // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
+      const amount1 = Math.floor(parseFloat(minPrice) * 10 ** token1.decimals);
+      const amount0 = 10 ** token0.decimals;
+      
+      console.log('🔍🔍🔍 CRITICAL: tickLower encodeSqrtRatioX96 inputs:', {
+        amount1: amount1,
+        amount0: amount0,
+        token1Decimals: token1.decimals,
+        token0Decimals: token0.decimals
+      });
+
       const sqrtRatioX96 = encodeSqrtRatioX96(
-        JSBI.BigInt(Math.floor(parseFloat(minPrice) * 10 ** token1.decimals)).toString(),
-        JSBI.BigInt(10 ** token0.decimals).toString()
+        JSBI.BigInt(amount1).toString(),
+        JSBI.BigInt(amount0).toString()
       )
+      
+      console.log('🔍🔍🔍 CRITICAL: tickLower sqrtRatioX96:', sqrtRatioX96.toString());
+      
       const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-      return nearestUsableTick(rawTick, tickSpacing);
+      console.log('🔍🔍🔍 CRITICAL: tickLower rawTick:', rawTick);
+      
+      const finalTick = nearestUsableTick(rawTick, tickSpacing);
+      console.log('🔍🔍🔍 CRITICAL: tickLower finalTick:', finalTick);
+      
+      return finalTick;
     } catch (err) {
-      console.error('Error calculating tickLower:', err);
+      console.error('🔍🔍🔍 CRITICAL: Error calculating tickLower:', err);
+      console.error('🔍🔍🔍 CRITICAL: tickLower error stack:', err.stack);
       return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM);
     }
   }, [minPrice, fee, token0, token1]);
 
   const tickUpper = useMemo(() => {
-    if (!token0 || !token1 || maxPrice === "∞") return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM)
+    console.log('🔍🔍🔍 CRITICAL: tickUpper calculation started:', {
+      hasToken0: !!token0,
+      hasToken1: !!token1,
+      maxPrice: maxPrice,
+      maxPriceType: typeof maxPrice,
+      fee: fee
+    });
+
+    if (!token0 || !token1 || maxPrice === "∞") {
+      console.log('🔍🔍🔍 CRITICAL: tickUpper early return - using MAX_TICK');
+      return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM)
+    }
+    
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
+    console.log('🔍🔍🔍 CRITICAL: tickUpper tickSpacing:', tickSpacing);
 
     try {
       // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
+      const amount1 = Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals);
+      const amount0 = 10 ** token0.decimals;
+      
+      console.log('🔍🔍🔍 CRITICAL: tickUpper encodeSqrtRatioX96 inputs:', {
+        amount1: amount1,
+        maxPrice: maxPrice,
+        amount0: amount0,
+        token1Decimals: token1.decimals,
+        token0Decimals: token0.decimals
+      });
+
       const sqrtRatioX96 = encodeSqrtRatioX96(
-        JSBI.BigInt(Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals)).toString(),
-        JSBI.BigInt(10 ** token0.decimals).toString()
+        JSBI.BigInt(amount1).toString(),
+        JSBI.BigInt(amount0).toString()
       )
+      
+      console.log('🔍🔍🔍 CRITICAL: tickUpper sqrtRatioX96:', sqrtRatioX96.toString());
+      
       const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-      return nearestUsableTick(rawTick, tickSpacing);
+      console.log('🔍🔍🔍 CRITICAL: tickUpper rawTick:', rawTick);
+      
+      const finalTick = nearestUsableTick(rawTick, tickSpacing);
+      console.log('🔍🔍🔍 CRITICAL: tickUpper finalTick:', finalTick);
+      
+      return finalTick;
     } catch (err) {
-      console.error('Error calculating tickUpper:', err);
+      console.error('🔍🔍🔍 CRITICAL: Error calculating tickUpper:', err);
+      console.error('🔍🔍🔍 CRITICAL: tickUpper error stack:', err.stack);
       return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM);
     }
   }, [maxPrice, fee, token0, token1]);
@@ -255,12 +320,31 @@ export const usePoolManager = ({
         }
       }
 
+      console.log('🔍🔍🔍 CRITICAL: All data present, proceeding with position calculation:', {
+        poolType: typeof pool,
+        poolClass: pool?.constructor?.name,
+        tickLowerType: typeof tickLower,
+        tickUpperType: typeof tickUpper,
+        inputAmountType: typeof inputAmount,
+        inputToken
+      });
+
       if (tickLower >= tickUpper) {
+        console.error('🔍🔍🔍 CRITICAL: tickLower >= tickUpper:', { tickLower, tickUpper });
         throw new Error('tickLower must be lower thant tickUpper')
       }
 
+      console.log('🔍🔍🔍 CRITICAL: Creating Position with:', {
+        pool: pool,
+        tickLower: tickLower,
+        tickUpper: tickUpper,
+        inputAmount: inputAmount.toString(),
+        inputToken: inputToken
+      });
+
       let position: Position
       if (inputToken === 'token0') {
+        console.log('🔍🔍🔍 CRITICAL: Using Position.fromAmount0');
         position = Position.fromAmount0({
           pool,
           tickLower,
@@ -268,22 +352,42 @@ export const usePoolManager = ({
           amount0: inputAmount.toString(),
           useFullPrecision: false
         })
+        console.log('🔍🔍🔍 CRITICAL: Position.fromAmount0 result:', position);
       } else {
+        console.log('🔍🔍🔍 CRITICAL: Using Position.fromAmount1');
         position = Position.fromAmount1({
           pool,
           tickLower,
           tickUpper,
           amount1: inputAmount.toString(),
         })
+        console.log('🔍🔍🔍 CRITICAL: Position.fromAmount1 result:', position);
       }
 
-      return {
+      console.log('🔍🔍🔍 CRITICAL: Position created successfully:', {
+        positionType: typeof position,
+        positionClass: position?.constructor?.name,
+        amount0: position?.amount0?.quotient?.toString(),
+        amount1: position?.amount1?.quotient?.toString()
+      });
+
+      const result = {
         amount0: BigInt(position.amount0.quotient.toString()),
         amount1: BigInt(position.amount1.quotient.toString()),
         position
-      }
+      };
+
+      console.log('🔍🔍🔍 CRITICAL: Final result:', result);
+      return result;
+
     } catch (err) {
-      console.error('Error when calculate price', err)
+      console.error('🔍🔍🔍 CRITICAL: Error when calculate price', err);
+      console.error('🔍🔍🔍 CRITICAL: Error stack:', err.stack);
+      console.error('🔍🔍🔍 CRITICAL: Error details:', {
+        errorType: typeof err,
+        errorName: err?.name,
+        errorMessage: err?.message
+      });
       return {
         amount0: 0n,
         amount1: 0n,
