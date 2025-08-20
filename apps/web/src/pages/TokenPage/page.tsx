@@ -9,6 +9,7 @@ import { TokenTransactionsTable } from '../../components/Table/TokenTransactions
 import LineChart from '../../components/Charts/LineChart';
 import { formatUnits } from 'viem';
 import { ensureArray } from '../../utils/dataValidation';
+import { Loader } from '../../components/Loader/Loader';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
@@ -34,14 +35,33 @@ const TokenPage: React.FC = () => {
   const token = useMemo(() => {
     if (!tokens || !tokenAddress) return null;
 
+    // 🔍 LOGS DE DIAGNOSTIC - Données des tokens
+    console.log('🔍 TokenPage - Raw tokens data:', tokens);
+    console.log('🔍 TokenPage - TokenAddress from URL:', tokenAddress);
+
     // S'assurer que tokens est un tableau et extraire data si nécessaire
     const tokensData = tokens?.data || tokens;
+    console.log('🔍 TokenPage - TokensData after extraction:', tokensData);
+
     const tokensArray = ensureArray(tokensData) as any[];
+    console.log('🔍 TokenPage - TokensArray after ensureArray:', tokensArray);
 
     // Filtrer sur les tokens qui sont dans des pools (comme dans tokens.tsx)
     const inPoolTokens = tokensArray.filter((t: any) => t.inPool);
+    console.log('🔍 TokenPage - InPool tokens count:', inPoolTokens.length);
+    console.log('🔍 TokenPage - InPool tokens:', inPoolTokens.map(t => ({
+      symbol: t.symbol,
+      address: t.address,
+      inPool: t.inPool,
+      hasStatistic: !!(t.Statistic && t.Statistic.length > 0)
+    })));
 
-    return inPoolTokens.find((t: any) => t?.address?.toLowerCase() === tokenAddress.toLowerCase());
+    const foundToken = inPoolTokens.find((t: any) => t?.address?.toLowerCase() === tokenAddress.toLowerCase());
+    console.log('🔍 TokenPage - Found token:', foundToken);
+    console.log('🔍 TokenPage - Token statistics:', foundToken?.Statistic);
+    console.log('🔍 TokenPage - Token has statistics:', !!(foundToken?.Statistic && foundToken.Statistic.length > 0));
+
+    return foundToken;
   }, [tokens, tokenAddress]);
 
   // Always call the hook, even if token is null
@@ -52,22 +72,53 @@ const TokenPage: React.FC = () => {
   const tvl = useMemo(() => {
     if (!pools || !token) return null;
 
+    // 🔍 LOGS DE DIAGNOSTIC - Données des pools
+    console.log('🔍 TokenPage - Raw pools data:', pools);
+    console.log('🔍 TokenPage - Current token for TVL calculation:', token);
+
     // S'assurer que pools est itérable
     const poolsArray = ensureArray(pools) as any[];
+    console.log('🔍 TokenPage - PoolsArray after ensureArray:', poolsArray);
+    console.log('🔍 TokenPage - Pools count:', poolsArray.length);
 
     let total = 0;
+    let poolsWithToken = 0;
+    let poolsWithStats = 0;
+
     for (const pool of poolsArray) {
       if (
         pool && typeof pool === 'object' &&
         (pool.token0?.address?.toLowerCase() === token?.address?.toLowerCase() ||
-          pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase()) &&
-        pool.PoolStatistic?.length > 0 &&
-        pool.PoolStatistic[0]?.tvlUSD &&
-        !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
+          pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase())
       ) {
-        total += Number(pool.PoolStatistic[0].tvlUSD);
+        poolsWithToken++;
+        console.log('🔍 TokenPage - Pool contains our token:', {
+          poolAddress: pool.address,
+          token0: pool.token0?.symbol,
+          token1: pool.token1?.symbol,
+          hasPoolStatistic: !!(pool.PoolStatistic && pool.PoolStatistic.length > 0),
+          poolStatisticLength: pool.PoolStatistic?.length || 0,
+          tvlUSD: pool.PoolStatistic?.[0]?.tvlUSD
+        });
+
+        if (
+          pool.PoolStatistic?.length > 0 &&
+          pool.PoolStatistic[0]?.tvlUSD &&
+          !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
+        ) {
+          poolsWithStats++;
+          total += Number(pool.PoolStatistic[0].tvlUSD);
+        }
       }
     }
+
+    console.log('🔍 TokenPage - TVL calculation summary:', {
+      poolsWithToken,
+      poolsWithStats,
+      totalTVL: total,
+      fallbackToCoingecko: total === 0 && !!coingeckoTokenData?.market_data?.total_value_locked_usd
+    });
+
     // Fallback to Coingecko if backend TVL is missing or zero
     if (total === 0 && coingeckoTokenData?.market_data?.total_value_locked_usd) {
       return coingeckoTokenData.market_data.total_value_locked_usd;
@@ -156,7 +207,7 @@ const TokenPage: React.FC = () => {
   const priceFormatter = (price: number) => price.toFixed(2);
 
   // --- Chart historique du token ---
-  const { data: lineData = [], isLoading: lineLoading, error: lineError } = useTokenLineChart(token?.address);
+  const { data: lineData = [], error: lineError } = useTokenLineChart(token?.address);
   const fromTokenDecimals = token?.decimals;
   const filteredData = filterOutliers(lineData);
   const needNormalization = shouldNormalize(filteredData);
@@ -166,10 +217,19 @@ const TokenPage: React.FC = () => {
   const chartData = filterLWCBounds(cleanLineData(normalizedData));
 
   if (tokensLoading) {
-    return <div style={{ padding: 32 }}>Loading token data...</div>;
+    return (
+      <div style={{ padding: 32, textAlign: 'center' }}>
+        <Loader size="desktop" />
+      </div>
+    );
   }
   if (!token) {
-    return <div style={{ padding: 32 }}>Token not found.</div>;
+    return (
+      <div style={{ padding: 32, textAlign: 'center' }}>
+        <p style={{ color: '#FF4D4D', fontSize: 18 }}>Token not found</p>
+        <p style={{ color: '#888', marginTop: 8 }}>The requested token could not be found in our database.</p>
+      </div>
+    );
   }
 
   return (
@@ -233,10 +293,11 @@ const TokenPage: React.FC = () => {
 
           {/* Chart natif pool (future-proof, prêt à brancher backend) */}
           <div className="Token__Chart" style={{ minHeight: 340 }}>
-            {lineLoading ? (
-              <div style={{ padding: 32 }}>Loading chart…</div>
-            ) : lineError ? (
-              <div style={{ padding: 32, color: 'red' }}>Error loading chart</div>
+            {lineError ? (
+              <div style={{ padding: 32, textAlign: 'center', color: '#FF4D4D' }}>
+                <p style={{ fontSize: 16 }}>Error loading chart</p>
+                <p style={{ fontSize: 14, color: '#888', marginTop: 8 }}>Please try refreshing the page</p>
+              </div>
             ) : (
               <LineChart
                 data={chartData.length === 0 ? [] : chartData}
@@ -254,7 +315,11 @@ const TokenPage: React.FC = () => {
               <div className="Token__StatCard">
                 <h4 className="Token__StatCardTitle">TVL</h4>
                 <p className="Token__StatCardLabel">
-                  {poolsLoading ? 'Loading…' : (tvl === null || tvl === 0 || isNaN(tvl)) ? 'N/A' : formatNumber(tvl)}
+                  {poolsLoading ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <Loader size="small" />
+                    </span>
+                  ) : (tvl === null || tvl === 0 || isNaN(tvl)) ? 'N/A' : formatNumber(tvl)}
                 </p>
               </div>
               <div className="Token__StatCard">

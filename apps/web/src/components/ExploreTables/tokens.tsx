@@ -75,7 +75,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
         return row.Statistic?.length > 0 ? row.Statistic[0].price : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 ? `$${formatNumber(row.Statistic[0].price)}` : '-'
+        if (!row.Statistic || row.Statistic.length === 0) {
+          return <span style={{ color: '#888', fontStyle: 'italic' }}>No data</span>;
+        }
+        return `$${formatNumber(row.Statistic[0].price)}`;
       }
     },
     {

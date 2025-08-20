@@ -19,12 +19,13 @@ export const tickToPrice = (tick: number, token0: Token, token1: Token): number 
 }
 
 export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint) => {
-  console.log(token1)
+  console.log('Calculating sqrtPriceX96 for:', token0.symbol, '/', token1.symbol, 'price:', initialPrice.toString())
   try {
+    // ✅ CORRECTION : ordre correct des paramètres
+    // encodeSqrtRatioX96(amount0, amount1) où amount0 et amount1 sont les quantités de base
     return encodeSqrtRatioX96(
-      // JSBI.BigInt(initialPrice).toString(),
-      initialPrice.toString(),
-      JSBI.BigInt(10 ** token0.decimals).toString()
+      JSBI.BigInt(10 ** token0.decimals).toString(),  // ✅ 1 token0 (ex: 1 WBERA = 10^18)
+      initialPrice.toString()                          // ✅ prix en token1 (ex: 2.18 HONEY)
     )
   } catch (err) {
     console.error('Error calculate initial sqrtPriceX96', err)
