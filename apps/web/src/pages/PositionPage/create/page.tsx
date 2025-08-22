@@ -1,10 +1,10 @@
-import React, { useState, useMemo, type ChangeEvent, useEffect } from 'react';
+import React, { useState, useMemo, type ChangeEvent, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
-import { type Address, parseUnits } from 'viem';
+import { type Address, parseUnits, formatUnits } from 'viem';
 import { ConnectButton } from '../../../components/Buttons/ConnectButton';
 import '../../../styles/pages/_positionPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
@@ -43,6 +43,13 @@ const CreatePoolPage: React.FC = () => {
   const [inputToken, setInputToken] = useState<"token0" | "token1">("token0");
   const [initialPrice, setInitialPrice] = useState<bigint>(0n)
 
+  // 🔧 NOUVEAUX ÉTATS : Stocker les montants calculés pour la validation
+  const [calculatedAmount0, setCalculatedAmount0] = useState<bigint>(0n);
+  const [calculatedAmount1, setCalculatedAmount1] = useState<bigint>(0n);
+
+  // 🔧 NOUVEAU ÉTAT : Stocker le prix affiché saisi par l'utilisateur
+  const [displayPrice, setDisplayPrice] = useState<string>("0.1");
+
   const { data: balance0 } = useBalance({
     address,
     token: token0?.address as Address | undefined,
@@ -59,18 +66,49 @@ const CreatePoolPage: React.FC = () => {
   });
 
   // Initialiser le prix initial quand les tokens changent
+  // useEffect(() => {
+  //   if (token0 && token1 && initialPrice === 0n) {
+  //     // Prix par défaut : 1 token0 = 1 token1 (ratio 1:1)
+  //     const defaultPrice = parseUnits("1", token1.decimals);
+  //     setInitialPrice(defaultPrice);
+  //     // 🔧 NE PAS forcer displayPrice à "1" - laisser l'utilisateur saisir ce qu'il veut
+  //     // setDisplayPrice("1"); // Prix affiché par défaut
+  //     console.log('🔍 Auto-initializing initialPrice:', {
+  //       token0: token0.symbol,
+  //       token1: token1.symbol,
+  //       defaultPrice: defaultPrice.toString()
+  //     });
+  //   }
+  // }, [token0, token1, initialPrice]);
+
+  // 🔧 Mettre à jour displayPrice quand initialPrice change
+  // useEffect(() => {
+  //   if (token0 && token1 && initialPrice > 0n) {
+  //     const displayPriceValue = formatUnits(initialPrice, token1.decimals);
+  //     setDisplayPrice(displayPriceValue);
+  //     console.log('🔍 Updating displayPrice from initialPrice:', {
+  //       initialPrice: initialPrice.toString(),
+  //       displayPrice: displayPriceValue,
+  //       token0: token0.symbol,
+  //       token1: token1.symbol
+  //     });
+  //   }
+  // }, [initialPrice, token0, token1]);
+
+  const handleInitialPriceChange = useCallback((amount: bigint) => {
+    setInitialPrice(amount);
+  }, [token0, token1]);
+
+  const handleDisplayPriceChange = useCallback((displayValue: string) => {
+    setDisplayPrice(displayValue);
+  }, [token0, token1]);
+
   useEffect(() => {
-    if (token0 && token1 && initialPrice === 0n) {
-      // Prix par défaut : 1 token0 = 1 token1 (ratio 1:1)
-      const defaultPrice = parseUnits("1", token1.decimals);
-      setInitialPrice(defaultPrice);
-      console.log('🔍 Auto-initializing initialPrice:', {
-        token0: token0.symbol,
-        token1: token1.symbol,
-        defaultPrice: defaultPrice.toString()
-      });
+    if (token0 && token1) {
+      setInitialPrice(0n);
+      setDisplayPrice("");
     }
-  }, [token0, token1, initialPrice]);
+  }, [token0?.address, token1?.address]);
 
   const { data: tvlByFee = {}, isLoading: isLoadingTvl } = useQuery({
     queryKey: ['feeTVL', token0?.address, token1?.address],
@@ -110,12 +148,28 @@ const CreatePoolPage: React.FC = () => {
     initialPrice
   })
 
+  // 🔧 LOGIQUE HYBRIDE : Utiliser poolManager pour validation, montants locaux pour affichage
   const { insufficient0, insufficient1 } = useMemo(() => {
+    // Pour la validation, utiliser les plus grands montants entre local et poolManager
+    const amount0ToCheck = Math.max(
+      Number(calculatedAmount0),
+      Number(poolManager.amount0),
+      inputToken === "token0" ? Number(inputAmount) : 0
+    );
+    const amount1ToCheck = Math.max(
+      Number(calculatedAmount1),
+      Number(poolManager.amount1),
+      inputToken === "token1" ? Number(inputAmount) : 0
+    );
+
+
+
     return {
-      insufficient0: balance0 && poolManager.amount0 > balance0.value,
-      insufficient1: balance1 && poolManager.amount1 > balance1.value
+      insufficient0: balance0 && BigInt(amount0ToCheck) > balance0.value,
+      insufficient1: balance1 && BigInt(amount1ToCheck) > balance1.value
     }
-  }, [balance0, balance1, poolManager])
+  }, [balance0, balance1, poolManager.amount0, poolManager.amount1, calculatedAmount0, calculatedAmount1, inputToken, inputAmount]);
+
 
   const buttonState = useMemo(() => {
     if (poolManager.mintPositionReceipt?.status === "success") {
@@ -307,14 +361,164 @@ const CreatePoolPage: React.FC = () => {
     }
     setMaxPrice(val)
   }
-  const handleAmount0Change = (v: bigint) => {
-    setInputAmount(v)
-    setInputToken("token0")
-  }
-  const handleAmount1Change = (v: bigint) => {
-    setInputAmount(v)
-    setInputToken("token1")
-  }
+  const calculateOtherTokenAmount = useCallback((inputAmount: bigint, inputToken: "token0" | "token1") => {
+    if (!token0 || !token1) return 0n;
+
+    try {
+      // 🔧 SOLUTION : Utiliser le prix approprié selon le contexte
+      let priceRatio: number;
+
+      if (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) {
+        // Pool existant : utiliser le prix du pool
+        priceRatio = poolManager.currentPrice;
+        console.log('🔍 Using existing pool price:', {
+          currentPrice: poolManager.currentPrice,
+          poolExists: poolManager.poolAlreadyExist
+        });
+      } else if (displayPrice && parseFloat(displayPrice) > 0) {
+        // Nouveau pool : utiliser le prix saisi par l'utilisateur
+        priceRatio = parseFloat(displayPrice);
+        console.log('🔍 Using user-set display price:', {
+          displayPrice: displayPrice,
+          poolExists: poolManager.poolAlreadyExist
+        });
+      } else {
+        // Aucun prix disponible
+        console.log('🔍 No price available for calculation');
+        return 0n;
+      }
+
+      if (inputToken === "token0") {
+        // Si on saisit token0, calculer token1
+        const inverseRatio = 1 / priceRatio;
+        const token0Amount = parseFloat(formatUnits(inputAmount, token0.decimals));
+        const token1Amount = token0Amount * inverseRatio;
+
+        console.log('🔍 Token0 → Token1 calculation:', {
+          token0Amount,
+          priceRatio,
+          inverseRatio,
+          token1Amount
+        });
+
+        return parseUnits(token1Amount.toFixed(token1.decimals), token1.decimals);
+      } else {
+        // Si on saisit token1, calculer token0
+        const token1Amount = parseFloat(formatUnits(inputAmount, token1.decimals));
+        const token0Amount = token1Amount * priceRatio;
+
+        console.log('🔍 Token1 → Token0 calculation:', {
+          token1Amount,
+          priceRatio,
+          token0Amount
+        });
+
+        return parseUnits(token0Amount.toFixed(token0.decimals), token0.decimals);
+      }
+    } catch (error) {
+      console.error('🔍 Error calculating other token amount:', error);
+      return 0n;
+    }
+  }, [token0, token1, displayPrice, poolManager.poolAlreadyExist, poolManager.currentPrice]);
+
+  // 🔧 NOUVELLE FONCTION : Gérer la synchronisation des montants de manière robuste
+  // const handleAmountChangeWithSync = useCallback((amount: bigint, tokenType: "token0" | "token1") => {
+  //   console.log('🔍 handleAmountChangeWithSync called:', {
+  //     amount: amount.toString(),
+  //     tokenType,
+  //     displayPrice,
+  //     currentInputAmount: inputAmount.toString(),
+  //     currentInputToken: inputToken
+  //   });
+
+  //   // Mettre à jour l'état local ET le poolManager
+  //   setInputAmount(amount);
+  //   setInputToken(tokenType);
+
+  //   // Calculer automatiquement l'autre token basé sur le prix affiché
+  //   if (parseFloat(displayPrice) > 0 && amount > 0n) {
+  //     const calculatedOtherAmount = calculateOtherTokenAmount(amount, tokenType);
+
+  //     if (calculatedOtherAmount > 0n) {
+  //       // Stocker l'autre montant pour l'affichage
+  //       if (tokenType === "token0") {
+  //         setCalculatedAmount1(calculatedOtherAmount);
+  //       } else {
+  //         setCalculatedAmount0(calculatedOtherAmount);
+  //       }
+  //     }
+  //   }
+  // }, [displayPrice, inputAmount, inputToken, calculateOtherTokenAmount]);
+
+  const handleAmount0Change = useCallback((amount: bigint) => {
+    console.log('🔍 handleAmount0Change called:', {
+      amount: amount.toString(),
+      poolExists: poolManager.poolAlreadyExist,
+      currentPrice: poolManager.currentPrice,
+      displayPrice: displayPrice
+    });
+
+    setInputAmount(amount);
+    setInputToken("token0");
+
+    // 🔧 SOLUTION : Vérifier qu'on a un prix disponible (pool existant OU displayPrice)
+    const hasValidPrice = (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) ||
+      (!poolManager.poolAlreadyExist && parseFloat(displayPrice) > 0);
+
+    if (amount > 0n && hasValidPrice) {
+      const calculatedToken1Amount = calculateOtherTokenAmount(amount, "token0");
+      setCalculatedAmount1(calculatedToken1Amount);
+      setCalculatedAmount0(0n);
+
+      console.log('🔍 Token0 sync result:', {
+        inputAmount: amount.toString(),
+        calculatedToken1: calculatedToken1Amount.toString(),
+        priceSource: poolManager.poolAlreadyExist ? 'pool' : 'user'
+      });
+    } else {
+      setCalculatedAmount1(0n);
+      setCalculatedAmount0(0n);
+
+      console.log('🔍 Token0 sync skipped:', {
+        reason: !hasValidPrice ? 'no valid price' : 'zero amount'
+      });
+    }
+  }, [calculateOtherTokenAmount, poolManager.poolAlreadyExist, poolManager.currentPrice, displayPrice]);
+
+  const handleAmount1Change = useCallback((amount: bigint) => {
+    console.log('🔍 handleAmount1Change called:', {
+      amount: amount.toString(),
+      poolExists: poolManager.poolAlreadyExist,
+      currentPrice: poolManager.currentPrice,
+      displayPrice: displayPrice
+    });
+
+    setInputAmount(amount);
+    setInputToken("token1");
+
+    // 🔧 SOLUTION : Vérifier qu'on a un prix disponible (pool existant OU displayPrice)
+    const hasValidPrice = (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) ||
+      (!poolManager.poolAlreadyExist && parseFloat(displayPrice) > 0);
+
+    if (amount > 0n && hasValidPrice) {
+      const calculatedToken0Amount = calculateOtherTokenAmount(amount, "token1");
+      setCalculatedAmount0(calculatedToken0Amount);
+      setCalculatedAmount1(0n);
+
+      console.log('🔍 Token1 sync result:', {
+        inputAmount: amount.toString(),
+        calculatedToken0: calculatedToken0Amount.toString(),
+        priceSource: poolManager.poolAlreadyExist ? 'pool' : 'user'
+      });
+    } else {
+      setCalculatedAmount0(0n);
+      setCalculatedAmount1(0n);
+
+      console.log('🔍 Token1 sync skipped:', {
+        reason: !hasValidPrice ? 'no valid price' : 'zero amount'
+      });
+    }
+  }, [calculateOtherTokenAmount, poolManager.poolAlreadyExist, poolManager.currentPrice, displayPrice]);
 
   const { data: tokens } = useTokens();
 
@@ -547,7 +751,8 @@ const CreatePoolPage: React.FC = () => {
                     <div className="PoolPage__LiquidityInput">
                       <InitialPriceInput
                         tokens={[token0!, token1!]}
-                        onAmountChange={setInitialPrice}
+                        onAmountChange={handleInitialPriceChange}
+                        onDisplayPriceChange={handleDisplayPriceChange}
                         onTokenSelect={() => { }}
                         value={initialPrice || 0n}
                       />
@@ -607,20 +812,42 @@ const CreatePoolPage: React.FC = () => {
                   <LiquidityInput
                     selectedToken={selectedToken0}
                     onAmountChange={handleAmount0Change}
-                    value={poolManager.amount0}
+                    value={inputToken === "token0" ? inputAmount : calculatedAmount0} // ← Montants locaux pour l'affichage
                     isOverBalance={insufficient0 || false}
                     disabled={false}
                   />
+                  {/* Affichage du montant calculé */}
+                  {inputToken === "token0" && inputAmount > 0n && calculatedAmount1 > 0n && (
+                    <div style={{
+                      marginTop: 8,
+                      fontSize: 14,
+                      color: '#888',
+                      textAlign: 'center'
+                    }}>
+                      = {formatUnits(calculatedAmount1, token1?.decimals || 18)} {token1?.symbol}
+                    </div>
+                  )}
                 </div>
 
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
                     selectedToken={selectedToken1}
                     onAmountChange={handleAmount1Change}
-                    value={poolManager.amount1}
+                    value={inputToken === "token1" ? inputAmount : calculatedAmount1} // ← Montants locaux pour l'affichage
                     isOverBalance={insufficient1 || false}
                     disabled={false}
                   />
+                  {/* Affichage du montant calculé */}
+                  {inputToken === "token1" && inputAmount > 0n && calculatedAmount0 > 0n && (
+                    <div style={{
+                      marginTop: 8,
+                      fontSize: 14,
+                      color: '#888',
+                      textAlign: 'center'
+                    }}>
+                      = {formatUnits(calculatedAmount0, token0?.decimals || 18)} {token0?.symbol}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -656,7 +883,7 @@ const CreatePoolPage: React.FC = () => {
                   onClick={buttonState?.action}
                 >
                   {buttonState?.loading && (
-                    <Loader className="PoolPage__ContinueBtnLoader" size="mobile" />
+                    <Loader className="PoolPage__ContinueBtnLoader" size="small" />
                   )}
                   {buttonState?.text}
                 </button>

@@ -43,6 +43,8 @@ export const usePoolManager = ({
   maxPrice,
   initialPrice
 }: usePositionManagerParams) => {
+
+
   const { address } = useAccount()
 
   const token0 = useMemo(() => (parseToken(btoken0)), [btoken0])
@@ -130,26 +132,11 @@ export const usePoolManager = ({
           tick
         )
       } else {
-        console.log('🔍🔍🔍 Pool creation - initialPrice check:', {
-          initialPrice: initialPrice.toString(),
-          initialPriceType: typeof initialPrice,
-          isZero: initialPrice === 0n,
-          isLessOrEqualZero: initialPrice <= 0n,
-          willCreatePool: !(!token0 || !token1 || initialPrice <= 0n)
-        });
-
         if (!token0 || !token1 || initialPrice <= 0n) return null
 
-        // Utilisation des tokens dans l'ordre choisi par l'utilisateur
         const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice)
         if (!sqrtPriceX96) return null
         const tick = priceToTick(token0, token1, initialPrice)
-
-        console.log('🔍🔍🔍 Pool creation - success:', {
-          sqrtPriceX96: sqrtPriceX96.toString(),
-          tick: tick,
-          poolCreated: true
-        });
 
         return new Pool(
           token0,
@@ -161,10 +148,11 @@ export const usePoolManager = ({
         )
       }
     } catch (err) {
-      console.error("Error when creating pool", err)
       return null
     }
   }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData])
+
+
 
   // Prix réel de la pool (token0 en termes de token1)
   const currentPrice = useMemo(() => {
@@ -192,127 +180,58 @@ export const usePoolManager = ({
    * PRICE CALCULATION
    */
   const tickLower = useMemo(() => {
-    console.log('🔍🔍🔍 CRITICAL: tickLower calculation started:', {
-      hasToken0: !!token0,
-      hasToken1: !!token1,
-      minPrice: minPrice,
-      minPriceType: typeof minPrice,
-      fee: fee
-    });
-
     if (!token0 || !token1 || minPrice === "0") {
-      console.log('🔍🔍🔍 CRITICAL: tickLower early return - using MIN_TICK');
       return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
     }
-    
+
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
-    console.log('🔍🔍🔍 CRITICAL: tickLower tickSpacing:', tickSpacing);
 
     try {
-      // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
       const amount1 = Math.floor(parseFloat(minPrice) * 10 ** token1.decimals);
       const amount0 = 10 ** token0.decimals;
-      
-      console.log('🔍🔍🔍 CRITICAL: tickLower encodeSqrtRatioX96 inputs:', {
-        amount1: amount1,
-        amount0: amount0,
-        token1Decimals: token1.decimals,
-        token0Decimals: token0.decimals
-      });
 
       const sqrtRatioX96 = encodeSqrtRatioX96(
         JSBI.BigInt(amount1).toString(),
         JSBI.BigInt(amount0).toString()
       )
-      
-      console.log('🔍🔍🔍 CRITICAL: tickLower sqrtRatioX96:', sqrtRatioX96.toString());
-      
+
       const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-      console.log('🔍🔍🔍 CRITICAL: tickLower rawTick:', rawTick);
-      
       const finalTick = nearestUsableTick(rawTick, tickSpacing);
-      console.log('🔍🔍🔍 CRITICAL: tickLower finalTick:', finalTick);
-      
+
       return finalTick;
     } catch (err) {
-      console.error('🔍🔍🔍 CRITICAL: Error calculating tickLower:', err);
-      console.error('🔍🔍🔍 CRITICAL: tickLower error stack:', (err as Error)?.stack);
       return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM);
     }
   }, [minPrice, fee, token0, token1]);
 
   const tickUpper = useMemo(() => {
-    console.log('🔍🔍🔍 CRITICAL: tickUpper calculation started:', {
-      hasToken0: !!token0,
-      hasToken1: !!token1,
-      maxPrice: maxPrice,
-      maxPriceType: typeof maxPrice,
-      fee: fee
-    });
-
     if (!token0 || !token1 || maxPrice === "∞") {
-      console.log('🔍🔍🔍 CRITICAL: tickUpper early return - using MAX_TICK');
       return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM)
     }
-    
+
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
-    console.log('🔍🔍🔍 CRITICAL: tickUpper tickSpacing:', tickSpacing);
 
     try {
-      // Calcul du prix en respectant l'ordre des tokens choisi par l'utilisateur
       const amount1 = Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals);
       const amount0 = 10 ** token0.decimals;
-      
-      console.log('🔍🔍🔍 CRITICAL: tickUpper encodeSqrtRatioX96 inputs:', {
-        amount1: amount1,
-        maxPrice: maxPrice,
-        amount0: amount0,
-        token1Decimals: token1.decimals,
-        token0Decimals: token0.decimals
-      });
 
       const sqrtRatioX96 = encodeSqrtRatioX96(
         JSBI.BigInt(amount1).toString(),
         JSBI.BigInt(amount0).toString()
       )
-      
-      console.log('🔍🔍🔍 CRITICAL: tickUpper sqrtRatioX96:', sqrtRatioX96.toString());
-      
+
       const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-      console.log('🔍🔍🔍 CRITICAL: tickUpper rawTick:', rawTick);
-      
       const finalTick = nearestUsableTick(rawTick, tickSpacing);
-      console.log('🔍🔍🔍 CRITICAL: tickUpper finalTick:', finalTick);
-      
+
       return finalTick;
     } catch (err) {
-      console.error('🔍🔍🔍 CRITICAL: Error calculating tickUpper:', err);
-      console.error('🔍🔍🔍 CRITICAL: tickUpper error stack:', (err as Error)?.stack);
       return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM);
     }
   }, [maxPrice, fee, token0, token1]);
 
   const prices = useMemo(() => {
-    console.log('🔍🔍🔍 CRITICAL: prices calculation started with:', {
-      hasPool: !!pool,
-      poolObject: pool,
-      hasTickLower: !!tickLower,
-      tickLowerValue: tickLower,
-      hasTickUpper: !!tickUpper,
-      tickUpperValue: tickUpper,
-      hasInputAmount: !!inputAmount,
-      inputAmountValue: inputAmount?.toString(),
-      inputToken
-    });
-
     try {
       if (!pool || !tickLower || !tickUpper || !inputAmount || inputAmount === 0n) {
-        console.log('🔍🔍🔍 CRITICAL: Early return because missing data:', {
-          missingPool: !pool,
-          missingTickLower: !tickLower,
-          missingTickUpper: !tickUpper,
-          missingInputAmount: !inputAmount || inputAmount === 0n
-        });
         return {
           amount0: 0n,
           amount1: 0n,
@@ -320,31 +239,12 @@ export const usePoolManager = ({
         }
       }
 
-      console.log('🔍🔍🔍 CRITICAL: All data present, proceeding with position calculation:', {
-        poolType: typeof pool,
-        poolClass: pool?.constructor?.name,
-        tickLowerType: typeof tickLower,
-        tickUpperType: typeof tickUpper,
-        inputAmountType: typeof inputAmount,
-        inputToken
-      });
-
       if (tickLower >= tickUpper) {
-        console.error('🔍🔍🔍 CRITICAL: tickLower >= tickUpper:', { tickLower, tickUpper });
         throw new Error('tickLower must be lower thant tickUpper')
       }
 
-      console.log('🔍🔍🔍 CRITICAL: Creating Position with:', {
-        pool: pool,
-        tickLower: tickLower,
-        tickUpper: tickUpper,
-        inputAmount: inputAmount.toString(),
-        inputToken: inputToken
-      });
-
       let position: Position
       if (inputToken === 'token0') {
-        console.log('🔍🔍🔍 CRITICAL: Using Position.fromAmount0');
         position = Position.fromAmount0({
           pool,
           tickLower,
@@ -352,24 +252,14 @@ export const usePoolManager = ({
           amount0: inputAmount.toString(),
           useFullPrecision: false
         })
-        console.log('🔍🔍🔍 CRITICAL: Position.fromAmount0 result:', position);
       } else {
-        console.log('🔍🔍🔍 CRITICAL: Using Position.fromAmount1');
         position = Position.fromAmount1({
           pool,
           tickLower,
           tickUpper,
           amount1: inputAmount.toString(),
         })
-        console.log('🔍🔍🔍 CRITICAL: Position.fromAmount1 result:', position);
       }
-
-      console.log('🔍🔍🔍 CRITICAL: Position created successfully:', {
-        positionType: typeof position,
-        positionClass: position?.constructor?.name,
-        amount0: position?.amount0?.quotient?.toString(),
-        amount1: position?.amount1?.quotient?.toString()
-      });
 
       const result = {
         amount0: BigInt(position.amount0.quotient.toString()),
@@ -377,17 +267,9 @@ export const usePoolManager = ({
         position
       };
 
-      console.log('🔍🔍🔍 CRITICAL: Final result:', result);
       return result;
 
     } catch (err) {
-      console.error('🔍🔍🔍 CRITICAL: Error when calculate price', err);
-      console.error('🔍🔍🔍 CRITICAL: Error stack:', (err as Error)?.stack);
-      console.error('🔍🔍🔍 CRITICAL: Error details:', {
-        errorType: typeof err,
-        errorName: (err as Error)?.name,
-        errorMessage: (err as Error)?.message
-      });
       return {
         amount0: 0n,
         amount1: 0n,
@@ -626,39 +508,25 @@ export const usePoolManager = ({
     if (waitCreatePool || waitMintPosition || waitWrap) return "waitMainUserSign"
     if (waitingCreatePoolReceipt || waitingMintPositionReceipt || waitingWrapReceipt) return "waitMainReceipt"
 
-    // 🔍 LOG DE DIAGNOSTIC pour identifier le problème de validation
-    if (!poolAlreadyExist) {
-      console.log('🔍 usePoolManager - Status check:', {
-        poolAlreadyExist,
-        initialPrice: initialPrice.toString(),
-        initialPriceBigInt: initialPrice,
-        initialPriceType: typeof initialPrice,
-        isZero: initialPrice === 0n,
-        isLessThanZero: initialPrice < 0n,
-        willReturn: initialPrice <= 0n ? 'waitInitialAmount' : 'next'
-      });
+    // 🔧 LOGIQUE CRITIQUE RESTAURÉE : Transition après createPool
+    if (!poolAlreadyExist && createPoolReceipt?.status === "success") {
+      // Pool créé avec succès, maintenant on peut mint
+      if (!prices.position) {
+        return 'waitAmount'
+      }
+      if (token0NeedApproval) return "needT0Approve"
+      if (token1NeedApproval) return "needT1Approve"
+      if (needsWBERAWrapping) return "needWrap"
+      return 'readyMintPosition'
+    }
 
+    if (!poolAlreadyExist) {
       if (initialPrice <= 0n) {
         return 'waitInitialAmount'
       }
     }
 
     if (!prices.position) {
-      // 🔍 LOG DE DIAGNOSTIC pour le calcul des prix
-      console.log('🔍🔍🔍 CRITICAL: prices.position is null/undefined!');
-      console.log('🔍🔍🔍 Full prices object:', prices);
-      console.log('🔍🔍🔍 prices type:', typeof prices);
-      console.log('🔍🔍🔍 prices keys:', Object.keys(prices || {}));
-      console.log('🔍🔍🔍 prices.position value:', prices?.position);
-      console.log('🔍🔍🔍 prices.position type:', typeof prices?.position);
-
-      // 🔍 LOG DE DIAGNOSTIC pour le calcul des prix
-      console.log('🔍 usePoolManager - Prices check:', {
-        hasPrices: !!prices,
-        pricesObject: prices,
-        hasPosition: !!prices?.position,
-        willReturn: 'waitAmount'
-      });
       return 'waitAmount'
     }
 
@@ -689,7 +557,8 @@ export const usePoolManager = ({
     waitingCreatePoolReceipt,
     waitingMintPositionReceipt,
     waitingWrapReceipt,
-    needsWBERAWrapping
+    needsWBERAWrapping,
+    createPoolReceipt
   ])
 
   const reset = () => {
