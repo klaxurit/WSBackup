@@ -37,8 +37,8 @@ const CreatePoolPage: React.FC = () => {
   const [fee, setFee] = useState(feeTiers[2].fee);
 
   // Step 2
-  const [minPrice, setMinPrice] = useState<string>("0.1");
-  const [maxPrice, setMaxPrice] = useState<string>("1000");
+  const [minPrice, setMinPrice] = useState<string>("0");
+  const [maxPrice, setMaxPrice] = useState<string>("∞");
   const [inputAmount, setInputAmount] = useState<bigint>(0n);
   const [inputToken, setInputToken] = useState<"token0" | "token1">("token0");
   const [initialPrice, setInitialPrice] = useState<bigint>(0n)
