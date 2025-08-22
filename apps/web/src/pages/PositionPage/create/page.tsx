@@ -371,20 +371,11 @@ const CreatePoolPage: React.FC = () => {
       if (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) {
         // Pool existant : utiliser le prix du pool
         priceRatio = poolManager.currentPrice;
-        console.log('🔍 Using existing pool price:', {
-          currentPrice: poolManager.currentPrice,
-          poolExists: poolManager.poolAlreadyExist
-        });
       } else if (displayPrice && parseFloat(displayPrice) > 0) {
         // Nouveau pool : utiliser le prix saisi par l'utilisateur
         priceRatio = parseFloat(displayPrice);
-        console.log('🔍 Using user-set display price:', {
-          displayPrice: displayPrice,
-          poolExists: poolManager.poolAlreadyExist
-        });
       } else {
         // Aucun prix disponible
-        console.log('🔍 No price available for calculation');
         return 0n;
       }
 
@@ -394,12 +385,7 @@ const CreatePoolPage: React.FC = () => {
         const token0Amount = parseFloat(formatUnits(inputAmount, token0.decimals));
         const token1Amount = token0Amount * inverseRatio;
 
-        console.log('🔍 Token0 → Token1 calculation:', {
-          token0Amount,
-          priceRatio,
-          inverseRatio,
-          token1Amount
-        });
+
 
         return parseUnits(token1Amount.toFixed(token1.decimals), token1.decimals);
       } else {
@@ -407,11 +393,7 @@ const CreatePoolPage: React.FC = () => {
         const token1Amount = parseFloat(formatUnits(inputAmount, token1.decimals));
         const token0Amount = token1Amount * priceRatio;
 
-        console.log('🔍 Token1 → Token0 calculation:', {
-          token1Amount,
-          priceRatio,
-          token0Amount
-        });
+
 
         return parseUnits(token0Amount.toFixed(token0.decimals), token0.decimals);
       }
@@ -451,17 +433,9 @@ const CreatePoolPage: React.FC = () => {
   // }, [displayPrice, inputAmount, inputToken, calculateOtherTokenAmount]);
 
   const handleAmount0Change = useCallback((amount: bigint) => {
-    console.log('🔍 handleAmount0Change called:', {
-      amount: amount.toString(),
-      poolExists: poolManager.poolAlreadyExist,
-      currentPrice: poolManager.currentPrice,
-      displayPrice: displayPrice
-    });
-
     setInputAmount(amount);
     setInputToken("token0");
 
-    // 🔧 SOLUTION : Vérifier qu'on a un prix disponible (pool existant OU displayPrice)
     const hasValidPrice = (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) ||
       (!poolManager.poolAlreadyExist && parseFloat(displayPrice) > 0);
 
@@ -469,34 +443,16 @@ const CreatePoolPage: React.FC = () => {
       const calculatedToken1Amount = calculateOtherTokenAmount(amount, "token0");
       setCalculatedAmount1(calculatedToken1Amount);
       setCalculatedAmount0(0n);
-
-      console.log('🔍 Token0 sync result:', {
-        inputAmount: amount.toString(),
-        calculatedToken1: calculatedToken1Amount.toString(),
-        priceSource: poolManager.poolAlreadyExist ? 'pool' : 'user'
-      });
     } else {
       setCalculatedAmount1(0n);
       setCalculatedAmount0(0n);
-
-      console.log('🔍 Token0 sync skipped:', {
-        reason: !hasValidPrice ? 'no valid price' : 'zero amount'
-      });
     }
   }, [calculateOtherTokenAmount, poolManager.poolAlreadyExist, poolManager.currentPrice, displayPrice]);
 
   const handleAmount1Change = useCallback((amount: bigint) => {
-    console.log('🔍 handleAmount1Change called:', {
-      amount: amount.toString(),
-      poolExists: poolManager.poolAlreadyExist,
-      currentPrice: poolManager.currentPrice,
-      displayPrice: displayPrice
-    });
-
     setInputAmount(amount);
     setInputToken("token1");
 
-    // 🔧 SOLUTION : Vérifier qu'on a un prix disponible (pool existant OU displayPrice)
     const hasValidPrice = (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) ||
       (!poolManager.poolAlreadyExist && parseFloat(displayPrice) > 0);
 
@@ -504,19 +460,9 @@ const CreatePoolPage: React.FC = () => {
       const calculatedToken0Amount = calculateOtherTokenAmount(amount, "token1");
       setCalculatedAmount0(calculatedToken0Amount);
       setCalculatedAmount1(0n);
-
-      console.log('🔍 Token1 sync result:', {
-        inputAmount: amount.toString(),
-        calculatedToken0: calculatedToken0Amount.toString(),
-        priceSource: poolManager.poolAlreadyExist ? 'pool' : 'user'
-      });
     } else {
       setCalculatedAmount0(0n);
       setCalculatedAmount1(0n);
-
-      console.log('🔍 Token1 sync skipped:', {
-        reason: !hasValidPrice ? 'no valid price' : 'zero amount'
-      });
     }
   }, [calculateOtherTokenAmount, poolManager.poolAlreadyExist, poolManager.currentPrice, displayPrice]);
 
