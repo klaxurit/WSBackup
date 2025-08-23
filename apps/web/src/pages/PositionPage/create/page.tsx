@@ -65,36 +65,6 @@ const CreatePoolPage: React.FC = () => {
     }
   });
 
-  // Initialiser le prix initial quand les tokens changent
-  // useEffect(() => {
-  //   if (token0 && token1 && initialPrice === 0n) {
-  //     // Prix par défaut : 1 token0 = 1 token1 (ratio 1:1)
-  //     const defaultPrice = parseUnits("1", token1.decimals);
-  //     setInitialPrice(defaultPrice);
-  //     // 🔧 NE PAS forcer displayPrice à "1" - laisser l'utilisateur saisir ce qu'il veut
-  //     // setDisplayPrice("1"); // Prix affiché par défaut
-  //     console.log('🔍 Auto-initializing initialPrice:', {
-  //       token0: token0.symbol,
-  //       token1: token1.symbol,
-  //       defaultPrice: defaultPrice.toString()
-  //     });
-  //   }
-  // }, [token0, token1, initialPrice]);
-
-  // 🔧 Mettre à jour displayPrice quand initialPrice change
-  // useEffect(() => {
-  //   if (token0 && token1 && initialPrice > 0n) {
-  //     const displayPriceValue = formatUnits(initialPrice, token1.decimals);
-  //     setDisplayPrice(displayPriceValue);
-  //     console.log('🔍 Updating displayPrice from initialPrice:', {
-  //       initialPrice: initialPrice.toString(),
-  //       displayPrice: displayPriceValue,
-  //       token0: token0.symbol,
-  //       token1: token1.symbol
-  //     });
-  //   }
-  // }, [initialPrice, token0, token1]);
-
   const handleInitialPriceChange = useCallback((amount: bigint) => {
     setInitialPrice(amount);
   }, [token0, token1]);
@@ -148,9 +118,7 @@ const CreatePoolPage: React.FC = () => {
     initialPrice
   })
 
-  // 🔧 LOGIQUE HYBRIDE : Utiliser poolManager pour validation, montants locaux pour affichage
   const { insufficient0, insufficient1 } = useMemo(() => {
-    // Pour la validation, utiliser les plus grands montants entre local et poolManager
     const amount0ToCheck = Math.max(
       Number(calculatedAmount0),
       Number(poolManager.amount0),
@@ -309,12 +277,6 @@ const CreatePoolPage: React.FC = () => {
         setToken1(null)
         return
       }
-      // Suppression de la logique d'inversion automatique qui causait des problèmes
-      // if (token.address > token1.address) {
-      //   setToken0(token1)
-      //   setToken1(token)
-      //   return
-      // }
     }
 
     setToken0(token);
@@ -326,12 +288,6 @@ const CreatePoolPage: React.FC = () => {
         setToken0(null)
         return
       }
-      // Suppression de la logique d'inversion automatique qui causait des problèmes
-      // if (token.address < token0.address) {
-      //   setToken1(token0)
-      //   setToken0(token)
-      //   return
-      // }
     }
 
     setToken1(token);
@@ -365,72 +321,46 @@ const CreatePoolPage: React.FC = () => {
     if (!token0 || !token1) return 0n;
 
     try {
-      // 🔧 SOLUTION : Utiliser le prix approprié selon le contexte
       let priceRatio: number;
 
       if (poolManager.poolAlreadyExist && poolManager.currentPrice > 0) {
-        // Pool existant : utiliser le prix du pool
         priceRatio = poolManager.currentPrice;
       } else if (displayPrice && parseFloat(displayPrice) > 0) {
-        // Nouveau pool : utiliser le prix saisi par l'utilisateur
         priceRatio = parseFloat(displayPrice);
       } else {
-        // Aucun prix disponible
         return 0n;
       }
 
       if (inputToken === "token0") {
-        // Si on saisit token0, calculer token1
         const inverseRatio = 1 / priceRatio;
         const token0Amount = parseFloat(formatUnits(inputAmount, token0.decimals));
         const token1Amount = token0Amount * inverseRatio;
 
-
+        // 🔧 CORRECTION WBTC : Gérer les différences de décimales
+        const minAmount = 1 / Math.pow(10, token1.decimals); // Montant minimum pour ce token
+        if (token1Amount < minAmount) {
+          // Si le montant est trop petit, utiliser le minimum
+          return parseUnits(minAmount.toString(), token1.decimals);
+        }
 
         return parseUnits(token1Amount.toFixed(token1.decimals), token1.decimals);
       } else {
-        // Si on saisit token1, calculer token0
         const token1Amount = parseFloat(formatUnits(inputAmount, token1.decimals));
         const token0Amount = token1Amount * priceRatio;
 
-
+        // 🔧 CORRECTION WBTC : Gérer les différences de décimales
+        const minAmount = 1 / Math.pow(10, token0.decimals); // Montant minimum pour ce token
+        if (token0Amount < minAmount) {
+          // Si le montant est trop petit, utiliser le minimum
+          return parseUnits(minAmount.toString(), token0.decimals);
+        }
 
         return parseUnits(token0Amount.toFixed(token0.decimals), token0.decimals);
       }
     } catch (error) {
-      console.error('🔍 Error calculating other token amount:', error);
       return 0n;
     }
   }, [token0, token1, displayPrice, poolManager.poolAlreadyExist, poolManager.currentPrice]);
-
-  // 🔧 NOUVELLE FONCTION : Gérer la synchronisation des montants de manière robuste
-  // const handleAmountChangeWithSync = useCallback((amount: bigint, tokenType: "token0" | "token1") => {
-  //   console.log('🔍 handleAmountChangeWithSync called:', {
-  //     amount: amount.toString(),
-  //     tokenType,
-  //     displayPrice,
-  //     currentInputAmount: inputAmount.toString(),
-  //     currentInputToken: inputToken
-  //   });
-
-  //   // Mettre à jour l'état local ET le poolManager
-  //   setInputAmount(amount);
-  //   setInputToken(tokenType);
-
-  //   // Calculer automatiquement l'autre token basé sur le prix affiché
-  //   if (parseFloat(displayPrice) > 0 && amount > 0n) {
-  //     const calculatedOtherAmount = calculateOtherTokenAmount(amount, tokenType);
-
-  //     if (calculatedOtherAmount > 0n) {
-  //       // Stocker l'autre montant pour l'affichage
-  //       if (tokenType === "token0") {
-  //         setCalculatedAmount1(calculatedOtherAmount);
-  //       } else {
-  //         setCalculatedAmount0(calculatedOtherAmount);
-  //       }
-  //     }
-  //   }
-  // }, [displayPrice, inputAmount, inputToken, calculateOtherTokenAmount]);
 
   const handleAmount0Change = useCallback((amount: bigint) => {
     setInputAmount(amount);
@@ -470,10 +400,7 @@ const CreatePoolPage: React.FC = () => {
 
   useEffect(() => {
     if (!tokens || !!token0 || !!token1) return;
-
-    // S'assurer que tokens est un tableau
     const tokensArray = ensureArray(tokens);
-
     const token0Address = searchParams.get('token0');
     const token1Address = searchParams.get('token1');
     const feeParam = searchParams.get('fee');
@@ -506,8 +433,6 @@ const CreatePoolPage: React.FC = () => {
   }, [tokens, searchParams, token0, token1]);
 
   const { selectedToken0, selectedToken1 } = useMemo(() => {
-    // Simplification de la logique : utiliser directement les tokens sélectionnés par l'utilisateur
-    // au lieu de se baser sur l'ordre du pool qui peut être différent
     return {
       selectedToken0: token0,
       selectedToken1: token1
@@ -758,42 +683,20 @@ const CreatePoolPage: React.FC = () => {
                   <LiquidityInput
                     selectedToken={selectedToken0}
                     onAmountChange={handleAmount0Change}
-                    value={inputToken === "token0" ? inputAmount : calculatedAmount0} // ← Montants locaux pour l'affichage
+                    value={inputToken === "token0" ? inputAmount : calculatedAmount0}
                     isOverBalance={insufficient0 || false}
                     disabled={false}
                   />
-                  {/* Affichage du montant calculé */}
-                  {inputToken === "token0" && inputAmount > 0n && calculatedAmount1 > 0n && (
-                    <div style={{
-                      marginTop: 8,
-                      fontSize: 14,
-                      color: '#888',
-                      textAlign: 'center'
-                    }}>
-                      = {formatUnits(calculatedAmount1, token1?.decimals || 18)} {token1?.symbol}
-                    </div>
-                  )}
                 </div>
 
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
                     selectedToken={selectedToken1}
                     onAmountChange={handleAmount1Change}
-                    value={inputToken === "token1" ? inputAmount : calculatedAmount1} // ← Montants locaux pour l'affichage
+                    value={inputToken === "token1" ? inputAmount : calculatedAmount1}
                     isOverBalance={insufficient1 || false}
                     disabled={false}
                   />
-                  {/* Affichage du montant calculé */}
-                  {inputToken === "token1" && inputAmount > 0n && calculatedAmount0 > 0n && (
-                    <div style={{
-                      marginTop: 8,
-                      fontSize: 14,
-                      color: '#888',
-                      textAlign: 'center'
-                    }}>
-                      = {formatUnits(calculatedAmount0, token0?.decimals || 18)} {token0?.symbol}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
