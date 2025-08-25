@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { type Address, encodeFunctionData, erc20Abi, maxUint256, zeroAddress } from "viem"
+import { type Address, encodeFunctionData, erc20Abi, formatUnits, maxUint256, parseUnits, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
@@ -24,6 +24,7 @@ interface usePositionManagerParams {
   minPrice: string
   maxPrice: string
   initialPrice: bigint
+  is0to1: boolean
 }
 
 const parseToken = (bt: BerachainToken | null): Token | null => {
@@ -41,7 +42,8 @@ export const usePoolManager = ({
   inputToken,
   minPrice,
   maxPrice,
-  initialPrice
+  initialPrice,
+  is0to1
 }: usePositionManagerParams) => {
   const { address } = useAccount()
 
@@ -133,11 +135,12 @@ export const usePoolManager = ({
       } else {
         if (!token0 || !token1 || initialPrice === 0n) return null
 
-        const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice)
+        const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice, is0to1)
         if (!sqrtPriceX96) return null
-        const tick = priceToTick(token0, token1, initialPrice)
+        const tick = priceToTick(token0, token1, initialPrice, sqrtPriceX96, is0to1)
+        if (!tick) return null
 
-        return new Pool(
+        const pool = new Pool(
           token0,
           token1,
           fee,
@@ -145,12 +148,14 @@ export const usePoolManager = ({
           "0",
           tick
         )
+        console.log("pool", sqrtPriceX96.toString(), tick, pool, pool.token0Price.toSignificant())
+        return pool
       }
     } catch (err) {
       console.error("Error when creating pool", err)
       return null
     }
-  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData])
+  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData, is0to1])
 
   // Prix réel de la pool (token0 en termes de token1)
   const currentPrice = useMemo(() => {
@@ -215,6 +220,7 @@ export const usePoolManager = ({
       }
 
       let position: Position
+      console.log("inputAmount", inputAmount, inputToken)
       if (inputToken === 'token0') {
         position = Position.fromAmount0({
           pool,
@@ -231,10 +237,13 @@ export const usePoolManager = ({
           amount1: inputAmount.toString(),
         })
       }
+      console.log("position", position)
+      console.log("amount0", position.amount0.toExact(), position.amount0.toSignificant())
+      console.log("amount1", position.amount1.toExact(), position.amount1.toSignificant())
 
       return {
-        amount0: BigInt(position.amount0.quotient.toString()),
-        amount1: BigInt(position.amount1.quotient.toString()),
+        amount0: parseUnits(position.amount0.toSignificant(), position.pool.token0.decimals),
+        amount1: parseUnits(position.amount1.toSignificant(), position.pool.token1.decimals),
         position
       }
     } catch (err) {
@@ -525,6 +534,7 @@ export const usePoolManager = ({
     resetWrap()
   }
 
+  console.log(prices)
   return {
     // PoolState
     status,
