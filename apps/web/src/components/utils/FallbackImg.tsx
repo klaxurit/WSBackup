@@ -4,14 +4,14 @@ export const FallbackImg = ({
   style,
   width = 32,
   height = 32,
-  onClick
+  onClick,
 }: {
   content: string,
   className?: string,
   style?: React.CSSProperties,
   width?: number,
   height?: number,
-  onClick?: () => void;
+  onClick?: () => void,
 }) => {
   return (
     <svg

@@ -50,21 +50,45 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens) as BerachainToken[];
+
     const onlyPoolOrAllTokens = onlyPoolToken
       ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
       : tokensArray
-    if (searchValue === "") return onlyPoolOrAllTokens;
-    return onlyPoolOrAllTokens.filter((token) =>
+
+    // Exclure le token BGT qui n'est pas tradable
+    const tokensWithoutBGT = onlyPoolOrAllTokens.filter(t => t.symbol !== 'BGT')
+
+    if (searchValue === "") return tokensWithoutBGT;
+    return tokensWithoutBGT.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [searchValue, tokensArray, onlyPoolToken]);
 
   const availableTokensForPopular = useMemo(() => {
-    return onlyPoolToken
+    // S'assurer que tokens est un tableau
+    const tokensArray = ensureArray(tokens) as BerachainToken[];
+
+    const baseTokens = onlyPoolToken
       ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
-      : tokensArray;
-  }, [tokensArray, onlyPoolToken]);
+      : tokensArray
+
+    // Exclure le token BGT qui n'est pas tradable
+    return baseTokens.filter(t => t.symbol !== 'BGT');
+  }, [tokens, onlyPoolToken]);
+
+  const marketCapByAddress = useMemo(() => {
+    const map = new Map<string, number>()
+    const statsArray: any[] = tokensStats?.data || []
+    for (const t of statsArray) {
+      const addr: string | undefined = t.address || t.token?.address
+      const mc: number = t?.Statistic?.[0]?.marketCap || 0
+      if (addr) map.set(String(addr).toLowerCase(), Number(mc) || 0)
+    }
+    return map
+  }, [tokensStats])
 
   const balanceInputTokens = useMemo(() => {
     return filteredTokens.map(t => ({
@@ -101,14 +125,11 @@ export const TokenList = ({
     }
 
     const getMarketCap = (token: BerachainToken): number => {
-      const statsAddr = token.address ? getStatsAddress(token.address as Address) : undefined
-      if (!statsAddr) return 0
-
-      // Chercher dans les stats par adresse exacte
-      const tokenStats = tokensStats?.data?.find((t: any) =>
-        (t.address || t.token?.address)?.toLowerCase() === String(statsAddr).toLowerCase()
-      )
-      return tokenStats?.Statistic?.[0]?.marketCap || 0
+      // ✅ CORRECTION : Utiliser marketCapByAddress au lieu de refaire la recherche
+      if (token.address) {
+        return marketCapByAddress.get(token.address.toLowerCase()) || 0
+      }
+      return 0
     }
 
     if (isConnected) {
@@ -124,16 +145,16 @@ export const TokenList = ({
         }
       }
 
-      // Trier par valeur USD décroissante pour les tokens avec balance
+      // Tri par valeur USD décroissante pour les tokens avec balance
       withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a))
 
-      // Trier par market cap décroissant pour les tokens sans balance
+      // Tri par market cap décroissant pour les tokens sans balance
       withoutBalance.sort((a, b) => getMarketCap(b) - getMarketCap(a))
 
       return [...withBalance, ...withoutBalance]
     }
 
-    // Si pas connecté, trier uniquement par market cap
+    // Tri par market cap décroissant quand non connecté
     return [...filteredTokens].sort((a, b) => getMarketCap(b) - getMarketCap(a))
   }, [filteredTokens, balances, isConnected, tokensStats])
 

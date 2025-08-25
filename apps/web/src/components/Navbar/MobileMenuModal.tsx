@@ -28,10 +28,10 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
   });
 
   // S'assurer que tokens et pools sont des tableaux
-  const tokensArray = ensureArray<BerachainToken>(tokens);
+  const tokensArray = ensureArray(tokens) as BerachainToken[];
   const poolsArray = ensureArray(pools);
 
-  const filteredTokens = searchValue.length > 0 ? tokensArray.filter(token =>
+  const filteredTokens = searchValue.length > 0 ? tokensArray.filter((token: BerachainToken) =>
     token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
     token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
     token.address.toLowerCase().includes(searchValue.toLowerCase())

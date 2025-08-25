@@ -8,6 +8,7 @@ import { FallbackImg } from "../utils/FallbackImg";
 interface InitialPriceInputProps {
   tokens: BerachainToken[];
   onAmountChange: (amount: bigint) => void;
+  onDisplayPriceChange?: (displayPrice: string) => void;
   onTokenSelect: (token: BerachainToken) => void;
   value: bigint;
 }
@@ -16,6 +17,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
   {
     tokens,
     onAmountChange,
+    onDisplayPriceChange,
     onTokenSelect,
     value,
   }) => {
@@ -23,31 +25,69 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
   const [selectedToken, setSelectedToken] = useState<BerachainToken>(tokens[0])
   const [inputValue, setInputValue] = useState<string>("0")
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/[^\d.,]/g, '')
-    val = val.replace(',', '.')
+  const cleanAndValidateInput = (rawValue: string): string => {
+    let cleaned = rawValue.replace(',', '.');
+    cleaned = cleaned.replace(/[^\d.]/g, '');
 
-    if (val.includes('.')) {
-      const parts = val.split('.')
-      if (parts[1] && parts[1].length > 2) {
-        val = parts[0] + '.' + parts[1].substring(0, 2)
-      }
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
     }
 
-    onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
-    setInputValue(val)
+    if (parts.length === 2 && parts[1].length > 18) {
+      cleaned = parts[0] + '.' + parts[1].substring(0, 18);
+    }
+
+    return cleaned;
+  };
+
+  const safeParseUnits = (value: string, decimals: number): bigint => {
+    try {
+      if (!value || value === '' || value === '.') {
+        return 0n;
+      }
+
+      const cleanValue = value.endsWith('.') ? value.slice(0, -1) : value;
+      if (!cleanValue || cleanValue === '') {
+        return 0n;
+      }
+
+      return parseUnits(cleanValue, decimals);
+    } catch (error) {
+      return 0n;
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const cleanedValue = cleanAndValidateInput(rawValue);
+    const parsedValue = safeParseUnits(cleanedValue, selectedToken?.decimals || 18);
+
+    onAmountChange(parsedValue);
+
+    if (onDisplayPriceChange) {
+      onDisplayPriceChange(cleanedValue);
+    }
+
+    setInputValue(cleanedValue);
   };
 
   const handleTokenClick = (t: BerachainToken) => {
-    setSelectedToken(t)
-    onTokenSelect(t)
-  }
+    setSelectedToken(t);
+    onTokenSelect(t);
+
+    if (inputValue && inputValue !== "0" && inputValue !== "") {
+      const parsedValue = safeParseUnits(inputValue, t.decimals || 18);
+      onAmountChange(parsedValue);
+    }
+  };
 
   useEffect(() => {
-    if (value > 0n && inputValue === "0") {
-      setInputValue(formatUnits(value, selectedToken?.decimals || 18))
+    if (value > 0n && (!inputValue || inputValue === "")) {
+      const formattedValue = formatUnits(value, selectedToken?.decimals || 18);
+      setInputValue(formattedValue);
     }
-  }, [value, inputValue])
+  }, [value, selectedToken?.decimals]);
 
   return (
     <div className="LiquidityInput">
@@ -62,6 +102,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
                   type="text"
                   value={inputValue}
                   onChange={handleInputChange}
+                  placeholder="0.0"
                 />
               </div>
               <div className="From__LogosAndBalance">
