@@ -17,9 +17,10 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
   const { data: txs = [], isLoading } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/swaps`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps`);
       if (!resp.ok) return [];
-      return resp.json();
+      const result = await resp.json();
+      return result.data || [];
     },
     select: (data) => {
       return data

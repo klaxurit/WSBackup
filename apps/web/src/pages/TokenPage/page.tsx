@@ -12,9 +12,9 @@ import { formatUnits } from 'viem';
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
   const { data: tokens, isLoading: tokensLoading } = useQuery({
-    queryKey: ['tokens'],
+    queryKey: ['tokensStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
       if (!resp.ok) return [];
       return resp.json();
     },

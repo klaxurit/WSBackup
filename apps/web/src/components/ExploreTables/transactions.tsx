@@ -17,7 +17,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const { data: tokensList } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
       if (!resp.ok) return [];
       const result = await resp.json();
       return result.data || [];
@@ -29,10 +29,10 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const { data: poolsList } = useQuery({
     queryKey: ['pools'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pools`);
       if (!resp.ok) return [];
       const result = await resp.json();
-      console.log("API /pool response:", result);
+      console.log("API /pools response:", result);
       return result.data || [];
     },
     staleTime: 5 * 60 * 1000,
