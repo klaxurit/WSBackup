@@ -199,7 +199,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       if (!datas?.addLiquidity || !positionData) return undefined
 
       return [{
-        tokenId: BigInt(position.tokenId),
+        tokenId: BigInt(position!.tokenId),
         amount0Desired: datas.addLiquidity.t0Amount,
         amount1Desired: datas.addLiquidity.t1Amount,
         amount0Min: 0n,
@@ -208,7 +208,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }]
     })(),
     query: {
-      enabled: !!address && !!datas?.addLiquidity
+      enabled: !!address && !!datas?.addLiquidity && !!position
     }
   })
   const handleAddLiquidity = async () => {
@@ -229,7 +229,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       if (!datas?.withdraw || !positionData) return undefined
 
       return [{
-        tokenId: BigInt(position.tokenId),
+        tokenId: BigInt(position!.tokenId),
         liquidity: datas.withdraw.liquidity || 0n,
         amount0Min: 0n,
         amount1Min: 0n,
@@ -237,7 +237,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }]
     })(),
     query: {
-      enabled: !!address && !!datas?.withdraw
+      enabled: !!address && !!datas?.withdraw && !!position
     }
   })
   const handleWithdraw = async () => {
