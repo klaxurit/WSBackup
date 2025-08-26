@@ -1,33 +1,40 @@
 import { Price, Token } from "@uniswap/sdk-core"
-import { encodeSqrtRatioX96, priceToClosestTick, TickMath, Pool, Position } from "@uniswap/v3-sdk"
+import { encodeSqrtRatioX96, TickMath, Pool, Position } from "@uniswap/v3-sdk"
 import JSBI from 'jsbi'
+import { parseUnits } from "viem"
 
-export const priceToTick = (token0: Token, token1: Token, price: bigint): number => {
-  const priceObj = new Price(
-    token0,
-    token1,
-    JSBI.BigInt(10 ** token0.decimals).toString(),
-    price.toString()
-  )
-  return priceToClosestTick(priceObj)
+export const priceToTick = (token0: Token, token1: Token, price: bigint, sqrtPriceX96: JSBI | null = null, is0to1: boolean): number | null => {
+  try {
+    if (!sqrtPriceX96) {
+      sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, price, is0to1)
+    }
+
+    if (!sqrtPriceX96) return null
+    return TickMath.getTickAtSqrtRatio(sqrtPriceX96)
+  } catch (err) {
+    console.error('Error calculating tick from price:', err)
+    return null
+  }
 }
 
 export const tickToPrice = (tick: number, token0: Token, token1: Token): number => {
   const sqrtRatioX96 = TickMath.getSqrtRatioAtTick(tick)
   const price = new Price(token0, token1, '1', sqrtRatioX96.toString())
-  return parseFloat(price.toFixed(6))
+  return parseFloat(price.toSignificant(6))
 }
 
-export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint) => {
-  console.log(token1)
+export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint, is0to1: boolean) => {
   try {
-    return encodeSqrtRatioX96(
-      // JSBI.BigInt(initialPrice).toString(),
-      initialPrice.toString(),
-      JSBI.BigInt(10 ** token0.decimals).toString()
-    )
+    const token0Amount = is0to1 ? initialPrice : parseUnits("1", token0.decimals)
+    const token1Amount = is0to1 ? parseUnits("1", token1.decimals) : initialPrice
+
+    console.log("token0Amount", token0Amount, is0to1)
+    console.log("token1Amount", token1Amount)
+    // encodeSqrtRatioX96(the amount of token1, the amount of token0)
+    return encodeSqrtRatioX96(token1Amount.toString(), token0Amount.toString())
   } catch (err) {
-    console.error('Error calculate initial sqrtPriceX96', err)
+    console.error('Error calculate initial sqrtPriceX96:', err)
+
     return null
   }
 }

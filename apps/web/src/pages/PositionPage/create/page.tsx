@@ -4,7 +4,7 @@ import NetworkSelector from '../../../components/Buttons/TokenSelector';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import type { BerachainToken } from '../../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
-import { type Address } from 'viem';
+import { type Address, zeroAddress } from 'viem';
 import { ConnectButton } from '../../../components/Buttons/ConnectButton';
 import '../../../styles/pages/_positionPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
@@ -14,7 +14,7 @@ import { useTokens } from '../../../hooks/useBerachainTokenList';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { FallbackImg } from '../../../components/utils/FallbackImg'; // Import ajouté
-import { getStatsAddress } from '../../../utils/tokenMapping';
+// import { getStatsAddress } from '../../../utils/tokenMapping';
 import { formatNumber } from '../../../utils/formatNumber';
 
 const feeTiers = [
@@ -41,6 +41,7 @@ const CreatePoolPage: React.FC = () => {
   const [inputAmount, setInputAmount] = useState<bigint>(0n);
   const [inputToken, setInputToken] = useState<"token0" | "token1">("token0");
   const [initialPrice, setInitialPrice] = useState<bigint>(0n)
+  const [is0to1, setIs0To1] = useState<boolean>(true)
 
   const { data: balance0 } = useBalance({
     address,
@@ -62,18 +63,22 @@ const CreatePoolPage: React.FC = () => {
     enabled: !!token0 && !!token1,
     queryFn: async () => {
       const fees = [100, 500, 3000, 10000];
-      const addr0 = getStatsAddress(token0!.address as Address);
-      const addr1 = getStatsAddress(token1!.address as Address);
-      const [t0, t1] = addr0.toLowerCase() < addr1.toLowerCase() ? [addr0, addr1] : [addr1, addr0];
+      // const addr0 = getStatsAddress(token0!.address as Address);
+      // const addr1 = getStatsAddress(token1!.address as Address);
+      // const [t0, t1] = addr0.toLowerCase() < addr1.toLowerCase() ? [addr0, addr1] : [addr1, addr0];
 
       const results = await Promise.all(
         fees.map(async (f) => {
           try {
-            const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/poolByTokens/${t0}/${t1}/${f}`);
-            if (!resp.ok) return { fee: f, tvlUSD: 0 };
-            const data = await resp.json();
-            const tvl = data?.PoolStatistic?.[0]?.tvlUSD ?? 0;
-            return { fee: f, tvlUSD: tvl };
+            // TODO: Réactiver quand l'endpoint backend sera disponible
+            // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/poolByTokens/${t0}/${t1}/${f}`);
+            // if (!resp.ok) return { fee: f, tvlUSD: 0 };
+            // const data = await resp.json();
+            // const tvl = data?.PoolStatistic?.[0]?.tvlUSD ?? 0;
+            // return { fee: f, tvlUSD: tvl };
+
+            // Données mockées temporaires
+            return { fee: f, tvlUSD: 0 };
           } catch {
             return { fee: f, tvlUSD: 0 };
           }
@@ -92,7 +97,8 @@ const CreatePoolPage: React.FC = () => {
     inputAmount,
     minPrice,
     maxPrice,
-    initialPrice
+    initialPrice,
+    is0to1
   })
 
   const { insufficient0, insufficient1 } = useMemo(() => {
@@ -234,13 +240,16 @@ const CreatePoolPage: React.FC = () => {
   }, [currentStep, poolManager])
 
   const handleSelect0 = (token: BerachainToken) => {
+    if (token.address === zeroAddress) {
+      token.address = "0x6969696969696969696969696969696969696969"
+    }
     if (token1) {
       if (token1.symbol === token.symbol) {
         setToken0(token)
         setToken1(null)
         return
       }
-      if (token.address > token1.address) {
+      if (token.address.toLowerCase() > token1.address.toLowerCase()) {
         setToken0(token1)
         setToken1(token)
         return
@@ -250,13 +259,17 @@ const CreatePoolPage: React.FC = () => {
     setToken0(token);
   };
   const handleSelect1 = (token: BerachainToken) => {
+    if (token.address === zeroAddress) {
+      token.address = "0x6969696969696969696969696969696969696969"
+    }
     if (token0) {
       if (token0.symbol === token.symbol) {
         setToken1(token)
         setToken0(null)
         return
       }
-      if (token.address < token0.address) {
+      if (token.address.toLowerCase() < token0.address.toLowerCase()) {
+        console.log("plus petite !!!")
         setToken1(token0)
         setToken0(token)
         return
@@ -310,17 +323,17 @@ const CreatePoolPage: React.FC = () => {
 
     if (token0Address && token1Address) {
       const foundToken0 = tokens.find(
-        (t) => t.address.toLowerCase() === token0Address.toLowerCase()
+        (t: BerachainToken) => t.address.toLowerCase() === token0Address.toLowerCase()
       );
       const foundToken1 = tokens.find(
-        (t) => t.address.toLowerCase() === token1Address.toLowerCase()
+        (t: BerachainToken) => t.address.toLowerCase() === token1Address.toLowerCase()
       );
       if (foundToken0 && foundToken1) {
         handleSelect0(foundToken0);
         handleSelect1(foundToken1);
       }
     } else {
-      const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+      const bera = tokens.find((t: BerachainToken) => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
       if (bera) {
         handleSelect0(bera)
       }
@@ -335,20 +348,21 @@ const CreatePoolPage: React.FC = () => {
     }
   }, [tokens, searchParams, token0, token1]);
 
-  const { selectedToken0, selectedToken1 } = useMemo(() => {
-    const selectedToken0 = poolManager?.pool?.token0.address.toLowerCase() === token0?.address.toLowerCase()
-      ? token0
-      : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0?.address === "0x0000000000000000000000000000000000000000")
-        ? token0
-        : token1
-    const selectedToken1 = poolManager?.pool?.token1.address.toLowerCase() === token1?.address.toLowerCase()
-      ? token1
-      : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1?.address === "0x0000000000000000000000000000000000000000")
-        ? token1
-        : token0
-
-    return { selectedToken0, selectedToken1 }
-  }, [token0, poolManager?.pool, token1])
+  // const { selectedToken0, selectedToken1 } = useMemo(() => {
+  //   console.log(poolManager.pool, token0.address, token1.address)
+  //   const selectedToken0 = poolManager?.pool?.token0.address.toLowerCase() === token0?.address.toLowerCase()
+  //     ? token0
+  //     : (poolManager?.pool?.token0.address === "0x6969696969696969696969696969696969696969" && token0?.address === "0x0000000000000000000000000000000000000000")
+  //       ? token0
+  //       : token1
+  //   const selectedToken1 = poolManager?.pool?.token1.address.toLowerCase() === token1?.address.toLowerCase()
+  //     ? token1
+  //     : (poolManager?.pool?.token1.address === "0x6969696969696969696969696969696969696969" && token1?.address === "0x0000000000000000000000000000000000000000")
+  //       ? token1
+  //       : token0
+  //
+  //   return { selectedToken0, selectedToken1 }
+  // }, [token0, poolManager?.pool, token1])
 
   return (
     <div className="PoolPage PoolPage--create">
@@ -534,7 +548,7 @@ const CreatePoolPage: React.FC = () => {
                       <InitialPriceInput
                         tokens={[token0!, token1!]}
                         onAmountChange={setInitialPrice}
-                        onTokenSelect={() => { }}
+                        onTokenSelect={(t) => { setIs0To1(t.address.toLowerCase() === token0!.address.toLowerCase()) }}
                         value={initialPrice || 0n}
                       />
                     </div>
@@ -591,7 +605,7 @@ const CreatePoolPage: React.FC = () => {
               <div className="PoolPage__LiquidityInputs">
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={selectedToken0}
+                    selectedToken={token0}
                     onAmountChange={handleAmount0Change}
                     value={poolManager.amount0}
                     isOverBalance={insufficient0 || false}
@@ -601,7 +615,7 @@ const CreatePoolPage: React.FC = () => {
 
                 <div className="PoolPage__LiquidityInput">
                   <LiquidityInput
-                    selectedToken={selectedToken1}
+                    selectedToken={token1}
                     onAmountChange={handleAmount1Change}
                     value={poolManager.amount1}
                     isOverBalance={insufficient1 || false}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { type Address, encodeFunctionData, erc20Abi, maxUint256, zeroAddress } from "viem"
+import { type Address, encodeFunctionData, erc20Abi, maxUint256, parseUnits, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
@@ -24,6 +24,7 @@ interface usePositionManagerParams {
   minPrice: string
   maxPrice: string
   initialPrice: bigint
+  is0to1: boolean
 }
 
 const parseToken = (bt: BerachainToken | null): Token | null => {
@@ -41,8 +42,11 @@ export const usePoolManager = ({
   inputToken,
   minPrice,
   maxPrice,
-  initialPrice
+  initialPrice,
+  is0to1
 }: usePositionManagerParams) => {
+
+
   const { address } = useAccount()
 
   const token0 = useMemo(() => (parseToken(btoken0)), [btoken0])
@@ -115,7 +119,6 @@ export const usePoolManager = ({
   const pool = useMemo(() => {
     try {
       if (poolAlreadyExist && poolData) {
-
         if (poolData[0]?.status !== "success" || poolData[1]?.status !== "success") return null
 
         const sqrtPriceX96 = poolData[0]?.result?.[0]
@@ -131,13 +134,14 @@ export const usePoolManager = ({
           tick
         )
       } else {
-        if (!token0 || !token1 || initialPrice === 0n) return null
+        if (!token0 || !token1 || initialPrice <= 0n) return null
 
-        const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice)
+        const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice, is0to1)
         if (!sqrtPriceX96) return null
-        const tick = priceToTick(token0, token1, initialPrice)
+        const tick = priceToTick(token0, token1, initialPrice, sqrtPriceX96, is0to1)
+        if (!tick) return null
 
-        return new Pool(
+        const pool = new Pool(
           token0,
           token1,
           fee,
@@ -145,12 +149,15 @@ export const usePoolManager = ({
           "0",
           tick
         )
+        console.log("pool", sqrtPriceX96.toString(), tick, pool, pool.token0Price.toSignificant())
+        return pool
       }
     } catch (err) {
-      console.error("Error when creating pool", err)
       return null
     }
-  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData])
+  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData, is0to1])
+
+
 
   // Prix réel de la pool (token0 en termes de token1)
   const currentPrice = useMemo(() => {
@@ -162,9 +169,11 @@ export const usePoolManager = ({
 
       // Pour l'affichage, calculer le ratio USD si les deux prix sont disponibles
       if (usdPrice0 > 0 && usdPrice1 > 0) {
+        // S'assurer que le prix est calculé dans le bon ordre
         return usdPrice0 / usdPrice1;
       }
 
+      // Fallback sur le prix de la pool
       return poolPrice;
     } catch (err) {
       console.error("Error calculating pool price", err);
@@ -176,28 +185,53 @@ export const usePoolManager = ({
    * PRICE CALCULATION
    */
   const tickLower = useMemo(() => {
-    if (!token0 || !token1 || minPrice === "0") return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
-    const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
-    const sqrtRatioX96 = encodeSqrtRatioX96(
-      JSBI.BigInt(Math.floor(parseFloat(minPrice) * 10 ** token1.decimals)).toString(),
-      JSBI.BigInt(10 ** token0.decimals).toString()
-    )
-    const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
+    if (!token0 || !token1 || minPrice === "0") {
+      return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM)
+    }
 
-    return nearestUsableTick(rawTick, tickSpacing);
+    const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
+
+    try {
+      const amount1 = Math.floor(parseFloat(minPrice) * 10 ** token1.decimals);
+      const amount0 = 10 ** token0.decimals;
+
+      const sqrtRatioX96 = encodeSqrtRatioX96(
+        JSBI.BigInt(amount1).toString(),
+        JSBI.BigInt(amount0).toString()
+      )
+
+      const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
+      const finalTick = nearestUsableTick(rawTick, tickSpacing);
+
+      return finalTick;
+    } catch (err) {
+      return nearestUsableTick(TickMath.MIN_TICK, FeeAmount.MEDIUM);
+    }
   }, [minPrice, fee, token0, token1]);
 
   const tickUpper = useMemo(() => {
-    if (!token0 || !token1 || maxPrice === "∞") return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM)
+    if (!token0 || !token1 || maxPrice === "∞") {
+      return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM)
+    }
+
     const tickSpacing = TICK_SPACINGS[fee as keyof typeof TICK_SPACINGS]
 
-    const sqrtRatioX96 = encodeSqrtRatioX96(
-      JSBI.BigInt(Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals)).toString(),
-      JSBI.BigInt(10 ** token0.decimals).toString()
-    )
+    try {
+      const amount1 = Math.floor(parseFloat(maxPrice) * 10 ** token1.decimals);
+      const amount0 = 10 ** token0.decimals;
 
-    const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
-    return nearestUsableTick(rawTick, tickSpacing);
+      const sqrtRatioX96 = encodeSqrtRatioX96(
+        JSBI.BigInt(amount1).toString(),
+        JSBI.BigInt(amount0).toString()
+      )
+
+      const rawTick = TickMath.getTickAtSqrtRatio(sqrtRatioX96)
+      const finalTick = nearestUsableTick(rawTick, tickSpacing);
+
+      return finalTick;
+    } catch (err) {
+      return nearestUsableTick(TickMath.MAX_TICK, FeeAmount.MEDIUM);
+    }
   }, [maxPrice, fee, token0, token1]);
 
   const prices = useMemo(() => {
@@ -215,6 +249,7 @@ export const usePoolManager = ({
       }
 
       let position: Position
+      console.log("inputAmount", inputAmount, inputToken)
       if (inputToken === 'token0') {
         position = Position.fromAmount0({
           pool,
@@ -231,14 +266,17 @@ export const usePoolManager = ({
           amount1: inputAmount.toString(),
         })
       }
+      console.log("position", position)
+      console.log("amount0", position.amount0.toExact(), position.amount0.toSignificant())
+      console.log("amount1", position.amount1.toExact(), position.amount1.toSignificant())
 
       return {
-        amount0: BigInt(position.amount0.quotient.toString()),
-        amount1: BigInt(position.amount1.quotient.toString()),
+        amount0: parseUnits(position.amount0.toSignificant(), position.pool.token0.decimals),
+        amount1: parseUnits(position.amount1.toSignificant(), position.pool.token1.decimals),
         position
-      }
+      };
+
     } catch (err) {
-      console.error('Error when calculate price', err)
       return {
         amount0: 0n,
         amount1: 0n,
@@ -472,15 +510,27 @@ export const usePoolManager = ({
     if (!token0 || !token1) return 'idle'
 
     if (isCheckingPool || isGettingPoolData) return 'fetchPool'
-    if (isCheckingToken0Allowance || isCheckingToken1Allowance) return "fetchAllowance"
-
     if (isApprovingToken0 || isApprovingToken1) return "waitUserApprovement"
     if (waitingT0ApproveReceipt || waitingT1ApproveReceipt) return "waitApprovementReceipt"
     if (waitCreatePool || waitMintPosition || waitWrap) return "waitMainUserSign"
     if (waitingCreatePoolReceipt || waitingMintPositionReceipt || waitingWrapReceipt) return "waitMainReceipt"
 
-    if (!poolAlreadyExist && initialPrice === 0n) {
-      return 'waitInitialAmount'
+    // 🔧 LOGIQUE CRITIQUE RESTAURÉE : Transition après createPool
+    if (!poolAlreadyExist && createPoolReceipt?.status === "success") {
+      // Pool créé avec succès, maintenant on peut mint
+      if (!prices.position) {
+        return 'waitAmount'
+      }
+      if (token0NeedApproval) return "needT0Approve"
+      if (token1NeedApproval) return "needT1Approve"
+      if (needsWBERAWrapping) return "needWrap"
+      return 'readyMintPosition'
+    }
+
+    if (!poolAlreadyExist) {
+      if (initialPrice <= 0n) {
+        return 'waitInitialAmount'
+      }
     }
 
     if (!prices.position) {
@@ -514,7 +564,8 @@ export const usePoolManager = ({
     waitingCreatePoolReceipt,
     waitingMintPositionReceipt,
     waitingWrapReceipt,
-    needsWBERAWrapping
+    needsWBERAWrapping,
+    createPoolReceipt
   ])
 
   const reset = () => {
@@ -525,6 +576,7 @@ export const usePoolManager = ({
     resetWrap()
   }
 
+  console.log(prices)
   return {
     // PoolState
     status,

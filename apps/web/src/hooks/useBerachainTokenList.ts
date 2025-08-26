@@ -1,38 +1,52 @@
-import { type Address } from 'viem';
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export interface BerachainToken {
-  id: number;
+  address: string;
   symbol: string;
   name: string;
-  address: Address;
   decimals: number;
-  chainId: number;
-  logoUri?: string;
-  isVerified: boolean;
-  coingeckoId?: string | null;
-  inPool: boolean;
-  website?: string;
-  twitter?: string;
-  description?: string;
+  logoUri: string | null;
+  totalSupply: string;
   lastPrice: number;
+  status: string; // Nouvelle propriété du backend
+  // Propriétés supprimées qui n'existent plus
+  // id: string;
+  // chainId: number;
+  // isVerified: boolean;
+  // coingeckoId: string | null;
+  // inPool: boolean;
 }
 
-export const useTokens = (): UseQueryResult<BerachainToken[], Error> => {
-  return useQuery({
+export const useBerachainTokenList = () => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['berachainTokenList'],
+    queryFn: async () => {
+      const response = await fetch('https://raw.githubusercontent.com/berachain/metadata/main/src/tokens/berachain.tokenlist.json');
+      if (!response.ok) {
+        throw new Error('Failed to fetch token list');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  return { data, isLoading, error };
+};
+
+export const useTokens = () => {
+  const { data, isLoading, error } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
-      const url = `${import.meta.env.VITE_API_URL}/token`
-      const response = await fetch(url)
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
       if (!response.ok) {
-        throw new Error('Can\'t fetch token list')
+        throw new Error('Failed to fetch tokens');
       }
-
-      const result = await response.json()
-      return result
+      const result = await response.json();
+      return result; // Retourner directement le tableau
     },
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
-  })
-}
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  return { data, isLoading, error };
+};
 

@@ -13,6 +13,7 @@ import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
 import { Loader } from '../Loader/Loader';
 import { useTokenStats } from "../../hooks/useTokenStats";
+import { ensureArray } from '../../utils/dataValidation';
 
 interface FormProps {
   toggleSidebar: () => void;
@@ -52,23 +53,23 @@ const SwapForm: React.FC<FormProps> = React.memo(
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
-    const { data: fromTokenStats } = useTokenStats(fromToken?.address || null);
-    const { data: toTokenStats } = useTokenStats(toToken?.address || null);
+    const { data: fromTokenStats } = useTokenStats(fromToken?.address as `0x${string}` || null);
+    const { data: toTokenStats } = useTokenStats(toToken?.address as `0x${string}` || null);
     const priceFrom = fromTokenStats?.price || 0;
     const priceTo = toTokenStats?.price || 0;
     const { data: tokens } = useTokens();
 
     const swap = useSwap({
-      tokenIn: fromToken?.address || zeroAddress,
-      tokenOut: toToken?.address || zeroAddress,
+      tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
+      tokenOut: (toToken?.address as `0x${string}`) || zeroAddress,
       amountIn: fromAmount,
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
     })
 
     const { poolAddress } = usePoolAddress(
-      fromToken?.address,
-      toToken?.address
+      fromToken?.address as `0x${string}` | undefined,
+      toToken?.address as `0x${string}` | undefined
     );
 
     const handleFromTokenSelect = useCallback((token: BerachainToken) => {
@@ -211,7 +212,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     useEffect(() => {
       if (!fromToken && tokens) {
-        const bera = tokens.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+        // S'assurer que tokens est un tableau
+        const tokensArray = ensureArray(tokens) as BerachainToken[];
+        const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
         if (bera) setFromToken(bera);
       }
     }, [tokens, fromToken]);

@@ -60,7 +60,7 @@ export const usePositions = () => {
   const { data: positions = [], refetch, isLoading } = useQuery({
     queryKey: ['positions', address],
     queryFn: async (): Promise<PositionData[]> => {
-      const r = await fetch(`${import.meta.env.VITE_API_URL}/stats/positions/${address}`)
+      const r = await fetch(`${import.meta.env.VITE_API_URL}/positions/${address}`)
       if (!r.ok) return []
 
       return await r.json()

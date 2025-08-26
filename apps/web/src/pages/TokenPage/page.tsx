@@ -12,9 +12,9 @@ import { formatUnits } from 'viem';
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
   const { data: tokens, isLoading: tokensLoading } = useQuery({
-    queryKey: ['tokens'],
+    queryKey: ['tokensStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
       if (!resp.ok) return [];
       return resp.json();
     },
@@ -22,10 +22,21 @@ const TokenPage: React.FC = () => {
 
   const { data: pools, isLoading: poolsLoading } = useQuery({
     queryKey: ['pools'],
+    enabled: false, // Désactivé temporairement en attendant que l'endpoint backend soit disponible
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
-      if (!resp.ok) return [];
-      return resp.json();
+      // TODO: Réactiver quand l'endpoint backend sera disponible
+      // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
+      // if (!resp.ok) return [];
+      // return resp.json();
+
+      // Données mockées temporaires avec le bon type
+      return {
+        data: [] as Array<{
+          token0?: { address?: string };
+          token1?: { address?: string };
+          PoolStatistic?: Array<{ tvlUSD?: number }>;
+        }>
+      };
     },
   });
 
@@ -41,14 +52,15 @@ const TokenPage: React.FC = () => {
   // Always call the hook, even if pools/token are not yet loaded
   // Fallback TVL from Coingecko if missing in backend
   const tvl = useMemo(() => {
-    if (!pools || !token) return null;
+    if (!pools || !token || !pools.data || !Array.isArray(pools.data)) return null;
     let total = 0;
-    for (const pool of pools) {
+    for (const pool of pools.data) {
       if (
+        pool && typeof pool === 'object' &&
         (pool.token0?.address?.toLowerCase() === token?.address?.toLowerCase() ||
           pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase()) &&
-        pool.PoolStatistic?.length > 0 &&
-        pool.PoolStatistic[0].tvlUSD &&
+        pool.PoolStatistic && pool.PoolStatistic.length > 0 &&
+        pool.PoolStatistic[0] && pool.PoolStatistic[0].tvlUSD &&
         !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
       ) {
         total += Number(pool.PoolStatistic[0].tvlUSD);
@@ -84,7 +96,7 @@ const TokenPage: React.FC = () => {
       queryKey: ['token-line-chart', tokenAddress],
       enabled: !!tokenAddress,
       queryFn: async () => {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/token/${tokenAddress}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/token/stats/${tokenAddress}`);
         if (!res.ok) throw new Error('API error');
         const data = await res.json();
         return data.map((d: any) => ({
