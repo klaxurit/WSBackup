@@ -122,7 +122,6 @@ $chart-button-border-radius: 6px;
     &--left {
       flex: 1;
       min-width: 0;
-      overflow: hidden;
     }
 
     &--right {
@@ -418,6 +417,10 @@ $chart-button-border-radius: 6px;
   }
 
   .chart-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
     @media (max-width: 768px) {
       width: 100%;
       max-width: 100%;
