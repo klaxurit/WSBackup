@@ -51,7 +51,7 @@ export type Swap = InferSelectModel<typeof swaps>;
 export const positions = pgTable(
   'positions',
   {
-    poolAddress: text(),
+    poolAddress: text().notNull(),
     owner: text().notNull(),
     tickLower: integer().notNull(),
     tickUpper: integer().notNull(),
@@ -60,6 +60,8 @@ export const positions = pgTable(
     amount1: bigint({ mode: 'bigint' }).notNull(),
     createdAt: bigint({ mode: 'bigint' }).notNull(),
     updatedAt: bigint({ mode: 'bigint' }).notNull(),
+    sender: text().notNull(),
+    tokenId: text().notNull(),
   },
   (table) => [
     primaryKey({
@@ -94,6 +96,7 @@ export const liquidityEvent = pgTable('liquidity_events', {
   createdAt: bigint({ mode: 'bigint' }).notNull(),
   blockNumber: bigint({ mode: 'bigint' }).notNull(),
   transactionHash: text().notNull(),
+  tokenId: text(),
 });
 
 export const liquidityEventRelations = relations(liquidityEvent, ({ one }) => ({

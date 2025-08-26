@@ -38,7 +38,7 @@ export default createConfig({
         },
         parameter: "pool",
       }),
-      startBlock: 7402490
+      startBlock: 7402490,
     }
   },
 });

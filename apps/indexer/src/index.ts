@@ -1,3 +1,4 @@
+import { CONTRACTS } from "@repo/contracts";
 import { ponder } from "ponder:registry";
 import { liquidityEvent, pools, positions, swaps } from "ponder:schema";
 
@@ -37,6 +38,17 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
 ponder.on("WinniePool:Mint", async ({ event, context }) => {
   const { owner, tickLower, tickUpper, amount, amount0, amount1 } = event.args
 
+  const receipt = await context.client.getTransactionReceipt({
+    hash: event.transaction.hash
+  })
+  const transferLog = receipt.logs.find(log =>
+    log.address.toLowerCase() === CONTRACTS.POSITION_MANAGER.toLowerCase() &&
+    log.topics[0] === "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && // Transfer event signature
+    log.topics[1] === "0x0000000000000000000000000000000000000000000000000000000000000000" && // from = address(0)
+    log.topics.length === 4
+  );
+  const tokenId = transferLog?.topics[3] ? BigInt(transferLog.topics[3]) : null
+
   await context.db.insert(liquidityEvent).values({
     id: `${event.transaction.hash}-${event.log.logIndex}`,
     poolAddress: event.log.address.toLowerCase(),
@@ -49,25 +61,30 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
     amount1,
     createdAt: event.block.timestamp,
     blockNumber: event.block.number,
-    transactionHash: event.transaction.hash
+    transactionHash: event.transaction.hash,
+    tokenId: tokenId?.toString(),
   })
 
-  await context.db.insert(positions).values({
-    poolAddress: event.log.address.toLowerCase(),
-    owner,
-    tickLower,
-    tickUpper,
-    liquidity: amount,
-    amount0,
-    amount1,
-    createdAt: event.block.timestamp,
-    updatedAt: event.block.timestamp
-  }).onConflictDoUpdate((row) => ({
-    liquidity: row.liquidity + amount,
-    amount0: row.amount0 + amount0,
-    amount1: row.amount1 + amount1,
-    updatedAt: event.block.timestamp
-  }))
+  if (tokenId) {
+    await context.db.insert(positions).values({
+      poolAddress: event.log.address.toLowerCase(),
+      owner,
+      tickLower,
+      tickUpper,
+      liquidity: amount,
+      amount0,
+      amount1,
+      createdAt: event.block.timestamp,
+      updatedAt: event.block.timestamp,
+      sender: event.transaction.from.toLowerCase(),
+      tokenId: tokenId.toString(),
+    }).onConflictDoUpdate((row) => ({
+      liquidity: row.liquidity + amount,
+      amount0: row.amount0 + amount0,
+      amount1: row.amount1 + amount1,
+      updatedAt: event.block.timestamp
+    }))
+  }
 })
 
 ponder.on("WinniePool:Burn", async ({ event, context }) => {

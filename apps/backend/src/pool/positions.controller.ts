@@ -1,15 +1,20 @@
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
-import {
-  Controller,
-  Param,
-  UseInterceptors,
-  Get,
-} from '@nestjs/common';
+import { Controller, Param, UseInterceptors, Get } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
+import { positions } from 'src/ponder/ponder.schema';
+import { PonderService } from 'src/ponder/ponder.service';
+import { eq } from 'drizzle-orm';
+import { V3_POSITION_MANAGER_ABI } from 'src/blockchain/abis/V3_POSITION_MANAGER_ABI';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 
 @Controller('positions')
 @UseInterceptors(CacheInterceptor)
 export class PositionsController {
-  private readonly indexerUrl = process.env.PONDER_GRAPHQL_URL || 'http://localhost:42069/graphql';
+  constructor(
+    private readonly ponder: PonderService,
+    private readonly db: DatabaseService,
+    private readonly bc: BlockchainService,
+  ) {}
 
   @Get('/:address')
   @CacheKey('positions:user')
@@ -18,120 +23,64 @@ export class PositionsController {
     try {
       console.log(`Fetching positions for address: ${address}`);
 
-      // Utiliser directement l'API GraphQL de l'indexer
-      const query = `
-        query GetUserPositions($owner: String!) {
-          positionss(where: {owner: $owner}) {
-            items {
-              poolAddress
-              owner
-              tickLower
-              tickUpper
-              liquidity
-              amount0
-              amount1
-              createdAt
-              updatedAt
-              pool {
-                address
-                token0Address
-                token1Address
-                fee
-                tickSpacing
-                createdAt
-                createdAtBlock
-              }
-            }
-          }
-        }
-      `;
+      const userPositions = await this.ponder.database
+        .select()
+        .from(positions)
+        .where(eq(positions.sender, address.toLowerCase()));
 
-      const response = await fetch(this.indexerUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const poolsAddr = userPositions.map((up) => up.poolAddress);
+      const pools = await this.db.poolStats.findMany({
+        include: {
+          token0: {
+            include: {
+              TokenPrice: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          },
+          token1: {
+            include: {
+              TokenPrice: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+              },
+            },
+          },
         },
-        body: JSON.stringify({
-          query,
-          variables: { owner: address.toLowerCase() }
-        })
+        where: {
+          address: {
+            in: poolsAddr,
+          },
+        },
       });
 
-      if (!response.ok) {
-        throw new Error(`Indexer API error: ${response.statusText}`);
-      }
+      return await Promise.all(
+        userPositions.map(async (pos) => {
+          const pool = pools.find((p) => p.address === pos.poolAddress);
+          const posOnChain = await this.bc.client.readContract({
+            address: '0xEf089afF769bC068520a1A90f0773037eF31fbBC',
+            abi: V3_POSITION_MANAGER_ABI,
+            functionName: 'positions',
+            args: [BigInt(pos.tokenId)],
+          });
 
-      const result = await response.json();
-
-      if (result.errors) {
-        console.error('GraphQL errors:', result.errors);
-        return [];
-      }
-
-      const positions = result.data?.positionss?.items || [];
-
-      if (positions.length === 0) {
-        return [];
-      }
-
-      // Transformer les données pour correspondre à l'interface frontend
-      const transformedPositions = positions.map((pos: any) => {
-        const pool = pos.pool;
-
-        return {
-          nftTokenId: `${pos.poolAddress}-${pos.owner}-${pos.tickLower}-${pos.tickUpper}`,
-          position: {
-            fee: pool?.fee || 3000,
-            tickLower: pos.tickLower,
-            tickUpper: pos.tickUpper,
-            liquidity: pos.liquidity.toString(),
-            tokenOwed0: '0',
-            tokenOwed1: '0',
-          },
-          pool: {
-            id: pool?.address || pos.poolAddress,
-            address: pool?.address || pos.poolAddress,
-            token0Id: pool?.token0Address || '0x0',
-            token1Id: pool?.token1Address || '0x0',
-            fee: pool?.fee || 3000,
-            liquidity: pos.liquidity.toString(),
-            tick: 0, // À calculer ou récupérer depuis la blockchain
-            sqrtPriceX96: '0',
-            createdAt: pool?.createdAt ? new Date(Number(pool.createdAt) * 1000).toISOString() : new Date().toISOString(),
-            updatedAt: pos.updatedAt ? new Date(Number(pos.updatedAt) * 1000).toISOString() : new Date().toISOString(),
-            PoolStatistic: [{
-              apr: 0,
-              tvlUSD: 0,
-              dayVolumeUSD: 0,
-              monthVolumeUSD: 0,
-            }],
-            token0: {
-              id: pool?.token0Address || '0x0',
-              address: pool?.token0Address || '0x0',
-              symbol: 'UNKNOWN', // À récupérer depuis un service de tokens
-              name: 'Unknown Token',
-              decimals: 18,
-              logoUri: null,
-              coingeckoId: null,
-              tags: [],
-              Statistic: [],
+          return {
+            position: {
+              ...pos,
+              createdAt: pos.createdAt.toString(),
+              updatedAt: pos.updatedAt.toString(),
+              liquidity: pos.liquidity.toString(),
+              amount0: pos.amount0.toString(),
+              amount1: pos.amount1.toString(),
+              liquidity2: posOnChain[7].toString(),
+              tokenOwed0: posOnChain[10].toString(),
+              tokenOwed1: posOnChain[11].toString(),
             },
-            token1: {
-              id: pool?.token1Address || '0x0',
-              address: pool?.token1Address || '0x0',
-              symbol: 'UNKNOWN', // À récupérer depuis un service de tokens
-              name: 'Unknown Token',
-              decimals: 18,
-              logoUri: null,
-              coingeckoId: null,
-              tags: [],
-              Statistic: [],
-            },
-          },
-        };
-      });
-
-      return transformedPositions;
+            pool,
+          };
+        }),
+      );
     } catch (error) {
       console.error('Error fetching user positions:', error);
       return [];
