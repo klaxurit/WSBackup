@@ -87,7 +87,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       },
       render: (row) => {
         const evolution = row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange1h : 0;
-        if (evolution === 0) return '-';
+        if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
           <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
@@ -105,7 +105,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       },
       render: (row) => {
         const evolution = row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange24h : 0;
-        if (evolution === 0) return '-';
+        if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
           <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
