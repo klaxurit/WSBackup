@@ -141,17 +141,24 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleClickParams = () => {
       setParamOpen(!paramOpen)
     }
+    // Fonction utilitaire pour vérifier si le bouton doit être activé
+    const isButtonEnabled = useMemo(() => {
+      return !!(fromToken && toToken && (swap.status === "ready" || swap.status === "error"));
+    }, [fromToken, toToken, swap.status]);
+
+    // Améliorer la logique du bouton pour éviter les états confus
     const btnText = useMemo(() => {
+      // Vérifier d'abord que les deux tokens sont sélectionnés
+      if (!fromToken || !toToken) return "Select a token"
+
+      // Ensuite vérifier le montant
+      if (!fromAmount || fromAmount === 0n) return "Enter Amount"
+
+      // Maintenant on peut vérifier le statut du swap
       if (swap.status === "ready") return "Preview"
-      if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
-      if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
       if (swap.status === "error") {
-        if (fromToken && toToken && fromAmount > 0n && toAmount > 0n) {
-          return "Preview"
-        }
         if (swap.isWrap) return "Wrap"
         if (swap.isUnWrap) return "Unwrap"
-
         return swap?.error || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
@@ -178,10 +185,11 @@ const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut && editing !== 'to') {
+      // Ne synchroniser que si les deux tokens sont sélectionnés
+      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken) {
         setToAmount(swap.quote.amountOut)
       }
-    }, [swap.quote, editing])
+    }, [swap.quote, editing, fromToken, toToken])
 
     useEffect(() => {
       let timeoutId: NodeJS.Timeout
@@ -240,7 +248,8 @@ const SwapForm: React.FC<FormProps> = React.memo(
       setEditing('to');
       setToAmount(amount);
       // Synchronization: recalculate fromAmount so that the USD value is identical
-      if (priceFrom && priceTo && toToken && fromToken) {
+      // Only sync if both tokens are selected and prices are available
+      if (priceFrom && priceTo && toToken && fromToken && amount > 0n) {
         const toAmountFloat = parseFloat(formatUnits(amount, toToken?.decimals || 18));
         const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
         const fromAmountWei = parseUnits(fromAmountFloat.toFixed(fromToken.decimals), fromToken?.decimals || 18);
@@ -348,9 +357,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
             ) : (
               <div className="Form__ConnectBtn">
                 <button
-                  className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
+                  className={`btn btn--large btn__${isButtonEnabled ? "main" : "disabled"}`}
                   onClick={handleBtnClick}
-                  disabled={swap.status !== "ready" && swap.status !== "error"}
+                  disabled={!isButtonEnabled}
                 >
                   {btnText === null ? <Loader size="small" /> : btnText}
                 </button>
