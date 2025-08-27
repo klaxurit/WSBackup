@@ -1,55 +1,75 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAccount } from "wagmi"
 
-export interface Statistic {
-  id: string
-  tokenId: string
+export interface TokenPrice {
+  confidence: number
+  createdAt: string
   price: number
-  oneHourEvolution: number
-  oneDayEvolution: number
-  volume: number
-  createdAt: string // ISO date string
+  priceSource: string
+  tokenAddress: string
+  volumeUSD: number
 }
 
 export interface Token {
-  id: string
+  TokenPrice: TokenPrice[]
   address: string
-  symbol: string
-  name: string
+  coingeckoId: string
+  createdAt: string
   decimals: number
-  logoUri: string | null
-  coingeckoId: string | null
-  tags: string[]
-  Statistic: Statistic[]
+  description: string
+  discoveredAt: string
+  isStableCoin: boolean
+  isVerifiedManually: boolean
+  lastActivityAt: string
+  lastEnrichmentAt: string
+  logoUri: string
+  metadata: any
+  name: string
+  status: string
+  symbol: string
+  totalSupply: string
+  twitter: string
+  updatedAt: string
+  website: string
 }
 
 export interface Position {
-  fee: number
+  amount0: string
+  amount1: string
+  createdAt: string
+  liquidity: string
+  owner: string
+  poolAddress: string
   tickLower: number
   tickUpper: number
-  liquidity: string // BigInt as string
-  tokenOwed0: string
-  tokenOwed1: string
+  tokenId: string
+  updatedAt: string
 }
 
 export interface Pool {
-  id: string
   address: string
-  token0Id: string
-  token1Id: string
+  apr: number;
+  createdAt: string // BigInt timestamp
+  createdAtBlock: string // BigInt Timestamp
+  dayVolume: number
   fee: number
-  liquidity: string | null
-  tick: number
-  sqrtPriceX96: string | null
-  createdAt: string // ISO date string
-  updatedAt: string // ISO date string
-  PoolStatistic: any[]
+  isValid: boolean
+  monthVolumeUSD: number
+  sqrtPriceX96: string
+  tickSpacing: number
   token0: Token
+  token0Address: string
+  token0LogoUri: string
+  token0Symbol: string
   token1: Token
+  token1Address: string
+  token1LogoUri: string
+  token1Symbol: string
+  tvlUSD: number
+  liquidity: string
 }
 
 export interface PositionData {
-  nftTokenId: string
   position: Position
   pool: Pool
 }
@@ -70,7 +90,7 @@ export const usePositions = () => {
 
   const getPosition = (tokenId: string) => {
     if (!positions || positions.length === 0) return
-    return positions.find(p => p.nftTokenId === tokenId)
+    return positions.find(p => p.position.tokenId === tokenId)
   }
 
   return { positions, refetch, isLoading, getPosition }

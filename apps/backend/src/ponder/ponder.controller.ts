@@ -1,4 +1,4 @@
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
 import {
   Controller,
   ParseIntPipe,
@@ -6,8 +6,6 @@ import {
   UseInterceptors,
   Get,
 } from '@nestjs/common';
-import { Prisma } from '@repo/db';
-import { DatabaseService } from 'src/database/database.service';
 import { PonderService } from './ponder.service';
 import { swaps } from './ponder.schema';
 import { count, desc } from 'drizzle-orm';

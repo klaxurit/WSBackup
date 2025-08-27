@@ -30,10 +30,10 @@ export class PoolListService implements OnModuleInit {
     private readonly ponder: PonderService,
     private readonly db: DatabaseService,
     private readonly bc: BlockchainService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
-    await this.updateGeneralList();
+    // await this.updateGeneralList();
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -262,7 +262,7 @@ export class PoolListService implements OnModuleInit {
       // TVL en USD
       const tvlUSD = Math.abs(
         amount0Estimated * tokens.token0.TokenPrice[0].price +
-          amount1Estimated * tokens.token1.TokenPrice[0].price,
+        amount1Estimated * tokens.token1.TokenPrice[0].price,
       );
 
       // Volume 24h déjà en USD depuis getVolumeByPeriod

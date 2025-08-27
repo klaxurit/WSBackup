@@ -36,6 +36,7 @@ export class PriceTokenService implements OnModuleInit {
   private readonly logger = new Logger(PriceTokenService.name);
   private HoneyPrice: number | null = null;
   private tokensGraph: TokenGraph = {};
+  private tokenDecims: Map<string, number> = new Map();
 
   private readonly honeyAddr =
     '0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce'.toLowerCase();
@@ -45,10 +46,11 @@ export class PriceTokenService implements OnModuleInit {
     private readonly ponder: PonderService,
     private readonly cgs: CoinGeckoService,
     private readonly blockchain: BlockchainService,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     await this.getHoneyPrice();
+    await this.fetchTokenDecimals();
     await this.buildPathGraph();
   }
 
@@ -131,6 +133,16 @@ export class PriceTokenService implements OnModuleInit {
     const price = await this.cgs.getTokenData('honey-3');
     this.HoneyPrice = price ? price : 0.9998;
     this.logger.debug('Honey Price updated @' + this.HoneyPrice);
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async fetchTokenDecimals() {
+    const tokens = await this.db.token.findMany();
+    if (!tokens) return;
+
+    for (const t of tokens) {
+      this.tokenDecims.set(t.address, t.decimals || 18);
+    }
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -308,7 +320,8 @@ export class PriceTokenService implements OnModuleInit {
           // Find pool data from pronder.
           const poolData = await this.getPoolData(pool.poolAddress);
           this.logger.debug(`Price calculated from this pool`, poolData);
-          if (!poolData) continue;
+          if (!poolData || (poolData.reserve0 === 0 && poolData.reserve1 === 0))
+            continue;
 
           // Calculate price
           const calculatedPrice = this.calculatePriceFromPool(
@@ -319,7 +332,7 @@ export class PriceTokenService implements OnModuleInit {
           );
 
           this.logger.debug(`Price: ${calculatedPrice}`);
-          if (calculatedPrice > 0) {
+          if (calculatedPrice && calculatedPrice > 0) {
             return {
               address: targetToken,
               price: calculatedPrice,
@@ -429,17 +442,42 @@ export class PriceTokenService implements OnModuleInit {
     referenceToken: string,
     referencePrice: number,
     poolData: Awaited<ReturnType<typeof this.getPoolData>>,
-  ): number {
+  ): number | null {
     const isTargetToken0 =
       poolData!.token0Address.toLowerCase() === targetToken;
 
+    const targetDecimals = this.tokenDecims.get(targetToken);
+    const referenceDecimals = this.tokenDecims.get(referenceToken);
+
+    if (!targetDecimals || !referenceDecimals) return null;
+
     if (isTargetToken0) {
       // Prix de token0 en token1, puis convertir en USD
-      const rate = poolData!.reserve1 / poolData!.reserve0;
+
+      const res0 = parseFloat(
+        formatUnits(BigInt(poolData!.reserve0), targetDecimals),
+      );
+      const res1 = parseFloat(
+        formatUnits(BigInt(poolData!.reserve1), referenceDecimals),
+      );
+
+      const rate = res1 / res0;
+      this.logger.debug(
+        `PriceFromPool rate: ${rate} (${poolData!.reserve1}/${poolData!.reserve0}) * referencePrice : ${referencePrice}`,
+      );
       return rate * referencePrice;
     } else {
       // Prix de token1 en token0, puis convertir en USD
-      const rate = poolData!.reserve0 / poolData!.reserve1;
+      const res0 = parseFloat(
+        formatUnits(BigInt(poolData!.reserve0), referenceDecimals),
+      );
+      const res1 = parseFloat(
+        formatUnits(BigInt(poolData!.reserve1), targetDecimals),
+      );
+      const rate = res0 / res1;
+      this.logger.debug(
+        `PriceFromPool rate: ${rate} (${poolData!.reserve0}/${poolData!.reserve1}) * referencePrice : ${referencePrice}`,
+      );
       return rate * referencePrice;
     }
   }

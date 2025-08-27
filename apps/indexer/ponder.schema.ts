@@ -44,7 +44,9 @@ export const positions = onchainTable("positions", (t) => ({
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
   createdAt: t.bigint().notNull(),
-  updatedAt: t.bigint().notNull()
+  updatedAt: t.bigint().notNull(),
+  sender: t.text(),
+  tokenId: t.text()
 }), (table) => ({ pk: primaryKey({ columns: [table.poolAddress, table.owner, table.tickLower, table.tickUpper] }) }))
 
 export const positionsRelations = relations(positions, ({ one }) => ({
@@ -65,6 +67,7 @@ export const liquidityEvent = onchainTable("liquidity_events", (t) => ({
   createdAt: t.bigint().notNull(),
   blockNumber: t.bigint().notNull(),
   transactionHash: t.text().notNull(),
+  tokenId: t.text()
 }))
 
 export const liquidityEventRelations = relations(liquidityEvent, ({ one }) => ({

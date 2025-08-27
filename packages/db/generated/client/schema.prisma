@@ -55,6 +55,9 @@ model Token {
   TokenPrice      TokenPrice[]
   TokenDailyStats TokenDailyStats[]
 
+  PoolStatsAsToken0 PoolStats[] @relation("PoolStatsAsToken0")
+  PoolStatsAsToken1 PoolStats[] @relation("PoolStatsAsToken1")
+
   @@index([status])
   @@index([symbol])
   @@index([discoveredAt(sort: Desc)])
@@ -128,6 +131,9 @@ model PoolStats {
   monthVolumeUSD Float
   apr            Float
   tvlUSD         Float
+
+  token0 Token @relation(name: "PoolStatsAsToken0", fields: [token0Address], references: [address])
+  token1 Token @relation(name: "PoolStatsAsToken1", fields: [token1Address], references: [address])
 
   @@id([address])
   @@index([createdAt, apr(sort: Desc)])
