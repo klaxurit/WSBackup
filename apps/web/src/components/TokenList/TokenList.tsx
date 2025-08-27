@@ -39,7 +39,6 @@ export const TokenList = ({
     staleTime: 60_000
   })
 
-  // S'assurer que tokens est un tableau
   const tokensArray = ensureArray<BerachainToken>(tokens);
 
   const handleTokenSelect = (token: BerachainToken) => {
@@ -48,14 +47,12 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
-    // S'assurer que tokens est un tableau
     const tokensArray = ensureArray(tokens) as BerachainToken[];
 
     const onlyPoolOrAllTokens = onlyPoolToken
       ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
       : tokensArray
 
-    // Exclure le token BGT qui n'est pas tradable
     const tokensWithoutBGT = onlyPoolOrAllTokens.filter(t => t.symbol !== 'BGT')
 
     if (searchValue === "") return tokensWithoutBGT;
@@ -66,14 +63,11 @@ export const TokenList = ({
   }, [searchValue, tokensArray, onlyPoolToken]);
 
   const availableTokensForPopular = useMemo(() => {
-    // S'assurer que tokens est un tableau
     const tokensArray = ensureArray(tokens) as BerachainToken[];
 
     const baseTokens = onlyPoolToken
       ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
       : tokensArray
-
-    // Exclure le token BGT qui n'est pas tradable
     return baseTokens.filter(t => t.symbol !== 'BGT');
   }, [tokens, onlyPoolToken]);
 
@@ -82,17 +76,14 @@ export const TokenList = ({
     const statsArray: any[] = tokensStats || []
     for (const t of statsArray) {
       const addr: string = t.address
-      // Utiliser TokenDailyStats[0].marketCap de la route /token/list
       const mc: number = t?.TokenDailyStats?.[0]?.marketCap || 0
       if (addr) map.set(String(addr).toLowerCase(), Number(mc) || 0)
     }
     return map
   }, [tokensStats])
 
-  // Fonction utilitaire pour valider et convertir les adresses
   const validateAddress = (addr: string | undefined): string | undefined => {
     if (!addr) return undefined;
-    // Vérifier que l'adresse est au format 0x... et fait 42 caractères
     if (addr.startsWith('0x') && addr.length === 42) {
       return addr;
     }
@@ -119,14 +110,12 @@ export const TokenList = ({
       const amount = parseFloat(balanceStr)
       if (!amount || !isFinite(amount) || amount <= 0) return 0
 
-      // Utiliser le prix depuis TokenDailyStats[0].price de la route /token/list
       let tokenStats = tokensStats?.find((t: any) =>
         t.address?.toLowerCase() === token.address?.toLowerCase()
       )
 
       let price = tokenStats?.TokenDailyStats?.[0]?.price || 0
 
-      // Si c'est le token BERA (zeroAddress) et qu'on n'a pas de prix, utiliser le prix du WBERA
       if (price === 0 && token.address === zeroAddress) {
         const wBeraStats = tokensStats?.find((t: any) =>
           t.symbol === 'wBERA' || t.address?.toLowerCase() === '0x6969696969696969696969696969696969696969'
@@ -159,6 +148,7 @@ export const TokenList = ({
           withoutBalance.push(t)
         }
       }
+
       withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a))
       withoutBalance.sort((a, b) => getMarketCap(b) - getMarketCap(a))
 
