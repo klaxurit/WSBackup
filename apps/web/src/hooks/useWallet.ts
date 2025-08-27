@@ -20,7 +20,9 @@ export const useWallet = () => {
         chainId: Number(chainId)
       }));
       // Récupérer la balance BERA
-      const client = createPublicClient({ chain: berachain, transport: http('https://rpc.berachain.com/') });
+      // Utiliser VITE_BERACHAIN_API_URL si disponible, sinon RPC par défaut
+      const rpcUrl = import.meta.env.VITE_BERACHAIN_API_URL || 'https://rpc.berachain.com/';
+      const client = createPublicClient({ chain: berachain, transport: http(rpcUrl) });
       client.getBalance({ address }).then((balance) => {
         dispatch(setBalance(formatEther(balance)));
       }).catch(() => {
