@@ -46,7 +46,7 @@ export class PriceTokenService implements OnModuleInit {
     private readonly ponder: PonderService,
     private readonly cgs: CoinGeckoService,
     private readonly blockchain: BlockchainService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     await this.getHoneyPrice();
@@ -76,56 +76,62 @@ export class PriceTokenService implements OnModuleInit {
   private async updateTokenStats(token: Token) {
     this.logger.debug('Start update stat of token:' + token.symbol);
 
-    // current price + change 1h + change 24h
-    const priceAndEvo = await this.getPricesEvolution(token.address);
-    if (!priceAndEvo?.current) return;
+    try {
+      // current price + change 1h + change 24h
+      const priceAndEvo = await this.getPricesEvolution(token.address);
+      if (!priceAndEvo?.current) throw new Error('No current price found');
 
-    // volumes
-    const volumes = await this.getTokenVolumes(
-      token.address,
-      priceAndEvo.current,
-      token.decimals,
-    );
-    if (!volumes) return;
+      // volumes
+      const volumes = await this.getTokenVolumes(
+        token.address,
+        priceAndEvo.current,
+        token.decimals,
+      );
+      if (!volumes) throw new Error('No volume found');
 
-    // fdv and totalSupply
-    const supply = await this.getTotalSupplyAndFDV(
-      token.address,
-      priceAndEvo.current,
-      token.decimals,
-    );
-    if (!supply) return;
+      // fdv and totalSupply
+      const supply = await this.getTotalSupplyAndFDV(
+        token.address,
+        priceAndEvo.current,
+        token.decimals,
+      );
+      if (!supply) throw new Error('No supply found');
 
-    // tvlInPool
-    const tvlInPool = await this.getTokenTVLInPool(token.address);
-    if (!tvlInPool) return;
+      // tvlInPool
+      const tvlInPool = await this.getTokenTVLInPool(token.address);
+      if (!tvlInPool) throw new Error('No tvlInPool found');
 
-    await this.db.tokenDailyStats.upsert({
-      where: { tokenAddress: token.address },
-      create: {
-        tokenAddress: token.address,
-        price: priceAndEvo.current,
-        priceChange1h: priceAndEvo.evo1h,
-        priceChange24h: priceAndEvo.evo24h,
-        volume24h: volumes.volumeToken.toString(),
-        volumeUSD24h: volumes.volumeUSD,
-        tvlInPools: tvlInPool,
-        marketCap: supply.fdv,
-        fdv: supply.fdv,
-        swapCount24h: volumes.swapCount,
-      },
-      update: {
-        price: priceAndEvo.current,
-        priceChange1h: priceAndEvo.evo1h,
-        priceChange24h: priceAndEvo.evo24h,
-        volume24h: volumes.volumeToken.toString(),
-        volumeUSD24h: volumes.volumeUSD,
-        tvlInPools: tvlInPool,
-        marketCap: supply.fdv,
-        fdv: supply.fdv,
-        swapCount24h: volumes.swapCount,
-      },
-    });
+      await this.db.tokenDailyStats.upsert({
+        where: { tokenAddress: token.address },
+        create: {
+          tokenAddress: token.address,
+          price: priceAndEvo.current,
+          priceChange1h: priceAndEvo.evo1h,
+          priceChange24h: priceAndEvo.evo24h,
+          volume24h: volumes.volumeToken.toString(),
+          volumeUSD24h: volumes.volumeUSD,
+          tvlInPools: tvlInPool,
+          marketCap: supply.fdv,
+          fdv: supply.fdv,
+          swapCount24h: volumes.swapCount,
+        },
+        update: {
+          price: priceAndEvo.current,
+          priceChange1h: priceAndEvo.evo1h,
+          priceChange24h: priceAndEvo.evo24h,
+          volume24h: volumes.volumeToken.toString(),
+          volumeUSD24h: volumes.volumeUSD,
+          tvlInPools: tvlInPool,
+          marketCap: supply.fdv,
+          fdv: supply.fdv,
+          swapCount24h: volumes.swapCount,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Can't update ${token.symbol} stats: ${error?.message}`,
+      );
+    }
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -536,7 +542,6 @@ export class PriceTokenService implements OnModuleInit {
         select: { price: true, createdAt: true },
       }),
       // 24h ago
-
       this.db.tokenPrice.findFirst({
         where: {
           tokenAddress: tokenAddr,
