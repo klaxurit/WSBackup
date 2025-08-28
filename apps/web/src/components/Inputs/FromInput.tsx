@@ -76,10 +76,18 @@ export const FromInput: React.FC<FromInputProps> = (
     setInputValue(val);
     isInputting.current = true;
 
+    // Validation améliorée : accepter seulement les nombres décimaux valides
     if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
       try {
-        onAmountChange(parseUnits(val, selectedToken?.decimals || 18));
-      } catch { }
+        const parsedAmount = parseUnits(val, selectedToken?.decimals || 18);
+        // Vérifier que le montant n'est pas négatif
+        if (parsedAmount >= 0n) {
+          onAmountChange(parsedAmount);
+        }
+      } catch (error) {
+        // En cas d'erreur de parsing, ne pas mettre à jour le montant
+        console.warn('Invalid input amount:', val);
+      }
     } else if (val === '') {
       onAmountChange(0n);
     }
