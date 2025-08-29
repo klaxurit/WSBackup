@@ -6,19 +6,17 @@ export const factory = onchainTable("factory", (t) => ({
   id: t.hex().primaryKey(), // address
   poolCount: t.integer().notNull().default(0),
   txCount: t.integer().notNull().default(0),
-
   totalVolumeBERA: t.numeric().notNull().default("0"),
-  totalFeesBERA: t.numeric().notNull().default("0"),
-  totalValueLockedBERA: t.numeric().notNull().default("0"),
-  totalValueLockedBERAUntracked: t.bigint().notNull().default(0n),
-
   totalVolumeUSD: t.numeric().notNull().default("0"),
-  untrackedVolumeUSD: t.numeric().notNull().default("0"),
+  totalFeesBERA: t.numeric().notNull().default("0"),
   totalFeesUSD: t.numeric().notNull().default("0"),
+  untrackedVolumeUSD: t.numeric().notNull().default("0"),
+  totalValueLockedBERA: t.numeric().notNull().default("0"),
   totalValueLockedUSD: t.numeric().notNull().default("0"),
-  totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
-
   owner: t.hex().notNull(),
+
+  totalValueLockedBERAUntracked: t.bigint().notNull().default(0n),
+  totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
 }))
 
 export const token = onchainTable("token", (t) => ({
@@ -30,15 +28,14 @@ export const token = onchainTable("token", (t) => ({
   txCount: t.integer().notNull().default(0),
   poolCount: t.integer().notNull().default(0),
   whitelistPools: t.json().$type<string[]>().notNull().default([]),
-
   volume: t.bigint().notNull().default(0n),
-  totalValueLocked: t.numeric().notNull().default("0"),
-  derivedBERA: t.numeric().notNull().default("0"),
-
   volumeUSD: t.numeric().notNull().default("0"),
   untrackedVolumeUSD: t.numeric().notNull().default("0"),
   feesUSD: t.numeric().notNull().default("0"),
+  totalValueLocked: t.numeric().notNull().default("0"),
   totalValueLockedUSD: t.numeric().notNull().default("0"),
+  derivedBERA: t.numeric().notNull().default("0"),
+
   totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
 }), (table) => ({
   symbolIndex: index().on(table.symbol),
@@ -52,33 +49,30 @@ export const pool = onchainTable("pool", (t) => ({
   token0: t.hex().notNull(),
   token1: t.hex().notNull(),
   feeTier: t.integer().notNull(),
-
   liquidity: t.bigint().notNull().default(0n),
   sqrtPrice: t.bigint().notNull().default(0n),
-  feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
-  feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
   tick: t.integer(),
   observationIndex: t.integer().notNull().default(0),
-
   volumeToken0: t.bigint().notNull().default(0n),
   volumeToken1: t.bigint().notNull().default(0n),
-  collectedFeesToken0: t.bigint().notNull().default(0n),
-  collectedFeesToken1: t.bigint().notNull().default(0n),
-  totalValueLockedToken0: t.bigint().notNull().default(0n),
-  totalValueLockedToken1: t.bigint().notNull().default(0n),
-  totalValueLockedBERA: t.numeric().notNull().default("0"),
-
-  token0Price: t.numeric().notNull().default("0"),
-  token1Price: t.numeric().notNull().default("0"),
   volumeUSD: t.numeric().notNull().default("0"),
   untrackedVolumeUSD: t.numeric().notNull().default("0"),
   feesUSD: t.numeric().notNull().default("0"),
-  collectedFeesUSD: t.numeric().notNull().default("0"),
-  totalValueLockedUSD: t.numeric().notNull().default("0"),
-  totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
-
   txCount: t.integer().notNull().default(0),
+  collectedFeesToken0: t.bigint().notNull().default(0n),
+  collectedFeesToken1: t.bigint().notNull().default(0n),
+  collectedFeesUSD: t.numeric().notNull().default("0"),
+  totalValueLockedToken0: t.bigint().notNull().default(0n),
+  totalValueLockedToken1: t.bigint().notNull().default(0n),
+  totalValueLockedUSD: t.numeric().notNull().default("0"),
+  totalValueLockedBERA: t.numeric().notNull().default("0"),
+  token0Price: t.numeric().notNull().default("0"),
+  token1Price: t.numeric().notNull().default("0"),
   liquidityProviderCount: t.integer().notNull().default(0),
+
+  totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
+  feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
+  feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
 }), (table) => ({
   token0Index: index().on(table.token0),
   token1Index: index().on(table.token1),
@@ -105,25 +99,27 @@ export const transaction = onchainTable("transaction", (t) => ({
 export const tick = onchainTable("tick", (t) => ({
   id: t.text().primaryKey(), // pool address + "#" + tick index
   poolAddress: t.hex().notNull(),
-  tickIdx: t.integer().notNull(),
+  tickIdx: t.integer().notNull(), // Index du tick (-887272 à 887272)
   pool: t.hex().notNull(),
-  liquidityGross: t.bigint().notNull().default(0n),
-  liquidityNet: t.bigint().notNull().default(0n),
-  price0: t.numeric().notNull().default("0"),
-  price1: t.numeric().notNull().default("0"),
-  volumeToken0: t.bigint().notNull().default(0n),
-  volumeToken1: t.bigint().notNull().default(0n),
+  liquidityGross: t.bigint().notNull().default(0n), // Liquidité totale qui utilise ce tick comme borne
+  liquidityNet: t.bigint().notNull().default(0n), // Changement net de liquidité quand le prix traverse ce tick
+  // Positif = tick est utilisé comme tickLower
+  // Négatif = tick est utilisé comme tickUpper
+  price0: t.numeric().notNull().default("0"), // Prix de token0 en termes de token1 à ce tick
+  price1: t.numeric().notNull().default("0"), // Prix de token1 en termes de token0 à ce tick
+  volumeToken0: t.bigint().notNull().default(0n), // Volume total de token0 échangé à ce tick
+  volumeToken1: t.bigint().notNull().default(0n), // Volume total de token1 échangé à ce tick
   volumeUSD: t.numeric().notNull().default("0"),
   untrackedVolumeUSD: t.numeric().notNull().default("0"),
   feesUSD: t.numeric().notNull().default("0"),
   collectedFeesToken0: t.bigint().notNull().default(0n),
   collectedFeesToken1: t.bigint().notNull().default(0n),
   collectedFeesUSD: t.numeric().notNull().default("0"),
-  createdAtTimestamp: t.bigint().notNull(),
+  createdAtTimestamp: t.bigint().notNull(), // Première fois que ce tick a été initialisé
   createdAtBlockNumber: t.bigint().notNull(),
-  liquidityProviderCount: t.integer().notNull().default(0),
-  feeGrowthOutside0X128: t.bigint().notNull().default(0n),
-  feeGrowthOutside1X128: t.bigint().notNull().default(0n),
+  liquidityProviderCount: t.integer().notNull().default(0), // Nombre de positions utilisant ce tick
+  feeGrowthOutside0X128: t.bigint().notNull().default(0n), // Fees token0 accumulés "à l'extérieur" de ce tick
+  feeGrowthOutside1X128: t.bigint().notNull().default(0n), // Fees token1 accumulés "à l'extérieur" de ce tick
 }), (table) => ({
   poolIndex: index().on(table.pool),
   tickIdxIndex: index().on(table.tickIdx),
@@ -231,15 +227,14 @@ export const swap = onchainTable("swap", (t) => ({
   sender: t.hex().notNull(),
   recipient: t.hex().notNull(),
   origin: t.hex().notNull(),
-  // ✅ BigInt pour valeurs exactes (signed wei)
   amount0: t.bigint().notNull(), // Can be negative
   amount1: t.bigint().notNull(), // Can be negative
-  tick: t.integer().notNull(),
-  sqrtPriceX96: t.bigint().notNull(),
-  liquidity: t.bigint().notNull(),
-  logIndex: t.integer(),
-  // ✅ Decimal seulement pour affichage USD
   amountUSD: t.numeric(),
+  sqrtPriceX96: t.bigint().notNull(),
+  tick: t.integer().notNull(),
+  logIndex: t.integer(),
+
+  liquidity: t.bigint().notNull(),
 }), (table) => ({
   poolIndex: index().on(table.pool),
   timestampIndex: index().on(table.timestamp),
@@ -285,7 +280,7 @@ export const flash = onchainTable("flash", (t) => ({
 
 // ============ DONNÉES HISTORIQUES ============
 
-export const uniswapDayData = onchainTable("uniswap_day_data", (t) => ({
+export const protocolDayData = onchainTable("uniswap_day_data", (t) => ({
   id: t.integer().primaryKey(), // timestamp / 86400
   date: t.integer().notNull(),
   volumeBERA: t.numeric().notNull().default("0"),

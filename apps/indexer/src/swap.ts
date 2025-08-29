@@ -2,9 +2,9 @@ import { ponder } from "ponder:registry";
 import { factory as sFactory, pool as sPool, swap as sSwap, token as sToken } from "ponder:schema";
 import { getOrCreateTransaction } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
-import { 
-  abs, 
-  sqrtPriceX96ToTokenPrices 
+import {
+  abs,
+  sqrtPriceX96ToTokenPrices
 } from "./utils/bigint-math";
 import { Decimal } from "decimal.js";
 import { formatUnits } from "viem";
@@ -15,7 +15,7 @@ const DEBUG = false
 ponder.on("WinniePool:Swap", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
   if (!factoryEntity) return;
-  const factory = {...factoryEntity}
+  const factory = { ...factoryEntity }
 
   let poolEntity = await context.db.find(sPool, { id: event.log.address });
   if (!poolEntity) return;
@@ -24,8 +24,8 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   let token0Entity = await context.db.find(sToken, { id: poolEntity.token0 })
   let token1Entity = await context.db.find(sToken, { id: poolEntity.token1 })
   if (!token0Entity || !token1Entity) return
-  const token0 = {...token0Entity}
-  const token1 = {...token1Entity}
+  const token0 = { ...token0Entity }
+  const token1 = { ...token1Entity }
 
   DEBUG && console.debug("##################################################################")
   DEBUG && console.debug("New swap", token0.symbol, token1.symbol, event.transaction.hash)
@@ -58,13 +58,13 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   DEBUG && console.debug("amountTotalUSDTracked", amountTotalUSDTracked)
   DEBUG && console.debug("amountTotalBeraTracked", amountTotalBeraTracked)
   DEBUG && console.debug("amountTotalUSDUntracked", amountTotalUSDUntracked)
-  
+
   const feeBera = amountTotalBeraTracked.mul(pool.feeTier).div(1000000)
   const feeUSD = amountTotalUSDTracked.mul(pool.feeTier).div(1000000)
   DEBUG && console.debug("feeBera", feeBera)
   DEBUG && console.debug("feeUSD", feeUSD)
-  
-    
+
+
   // Create TX
   const txEntity = await getOrCreateTransaction(context, event);
 
@@ -112,15 +112,18 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   const [price0Ratio, price1Ratio] = sqrtPriceX96ToTokenPrices(poolEntity.sqrtPrice, token0.decimals, token1.decimals)
   pool.token0Price = formatUnits(price0Ratio, 18)
   pool.token1Price = formatUnits(price1Ratio, 18)
-  await context.db.update(sPool, {id: pool.id}).set({...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id'))})
-  
+  await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
+
   // update USD pricing
   beraPriceUSD = await getBeraPriceInUSD(context)
   token0.derivedBERA = (await findBeraPerToken(token0, context)).toString()
   token1.derivedBERA = (await findBeraPerToken(token1, context)).toString()
-  
+
   // Things afffected by new USD rates
-  pool.totalValueLockedBERA = new Decimal(pool.totalValueLockedToken0).mul(token0.derivedBERA).plus(pool.totalValueLockedToken0).mul(token1.derivedBERA).toString()
+  pool.totalValueLockedBERA = new Decimal(pool.totalValueLockedToken0)
+    .mul(token0.derivedBERA)
+    .plus(Decimal(pool.totalValueLockedToken0).mul(token1.derivedBERA))
+    .toString()
   pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
   factory.totalValueLockedBERA = new Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
@@ -149,8 +152,8 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
     logIndex: event.log.logIndex,
   })
 
-  await context.db.update(sFactory, { id: CONTRACTS.FACTORY }).set({...Object.fromEntries(Object.entries(factory).filter(([key]) => key !== 'id'))})
-  await context.db.update(sPool, {id: pool.id}).set({...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id'))})
-  await context.db.update(sToken, {id: token0.id}).set({...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id'))})
-  await context.db.update(sToken, {id: token1.id}).set({...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id'))})
+  await context.db.update(sFactory, { id: CONTRACTS.FACTORY }).set({ ...Object.fromEntries(Object.entries(factory).filter(([key]) => key !== 'id')) })
+  await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
+  await context.db.update(sToken, { id: token0.id }).set({ ...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id')) })
+  await context.db.update(sToken, { id: token1.id }).set({ ...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id')) })
 });
