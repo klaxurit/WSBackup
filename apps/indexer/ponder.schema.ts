@@ -7,9 +7,9 @@ export const factory = onchainTable("factory", (t) => ({
   poolCount: t.integer().notNull().default(0),
   txCount: t.integer().notNull().default(0),
 
-  totalVolumeBERA: t.bigint().notNull().default(0n),
-  totalFeesBERA: t.bigint().notNull().default(0n),
-  totalValueLockedBERA: t.bigint().notNull().default(0n),
+  totalVolumeBERA: t.numeric().notNull().default("0"),
+  totalFeesBERA: t.numeric().notNull().default("0"),
+  totalValueLockedBERA: t.numeric().notNull().default("0"),
   totalValueLockedBERAUntracked: t.bigint().notNull().default(0n),
 
   totalVolumeUSD: t.numeric().notNull().default("0"),
@@ -32,8 +32,8 @@ export const token = onchainTable("token", (t) => ({
   whitelistPools: t.json().$type<string[]>().notNull().default([]),
 
   volume: t.bigint().notNull().default(0n),
-  totalValueLocked: t.bigint().notNull().default(0n),
-  derivedBERA: t.bigint().notNull().default(0n), // ratio avec 18 decimales
+  totalValueLocked: t.numeric().notNull().default("0"),
+  derivedBERA: t.numeric().notNull().default("0"),
 
   volumeUSD: t.numeric().notNull().default("0"),
   untrackedVolumeUSD: t.numeric().notNull().default("0"),
@@ -66,7 +66,7 @@ export const pool = onchainTable("pool", (t) => ({
   collectedFeesToken1: t.bigint().notNull().default(0n),
   totalValueLockedToken0: t.bigint().notNull().default(0n),
   totalValueLockedToken1: t.bigint().notNull().default(0n),
-  totalValueLockedBERA: t.bigint().notNull().default(0n),
+  totalValueLockedBERA: t.numeric().notNull().default("0"),
 
   token0Price: t.numeric().notNull().default("0"),
   token1Price: t.numeric().notNull().default("0"),

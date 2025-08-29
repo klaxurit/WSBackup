@@ -16,10 +16,10 @@ ponder.on("WinniePool:Initialize", async ({ event, context }) => {
     const t1derivedBera = await findBeraPerToken(token1, context)
 
     await context.db.update(token, { id: token0.id }).set({
-      derivedBERA: t0derivedBera
+      derivedBERA: t0derivedBera.toString()
     })
     await context.db.update(token, { id: token1.id }).set({
-      derivedBERA: t1derivedBera
+      derivedBERA: t1derivedBera.toString()
     })
   }
 });

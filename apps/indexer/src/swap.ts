@@ -1,164 +1,136 @@
 import { ponder } from "ponder:registry";
-import { factory, pool, swap, token } from "ponder:schema";
+import { factory as sFactory, pool as sPool, swap as sSwap, token as sToken } from "ponder:schema";
 import { getOrCreateTransaction } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
 import { 
-  PRECISION_18, 
   abs, 
-  safeDiv, 
-  safeMul, 
-  tokenToRatio, 
   sqrtPriceX96ToTokenPrices 
 } from "./utils/bigint-math";
 import { Decimal } from "decimal.js";
 import { formatUnits } from "viem";
-import { findBeraPerToken, getBeraPriceInUSD } from "./utils/pricing";
+import { findBeraPerToken, getBeraPriceInUSD, getTrackedAmountUSD } from "./utils/pricing";
 
-// Constants
-const REFERENCE_TOKEN = "0x6969696969696969696969696969696969696969" // wBera
+const DEBUG = false
 
 ponder.on("WinniePool:Swap", async ({ event, context }) => {
-  let poolEntity = await context.db.find(pool, { id: event.log.address });
+  const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
+  if (!factoryEntity) return;
+  const factory = {...factoryEntity}
+
+  let poolEntity = await context.db.find(sPool, { id: event.log.address });
   if (!poolEntity) return;
+  const pool = { ...poolEntity }
 
-  let token0 = await context.db.find(token, { id: poolEntity.token0 })
-  let token1 = await context.db.find(token, { id: poolEntity.token1 })
-  if (!token0 || !token1) return
+  let token0Entity = await context.db.find(sToken, { id: poolEntity.token0 })
+  let token1Entity = await context.db.find(sToken, { id: poolEntity.token1 })
+  if (!token0Entity || !token1Entity) return
+  const token0 = {...token0Entity}
+  const token1 = {...token1Entity}
 
-  console.log("##################################################################")
-  console.log("New swap", token0.symbol, token1.symbol, event.transaction.hash)
+  DEBUG && console.debug("##################################################################")
+  DEBUG && console.debug("New swap", token0.symbol, token1.symbol, event.transaction.hash)
 
-  const txEntity = await getOrCreateTransaction(context, event);
   const swapId = `${event.transaction.hash}#${event.log.logIndex}`;
+  let beraPriceUSD = await getBeraPriceInUSD(context)
+  DEBUG && console.debug("beraPriceUSD", beraPriceUSD)
 
   const amount0 = event.args.amount0
   const amount1 = event.args.amount1
-  console.log("amounts", amount0, amount1)
+  DEBUG && console.debug("amounts", amount0, amount1)
 
   const amount0Abs = abs(amount0)
   const amount1Abs = abs(amount1)
-  console.log("amountAbs", amount0Abs, amount1Abs)
+  DEBUG && console.debug("amountAbs", amount0Abs, amount1Abs)
 
-  const amount0Ratio = tokenToRatio(amount0Abs, token0.decimals)
-  const amount1Ratio = tokenToRatio(amount1Abs, token1.decimals)
-  console.log("Amount Ratio", amount0Ratio, amount1Ratio)
+  const amount0Bera = Decimal(amount0Abs).mul(token0.derivedBERA)
+  const amount1Bera = Decimal(amount1Abs).mul(token1.derivedBERA)
+  DEBUG && console.debug("Amount Bera", amount0Bera, amount1Bera)
+  DEBUG && DEBUG && console.debug("token0.derivedBERA", token0.derivedBERA)
+  DEBUG && console.debug("token1.derivedBERA", token1.derivedBERA)
 
-  const amount0Bera = safeDiv(safeMul(amount0Ratio, token0.derivedBERA), PRECISION_18)
-  const amount1Bera = safeDiv(safeMul(amount1Ratio, token1.derivedBERA), PRECISION_18)
-  console.log("Amount Bera", amount0Bera, amount1Bera)
-  console.log("token0.derivedBERA", token0.derivedBERA)
-  console.log("token1.derivedBERA", token1.derivedBERA)
+  const amount0USD = amount0Bera.mul(beraPriceUSD)
+  const amount1USD = amount1Bera.mul(beraPriceUSD)
+  DEBUG && console.debug("Amount USD", amount0Bera, amount1Bera)
 
-  const beraPriceUSD = await getBeraPriceInUSD(context)
-  console.log("beraPriceUSD", beraPriceUSD)
+  const amountTotalUSDTracked = getTrackedAmountUSD(amount0Abs, token0, amount1Abs, token1, beraPriceUSD).div(2)
+  const amountTotalBeraTracked = amountTotalUSDTracked.div(beraPriceUSD)
+  const amountTotalUSDUntracked = amount0USD.plus(amount1USD).div(2)
+  DEBUG && console.debug("amountTotalUSDTracked", amountTotalUSDTracked)
+  DEBUG && console.debug("amountTotalBeraTracked", amountTotalBeraTracked)
+  DEBUG && console.debug("amountTotalUSDUntracked", amountTotalUSDUntracked)
   
-  const amountTotalBeraTracked = safeDiv(amount0Bera + amount1Bera, 2n)
-  console.log("amountTotalBeraTracked", amountTotalBeraTracked)
+  const feeBera = amountTotalBeraTracked.mul(pool.feeTier).div(1000000)
+  const feeUSD = amountTotalUSDTracked.mul(pool.feeTier).div(1000000)
+  DEBUG && console.debug("feeBera", feeBera)
+  DEBUG && console.debug("feeUSD", feeUSD)
   
-  const feeBera = safeMul(amountTotalBeraTracked, BigInt(poolEntity.feeTier)) / 1000000n
-  console.log("feeBera", feeBera)
-  
-  const amountTotalUSDTracked = new Decimal(formatUnits(safeMul(amountTotalBeraTracked, beraPriceUSD), 18))
-  const feeUSD = new Decimal(formatUnits(safeMul(feeBera, beraPriceUSD), 18))
-  console.log("amountTotalUSDTracked", amountTotalUSDTracked)
-  console.log("feeUSD", feeUSD)
     
-  const currentPoolTVLBera = poolEntity.totalValueLockedBERA
-  console.log("currentPoolTVLBera", currentPoolTVLBera)
+  // Create TX
+  const txEntity = await getOrCreateTransaction(context, event);
 
   // Global update - BigInt operations
-  await context.db.update(factory, { id: CONTRACTS.FACTORY }).set(row => ({
-    txCount: row.txCount + 1,
-    totalVolumeBERA: row.totalVolumeBERA + amountTotalBeraTracked,
-    totalVolumeUSD: new Decimal(row.totalVolumeUSD).plus(amountTotalUSDTracked).toString(),
-    totalFeesBERA: row.totalFeesBERA + feeBera,
-    totalFeesUSD: new Decimal(row.totalFeesUSD).plus(feeUSD).toString(),
-    totalValueLockedBERA: row.totalValueLockedBERA - currentPoolTVLBera
-  }))
-  console.log("factory updated")
-  // Update pool - BigInt operations
-  poolEntity = await context.db.update(pool, { id: poolEntity.id }).set(row => ({
-    txCount: row.txCount + 1,
-    volumeToken0: row.volumeToken0 + amount0Abs,
-    volumeToken1: row.volumeToken1 + amount1Abs,
-    volumeUSD: new Decimal(row.volumeUSD).plus(amountTotalUSDTracked).toString(),
-    feesUSD: new Decimal(row.feesUSD).plus(feeUSD).toString(),
-    liquidity: event.args.liquidity,
-    tick: Number(event.args.tick),
-    sqrtPrice: event.args.sqrtPriceX96,
-    totalValueLockedToken0: row.totalValueLockedToken0 + amount0,
-    totalValueLockedToken1: row.totalValueLockedToken1 + amount1,
-  }))
-console.log("pool updated")
-  // update token0 - BigInt operations
-  token0 = await context.db.update(token, { id: token0.id }).set(row => ({
-    volume: row.volume + amount0Abs,
-    totalValueLocked: row.totalValueLocked + amount0,
-    volumeUSD: new Decimal(row.volumeUSD).plus(amountTotalUSDTracked).toString(),
-    feesUSD: new Decimal(row.feesUSD).plus(feeUSD).toString(),
-    txCount: row.txCount + 1
-  }))
-  console.log("token0 updated")
-  // update token1 - BigInt operations
-  token1 = await context.db.update(token, { id: token1.id }).set(row => ({
-    volume: row.volume + amount1Abs,
-    totalValueLocked: row.totalValueLocked + amount1,
-    volumeUSD: new Decimal(row.volumeUSD).plus(amountTotalUSDTracked).toString(),
-    feesUSD: new Decimal(row.feesUSD).plus(feeUSD).toString(),
-    txCount: row.txCount + 1
-  }))
-console.log("token1 updated")
-  // update pool prices - BigInt calculation, Decimal pour affichage
-  const [price0Ratio, price1Ratio] = sqrtPriceX96ToTokenPrices(poolEntity.sqrtPrice, token0.decimals, token1.decimals)
-  poolEntity = await context.db.update(pool, { id: poolEntity.id }).set({
-    token0Price: formatUnits(price0Ratio, 18),
-    token1Price: formatUnits(price1Ratio, 18)
-  })
-console.log("pool #2 updated")
-  // update USD pricing - BigInt calculations
-  // Pour l'instant utiliser des valeurs simples, à améliorer plus tard
-  let t0DerivedBera = token0.id === REFERENCE_TOKEN ? PRECISION_18 : await findBeraPerToken(token0, context)
-  let t1DerivedBera = token1.id === REFERENCE_TOKEN ? PRECISION_18 : await findBeraPerToken(token1, context)
-  console.log("t0DerivedBera RECALCULATED", t0DerivedBera)
-  console.log("t1DerivedBera RECALCULATED", t1DerivedBera)
-  
-  // Calcul TVL avec BigInt
-  const token0ValueBera = safeDiv(safeMul(tokenToRatio(poolEntity.totalValueLockedToken0, token0.decimals), t0DerivedBera), PRECISION_18)
-  const token1ValueBera = safeDiv(safeMul(tokenToRatio(poolEntity.totalValueLockedToken1, token1.decimals), t1DerivedBera), PRECISION_18)
-  const poolTotalValueLockedBERA = token0ValueBera + token1ValueBera
-  
-  poolEntity = await context.db.update(pool, { id: poolEntity.id }).set({
-    totalValueLockedBERA: poolTotalValueLockedBERA,
-    totalValueLockedUSD: new Decimal(formatUnits(safeMul(poolTotalValueLockedBERA, beraPriceUSD), 18)).toString()
-  })
-console.log("pool #3 updated")
-  await context.db.update(factory, { id: CONTRACTS.FACTORY }).set(row => ({
-    totalValueLockedBERA: row.totalValueLockedBERA + poolEntity.totalValueLockedBERA,
-    totalValueLockedUSD: new Decimal(formatUnits(
-      safeMul(row.totalValueLockedBERA, beraPriceUSD),
-      18
-    )).toString()
-  }))
-console.log("factory #2 updated")
-  token0 = await context.db.update(token, { id: token0.id }).set(row => ({
-    derivedBERA: t0DerivedBera,
-    totalValueLockedUSD: new Decimal(formatUnits(
-      safeDiv(safeMul(safeMul(tokenToRatio(row.totalValueLocked, token0?.decimals || 18), t0DerivedBera), beraPriceUSD), PRECISION_18),
-      18
-    )).toString(),
-  }))
-  console.log("token0 #2 updated")
+  factory.txCount += 1
+  factory.totalVolumeBERA = new Decimal(factory.totalVolumeBERA).plus(amountTotalBeraTracked).toString()
+  factory.totalVolumeUSD = new Decimal(factory.totalVolumeUSD).plus(amountTotalUSDTracked).toString()
+  factory.untrackedVolumeUSD = new Decimal(factory.untrackedVolumeUSD).plus(amountTotalUSDUntracked).toString()
+  factory.totalFeesBERA = new Decimal(factory.totalFeesBERA).plus(feeBera).toString()
+  factory.totalFeesUSD = new Decimal(factory.totalFeesUSD).plus(feeUSD).toString()
+  // reset aggregate tvl before individual pool tvl updates
+  factory.totalValueLockedBERA = new Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
+
+  // Update pool volume
+  pool.txCount += 1
+  pool.volumeToken0 += amount0Abs
+  pool.volumeToken1 += amount1Abs
+  pool.volumeUSD = new Decimal(pool.volumeUSD).plus(amountTotalUSDTracked).toString()
+  pool.untrackedVolumeUSD = new Decimal(pool.untrackedVolumeUSD).plus(amountTotalUSDUntracked).toString()
+  pool.feesUSD = new Decimal(pool.feesUSD).plus(feeUSD).toString()
+  // Update the pool with the new active liquidity, price, and tick.
+  pool.liquidity += event.args.liquidity
+  pool.tick = event.args.tick
+  pool.sqrtPrice = event.args.sqrtPriceX96
+  pool.totalValueLockedToken0 += amount0
+  pool.totalValueLockedToken1 += amount1
+
+  // update token0
+  token0.volume += amount0Abs
+  token0.totalValueLocked = Decimal(token0.totalValueLocked).plus(amount0).toString()
+  token0.volumeUSD = Decimal(token0.volumeUSD).plus(amountTotalUSDTracked).toString()
+  token0.untrackedVolumeUSD = Decimal(token0.untrackedVolumeUSD).plus(amountTotalUSDUntracked).toString()
+  token0.feesUSD = Decimal(token0.feesUSD).plus(feeUSD).toString()
+  token0.txCount += 1
+
   // update token1
-  token1 = await context.db.update(token, { id: token1.id }).set(row => ({
-    derivedBERA: t1DerivedBera,
-    totalValueLockedUSD: new Decimal(formatUnits(
-      safeDiv(safeMul(safeMul(tokenToRatio(row.totalValueLocked, token1?.decimals || 18), t1DerivedBera), beraPriceUSD), PRECISION_18),
-      18
-    )).toString(),
-  }))
-console.log("token1 #2 updated")
+  token1.volume += amount1Abs
+  token1.totalValueLocked = new Decimal(token1.totalValueLocked).plus(amount1).toString()
+  token1.volumeUSD = new Decimal(token1.volumeUSD).plus(amountTotalUSDTracked).toString()
+  token1.untrackedVolumeUSD = new Decimal(token1.untrackedVolumeUSD).plus(amountTotalUSDUntracked).toString()
+  token1.feesUSD = new Decimal(token1.feesUSD).plus(feeUSD).toString()
+  token1.txCount += 1
+
+  // update pool rates
+  const [price0Ratio, price1Ratio] = sqrtPriceX96ToTokenPrices(poolEntity.sqrtPrice, token0.decimals, token1.decimals)
+  pool.token0Price = formatUnits(price0Ratio, 18)
+  pool.token1Price = formatUnits(price1Ratio, 18)
+  await context.db.update(sPool, {id: pool.id}).set({...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id'))})
+  
+  // update USD pricing
+  beraPriceUSD = await getBeraPriceInUSD(context)
+  token0.derivedBERA = (await findBeraPerToken(token0, context)).toString()
+  token1.derivedBERA = (await findBeraPerToken(token1, context)).toString()
+  
+  // Things afffected by new USD rates
+  pool.totalValueLockedBERA = new Decimal(pool.totalValueLockedToken0).mul(token0.derivedBERA).plus(pool.totalValueLockedToken0).mul(token1.derivedBERA).toString()
+  pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
+
+  factory.totalValueLockedBERA = new Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
+  factory.totalValueLockedUSD = new Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
+
+  token0.totalValueLockedUSD = new Decimal(token0.totalValueLocked).mul(token0.derivedBERA).mul(beraPriceUSD).toString()
+  token1.totalValueLockedUSD = new Decimal(token1.totalValueLocked).mul(token1.derivedBERA).mul(beraPriceUSD).toString()
+
   // Create Swap event - BigInt direct
-  await context.db.insert(swap).values({
+  await context.db.insert(sSwap).values({
     id: swapId, // tx hash + "#" + index
     transaction: txEntity.id,
     timestamp: txEntity.timestamp,
@@ -176,4 +148,9 @@ console.log("token1 #2 updated")
     liquidity: event.args.liquidity,
     logIndex: event.log.logIndex,
   })
+
+  await context.db.update(sFactory, { id: CONTRACTS.FACTORY }).set({...Object.fromEntries(Object.entries(factory).filter(([key]) => key !== 'id'))})
+  await context.db.update(sPool, {id: pool.id}).set({...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id'))})
+  await context.db.update(sToken, {id: token0.id}).set({...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id'))})
+  await context.db.update(sToken, {id: token1.id}).set({...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id'))})
 });

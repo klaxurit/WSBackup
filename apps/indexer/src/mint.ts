@@ -1,107 +1,71 @@
 import { ponder } from "ponder:registry";
-import { factory, mint, pool, tick, token, transaction } from "ponder:schema";
+import { factory as sFactory, mint as sMint, pool as sPool, tick as sTick, token as sToken, transaction as sTransaction } from "ponder:schema";
 import { getOrCreateTransaction, getTickId } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
-import { getBeraPriceInUSD, getTrackedAmountUSD } from "./utils/pricing";
+import { getBeraPriceInUSD } from "./utils/pricing";
 import Decimal from "decimal.js";
-import { formatUnits } from "viem";
-import { safeMul, tokenToRatio } from "./utils/bigint-math";
 
 ponder.on("WinniePool:Mint", async ({ event, context }) => {
-  let poolEntity = await context.db.find(pool, { id: event.log.address });
+  const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
+  if (!factoryEntity) return;
+  const factory = {...factoryEntity}
+
+  let poolEntity = await context.db.find(sPool, { id: event.log.address });
   if (!poolEntity) return;
+  const pool = { ...poolEntity }
 
-  let token0Entity = await context.db.find(token, { id: poolEntity.token0 });
-  let token1Entity = await context.db.find(token, { id: poolEntity.token1 });
-  if (!token0Entity || !token1Entity) return;
+  let token0Entity = await context.db.find(sToken, { id: poolEntity.token0 })
+  let token1Entity = await context.db.find(sToken, { id: poolEntity.token1 })
+  if (!token0Entity || !token1Entity) return
+  const token0 = {...token0Entity}
+  const token1 = {...token1Entity}
 
-  const txEntity = await getOrCreateTransaction(context, event);
   const mintId = `${event.transaction.hash}#${event.log.logIndex}`;
-
+  const beraPriceUSD = await getBeraPriceInUSD(context)
+  
   const amount0 = event.args.amount0
   const amount1 = event.args.amount1
 
-  const beraPriceUSD = await getBeraPriceInUSD(context)
-  const trackedAmountUSD = getTrackedAmountUSD(
-    amount0, token0Entity,
-    amount1, token1Entity,
-    beraPriceUSD
-  )
-  const amountUSD = new Decimal(formatUnits(trackedAmountUSD, 18)).toString();
+  const amountUSD = Decimal(amount0).mul(token0.derivedBERA).plus(Decimal(amount1).mul(token1.derivedBERA))
 
-  // Update Factory
-  await context.db.update(factory, { id: CONTRACTS.FACTORY })
-    .set((row) => ({
-      txCount: row.txCount + 1,
-      totalValueLockedBERA: row.totalValueLockedBERA - poolEntity!.totalValueLockedBERA,
-    }));
+  factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
+  factory.txCount += 1
 
-  // Update Token0
-  token0Entity = await context.db.update(token, { id: poolEntity.token0 })
-    .set((row) => ({
-      txCount: row.txCount + 1,
-      totalValueLocked: row.totalValueLocked + amount0,
-      totalValueLockedUSD: new Decimal(formatUnits(
-        safeMul(
-          safeMul(tokenToRatio(row.totalValueLocked + amount0, row.decimals), row.derivedBERA),
-          beraPriceUSD
-        ), 18
-      )).toString()
-    }));
+  token0.txCount += 1
+  token0.totalValueLocked = Decimal(token0.totalValueLocked).plus(amount0).toString()
+  token0.totalValueLockedUSD = Decimal(token0.totalValueLocked).mul(Decimal(token0.derivedBERA).mul(beraPriceUSD)).toString()
 
-  // Update Token1
-  token1Entity = await context.db.update(token, { id: poolEntity.token1 })
-    .set((row) => ({
-      txCount: row.txCount + 1,
-      totalValueLocked: row.totalValueLocked + amount1,
-      totalValueLockedUSD: new Decimal(formatUnits(
-        safeMul(
-          safeMul(tokenToRatio(row.totalValueLocked + amount1, row.decimals), row.derivedBERA),
-          beraPriceUSD
-        ), 18
-      )).toString()
-    }));
+  token1.txCount += 1
+  token1.totalValueLocked = Decimal(token1.totalValueLocked).plus(amount1).toString()
+  token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(Decimal(token1.derivedBERA).mul(beraPriceUSD)).toString()
 
-  // Update pool metrics
-  poolEntity = await context.db.update(pool, { id: poolEntity.id })
-    .set((row) => ({
-      txCount: row.txCount + 1,
-      ...(row.tick !== null &&
-        Number(event.args.tickLower) <= row.tick &&
-        Number(event.args.tickUpper) > row.tick &&
-        { liquidity: row.liquidity + event.args.amount }
-      ),
-      totalValueLockedToken0: row.totalValueLockedToken0 + amount0,
-      totalValueLockedToken1: row.totalValueLockedToken1 + amount1,
-      totalValueLockedBERA: safeMul(tokenToRatio(row.totalValueLockedToken0 + amount0, token0Entity.decimals), token0Entity.derivedBERA) +
-                             safeMul(tokenToRatio(row.totalValueLockedToken1 + amount1, token1Entity.decimals), token1Entity.derivedBERA),
-      totalValueLockedUSD: new Decimal(formatUnits(
-          safeMul(
-            safeMul(tokenToRatio(row.totalValueLockedToken0 + amount0, token0Entity.decimals), token0Entity.derivedBERA) +
-            safeMul(tokenToRatio(row.totalValueLockedToken1 + amount1, token1Entity.decimals), token1Entity.derivedBERA),
-            beraPriceUSD
-          ), 18
-        )).toString()
-    }));
+  pool.txCount += 1
+  if (pool.tick !== null && event.args.tickLower <= pool.tick && event.args.tickUpper > pool.tick) {
+    pool.liquidity += event.args.amount
+  }
+  pool.totalValueLockedToken0 += amount0
+  pool.totalValueLockedToken1 += amount1
+  pool.totalValueLockedBERA = Decimal(pool.totalValueLockedToken0)
+    .mul(token0.derivedBERA)
+    .plus(Decimal(pool.totalValueLockedToken1).times(token1.derivedBERA))
+    .toString()
+  pool.totalValueLockedUSD = Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
-  // Update Factory with new value
-  await context.db.update(factory, { id: CONTRACTS.FACTORY })
-    .set((row) => ({
-      totalValueLockedBERA: row.totalValueLockedBERA + poolEntity.totalValueLockedBERA,
-      totalValueLockedUSD: new Decimal(formatUnits(
-        safeMul(row.totalValueLockedBERA + poolEntity.totalValueLockedBERA, beraPriceUSD),
-        18
-      )).toString()
-    }));
+  // reset aggregates with new amounts
+  factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
+  factory.totalValueLockedUSD = Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
+ 
+  // Create transaction
+  const txEntity = await getOrCreateTransaction(context, event);
 
   // Update transaction
-  await context.db.update(transaction, { id: txEntity.id })
+  await context.db.update(sTransaction, { id: txEntity.id })
     .set((row) => ({
       mints: [...row.mints, mintId],
     }));
 
   // create Mint event
-  await context.db.insert(mint).values({
+  await context.db.insert(sMint).values({
     id: mintId,
     transaction: event.transaction.hash,
     timestamp: BigInt(event.block.timestamp),
@@ -114,19 +78,19 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
     amount: event.args.amount,
     amount0,
     amount1,
-    amountUSD,
+    amountUSD: amountUSD.toString(),
     tickLower: Number(event.args.tickLower),
     tickUpper: Number(event.args.tickUpper),
     logIndex: event.log.logIndex,
   });
-
+  
   // Create or update ticks
   const tickLowerId = getTickId(event.log.address, Number(event.args.tickLower));
   const tickUpperId = getTickId(event.log.address, Number(event.args.tickUpper));
 
-  const tickLower = await context.db.find(tick, { id: tickLowerId });
+  const tickLower = await context.db.find(sTick, { id: tickLowerId });
   if (!tickLower) {
-    await context.db.insert(tick).values({
+    await context.db.insert(sTick).values({
       id: tickLowerId,
       poolAddress: event.log.address,
       tickIdx: Number(event.args.tickLower),
@@ -150,7 +114,7 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
       feeGrowthOutside1X128: 0n,
     });
   } else {
-    await context.db.update(tick, { id: tickLowerId })
+    await context.db.update(sTick, { id: tickLowerId })
       .set((row) => ({
         liquidityGross: row.liquidityGross + event.args.amount,
         liquidityNet: row.liquidityNet + event.args.amount,
@@ -158,9 +122,9 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
       }));
   }
 
-  const tickUpper = await context.db.find(tick, { id: tickUpperId });
+  const tickUpper = await context.db.find(sTick, { id: tickUpperId });
   if (!tickUpper) {
-    await context.db.insert(tick).values({
+    await context.db.insert(sTick).values({
       id: tickUpperId,
       poolAddress: event.log.address,
       tickIdx: Number(event.args.tickUpper),
@@ -184,7 +148,7 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
       feeGrowthOutside1X128: 0n,
     });
   } else {
-    await context.db.update(tick, { id: tickUpperId })
+    await context.db.update(sTick, { id: tickUpperId })
       .set((row) => ({
         liquidityGross: row.liquidityGross + event.args.amount,
         liquidityNet: row.liquidityNet - event.args.amount,
@@ -193,5 +157,9 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   }
 
 
+  await context.db.update(sFactory, { id: CONTRACTS.FACTORY }).set({...Object.fromEntries(Object.entries(factory).filter(([key]) => key !== 'id'))})
+  await context.db.update(sPool, {id: pool.id}).set({...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id'))})
+  await context.db.update(sToken, {id: token0.id}).set({...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id'))})
+  await context.db.update(sToken, {id: token1.id}).set({...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id'))})
   // TODO Start all daily data update
 });
