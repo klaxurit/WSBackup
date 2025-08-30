@@ -22,9 +22,10 @@
 @use 'components/footer/footer';
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';
+
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
-
+@use 'components/chart/chart-toolbar';
 
 @use 'components/common/link';
 @use 'components/common/iconLink';
