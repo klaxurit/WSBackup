@@ -4,6 +4,9 @@ import { factory as sFactory, pool as sPool, token as sToken, collect as sCollec
 import { CONTRACTS } from "@repo/contracts";
 import Decimal from "decimal.js";
 import { getOrCreateTransaction } from "./helpers";
+import { updateProtocolDayData } from "./stats/porotocolDay";
+import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
+import { updateDayTokenData, updateHourTokenData } from "./stats/token";
 
 ponder.on("WinniePool:Collect", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -78,4 +81,10 @@ ponder.on("WinniePool:Collect", async ({ event, context }) => {
   await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
   await context.db.update(sToken, { id: token0.id }).set({ ...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id')) })
   await context.db.update(sToken, { id: token1.id }).set({ ...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id')) })
+
+  await updateProtocolDayData(event.block.timestamp, context)
+  await updateDayPoolData(event.block.timestamp, pool.id, context)
+  await updateHourPoolData(event.block.timestamp, pool.id, context)
+  await updateDayTokenData(event.block.timestamp, token0.id, context)
+  await updateHourTokenData(event.block.timestamp, token0.id, context)
 })

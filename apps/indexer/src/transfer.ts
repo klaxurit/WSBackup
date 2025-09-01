@@ -2,6 +2,8 @@ import { and, eq } from "ponder";
 import { ponder } from "ponder:registry";
 import { pool, position } from "ponder:schema";
 import { zeroAddress } from "viem";
+import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
+import { updateDayTokenData, updateHourTokenData } from "./stats/token";
 
 ponder.on("WinniePositionManager:Transfer", async ({ event, context }) => {
   const positionId = event.args.tokenId.toString();
@@ -47,6 +49,15 @@ ponder.on("WinniePositionManager:Transfer", async ({ event, context }) => {
         feeGrowthInside1LastX128: positionData[9] || 0n,
         tokenId: event.args.tokenId
       });
+
+      if (posPool[0]) {
+        await updateDayPoolData(event.block.timestamp, posPool[0]?.id, context)
+        await updateHourPoolData(event.block.timestamp, posPool[0]?.id, context)
+      }
+      if (positionData) {
+        await updateDayTokenData(event.block.timestamp, positionData[2], context)
+        await updateHourTokenData(event.block.timestamp, positionData[3], context)
+      }
     } catch (error) {
       console.error(`Error fetching position data for ${positionId}:`, error);
     }
@@ -62,4 +73,5 @@ ponder.on("WinniePositionManager:Transfer", async ({ event, context }) => {
         });
     }
   }
+
 })

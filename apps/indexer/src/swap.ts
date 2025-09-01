@@ -9,6 +9,9 @@ import {
 import { Decimal } from "decimal.js";
 import { formatUnits } from "viem";
 import { findBeraPerToken, getBeraPriceInUSD, getTrackedAmountUSD } from "./utils/pricing";
+import { updateProtocolDayData } from "./stats/porotocolDay";
+import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
+import { updateDayTokenData, updateHourTokenData } from "./stats/token";
 
 const DEBUG = false
 
@@ -156,4 +159,10 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
   await context.db.update(sToken, { id: token0.id }).set({ ...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id')) })
   await context.db.update(sToken, { id: token1.id }).set({ ...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id')) })
+
+  await updateProtocolDayData(event.block.timestamp, context)
+  await updateDayPoolData(event.block.timestamp, pool.id, context)
+  await updateHourPoolData(event.block.timestamp, pool.id, context)
+  await updateDayTokenData(event.block.timestamp, token0.id, context)
+  await updateHourTokenData(event.block.timestamp, token0.id, context)
 });

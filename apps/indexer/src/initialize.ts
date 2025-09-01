@@ -1,6 +1,8 @@
 import { ponder } from "ponder:registry";
 import { pool as sPool, token } from "ponder:schema";
 import { findBeraPerToken } from "./utils/pricing";
+import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
+import { updateDayTokenData, updateHourTokenData } from "./stats/token";
 
 ponder.on("WinniePool:Initialize", async ({ event, context }) => {
   const pool = await context.db.update(sPool, { id: event.log.address }).set(row => ({
@@ -21,5 +23,11 @@ ponder.on("WinniePool:Initialize", async ({ event, context }) => {
     await context.db.update(token, { id: token1.id }).set({
       derivedBERA: t1derivedBera.toString()
     })
+
+
+    await updateDayPoolData(event.block.timestamp, pool.id, context)
+    await updateHourPoolData(event.block.timestamp, pool.id, context)
+    await updateDayTokenData(event.block.timestamp, token0.id, context)
+    await updateHourTokenData(event.block.timestamp, token0.id, context)
   }
 });
