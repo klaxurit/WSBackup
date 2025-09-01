@@ -7,6 +7,7 @@ import Decimal from "decimal.js";
 import { updateProtocolDayData } from "./stats/porotocolDay";
 import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
 import { updateDayTokenData, updateHourTokenData } from "./stats/token";
+import { formatUnits, parseUnits } from "viem";
 
 ponder.on("WinniePool:Mint", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -43,15 +44,34 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(Decimal(token1.derivedBERA).mul(beraPriceUSD)).toString()
 
   pool.txCount += 1
-  if (pool.tick !== null && event.args.tickLower <= pool.tick && event.args.tickUpper > pool.tick) {
-    pool.liquidity += event.args.amount
-  }
+  pool.liquidity += event.args.amount
   pool.totalValueLockedToken0 += amount0
   pool.totalValueLockedToken1 += amount1
-  pool.totalValueLockedBERA = Decimal(pool.totalValueLockedToken0)
+
+  // console.log("########################################################")
+  // console.log(`Mint ${token0.symbol}/${token1.symbol}`)
+  // console.log("totalValueLockedToken0:", pool.totalValueLockedToken0)
+  // console.log("token0 derivedBERA:", token0.derivedBERA)
+  // console.log("TVLBera * token0derivedBera", Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals)).mul(token0.derivedBERA))
+
+  // console.log("totalValueLockedToken1:", pool.totalValueLockedToken1)
+  // console.log("token1 derivedBERA:", token1.derivedBERA)
+  // console.log("TVLBera * token1derivedBera", Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA))
+
+  // console.log("Addition des deux", Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals))
+  //   .mul(token0.derivedBERA)
+  //   .plus(Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA))
+  //   .toString())
+
+
+  pool.totalValueLockedBERA = Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals))
     .mul(token0.derivedBERA)
-    .plus(Decimal(pool.totalValueLockedToken1).times(token1.derivedBERA))
+    .plus(Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA))
     .toString()
+
+  // console.log("USD BERA PRICE", beraPriceUSD)
+  // console.log("totalValueLockedBERA", pool.totalValueLockedBERA)
+  // console.log("totalValueLockedUSD", Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString())
   pool.totalValueLockedUSD = Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
   // reset aggregates with new amounts

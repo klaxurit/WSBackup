@@ -1,17 +1,18 @@
 import Decimal from "decimal.js";
 import { Context } from "ponder:registry";
 import { pool as sPool, token as sToken } from "ponder:schema";
+import { formatUnits } from "viem";
 
 const REFERENCE_TOKEN = "0x6969696969696969696969696969696969696969" // wBera
 const STABLE_COINS = [
-  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce", // Honey
-  "0x779Ded0c9e1022225f8E0630b35a9b54bE713736", // USDT0
-  "0x549943e04f40284185054145c6E4e9568C1D3241" // USDC.e
+  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase(), // Honey
+  "0x779Ded0c9e1022225f8E0630b35a9b54bE713736".toLowerCase(), // USDT0
+  "0x549943e04f40284185054145c6E4e9568C1D3241".toLowerCase() // USDC.e
 ]
 const STABLE_TOKEN_POOL = "0x3b9dba6dacf92eea27dff0a1f9c646e12d739df2" // wBera/Honey
 const WHITELIST_TOKENS: `0x${string}`[] = [
   REFERENCE_TOKEN,
-  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce"
+  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase() as `0x${string}`
 ]
 
 export async function getBeraPriceInUSD(context: Context): Promise<Decimal> {
@@ -57,7 +58,7 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
       })
 
       if (pool && pool.liquidity > 0n) {
-        if (pool.token0 === token.id) {
+        if (pool.token0.toLocaleLowerCase() === token.id.toLocaleLowerCase()) {
           const token1 = await context.db.find(sToken, { id: pool.token1 })
           if (token1 && token1.id === REFERENCE_TOKEN) {
             const beraLocked = Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA)
@@ -68,7 +69,7 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
           }
         }
 
-        if (pool.token1 === token.id) {
+        if (pool.token1.toLocaleLowerCase() === token.id.toLocaleLowerCase()) {
           const token0 = await context.db.find(sToken, { id: pool.token0 })
           if (token0 && token0.id === REFERENCE_TOKEN) {
             const beraLocked = Decimal(pool.totalValueLockedToken1).mul(token0.derivedBERA)
@@ -92,8 +93,8 @@ export function getTrackedAmountUSD(
   token1: typeof sToken.$inferSelect,
   beraPriceUSD: Decimal
 ): Decimal {
-  const amount0Bera = Decimal(amount0).mul(token0.derivedBERA)
-  const amount1Bera = Decimal(amount0).mul(token1.derivedBERA)
+  const amount0Bera = Decimal(formatUnits(amount0, token0.decimals)).mul(token0.derivedBERA)
+  const amount1Bera = Decimal(formatUnits(amount0, token0.decimals)).mul(token1.derivedBERA)
 
   // both are whitelist tokens, return sum of both amounts
   if (WHITELIST_TOKENS.includes(token0.id) && WHITELIST_TOKENS.includes(token1.id)) {
@@ -125,8 +126,8 @@ export function sqrtPriceX96ToTokenPrices(
   const denom = BigInt(2 ** 192)
 
   const decimalsAdjust = BigInt(10 ** token1Decimal) / BigInt(10 ** token0Decimal)
-  
+
   const price = Number(num * decimalsAdjust) / Number(denom)
-  
+
   return [price, 1 / price];
 }

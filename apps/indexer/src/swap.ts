@@ -45,8 +45,8 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   const amount1Abs = abs(amount1)
   DEBUG && console.debug("amountAbs", amount0Abs, amount1Abs)
 
-  const amount0Bera = Decimal(amount0Abs).mul(token0.derivedBERA)
-  const amount1Bera = Decimal(amount1Abs).mul(token1.derivedBERA)
+  const amount0Bera = Decimal(formatUnits(amount0Abs, token0.decimals)).mul(token0.derivedBERA)
+  const amount1Bera = Decimal(formatUnits(amount1Abs, token1.decimals)).mul(token1.derivedBERA)
   DEBUG && console.debug("Amount Bera", amount0Bera, amount1Bera)
   DEBUG && DEBUG && console.debug("token0.derivedBERA", token0.derivedBERA)
   DEBUG && console.debug("token1.derivedBERA", token1.derivedBERA)
@@ -112,9 +112,11 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   token1.txCount += 1
 
   // update pool rates
-  const [price0Ratio, price1Ratio] = sqrtPriceX96ToTokenPrices(poolEntity.sqrtPrice, token0.decimals, token1.decimals)
-  pool.token0Price = formatUnits(price0Ratio, 18)
-  pool.token1Price = formatUnits(price1Ratio, 18)
+  // const [price0Ratio, price1Ratio] = sqrtPriceX96ToTokenPrices(poolEntity.sqrtPrice, token0.decimals, token1.decimals)
+  // pool.token0Price = formatUnits(price0Ratio, 18)
+  // pool.token1Price = formatUnits(price1Ratio, 18)
+  pool.token0Price = ((Number(pool.sqrtPrice) / (2 ** 96)) ** 2).toString()
+  pool.token1Price = (1 / ((Number(pool.sqrtPrice) / (2 ** 96)) ** 2)).toString()
   await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
 
   // update USD pricing
@@ -123,9 +125,9 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   token1.derivedBERA = (await findBeraPerToken(token1, context)).toString()
 
   // Things afffected by new USD rates
-  pool.totalValueLockedBERA = new Decimal(pool.totalValueLockedToken0)
+  pool.totalValueLockedBERA = new Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals))
     .mul(token0.derivedBERA)
-    .plus(Decimal(pool.totalValueLockedToken0).mul(token1.derivedBERA))
+    .plus(Decimal(formatUnits(pool.totalValueLockedToken0, token1.decimals)).mul(token1.derivedBERA))
     .toString()
   pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 

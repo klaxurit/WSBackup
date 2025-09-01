@@ -32,8 +32,8 @@ ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
     collectedFeesToken1: 0n,
     totalValueLockedToken0: 0n,
     totalValueLockedToken1: 0n,
-    totalValueLockedBERA: 0n,
-    
+    totalValueLockedBERA: "0",
+
     token0Price: "0",
     token1Price: "0",
     volumeUSD: "0",
