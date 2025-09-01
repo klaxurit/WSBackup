@@ -32,7 +32,7 @@ ponder.on("WinniePositionManager:Transfer", async ({ event, context }) => {
         owner: event.args.to,
         pool: posPool[0]?.id || "0x",
         token0: positionData[2] || "0x",
-        token1: positionData[2] || "0x",
+        token1: positionData[3] || "0x",
         tickLower: /* positionData[5] || */ "0x0",
         tickUpper: /* positionData[6] || */ "0x0",
         liquidity: positionData[7] || 0n,
@@ -45,6 +45,7 @@ ponder.on("WinniePositionManager:Transfer", async ({ event, context }) => {
         transaction: event.transaction.hash,
         feeGrowthInside0LastX128: positionData[8] || 0n,
         feeGrowthInside1LastX128: positionData[9] || 0n,
+        tokenId: event.args.tokenId
       });
     } catch (error) {
       console.error(`Error fetching position data for ${positionId}:`, error);

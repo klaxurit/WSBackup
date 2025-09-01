@@ -143,6 +143,7 @@ export const position = onchainTable("position", (t) => ({
   transaction: t.hex().notNull(),
   feeGrowthInside0LastX128: t.bigint().notNull().default(0n),
   feeGrowthInside1LastX128: t.bigint().notNull().default(0n),
+  tokenId: t.bigint().notNull()
 }), (table) => ({
   ownerIndex: index().on(table.owner),
   poolIndex: index().on(table.pool),
