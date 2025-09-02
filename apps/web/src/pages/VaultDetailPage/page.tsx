@@ -5,17 +5,23 @@ import { ExplorerIcon } from '../../components/SVGs';
 import { formatNumber } from '../../utils/formatNumber';
 import { LiquidityInput } from '../../components/Inputs/LiquidityInput';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
-import { ConnectButton } from '../../components/Buttons/ConnectButton';
 import { VaultActionButton } from '../../components/Vault/VaultActionButton';
-import { useAccount } from 'wagmi';
-import { FallbackImg } from '../../components/utils/FallbackImg';
-import { formatUnits } from 'viem';
+// import { useAccount } from 'wagmi'; // Commenté car non utilisé pour le moment
 
 interface VaultDetailPageProps { }
 
+// Type simple pour les tokens mockés
+interface MockToken {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoUri: string;
+}
+
 export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
   const { vaultAddress } = useParams<{ vaultAddress: string }>();
-  const { address } = useAccount();
+  // const { address } = useAccount(); // Commenté car non utilisé pour le moment
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
   const [depositMode, setDepositMode] = useState<'double' | 'single'>('double');
   const [token0Amount, setToken0Amount] = useState(0n);
@@ -52,7 +58,7 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
   const userPosition = { shares: '1234.56', valueUSD: 1500.00 };
 
   // Mock token data for LiquidityInput
-  const token0 = {
+  const token0: MockToken = {
     address: vault.token0Address,
     symbol: vault.token0Symbol,
     name: vault.token0Symbol,
@@ -60,7 +66,7 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
     logoUri: vault.token0LogoUri
   };
 
-  const token1 = {
+  const token1: MockToken = {
     address: vault.token1Address,
     symbol: vault.token1Symbol,
     name: vault.token1Symbol,
@@ -293,7 +299,7 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
                       symbol: `WIN-${vault.token0Symbol}-${vault.token1Symbol}`,
                       name: `WIN-${vault.token0Symbol}-${vault.token1Symbol}`,
                       decimals: 18,
-                      logoUri: undefined
+                      logoUri: '' // Chaîne vide au lieu d'undefined
                     }}
                     onAmountChange={setWithdrawAmount}
                     value={withdrawAmount}

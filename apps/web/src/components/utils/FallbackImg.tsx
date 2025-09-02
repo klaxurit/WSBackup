@@ -21,7 +21,7 @@ export const FallbackImg = ({
       className={className}
       style={{
         shapeRendering: 'geometricPrecision',
-        imageRendering: 'high-quality',
+        imageRendering: 'auto' as const,
         ...style
       }}
       onClick={onClick}

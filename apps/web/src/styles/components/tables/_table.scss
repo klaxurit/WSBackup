@@ -386,6 +386,174 @@
   min-width: 0;
 }
 
+// Styles spécifiques pour VaultsTable - uniformisation avec TokensTable et PoolsTable
+
+// Cellule d'index (colonne #)
+.VaultsTable__IndexTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__IndexCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.VaultsTable__IndexLink {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #e39229;
+  }
+}
+
+// Cellule Vault
+.VaultsTable__VaultTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__VaultCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.VaultsTable__LogoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  flex-shrink: 0;
+
+  .TokenPairLogos {
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+}
+
+.VaultsTable__VaultName {
+  font-weight: 600;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Cellule Strategy
+.VaultsTable__StrategyTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__StrategyCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.VaultsTable__StrategyBadge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e0e0e0;
+  white-space: nowrap;
+}
+
+// Cellule TVL
+.VaultsTable__TvlTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__TvlCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule APR
+.VaultsTable__AprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__AprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Fees APR
+.VaultsTable__FeesAprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__FeesAprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Rewards APR
+.VaultsTable__RewardsAprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__RewardsAprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Vol. 1d
+.VaultsTable__Vol1dTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__Vol1dCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Vol. 30d
+.VaultsTable__Vol30dTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__Vol30dCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
 .TokensTable__NameCell {
   display: flex;
   align-items: center;

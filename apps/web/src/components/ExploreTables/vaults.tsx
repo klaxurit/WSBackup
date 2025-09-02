@@ -45,13 +45,14 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
     {
       label: '#',
       key: 'index',
+      className: 'VaultsTable__IndexTd',
       render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="VaultsTable__IndexCell">
           <Link
             to={`/vaults/${row.address}`}
-            style={{ textDecoration: 'none', color: 'inherit' }}
+            className="VaultsTable__IndexLink"
           >
-            <span className={`Table__Address`}>
+            <span className="Table__Address">
               {row.token0Symbol}/{row.token1Symbol}
             </span>
           </Link>
@@ -61,7 +62,6 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
             rel="noopener noreferrer"
             className="Table__Icon"
             title={row.address}
-            style={{ lineHeight: '14px' }}
           >
             <ExplorerIcon />
           </a>
@@ -71,114 +71,144 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
     {
       label: 'Vault',
       key: 'vault',
+      className: 'VaultsTable__VaultTd',
       sortable: true,
       sortValue: (row) => `${row.token0Symbol}/${row.token1Symbol}`,
       render: (row) => (
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          <TokenPairLogos
-            token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
-            token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
-            borderWidth={2}
-            separatorWidth={1.5}
-            size={28}
-          />
-          <span style={{ fontWeight: 600, marginLeft: 8 }}>{row.name || `${row.token0Symbol}/${row.token1Symbol}`}</span>
+        <span className="VaultsTable__VaultCell">
+          <span className="VaultsTable__LogoWrapper">
+            <TokenPairLogos
+              token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
+              token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
+              borderWidth={2}
+              separatorWidth={1.5}
+              size={28}
+            />
+          </span>
+          <span className="VaultsTable__VaultName">{row.name || `${row.token0Symbol}/${row.token1Symbol}`}</span>
         </span>
       )
     },
     {
       label: 'Strategy',
       key: 'strategy',
+      className: 'VaultsTable__StrategyTd',
       sortable: true,
       sortValue: (row) => row.strategy || 'Auto-Compound',
       render: (row) => (
-        <span style={{
-          padding: '4px 8px',
-          borderRadius: '6px',
-          backgroundColor: '#2a2a2a',
-          fontSize: '12px',
-          fontWeight: 500
-        }}>
-          {row.strategy || 'Auto-Compound'}
+        <span className="VaultsTable__StrategyCell">
+          <span className="VaultsTable__StrategyBadge">
+            {row.strategy || 'Auto-Compound'}
+          </span>
         </span>
       )
     },
     {
       label: 'TVL',
       key: 'tvl',
+      className: 'VaultsTable__TvlTd',
       sortable: true,
       sortValue: (row) => {
         return row.tvlUSD || 0
       },
       render: (row) => {
-        return row.tvlUSD !== 0
-          ? `$${formatNumber(row.tvlUSD)}`
-          : "-"
+        return (
+          <span className="VaultsTable__TvlCell">
+            {row.tvlUSD !== 0
+              ? `$${formatNumber(row.tvlUSD)}`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'APR',
       key: 'apr',
+      className: 'VaultsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
         return row.apr || 0;
       },
       render: (row) => {
-        return row.apr !== 0
-          ? `${row.apr.toFixed(2)}%`
-          : "-"
+        return (
+          <span className="VaultsTable__AprCell">
+            {row.apr !== 0
+              ? `${row.apr.toFixed(2)}%`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'Fees APR',
       key: 'feesApr',
+      className: 'VaultsTable__FeesAprTd',
       sortable: true,
       sortValue: (row) => {
         return row.feesApr || 0;
       },
       render: (row) => {
-        return row.feesApr !== 0
-          ? `${row.feesApr.toFixed(2)}%`
-          : "-"
+        return (
+          <span className="VaultsTable__FeesAprCell">
+            {row.feesApr !== 0
+              ? `${row.feesApr.toFixed(2)}%`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'Rewards APR',
       key: 'rewardsApr',
+      className: 'VaultsTable__RewardsAprTd',
       sortable: true,
       sortValue: (row) => {
         return row.rewardsApr || 0;
       },
       render: (row) => {
-        return row.rewardsApr !== 0
-          ? `${row.rewardsApr.toFixed(2)}%`
-          : "-"
+        return (
+          <span className="VaultsTable__RewardsAprCell">
+            {row.rewardsApr !== 0
+              ? `${row.rewardsApr.toFixed(2)}%`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'Vol. 1d',
       key: 'vol1d',
+      className: 'VaultsTable__Vol1dTd',
       sortable: true,
       sortValue: (row) => {
         return row.dayVolumeUSD || 0;
       },
       render: (row) => {
-        return row.dayVolumeUSD !== 0
-          ? `$${formatNumber(row.dayVolumeUSD)}`
-          : "-"
+        return (
+          <span className="VaultsTable__Vol1dCell">
+            {row.dayVolumeUSD !== 0
+              ? `$${formatNumber(row.dayVolumeUSD)}`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'Vol. 30d',
       key: 'vol30d',
+      className: 'VaultsTable__Vol30dTd',
       sortable: true,
       sortValue: (row) => {
         return row.monthVolumeUSD || 0;
       },
       render: (row) => {
-        return row.monthVolumeUSD !== 0
-          ? `$${formatNumber(row.monthVolumeUSD)}`
-          : "-"
+        return (
+          <span className="VaultsTable__Vol30dCell">
+            {row.monthVolumeUSD !== 0
+              ? `$${formatNumber(row.monthVolumeUSD)}`
+              : "-"}
+          </span>
+        )
       }
     },
   ];

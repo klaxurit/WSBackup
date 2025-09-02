@@ -2,37 +2,37 @@ import { useState, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 // import { Contract, parseUnits } from 'ethers'; // Temporairement désactivé
 
-// ABIs basés sur le guide frontend
-const routerAbi = [
-  "function addLiquidity(address,uint256,uint256,uint256,uint256,uint256,address) returns (uint256,uint256,uint256)",
-  "function addLiquidityNative(address,uint256,uint256,uint256,uint256,uint256,address) payable returns (uint256,uint256,uint256)",
-  "function addLiquiditySingle(address,uint256,uint256,uint256,(address router,uint256 amountIn,uint256 minAmountOut,bool zeroForOne,bytes routeData),address) returns (uint256,uint256,uint256)",
-  "function addLiquiditySingleNative(address,uint256,uint256,(address router,uint256 minAmountOut,bool zeroForOne,bytes routeData),address) payable returns (uint256,uint256,uint256)",
-  "function removeLiquidity(address,uint256,uint256,uint256,address) returns (uint256,uint256,uint128)",
-  "function removeLiquidityNative(address,uint256,uint256,uint256,address payable) returns (uint256,uint256,uint128)",
-];
+// ABIs basés sur le guide frontend (commentés pour éviter les erreurs de variables non utilisées)
+// const routerAbi = [
+//   "function addLiquidity(address,uint256,uint256,uint256,uint256,uint256,address) returns (uint256,uint256,uint256)",
+//   "function addLiquidityNative(address,uint256,uint256,uint256,uint256,uint256,address) payable returns (uint256,uint256,uint256)",
+//   "function addLiquiditySingle(address,uint256,uint256,uint256,(address router,uint256 amountIn,uint256 minAmountOut,bool zeroForOne,bytes routeData),address) returns (uint256,uint256,uint256)",
+//   "function addLiquiditySingleNative(address,uint256,uint256,(address router,uint256 minAmountOut,bool zeroForOne,bytes routeData),address) payable returns (uint256,uint256,uint256)",
+//   "function removeLiquidity(address,uint256,uint256,uint256,address) returns (uint256,uint256,uint128)",
+//   "function removeLiquidityNative(address,uint256,uint256,uint256,address payable) returns (uint256,uint256,uint128)",
+// ];
 
-const vaultAbi = [
-  "function token0() view returns (address)",
-  "function token1() view returns (address)",
-  "function getMintAmounts(uint256,uint256) view returns (uint256 amount0, uint256 amount1, uint256 mintAmount)",
-  "function totalSupply() view returns (uint256)",
-];
+// const vaultAbi = [
+//   "function token0() view returns (address)",
+//   "function token1() view returns (address)",
+//   "function getMintAmounts(uint256,uint256) view returns (uint256 amount0, uint256 amount1, uint256 mintAmount)",
+//   "function totalSupply() view returns (uint256)",
+// ];
 
-const erc20Abi = [
-  "function decimals() view returns (uint8)",
-  "function symbol() view returns (string)",
-  "function balanceOf(address) view returns (uint256)",
-  "function allowance(address,address) view returns (uint256)",
-  "function approve(address,uint256) returns (bool)",
-];
+// const erc20Abi = [
+//   "function decimals() view returns (uint8)",
+//   "function symbol() view returns (string)",
+//   "function balanceOf(address) view returns (uint256)",
+//   "function allowance(address,address) view returns (uint256)",
+//   "function approve(address,uint256) returns (bool)",
+// ];
 
-// Helpers pour les basis points
-const bpsDown = (x: bigint, bps: number) =>
-  (x * BigInt(10000 - bps)) / 10000n;
+// Helpers pour les basis points (commentés pour éviter les erreurs de variables non utilisées)
+// const bpsDown = (x: bigint, bps: number) =>
+//   (x * BigInt(10000 - bps)) / 10000n;
 
-const pctBps = (x: bigint, bps: number) =>
-  (x * BigInt(bps)) / 10_000n;
+// const pctBps = (x: bigint, bps: number) =>
+//   (x * BigInt(bps)) / 10_000n;
 
 interface VaultConfig {
   routerAddress: string;
@@ -67,10 +67,10 @@ export const useVault = (config: VaultConfig) => {
   const [error, setError] = useState<string | null>(null);
 
   // Version simplifiée avec des fonctions mockées pour l'instant
-  const connectContracts = useCallback(async () => {
-    // TODO: Implémenter la vraie connexion aux contrats
-    return { router: null, vault: null, t0: null, t1: null };
-  }, [config]);
+  // const connectContracts = useCallback(async () => {
+  //   // TODO: Implémenter la vraie connexion aux contrats
+  //   return { router: null, vault: null, t0: null, t1: null };
+  // }, [config]);
 
   // Dépôt double-sided (version mockée)
   const depositTwoSided = useCallback(async (params: DepositParams) => {

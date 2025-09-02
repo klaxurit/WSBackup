@@ -17,7 +17,7 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
   customClassName = '',
   onClick
 }) => {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
 
   // Si l'utilisateur n'est pas connecté, utiliser le ConnectButton standard
   if (!isConnected) {
