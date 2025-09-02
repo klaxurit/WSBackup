@@ -19,7 +19,11 @@ export const FallbackImg = ({
       height={height}
       viewBox="0 0 100 100"
       className={className}
-      style={style}
+      style={{
+        shapeRendering: 'geometricPrecision',
+        imageRendering: 'high-quality',
+        ...style
+      }}
       onClick={onClick}
     >
       <circle cx="50" cy="50" r="50" fill="#000000" />
@@ -32,6 +36,7 @@ export const FallbackImg = ({
         fontSize={28}
         fontWeight="bold"
         fontFamily="Arial, sans-serif"
+        style={{ textRendering: 'optimizeLegibility' }}
       >
         {content}
       </text>

@@ -119,7 +119,7 @@
     }
 
     thead th {
-      background: rgba(18, 17, 14, 0.98);
+      background: $white-004;
       color: #aaa;
       font-weight: 700;
       border-bottom: 1px solid #232323;
@@ -203,7 +203,7 @@
   }
 
   &__TopCard {
-    background: var(--surface1, #181818);
+    background: $white-004;
     border-radius: 12px;
     padding: 16px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
