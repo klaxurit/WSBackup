@@ -1,12 +1,11 @@
 import Decimal from "decimal.js";
-import { ContentSecurityPolicyOptionHandler } from "hono/secure-headers";
 import { Context } from "ponder:registry";
 import { poolHourData } from "ponder:schema";
 import { poolDayData, pool as sPool } from "ponder:schema";
 import { Address } from "viem";
 
 export async function updateDayPoolData(timestamp: bigint, address: Address, context: Context) {
-  const dayId = Math.round(Number(timestamp) / 86400)
+  const dayId = Math.floor(Number(timestamp) / 86400)
   const dayStartTimestamp = dayId * 86400
   const dayPoolId = `${address}-${dayId}`
 
@@ -72,7 +71,7 @@ export async function updateDayPoolData(timestamp: bigint, address: Address, con
 }
 
 export async function updateHourPoolData(timestamp: bigint, address: Address, context: Context) {
-  const hourId = Math.round(Number(timestamp) / 3600)
+  const hourId = Math.floor(Number(timestamp) / 3600)
   const hourStartUnix = hourId * 3600
   const hourPoolID = `${address}-${hourId}`
 

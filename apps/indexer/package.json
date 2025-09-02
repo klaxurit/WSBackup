@@ -9,7 +9,9 @@
     "db": "ponder db",
     "codegen": "ponder codegen",
     "lint": "eslint .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "filter-logs": "tsx scripts/filter-logs.ts",
+    "live-logs": "tsx scripts/live-logs.ts"
   },
   "dependencies": {
     "@repo/contracts": "*",
@@ -17,12 +19,15 @@
     "drizzle-orm": "0.41.0",
     "hono": "^4.5.0",
     "ponder": "^0.12.0",
-    "viem": "^2.21.3"
+    "viem": "^2.21.3",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
     "eslint": "^8.53.0",
     "eslint-config-ponder": "^0.12.0",
+    "tsx": "^4.0.0",
     "typescript": "^5.2.2"
   },
   "engines": {

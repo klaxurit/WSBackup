@@ -8,6 +8,7 @@ import { updateProtocolDayData } from "./stats/porotocolDay";
 import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
 import { updateDayTokenData, updateHourTokenData } from "./stats/token";
 import { formatUnits, parseUnits } from "viem";
+import { logMint, logDebug } from "./utils/logger";
 
 ponder.on("WinniePool:Mint", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -23,6 +24,23 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   if (!token0Entity || !token1Entity) return
   const token0 = { ...token0Entity }
   const token1 = { ...token1Entity }
+
+  const logContext = {
+    event: 'mint',
+    pool: pool.id,
+    token0: token0.symbol,
+    token1: token1.symbol,
+    txHash: event.transaction.hash,
+    blockNumber: event.block.number
+  }
+
+  logDebug(logContext, "Processing Mint event", {
+    token0Symbol: token0.symbol,
+    token1Symbol: token1.symbol,
+    poolId: pool.id,
+    tickLower: event.args.tickLower.toString(),
+    tickUpper: event.args.tickUpper.toString()
+  })
 
   const mintId = `${event.transaction.hash}#${event.log.logIndex}`;
   const beraPriceUSD = await getBeraPriceInUSD(context)
@@ -48,20 +66,6 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   pool.totalValueLockedToken0 += amount0
   pool.totalValueLockedToken1 += amount1
 
-  // console.log("########################################################")
-  // console.log(`Mint ${token0.symbol}/${token1.symbol}`)
-  // console.log("totalValueLockedToken0:", pool.totalValueLockedToken0)
-  // console.log("token0 derivedBERA:", token0.derivedBERA)
-  // console.log("TVLBera * token0derivedBera", Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals)).mul(token0.derivedBERA))
-
-  // console.log("totalValueLockedToken1:", pool.totalValueLockedToken1)
-  // console.log("token1 derivedBERA:", token1.derivedBERA)
-  // console.log("TVLBera * token1derivedBera", Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA))
-
-  // console.log("Addition des deux", Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals))
-  //   .mul(token0.derivedBERA)
-  //   .plus(Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA))
-  //   .toString())
 
 
   pool.totalValueLockedBERA = Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals))
@@ -69,9 +73,19 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
     .plus(Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA))
     .toString()
 
-  // console.log("USD BERA PRICE", beraPriceUSD)
-  // console.log("totalValueLockedBERA", pool.totalValueLockedBERA)
-  // console.log("totalValueLockedUSD", Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString())
+  logDebug(logContext, "TVL calculations completed", {
+    token0TVL: {
+      amount: pool.totalValueLockedToken0.toString(),
+      bera: Decimal(formatUnits(pool.totalValueLockedToken0, token0.decimals)).mul(token0.derivedBERA).toString()
+    },
+    token1TVL: {
+      amount: pool.totalValueLockedToken1.toString(), 
+      bera: Decimal(formatUnits(pool.totalValueLockedToken1, token1.decimals)).mul(token1.derivedBERA).toString()
+    },
+    totalBERA: pool.totalValueLockedBERA,
+    totalUSD: Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString(),
+    beraPriceUSD: beraPriceUSD.toString()
+  })
   pool.totalValueLockedUSD = Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
   // reset aggregates with new amounts
@@ -189,5 +203,39 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   await updateHourPoolData(event.block.timestamp, pool.id, context)
   await updateDayTokenData(event.block.timestamp, token0.id, context)
   await updateHourTokenData(event.block.timestamp, token0.id, context)
-  // TODO Start all daily data update
+
+  logMint(logContext, {
+    mintId,
+    amounts: {
+      amount0: amount0.toString(),
+      amount1: amount1.toString(),
+      liquidity: event.args.amount.toString(),
+      amountUSD: amountUSD.toString()
+    },
+    ticks: {
+      tickLower: event.args.tickLower.toString(),
+      tickUpper: event.args.tickUpper.toString()
+    },
+    tvl: {
+      token0: pool.totalValueLockedToken0.toString(),
+      token1: pool.totalValueLockedToken1.toString(),
+      totalBERA: pool.totalValueLockedBERA,
+      totalUSD: pool.totalValueLockedUSD
+    },
+    prices: {
+      beraPriceUSD: beraPriceUSD.toString(),
+      token0DerivedBERA: token0.derivedBERA,
+      token1DerivedBERA: token1.derivedBERA
+    },
+    participants: {
+      owner: event.args.owner,
+      sender: event.args.sender,
+      origin: event.transaction.from
+    },
+    poolStats: {
+      totalLiquidity: pool.liquidity.toString(),
+      txCount: pool.txCount,
+      liquidityProviderCount: pool.liquidityProviderCount
+    }
+  })
 });

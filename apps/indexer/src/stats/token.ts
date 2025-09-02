@@ -3,12 +3,10 @@ import { token as sToken, tokenDayData, tokenHourData } from "ponder:schema";
 import { Address } from "viem";
 import { findBeraPerToken, getBeraPriceInUSD } from "../utils/pricing";
 import Decimal from "decimal.js";
-import { StreamOptions } from "stream";
-import { cp } from "fs";
 
 export async function updateDayTokenData(timestamp: bigint, address: Address, context: Context) {
-  const dayId = Math.round(Number(timestamp) / 86400)
-  const hourId = Math.round(Number(timestamp) / 3600)
+  const dayId = Math.floor(Number(timestamp) / 86400)
+  const hourId = Math.floor(Number(timestamp) / 3600)
   const dayStartTimestamp = dayId * 86400
   const dayTokenId = `${address}-${dayId}`
 
@@ -69,7 +67,7 @@ export async function updateDayTokenData(timestamp: bigint, address: Address, co
 }
 
 export async function updateHourTokenData(timestamp: bigint, address: Address, context: Context) {
-  const hourId = Math.round(Number(timestamp) / 3600)
+  const hourId = Math.floor(Number(timestamp) / 3600)
   const hourStartUnix = hourId * 3600
   const hourTokenID = `${address}-${hourId}`
 

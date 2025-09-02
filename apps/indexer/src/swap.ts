@@ -12,8 +12,7 @@ import { findBeraPerToken, getBeraPriceInUSD, getTrackedAmountUSD } from "./util
 import { updateProtocolDayData } from "./stats/porotocolDay";
 import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
 import { updateDayTokenData, updateHourTokenData } from "./stats/token";
-
-const DEBUG = false
+import { logSwap, logDebug } from "./utils/logger";
 
 ponder.on("WinniePool:Swap", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -30,42 +29,56 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   const token0 = { ...token0Entity }
   const token1 = { ...token1Entity }
 
-  DEBUG && console.debug("##################################################################")
-  DEBUG && console.debug("New swap", token0.symbol, token1.symbol, event.transaction.hash)
+  const logContext = {
+    event: 'swap',
+    pool: pool.id,
+    token0: token0.symbol,
+    token1: token1.symbol,
+    txHash: event.transaction.hash,
+    blockNumber: event.block.number
+  }
+
+  logDebug(logContext, "Processing Swap event", {
+    token0Symbol: token0.symbol,
+    token1Symbol: token1.symbol,
+    poolId: pool.id
+  })
 
   const swapId = `${event.transaction.hash}#${event.log.logIndex}`;
   let beraPriceUSD = await getBeraPriceInUSD(context)
-  DEBUG && console.debug("beraPriceUSD", beraPriceUSD)
 
   const amount0 = event.args.amount0
   const amount1 = event.args.amount1
-  DEBUG && console.debug("amounts", amount0, amount1)
 
   const amount0Abs = abs(amount0)
   const amount1Abs = abs(amount1)
-  DEBUG && console.debug("amountAbs", amount0Abs, amount1Abs)
 
   const amount0Bera = Decimal(formatUnits(amount0Abs, token0.decimals)).mul(token0.derivedBERA)
   const amount1Bera = Decimal(formatUnits(amount1Abs, token1.decimals)).mul(token1.derivedBERA)
-  DEBUG && console.debug("Amount Bera", amount0Bera, amount1Bera)
-  DEBUG && DEBUG && console.debug("token0.derivedBERA", token0.derivedBERA)
-  DEBUG && console.debug("token1.derivedBERA", token1.derivedBERA)
 
   const amount0USD = amount0Bera.mul(beraPriceUSD)
   const amount1USD = amount1Bera.mul(beraPriceUSD)
-  DEBUG && console.debug("Amount USD", amount0Bera, amount1Bera)
 
   const amountTotalUSDTracked = getTrackedAmountUSD(amount0Abs, token0, amount1Abs, token1, beraPriceUSD).div(2)
   const amountTotalBeraTracked = amountTotalUSDTracked.div(beraPriceUSD)
   const amountTotalUSDUntracked = amount0USD.plus(amount1USD).div(2)
-  DEBUG && console.debug("amountTotalUSDTracked", amountTotalUSDTracked)
-  DEBUG && console.debug("amountTotalBeraTracked", amountTotalBeraTracked)
-  DEBUG && console.debug("amountTotalUSDUntracked", amountTotalUSDUntracked)
 
   const feeBera = amountTotalBeraTracked.mul(pool.feeTier).div(1000000)
   const feeUSD = amountTotalUSDTracked.mul(pool.feeTier).div(1000000)
-  DEBUG && console.debug("feeBera", feeBera)
-  DEBUG && console.debug("feeUSD", feeUSD)
+
+  logDebug(logContext, "Swap calculations completed", {
+    beraPriceUSD: beraPriceUSD.toString(),
+    amounts: { amount0: amount0.toString(), amount1: amount1.toString() },
+    amountsAbs: { amount0Abs: amount0Abs.toString(), amount1Abs: amount1Abs.toString() },
+    amountsBera: { amount0Bera: amount0Bera.toString(), amount1Bera: amount1Bera.toString() },
+    amountsUSD: { amount0USD: amount0USD.toString(), amount1USD: amount1USD.toString() },
+    totalTracked: {
+      usd: amountTotalUSDTracked.toString(),
+      bera: amountTotalBeraTracked.toString(),
+      untracked: amountTotalUSDUntracked.toString()
+    },
+    fees: { feeBera: feeBera.toString(), feeUSD: feeUSD.toString() }
+  })
 
 
   // Create TX
@@ -167,4 +180,36 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   await updateHourPoolData(event.block.timestamp, pool.id, context)
   await updateDayTokenData(event.block.timestamp, token0.id, context)
   await updateHourTokenData(event.block.timestamp, token0.id, context)
+
+  logSwap(logContext, {
+    swapId,
+    amounts: {
+      amount0: amount0.toString(),
+      amount1: amount1.toString(),
+      amountUSD: amountTotalUSDTracked.toString()
+    },
+    prices: {
+      beraPriceUSD: beraPriceUSD.toString(),
+      token0Price: pool.token0Price,
+      token1Price: pool.token1Price,
+      sqrtPriceX96: pool.sqrtPrice.toString()
+    },
+    liquidity: pool.liquidity.toString(),
+    tick: pool.tick,
+    fees: {
+      feeBera: feeBera.toString(),
+      feeUSD: feeUSD.toString(),
+      feeTier: pool.feeTier
+    },
+    volume: {
+      totalUSDTracked: amountTotalUSDTracked.toString(),
+      totalBeraTracked: amountTotalBeraTracked.toString(),
+      totalUSDUntracked: amountTotalUSDUntracked.toString()
+    },
+    participants: {
+      sender: event.args.sender,
+      recipient: event.args.recipient,
+      origin: event.transaction.from
+    }
+  })
 });
