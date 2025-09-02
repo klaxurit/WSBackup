@@ -316,6 +316,9 @@ export const poolDayData = onchainTable("pool_day_data", (t) => ({
   high: t.numeric().notNull().default("0"),
   low: t.numeric().notNull().default("0"),
   close: t.numeric().notNull().default("0"),
+  apr: t.numeric().notNull().default("0"),
+  volumeUSD1D: t.numeric().notNull().default("0"),
+  volumeUSD30D: t.numeric().notNull().default("0"),
 }), (table) => ({
   dateIndex: index().on(table.date),
   poolIndex: index().on(table.pool),
@@ -342,7 +345,7 @@ export const poolHourData = onchainTable("pool_hour_data", (t) => ({
   open: t.numeric().notNull().default("0"),
   high: t.numeric().notNull().default("0"),
   low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0"),
+  close: t.numeric().notNull().default("0")
 }), (table) => ({
   periodIndex: index().on(table.periodStartUnix),
   poolIndex: index().on(table.pool),

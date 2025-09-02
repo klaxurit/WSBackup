@@ -1,3 +1,5 @@
+import Decimal from "decimal.js";
+import { ContentSecurityPolicyOptionHandler } from "hono/secure-headers";
 import { Context } from "ponder:registry";
 import { poolHourData } from "ponder:schema";
 import { poolDayData, pool as sPool } from "ponder:schema";
@@ -12,6 +14,10 @@ export async function updateDayPoolData(timestamp: bigint, address: Address, con
   if (!pool) return
 
   const poolData = await context.db.find(poolDayData, { id: dayPoolId })
+  const apr = await calculateAPR(pool, `${address}-${dayId - 1}`, context)
+  const HourId = (Math.round(Number(timestamp) / 3600))
+  const volumeUSD1D = await calculateVolumeForPeriod(pool, `${address}-${HourId - 24}`, context)
+  const volumeUSD30D = await calculateVolumeForPeriod(pool, `${address}-${HourId - (24 * 30)}`, context)
 
   if (!poolData) {
     await context.db.insert(poolDayData).values({
@@ -35,6 +41,9 @@ export async function updateDayPoolData(timestamp: bigint, address: Address, con
       high: pool.token0Price,
       low: pool.token0Price,
       close: pool.token1Price,
+      apr,
+      volumeUSD1D,
+      volumeUSD30D
     })
   } else {
     await context.db.update(poolDayData, { id: dayPoolId }).set((r) => ({
@@ -55,6 +64,9 @@ export async function updateDayPoolData(timestamp: bigint, address: Address, con
       high: r.high < pool.token0Price ? pool.token0Price : r.high,
       low: r.low > pool.token0Price ? pool.token0Price : r.low,
       close: pool.token1Price,
+      apr,
+      volumeUSD1D,
+      volumeUSD30D
     }))
   }
 }
@@ -68,6 +80,7 @@ export async function updateHourPoolData(timestamp: bigint, address: Address, co
   if (!pool) return
 
   const poolData = await context.db.find(poolHourData, { id: hourPoolID })
+  // const apr = await calculateAPR(pool, context)
 
   if (!poolData) {
     await context.db.insert(poolHourData).values({
@@ -113,4 +126,26 @@ export async function updateHourPoolData(timestamp: bigint, address: Address, co
       close: pool.token1Price,
     }))
   }
+}
+
+async function calculateAPR(pool: typeof sPool.$inferSelect, dayPoolId: string, context: Context) {
+  if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") return "0.00"
+
+  const fromPool = await context.db.find(poolDayData, { id: dayPoolId })
+  if (!fromPool) return "0.00"
+
+  const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD)
+
+  const apr = periodFees.mul(365).div(pool.totalValueLockedUSD).mul(100)
+
+  return apr.toFixed(2)
+}
+
+async function calculateVolumeForPeriod(pool: typeof sPool.$inferSelect, dayPoolId: string, context: Context) {
+  if (!pool.volumeUSD || pool.volumeUSD === "0") return "0"
+
+  const fromPool = await context.db.find(poolHourData, { id: dayPoolId })
+  if (!fromPool) return "0"
+
+  return new Decimal(pool.volumeUSD).minus(fromPool.volumeUSD).toString()
 }

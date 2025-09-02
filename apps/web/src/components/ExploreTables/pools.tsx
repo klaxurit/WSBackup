@@ -11,26 +11,78 @@ interface PoolsTableProps {
   searchValue: string
 }
 
+const GET_POOL_STATS = `
+  query GetPoolsStats {
+    pools {
+    totalCount
+    pageInfo {
+      endCursor
+      hasNextPage
+      hasPreviousPage
+      startCursor
+    }
+    items {
+      feeTier
+      id
+      liquidity
+      poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
+        items {
+          tvlUSD
+          volumeUSD
+          apr
+          volumeUSD1D
+          volumeUSD30D
+        }
+      }
+      token0Ref {
+        name
+        id
+        symbol
+      }
+      token1Ref {
+        id
+        name
+        symbol
+      }
+      totalValueLockedBERA
+      totalValueLockedUSD
+      volumeUSD
+    }
+  }
+  }`
+
 export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   const { data, isLoading } = useQuery({
     queryKey: ['poolStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool`)
-      if (!resp.ok) return { data: [] }
-      return resp.json()
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_POOL_STATS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.pools;
     }
+
   });
 
   const pools = useMemo(() => {
     if (!data) return []
     // Normalement il n'y a plus besoin de ce useMemo, il faut passer toutes les params de paginations 
     // et de searchValue dans la requête au dessus et il retournera seulement les resultats paginé
-    if (!searchValue) return data.data
-    return data.data.filter((pool: any) =>
-      (pool.pool && pool.pool.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.address && pool.address.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.token1?.symbol && pool.token1.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+    if (!searchValue) return data.items
+    return data.items.filter((pool: any) =>
+      (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
     );
   }, [searchValue, data]);
 
@@ -41,19 +93,19 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Link
-            to={`/pool/${row.address}`}
+            to={`/pool/${row.id}`}
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <span className={`Table__Address`}>
-              {row.token0Symbol}/{row.token1Symbol}
+              {row.token0Ref.symbol}/{row.token1Ref.symbol}
             </span>
           </Link>
           <a
-            href={`https://berascan.com/address/${row.address}`}
+            href={`https://berascan.com/address/${row.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Icon"
-            title={row.address}
+            title={row.id}
           >
             <ExplorerIcon />
           </a>
@@ -64,12 +116,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       label: 'Pool',
       key: 'pool',
       sortable: true,
-      sortValue: (row) => `${row.token0Symbol}/${row.token1Symbol}`,
+      sortValue: (row) => `${row.token0Ref.symbol}/${row.token1Ref.symbol}`,
       render: (row) => (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <TokenPairLogos
-            token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
-            token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
+            token0={{ address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
+            token1={{ address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
             borderWidth={3}
             separatorWidth={2.5}
           />
@@ -81,19 +133,19 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       label: 'Fee Tier',
       key: 'fee',
       sortable: true,
-      sortValue: (row) => row.fee,
-      render: (row) => (`${row.fee / 10000}%`)
+      sortValue: (row) => row.feeTier,
+      render: (row) => (`${row.feeTier / 10000}%`)
     },
     {
       label: 'TVL',
       key: 'tvl',
       sortable: true,
       sortValue: (row) => {
-        return row.tvlUSD
+        return row.totalValueLockedUSD
       },
       render: (row) => {
-        return row.tvlUSD !== 0
-          ? `$${formatNumber(row.tvlUSD)}`
+        return row.totalValueLockedUSD !== 0
+          ? `$${formatNumber(Number(row.totalValueLockedUSD))}`
           : "-"
       }
     },
@@ -102,11 +154,11 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       key: 'apr',
       sortable: true,
       sortValue: (row) => {
-        return row.apr;
+        return row.poolDayData.items[0]?.apr || "0";
       },
       render: (row) => {
-        return row.apr !== 0
-          ? `${row.apr.toFixed(2)}%`
+        return row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].apr) > 0
+          ? `${row.poolDayData.items[0].apr}%`
           : "-"
       }
     },
@@ -122,13 +174,11 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       key: 'vol1d',
       sortable: true,
       sortValue: (row) => {
-        return row.dayVolumeUSD !== 0
-          ? row.dayVolumeUSD
-          : 0;
+        return row.poolDayData.items[0]?.volumeUSD1D || 0;
       },
       render: (row) => {
-        return row.dayVolumeUSD !== 0
-          ? `$${formatNumber(row.dayVolumeUSD)}`
+        return row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD1D) > 0
+          ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD1D))}`
           : "-"
       }
     },
@@ -140,8 +190,8 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         return row.monthVolumeUSD
       },
       render: (row) => {
-        return row.monthVolumeUSD !== 0
-          ? `$${formatNumber(row.monthVolumeUSD)}`
+        return row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
+          ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD30D))}`
           : "-"
       }
     },
