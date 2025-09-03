@@ -1,6 +1,6 @@
 import { Context } from "ponder:registry";
-import { token as sToken, tokenDayData, tokenHourData } from "ponder:schema";
-import { findBeraPerToken, getBeraPriceInUSD } from "../utils/pricing";
+import { bundle, token as sToken, tokenDayData, tokenHourData } from "ponder:schema";
+import { findBeraPerToken } from "../utils/pricing";
 import Decimal from "decimal.js";
 
 export async function updateTokenStats(timestamp: bigint, token: typeof sToken.$inferSelect, context: Context) {
@@ -123,7 +123,8 @@ async function updateHourTokenData(
 }
 
 async function getPriceInUSD(token: typeof sToken.$inferSelect, context: Context): Promise<string> {
-  const beraPriceUSD = await getBeraPriceInUSD(context)
+  const b = await context.db.find(bundle, { id: "1" })
+  const beraPriceUSD = new Decimal(b?.beraPriceUSD || "0")
 
   if (token.derivedBERA !== "0") {
     return new Decimal(token.derivedBERA).mul(beraPriceUSD).toString()

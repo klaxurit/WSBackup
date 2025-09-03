@@ -172,6 +172,11 @@ export const positionSnapshot = onchainTable("position_snapshot", (t) => ({
   timestampIndex: index().on(table.timestamp),
 }));
 
+export const bundle = onchainTable("bundle", (t) => ({
+  id: t.text().primaryKey(),
+  beraPriceUSD: t.numeric().notNull().default("0")
+}))
+
 // ============ EVENTS ============
 
 export const mint = onchainTable("mint", (t) => ({

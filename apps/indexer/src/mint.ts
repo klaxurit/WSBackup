@@ -1,8 +1,7 @@
 import { ponder } from "ponder:registry";
-import { factory as sFactory, mint as sMint, pool as sPool, tick as sTick, token as sToken, transaction as sTransaction } from "ponder:schema";
+import { bundle, factory as sFactory, mint as sMint, pool as sPool, tick as sTick, token as sToken, transaction as sTransaction } from "ponder:schema";
 import { getOrCreateTransaction, getTickId } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
-import { getBeraPriceInUSD } from "./utils/pricing";
 import Decimal from "decimal.js";
 import { updateProtocolDayData } from "./stats/porotocolDay";
 import { updatePoolStats } from "./stats/pool";
@@ -17,7 +16,8 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   let poolEntity = await context.db.find(sPool, { id: event.log.address });
   if (!poolEntity) return;
   const pool = { ...poolEntity }
-  const debug = pool.id === "0xc224af3a407ddf03867eec22162a9d39345ec88b"
+  // const debug = pool.id === "0xc224af3a407ddf03867eec22162a9d39345ec88b"
+  const debug = false
 
   let token0Entity = await context.db.find(sToken, { id: poolEntity.token0 })
   let token1Entity = await context.db.find(sToken, { id: poolEntity.token1 })
@@ -43,7 +43,9 @@ ponder.on("WinniePool:Mint", async ({ event, context }) => {
   // })
 
   const mintId = `${event.transaction.hash}#${event.log.logIndex}`;
-  const beraPriceUSD = await getBeraPriceInUSD(context)
+
+  const b = await context.db.find(bundle, { id: "1" })
+  const beraPriceUSD = new Decimal(b?.beraPriceUSD || "0")
 
   const amount0 = new Decimal(formatUnits(event.args.amount0, token0.decimals)) // format 0.465 Token
   const amount1 = new Decimal(formatUnits(event.args.amount1, token1.decimals)) // format 1.223231 Token

@@ -1,6 +1,5 @@
 import { ponder } from "ponder:registry";
-import { getBeraPriceInUSD, getTrackedAmount } from "./utils/pricing";
-import { factory as sFactory, pool as sPool, token as sToken, collect as sCollect } from "ponder:schema";
+import { factory as sFactory, pool as sPool, token as sToken, collect as sCollect, bundle } from "ponder:schema";
 import { CONTRACTS } from "@repo/contracts";
 import Decimal from "decimal.js";
 import { getOrCreateTransaction } from "./helpers";
@@ -24,31 +23,26 @@ ponder.on("WinniePool:Collect", async ({ event, context }) => {
   const token0 = { ...token0Entity }
   const token1 = { ...token1Entity }
 
-  let beraPriceUSD = await getBeraPriceInUSD(context)
+  const b = await context.db.find(bundle, { id: "1" })
+  const beraPriceUSD = new Decimal(b?.beraPriceUSD || "0")
 
   const amount0 = new Decimal(formatUnits(event.args.amount0, token0.decimals))
   const amount1 = new Decimal(formatUnits(event.args.amount1, token1.decimals))
-
-  // const trackedCollectedAmountUSD = getTrackedAmountUSD(
-  //   amount0, token0Entity,
-  //   amount1, token1Entity,
-  //   beraPriceUSD
-  // )
 
   factory.txCount += 1
   factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
 
   token0.txCount += 1
-  token0.totalValueLocked = Decimal(token0.totalValueLocked).plus(amount0).toString()
+  token0.totalValueLocked = Decimal(token0.totalValueLocked).minus(amount0).toString()
   token0.totalValueLockedUSD = Decimal(token0.totalValueLocked).mul(beraPriceUSD).toString()
 
   token1.txCount += 1
-  token1.totalValueLocked = Decimal(token1.totalValueLocked).plus(amount1).toString()
+  token1.totalValueLocked = Decimal(token1.totalValueLocked).minus(amount1).toString()
   token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(beraPriceUSD).toString()
 
   pool.txCount += 1
-  pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).plus(amount0).toString()
-  pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).plus(amount1).toString()
+  pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).minus(amount0).toString()
+  pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).minus(amount1).toString()
 
   const poolTVLt0Bera = new Decimal(pool.totalValueLockedToken0).mul(token0.derivedBERA)
   const poolTVLt1Bera = new Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA)

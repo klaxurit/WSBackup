@@ -1,13 +1,13 @@
 import Decimal from "decimal.js";
 import { Context } from "ponder:registry";
-import { pool as sPool, token as sToken } from "ponder:schema";
+import { bundle, pool as sPool, token as sToken } from "ponder:schema";
 import { formatUnits } from "viem";
 
 const REFERENCE_TOKEN = "0x6969696969696969696969696969696969696969" // wBera
-const STABLE_COINS = [
-  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase(), // Honey
-  "0x779Ded0c9e1022225f8E0630b35a9b54bE713736".toLowerCase(), // USDT0
-  "0x549943e04f40284185054145c6E4e9568C1D3241".toLowerCase() // USDC.e
+const STABLE_COINS: string[] = [
+  // "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase(), // Honey
+  // "0x779Ded0c9e1022225f8E0630b35a9b54bE713736".toLowerCase(), // USDT0
+  // "0x549943e04f40284185054145c6E4e9568C1D3241".toLowerCase() // USDC.e
 ]
 const STABLE_TOKEN_POOL = "0x3b9dba6dacf92eea27dff0a1f9c646e12d739df2" // wBera/Honey
 const WHITELIST_TOKENS: `0x${string}`[] = [
@@ -51,7 +51,8 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
   let priceSoFar = Decimal("0")
 
   if (!beraPriceUSD) {
-    beraPriceUSD = await getBeraPriceInUSD(context)
+    const b = await context.db.find(bundle, { id: "1" })
+    beraPriceUSD = new Decimal(b?.beraPriceUSD || "0")
   }
 
   logs && console.log(`Get le prix de ${token.symbol} (berapriceUSD : ${beraPriceUSD})`)

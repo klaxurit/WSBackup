@@ -1,6 +1,6 @@
 import { ponder } from "ponder:registry";
 import { getOrCreateFactory, getOrCreateToken } from "./helpers";
-import { factory, pool, token } from "ponder:schema";
+import { bundle, factory, pool, token } from "ponder:schema";
 import { logFactory, logDebug } from "./utils/logger";
 
 const WHITELIST_TOKENS = [
@@ -37,6 +37,15 @@ ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
   // Load tokens
   const token0Entity = await getOrCreateToken(context, event.args.token0);
   const token1Entity = await getOrCreateToken(context, event.args.token1);
+
+  // Create bundle is not exist
+  const b = await context.db.find(bundle, { id: '1' })
+  if (!b) {
+    await context.db.insert(bundle).values({
+      id: "1",
+      beraPriceUSD: "0"
+    });
+  }
 
   // Create pool
   await context.db.insert(pool).values({
@@ -86,13 +95,11 @@ ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
       .set((row) => ({
         poolCount: row.poolCount + 1,
         whitelistPools: [...row.whitelistPools, event.args.pool]
-        // ...(WHITELIST_TOKENS.includes(token0Entity.id) && { whitelistPools: [...row.whitelistPools, event.args.pool] }),
       })),
     context.db.update(token, { id: token1Entity.id })
       .set((row) => ({
         poolCount: row.poolCount + 1,
         whitelistPools: [...row.whitelistPools, event.args.pool]
-        // ...(WHITELIST_TOKENS.includes(token1Entity.id) && { whitelistPools: [...row.whitelistPools, event.args.pool] }),
       })),
   ]);
 

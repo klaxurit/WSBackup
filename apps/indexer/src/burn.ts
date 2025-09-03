@@ -1,8 +1,7 @@
 import { ponder } from "ponder:registry";
-import { factory as sFactory, burn as sBurn, pool as sPool, tick as sTick, token as sToken, transaction as sTransaction } from "ponder:schema";
+import { factory as sFactory, burn as sBurn, pool as sPool, tick as sTick, token as sToken, transaction as sTransaction, bundle } from "ponder:schema";
 import { getOrCreateTransaction, getTickId } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
-import { getBeraPriceInUSD } from "./utils/pricing";
 import Decimal from "decimal.js";
 import { updateProtocolDayData } from "./stats/porotocolDay";
 import { updatePoolStats } from "./stats/pool";
@@ -25,7 +24,9 @@ ponder.on("WinniePool:Burn", async ({ event, context }) => {
   const token1 = { ...token1Entity }
 
   const burnId = `${event.transaction.hash}#${event.log.logIndex}`;
-  const beraPriceUSD = await getBeraPriceInUSD(context)
+
+  const b = await context.db.find(bundle, { id: "1" })
+  const beraPriceUSD = new Decimal(b?.beraPriceUSD || "0")
 
   const amount0 = new Decimal(formatUnits(event.args.amount0, token0.decimals))
   const amount1 = new Decimal(formatUnits(event.args.amount1, token1.decimals))
