@@ -5,8 +5,9 @@ import { CONTRACTS } from "@repo/contracts";
 import { getBeraPriceInUSD } from "./utils/pricing";
 import Decimal from "decimal.js";
 import { updateProtocolDayData } from "./stats/porotocolDay";
-import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
-import { updateDayTokenData, updateHourTokenData } from "./stats/token";
+import { updatePoolStats } from "./stats/pool";
+import { updateTokenStats } from "./stats/token";
+import { formatUnits } from "viem";
 
 ponder.on("WinniePool:Burn", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -26,10 +27,18 @@ ponder.on("WinniePool:Burn", async ({ event, context }) => {
   const burnId = `${event.transaction.hash}#${event.log.logIndex}`;
   const beraPriceUSD = await getBeraPriceInUSD(context)
 
-  const amount0 = event.args.amount0
-  const amount1 = event.args.amount1
+  const amount0 = new Decimal(formatUnits(event.args.amount0, token0.decimals))
+  const amount1 = new Decimal(formatUnits(event.args.amount1, token1.decimals))
 
-  const amountUSD = Decimal(amount0).mul(token0.derivedBERA).plus(Decimal(amount1).mul(token1.derivedBERA))
+  const amount0Abs = amount0.abs()
+  const amount1Abs = amount1.abs()
+
+  const amount0Bera = amount0Abs.mul(token0.derivedBERA)
+  const amount1Bera = amount1Abs.mul(token1.derivedBERA)
+
+  const amount0USD = amount0Bera.mul(beraPriceUSD)
+  const amount1USD = amount1Bera.mul(beraPriceUSD)
+  const totalAmountUSD = amount0USD.plus(amount1USD)
 
   factory.txCount += 1
   pool.txCount += 1
@@ -51,9 +60,9 @@ ponder.on("WinniePool:Burn", async ({ event, context }) => {
     owner: event.args.owner,
     origin: event.transaction.from,
     amount: event.args.amount,
-    amount0,
-    amount1,
-    amountUSD: amountUSD.toString(), // À calculer avec un oracle de prix
+    amount0: event.args.amount0,
+    amount1: event.args.amount1,
+    amountUSD: totalAmountUSD.toString(), // À calculer avec un oracle de prix
     tickLower: Number(event.args.tickLower),
     tickUpper: Number(event.args.tickUpper),
     logIndex: event.log.logIndex,
@@ -96,8 +105,7 @@ ponder.on("WinniePool:Burn", async ({ event, context }) => {
   await context.db.update(sToken, { id: token1.id }).set({ ...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id')) })
 
   await updateProtocolDayData(event.block.timestamp, context)
-  await updateDayPoolData(event.block.timestamp, pool.id, context)
-  await updateHourPoolData(event.block.timestamp, pool.id, context)
-  await updateDayTokenData(event.block.timestamp, token0.id, context)
-  await updateHourTokenData(event.block.timestamp, token0.id, context)
+  await updatePoolStats(event.block.timestamp, pool, context)
+  await updateTokenStats(event.block.timestamp, token0, context)
+  await updateTokenStats(event.block.timestamp, token1, context)
 });

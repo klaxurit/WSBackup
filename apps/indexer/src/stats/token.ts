@@ -1,32 +1,46 @@
 import { Context } from "ponder:registry";
 import { token as sToken, tokenDayData, tokenHourData } from "ponder:schema";
-import { Address } from "viem";
 import { findBeraPerToken, getBeraPriceInUSD } from "../utils/pricing";
 import Decimal from "decimal.js";
 
-export async function updateDayTokenData(timestamp: bigint, address: Address, context: Context) {
+export async function updateTokenStats(timestamp: bigint, token: typeof sToken.$inferSelect, context: Context) {
   const dayId = Math.floor(Number(timestamp) / 86400)
-  const hourId = Math.floor(Number(timestamp) / 3600)
   const dayStartTimestamp = dayId * 86400
-  const dayTokenId = `${address}-${dayId}`
+  const dayTokenId = `${token.id}-${dayId}`
 
-  const token = await context.db.find(sToken, { id: address })
-  if (!token) return
-
-  const tokenData = await context.db.find(tokenDayData, { id: dayTokenId })
+  const hourId = Math.floor(Number(timestamp) / 3600)
+  const hourStartUnix = hourId * 3600
+  const hourTokenID = `${token.id} -${hourId} `
 
   const tokenPrice = await getPriceInUSD(token, context)
-  const oneDayEvo = await getPriceEvo(tokenPrice, `${address}-${hourId - 24}`, context)
-  const oneMonthEvo = await getPriceEvo(tokenPrice, `${address}-${hourId - (24 * 30)}`, context)
+  const oneDayEvo = await getPriceEvo(tokenPrice, `${token.id} -${hourId - 24} `, context)
+  const oneMonthEvo = await getPriceEvo(tokenPrice, `${token.id} -${hourId - (24 * 30)} `, context)
   const marketCap = await getMarketcap(token, tokenPrice)
   const fdv = await getFDV(token, tokenPrice)
-  const volume24hUSD = await getVolumeByPeriod(token, `${address}-${hourId - 24}`, context)
+  const volume24hUSD = await getVolumeByPeriod(token, `${token.id} -${hourId - 24} `, context)
 
+  await updateDayTokenData(token, dayTokenId, dayStartTimestamp, tokenPrice, oneDayEvo, oneMonthEvo, marketCap, fdv, volume24hUSD, context)
+  await updateHourTokenData(token, hourTokenID, hourStartUnix, tokenPrice, context)
+}
+
+async function updateDayTokenData(
+  token: typeof sToken.$inferSelect,
+  dayTokenId: string,
+  ts: number,
+  tokenPrice: string,
+  oneDayEvo: string,
+  oneMonthEvo: string,
+  marketCap: string,
+  fdv: string,
+  volume24hUSD: string,
+  context: Context
+) {
+  const tokenData = await context.db.find(tokenDayData, { id: dayTokenId })
   if (!tokenData) {
     await context.db.insert(tokenDayData).values({
       id: dayTokenId, // pool address + "-" + day id
-      date: dayStartTimestamp,
-      token: address,
+      date: ts,
+      token: token.id,
       volume: token.volume,
       volumeUSD: token.volumeUSD,
       untrackedVolumeUSD: token.untrackedVolumeUSD,
@@ -66,25 +80,19 @@ export async function updateDayTokenData(timestamp: bigint, address: Address, co
   }
 }
 
-export async function updateHourTokenData(timestamp: bigint, address: Address, context: Context) {
-  const hourId = Math.floor(Number(timestamp) / 3600)
-  const hourStartUnix = hourId * 3600
-  const hourTokenID = `${address}-${hourId}`
-
-  const token = await context.db.find(sToken, { id: address })
-  if (!token) return
-
+async function updateHourTokenData(
+  token: typeof sToken.$inferSelect,
+  hourTokenID: string,
+  ts: number,
+  tokenPrice: string,
+  context: Context
+) {
   const tokenData = await context.db.find(tokenHourData, { id: hourTokenID })
-
-  const tokenPrice = await getPriceInUSD(token, context)
-  // const oneDayEvo = await getPriceEvo(tokenPrice, `${address}-${hourId - 24}`, context)
-  // const oneMonthEvo = await getPriceEvo(tokenPrice, `${address}-${hourId - (24 * 30)}`, context)
-
   if (!tokenData) {
     await context.db.insert(tokenHourData).values({
       id: hourTokenID, // pool address + "-" + day id
-      periodStartUnix: hourStartUnix,
-      token: address,
+      periodStartUnix: ts,
+      token: token.id,
       volume: token.volume,
       volumeUSD: token.volumeUSD,
       untrackedVolumeUSD: token.untrackedVolumeUSD,
@@ -137,14 +145,14 @@ async function getPriceEvo(currentPrice: string, fromId: string, context: Contex
 }
 
 async function getMarketcap(token: typeof sToken.$inferSelect, currentPrice: string): Promise<string> {
-  if (!token.totalSupply || token.totalSupply === 0n) return "0"
+  if (!token.totalSupply || new Decimal(token.totalSupply) === new Decimal("0")) return "0"
   const supply = new Decimal(token.totalSupply).div(10 ** token.decimals)
 
   return supply.mul(currentPrice).toString()
 }
 
 async function getFDV(token: typeof sToken.$inferSelect, currentPrice: string): Promise<string> {
-  if (!token.maxSupply || token.maxSupply === 0n) return "0"
+  if (!token.maxSupply || new Decimal(token.maxSupply) === new Decimal("0")) return "0"
 
   const supply = new Decimal(token.maxSupply).div(10 ** token.decimals)
 

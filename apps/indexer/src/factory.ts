@@ -3,20 +3,33 @@ import { getOrCreateFactory, getOrCreateToken } from "./helpers";
 import { factory, pool, token } from "ponder:schema";
 import { logFactory, logDebug } from "./utils/logger";
 
-ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
-  const logContext = {
-    event: 'factory',
-    pool: event.args.pool,
-    token0: event.args.token0,
-    token1: event.args.token1,
-    txHash: event.transaction.hash,
-    blockNumber: event.block.number
-  }
+const WHITELIST_TOKENS = [
+  "0x6969696969696969696969696969696969696969", // wBera
+  "0xfcbd14dc51f0a4d49d5e53c2e0950e0bc26d0dce", // Honey
+  "0x118d2ceee9785eaf70c15cd74cd84c9f8c3eec9a", // sWBera
+  "0x9b6761bf2397Bb5a6624a856cC84A3A14Dcd3fe5 ", // iBera
+  "0xac03CABA51e17c86c921E1f6CBFBdC91F8BB2E6b", // iBGT
+  "0x1ce0a25d13ce4d52071ae7e02cf1f6606f4c79d3", // NECT
+  "0x549943e04f40284185054145c6E4e9568C1D3241", // USDC.e
+  "0x2F6F07CDcf3588944Bf4C42aC74ff24bF56e7590", // WETH
+  "0x1ce0a25d13ce4d52071ae7e02cf1f6606f4c79d3", // NECT
 
-  logDebug(logContext, "Processing PoolCreated event", {
-    fee: event.args.fee,
-    tickSpacing: event.args.tickSpacing
-  })
+]
+
+ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
+  // const logContext = {
+  //   event: 'factory',
+  //   pool: event.args.pool,
+  //   token0: event.args.token0,
+  //   token1: event.args.token1,
+  //   txHash: event.transaction.hash,
+  //   blockNumber: event.block.number
+  // }
+
+  // logDebug(logContext, "Processing PoolCreated event", {
+  //   fee: event.args.fee,
+  //   tickSpacing: event.args.tickSpacing
+  // })
 
   // Load factory
   const factoryEntity = await getOrCreateFactory(context, event.log.address);
@@ -41,12 +54,12 @@ ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
     tick: null,
     observationIndex: 0,
 
-    volumeToken0: 0n,
-    volumeToken1: 0n,
-    collectedFeesToken0: 0n,
-    collectedFeesToken1: 0n,
-    totalValueLockedToken0: 0n,
-    totalValueLockedToken1: 0n,
+    volumeToken0: "0",
+    volumeToken1: "0",
+    collectedFeesToken0: "0",
+    collectedFeesToken1: "0",
+    totalValueLockedToken0: "0",
+    totalValueLockedToken1: "0",
     totalValueLockedBERA: "0",
 
     token0Price: "0",
@@ -72,23 +85,25 @@ ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
     context.db.update(token, { id: token0Entity.id })
       .set((row) => ({
         poolCount: row.poolCount + 1,
-        whitelistPools: [...row.whitelistPools, event.args.pool],
+        whitelistPools: [...row.whitelistPools, event.args.pool]
+        // ...(WHITELIST_TOKENS.includes(token0Entity.id) && { whitelistPools: [...row.whitelistPools, event.args.pool] }),
       })),
     context.db.update(token, { id: token1Entity.id })
       .set((row) => ({
         poolCount: row.poolCount + 1,
-        whitelistPools: [...row.whitelistPools, event.args.pool],
+        whitelistPools: [...row.whitelistPools, event.args.pool]
+        // ...(WHITELIST_TOKENS.includes(token1Entity.id) && { whitelistPools: [...row.whitelistPools, event.args.pool] }),
       })),
   ]);
 
-  logFactory(logContext, {
-    poolAddress: event.args.pool,
-    token0Symbol: token0Entity.symbol,
-    token1Symbol: token1Entity.symbol,
-    fee: event.args.fee,
-    tickSpacing: event.args.tickSpacing,
-    factoryPoolCount: factoryEntity.poolCount + 1,
-    token0PoolCount: token0Entity.poolCount + 1,
-    token1PoolCount: token1Entity.poolCount + 1
-  })
+  // logFactory(logContext, {
+  //   poolAddress: event.args.pool,
+  //   token0Symbol: token0Entity.symbol,
+  //   token1Symbol: token1Entity.symbol,
+  //   fee: event.args.fee,
+  //   tickSpacing: event.args.tickSpacing,
+  //   factoryPoolCount: factoryEntity.poolCount + 1,
+  //   token0PoolCount: token0Entity.poolCount + 1,
+  //   token1PoolCount: token1Entity.poolCount + 1
+  // })
 })

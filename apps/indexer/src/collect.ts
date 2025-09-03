@@ -1,12 +1,13 @@
 import { ponder } from "ponder:registry";
-import { getBeraPriceInUSD, getTrackedAmountUSD } from "./utils/pricing";
+import { getBeraPriceInUSD, getTrackedAmount } from "./utils/pricing";
 import { factory as sFactory, pool as sPool, token as sToken, collect as sCollect } from "ponder:schema";
 import { CONTRACTS } from "@repo/contracts";
 import Decimal from "decimal.js";
 import { getOrCreateTransaction } from "./helpers";
 import { updateProtocolDayData } from "./stats/porotocolDay";
-import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
-import { updateDayTokenData, updateHourTokenData } from "./stats/token";
+import { updatePoolStats } from "./stats/pool";
+import { updateTokenStats } from "./stats/token";
+import { formatUnits } from "viem";
 
 ponder.on("WinniePool:Collect", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -25,16 +26,17 @@ ponder.on("WinniePool:Collect", async ({ event, context }) => {
 
   let beraPriceUSD = await getBeraPriceInUSD(context)
 
-  const amount0 = event.args.amount0
-  const amount1 = event.args.amount1
-  const trackedCollectedAmountUSD = getTrackedAmountUSD(
-    amount0, token0Entity,
-    amount1, token1Entity,
-    beraPriceUSD
-  )
+  const amount0 = new Decimal(formatUnits(event.args.amount0, token0.decimals))
+  const amount1 = new Decimal(formatUnits(event.args.amount1, token1.decimals))
 
-  factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
+  // const trackedCollectedAmountUSD = getTrackedAmountUSD(
+  //   amount0, token0Entity,
+  //   amount1, token1Entity,
+  //   beraPriceUSD
+  // )
+
   factory.txCount += 1
+  factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
 
   token0.txCount += 1
   token0.totalValueLocked = Decimal(token0.totalValueLocked).plus(amount0).toString()
@@ -45,17 +47,22 @@ ponder.on("WinniePool:Collect", async ({ event, context }) => {
   token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(beraPriceUSD).toString()
 
   pool.txCount += 1
-  pool.totalValueLockedToken0 -= amount0
-  pool.totalValueLockedToken1 -= amount1
-  pool.totalValueLockedBERA = Decimal(pool.totalValueLockedToken0)
-    .mul(token0.derivedBERA)
-    .plus(Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA))
-    .toString()
-  pool.totalValueLockedUSD = Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
+  pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).plus(amount0).toString()
+  pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).plus(amount1).toString()
 
-  pool.collectedFeesToken0 += amount0
-  pool.collectedFeesToken1 += amount1
-  pool.collectedFeesUSD = Decimal(pool.collectedFeesUSD).plus(trackedCollectedAmountUSD).toString()
+  const poolTVLt0Bera = new Decimal(pool.totalValueLockedToken0).mul(token0.derivedBERA)
+  const poolTVLt1Bera = new Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA)
+  pool.totalValueLockedBERA = poolTVLt0Bera.plus(poolTVLt1Bera).toString()
+  pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
+
+  pool.collectedFeesToken0 = new Decimal(pool.collectedFeesToken0).plus(amount0).toString()
+  pool.collectedFeesToken1 = new Decimal(pool.collectedFeesToken1).plus(amount1).toString()
+
+  const poolCollectedFeesT0Bera = new Decimal(pool.collectedFeesToken0).mul(token0.derivedBERA)
+  const poolCollectedFeesT1Bera = new Decimal(pool.collectedFeesToken1).mul(token1.derivedBERA)
+  const poolCollectedFeesTotalBera = poolCollectedFeesT0Bera.plus(poolCollectedFeesT1Bera)
+  const poolCollectedFeesTotalUSD = poolCollectedFeesTotalBera.mul(beraPriceUSD)
+  pool.collectedFeesUSD = Decimal(pool.collectedFeesUSD).plus(poolCollectedFeesTotalUSD).toString()
 
   factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
   factory.totalValueLockedUSD = Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
@@ -69,9 +76,9 @@ ponder.on("WinniePool:Collect", async ({ event, context }) => {
     timestamp: txEntity.timestamp,
     pool: poolEntity.id,
     owner: event.args.owner,
-    amount0: amount0,
-    amount1: amount1,
-    amountUSD: trackedCollectedAmountUSD.toString(),
+    amount0: event.args.amount0,
+    amount1: event.args.amount1,
+    amountUSD: poolCollectedFeesTotalUSD.toString(),
     tickLower: event.args.tickLower,
     tickUpper: event.args.tickUpper,
     logIndex: event.log.logIndex
@@ -83,8 +90,7 @@ ponder.on("WinniePool:Collect", async ({ event, context }) => {
   await context.db.update(sToken, { id: token1.id }).set({ ...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id')) })
 
   await updateProtocolDayData(event.block.timestamp, context)
-  await updateDayPoolData(event.block.timestamp, pool.id, context)
-  await updateHourPoolData(event.block.timestamp, pool.id, context)
-  await updateDayTokenData(event.block.timestamp, token0.id, context)
-  await updateHourTokenData(event.block.timestamp, token0.id, context)
+  await updatePoolStats(event.block.timestamp, pool, context)
+  await updateTokenStats(event.block.timestamp, token0, context)
+  await updateTokenStats(event.block.timestamp, token1, context)
 })

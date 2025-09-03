@@ -17,26 +17,37 @@ const WHITELIST_TOKENS: `0x${string}`[] = [
 
 export async function getBeraPriceInUSD(context: Context): Promise<Decimal> {
   let honeyPool = await context.db.find(sPool, { id: STABLE_TOKEN_POOL })
-  if (!honeyPool) {
-    console.warn('Stable pool not found, using default BERA price 1.0')
-    return Decimal("1")
-  }
 
-  if (honeyPool.token0 === REFERENCE_TOKEN) {
-    const price = (Number(honeyPool.sqrtPrice) / (2 ** 96)) ** 2;
-    return Decimal(price)
-  } else if (honeyPool.token1 === REFERENCE_TOKEN) {
-    const price = (Number(honeyPool.sqrtPrice) / (2 ** 96)) ** 2;
-    return Decimal(1 / price)
+  if (honeyPool) {
+    if (honeyPool.token0 === REFERENCE_TOKEN) return new Decimal('1').div(new Decimal(honeyPool.token1Price))
+    else return new Decimal(honeyPool.token0Price)
   } else {
-    console.warn('Bera token not found in stable pool')
-    return Decimal("1")
+    return new Decimal("0")
   }
+  // if (!honeyPool) {
+  //   console.warn('Stable pool not found, using default BERA price 1.0')
+  //   return Decimal("1")
+  // }
+
+  // if (honeyPool.token0 === REFERENCE_TOKEN) {
+  //   const price = (Number(honeyPool.sqrtPrice) / (2 ** 96)) ** 2;
+  //   return Decimal(price)
+  // } else if (honeyPool.token1 === REFERENCE_TOKEN) {
+  //   const price = (Number(honeyPool.sqrtPrice) / (2 ** 96)) ** 2;
+  //   return Decimal(1 / price)
+  // } else {
+  //   console.warn('Bera token not found in stable pool')
+  //   return Decimal("1")
+  // }
 }
 
-export async function findBeraPerToken(token: typeof sToken.$inferSelect, context: Context): Promise<Decimal> {
+export async function findBeraPerToken(token: typeof sToken.$inferSelect, context: Context, beraPriceUSD?: Decimal, logs = false): Promise<Decimal> {
+  if (!logs && token.symbol === "POLLEN") {
+    logs = true
+  }
   // if is wBera return 1
   if (token.id === REFERENCE_TOKEN) {
+    logs && console.log(`c'est le reference token retourne 1`)
     return Decimal("1")
   }
 
@@ -44,10 +55,15 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
   let largestLiquidityBERA = Decimal("0")
   let priceSoFar = Decimal("0")
 
-  let beraPriceUSD = await getBeraPriceInUSD(context)
+  if (!beraPriceUSD) {
+    beraPriceUSD = await getBeraPriceInUSD(context)
+  }
+
+  logs && console.log(`Get le prix de ${token.symbol} (berapriceUSD : ${beraPriceUSD})`)
 
   // if it's a stablecoin, price based on Bera/USD
   if (STABLE_COINS.includes(token.id)) {
+    logs && console.log(`Stable coin, retourne ${beraPriceUSD}`)
     priceSoFar = Decimal("1").div(beraPriceUSD)
   } else {
     // Search in whitelisted whitelistPools
@@ -56,26 +72,33 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
       const pool = await context.db.find(sPool, {
         id: poolAddress
       })
-
+      logs && console.log(`test de la pool #${i} liquidity:${pool?.liquidity}`)
       if (pool && pool.liquidity > 0n) {
-        if (pool.token0.toLocaleLowerCase() === token.id.toLocaleLowerCase()) {
+        logs && console.log(`Pool OK`)
+        if (pool.token0 === token.id) {
           const token1 = await context.db.find(sToken, { id: pool.token1 })
-          if (token1 && token1.id === REFERENCE_TOKEN) {
+          logs && console.log(`token0 c'est ${token.symbol} donc on prend le 1 (${token1?.symbol})`)
+          if (token1) {
             const beraLocked = Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA)
+            logs && console.log(`beralocked = (${pool.totalValueLockedToken1} * ${token1.derivedBERA}) ${beraLocked}`)
             if (beraLocked.gt(largestLiquidityBERA)) {
               largestLiquidityBERA = beraLocked
               priceSoFar = Decimal(pool.token1Price).mul(token1.derivedBERA)
+              logs && console.log(`C'est plus grand on save et priceSoFar = (${pool.token1Price} * ${token1.derivedBERA}) ${priceSoFar}`)
             }
           }
         }
 
-        if (pool.token1.toLocaleLowerCase() === token.id.toLocaleLowerCase()) {
+        if (pool.token1 === token.id) {
           const token0 = await context.db.find(sToken, { id: pool.token0 })
-          if (token0 && token0.id === REFERENCE_TOKEN) {
+          logs && console.log(`token1 c'est ${token.symbol} donc on prend le 0 (${token0?.symbol})`)
+          if (token0) {
             const beraLocked = Decimal(pool.totalValueLockedToken1).mul(token0.derivedBERA)
+            logs && console.log(`beralocked = (${pool.totalValueLockedToken1} * ${token0.derivedBERA}) ${beraLocked}`)
             if (beraLocked.gt(largestLiquidityBERA)) {
               largestLiquidityBERA = beraLocked
-              priceSoFar = Decimal(pool.token1Price).mul(token0.derivedBERA)
+              priceSoFar = Decimal(pool.token0Price).mul(token0.derivedBERA)
+              logs && console.log(`C'est plus grand on save et priceSoFar = (${pool.token0Price} * ${token0.derivedBERA}) ${priceSoFar}`)
             }
           }
         }
@@ -86,29 +109,25 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
   return priceSoFar
 }
 
-export function getTrackedAmountUSD(
-  amount0: bigint,
+export function getTrackedAmount(
+  amount0Bera: Decimal,
   token0: typeof sToken.$inferSelect,
-  amount1: bigint,
-  token1: typeof sToken.$inferSelect,
-  beraPriceUSD: Decimal
+  amount1Bera: Decimal,
+  token1: typeof sToken.$inferSelect
 ): Decimal {
-  const amount0Bera = Decimal(formatUnits(amount0, token0.decimals)).mul(token0.derivedBERA)
-  const amount1Bera = Decimal(formatUnits(amount0, token0.decimals)).mul(token1.derivedBERA)
-
   // both are whitelist tokens, return sum of both amounts
   if (WHITELIST_TOKENS.includes(token0.id) && WHITELIST_TOKENS.includes(token1.id)) {
-    return (amount0Bera.plus(amount1Bera)).mul(beraPriceUSD)
+    return (amount0Bera.plus(amount1Bera))
   }
 
   // take double value of the whitelisted token amount
   if (WHITELIST_TOKENS.includes(token0.id) && !WHITELIST_TOKENS.includes(token1.id)) {
-    return (amount0Bera.mul(2)).mul(beraPriceUSD)
+    return (amount0Bera.mul(2))
   }
 
   // take double value of the whitelisted token amount
   if (!WHITELIST_TOKENS.includes(token0.id) && WHITELIST_TOKENS.includes(token1.id)) {
-    return (amount1Bera.mul(2)).mul(beraPriceUSD)
+    return (amount1Bera.mul(2))
   }
   // neither token is on white list, tracked amount is 0
   return Decimal("0")
@@ -123,11 +142,31 @@ export function sqrtPriceX96ToTokenPrices(
     return [0, 0];
   }
   const num = sqrtPriceX96 * sqrtPriceX96
-  const denom = BigInt(2 ** 192)
+  const denom = 2n ** 192n
 
-  const decimalsAdjust = BigInt(10 ** token1Decimal) / BigInt(10 ** token0Decimal)
+  const basePrice = Number(num) / Number(denom)
+  const price = (basePrice * (10 ** token0Decimal)) / (10 ** token1Decimal)
 
-  const price = Number(num * decimalsAdjust) / Number(denom)
+  // const decimalsAdjust = 10 ** (token1Decimal - token0Decimal)
+  // const price = basePrice * decimalsAdjust
 
   return [price, 1 / price];
 }
+
+// private calculatePriceFromSqrtPriceX96(
+//     sqrtPriceX96: bigint,
+//     decimals0: number,
+//     decimals1: number,
+//   ): number {
+//     // Prix de token0 en termes de token1
+//     // price = (sqrtPriceX96 / 2^96)^2 * 10^(decimals0 - decimals1)
+
+//     const Q96 = 2n ** 96n;
+//     const sqrtPrice = Number(sqrtPriceX96) / Number(Q96);
+//     const price = sqrtPrice * sqrtPrice;
+
+//     // Ajuster pour les décimales
+//     const decimalAdjustment = Math.pow(10, decimals0 - decimals1);
+
+//     return price * decimalAdjustment;
+//   }

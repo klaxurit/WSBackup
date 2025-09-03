@@ -1,36 +1,54 @@
 import { ponder } from "ponder:registry";
-import { pool as sPool, token } from "ponder:schema";
-import { findBeraPerToken } from "./utils/pricing";
-import { updateDayPoolData, updateHourPoolData } from "./stats/pool";
-import { updateDayTokenData, updateHourTokenData } from "./stats/token";
-import { error } from "console";
+import { pool as sPool, token as sToken } from "ponder:schema";
+import { findBeraPerToken, sqrtPriceX96ToTokenPrices } from "./utils/pricing";
+import { updatePoolStats } from "./stats/pool";
+import { updateTokenStats } from "./stats/token";
 
 ponder.on("WinniePool:Initialize", async ({ event, context }) => {
-  const pool = await context.db.update(sPool, { id: event.log.address }).set(row => ({
-    sqrtPrice: event.args.sqrtPriceX96,
-    tick: Number(event.args.tick),
-    token0Price: ((Number(event.args.sqrtPriceX96) / (2 ** 96)) ** 2).toString(),
-    token1Price: (1 / ((Number(event.args.sqrtPriceX96) / (2 ** 96)) ** 2)).toString(),
-  }))
+  let poolEntity = await context.db.find(sPool, { id: event.log.address });
+  if (!poolEntity) return;
+  const pool = { ...poolEntity }
 
-  const token0 = await context.db.find(token, { id: pool.token0 })
-  const token1 = await context.db.find(token, { id: pool.token1 })
+  const debug = pool.id === "0xc224af3a407ddf03867eec22162a9d39345ec88b"
 
-  if (token0 && token1) {
-    const t0derivedBera = await findBeraPerToken(token0, context)
-    const t1derivedBera = await findBeraPerToken(token1, context)
+  let token0Entity = await context.db.find(sToken, { id: poolEntity.token0 })
+  let token1Entity = await context.db.find(sToken, { id: poolEntity.token1 })
+  if (!token0Entity || !token1Entity) return
+  const token0 = { ...token0Entity }
+  const token1 = { ...token1Entity }
 
-    await context.db.update(token, { id: token0.id }).set({
-      derivedBERA: t0derivedBera.toString()
-    })
-    await context.db.update(token, { id: token1.id }).set({
-      derivedBERA: t1derivedBera.toString()
-    })
+  pool.sqrtPrice = event.args.sqrtPriceX96
+  pool.tick = Number(event.args.tick)
 
-    // console.log(`initialize: ${token0.symbol}/${token1.symbol} // ${token0.symbol} DerivedBera: ${t0derivedBera} // ${token1.symbol} DerivedBera: ${t1derivedBera}`)
-    await updateDayPoolData(event.block.timestamp, pool.id, context)
-    await updateHourPoolData(event.block.timestamp, pool.id, context)
-    await updateDayTokenData(event.block.timestamp, token0.id, context)
-    await updateHourTokenData(event.block.timestamp, token0.id, context)
+  const [price0Ratio, price1Ratio] = sqrtPriceX96ToTokenPrices(event.args.sqrtPriceX96, token0.decimals, token1.decimals)
+  pool.token0Price = price0Ratio.toString()
+  pool.token1Price = price1Ratio.toString()
+  // pool.token0Price = ((Number(event.args.sqrtPriceX96) / (2 ** 96)) ** 2).toString()
+  // pool.token1Price = (1 / ((Number(event.args.sqrtPriceX96) / (2 ** 96)) ** 2)).toString()
+  await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
+
+
+  if (debug) {
+    console.log("-------------------------------")
+    console.log(`pool: ${token0.symbol} / ${token1.symbol}`)
+    console.log(`sqrtPrice => ${event.args.sqrtPriceX96}`)
+    console.log(`price0Ratio => ${price0Ratio}`)
+    console.log(`price1Ratio => ${price1Ratio}`)
   }
+
+
+  const t0derivedBera = await findBeraPerToken(token0, context, undefined, debug)
+  const t1derivedBera = await findBeraPerToken(token1, context, undefined, debug)
+
+  await context.db.update(sToken, { id: token0.id }).set({
+    derivedBERA: t0derivedBera.toString()
+  })
+  await context.db.update(sToken, { id: token1.id }).set({
+    derivedBERA: t1derivedBera.toString()
+  })
+
+  debug && console.log(`initialize: ${token0.symbol}/${token1.symbol} // ${token0.symbol} DerivedBera: ${t0derivedBera} // ${token1.symbol} DerivedBera: ${t1derivedBera} // hash: ${event.transaction.hash}`)
+  await updatePoolStats(event.block.timestamp, pool, context)
+  await updateTokenStats(event.block.timestamp, token0, context)
+  await updateTokenStats(event.block.timestamp, token1, context)
 });

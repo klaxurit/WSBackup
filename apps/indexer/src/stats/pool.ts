@@ -2,27 +2,41 @@ import Decimal from "decimal.js";
 import { Context } from "ponder:registry";
 import { poolHourData } from "ponder:schema";
 import { poolDayData, pool as sPool } from "ponder:schema";
-import { Address } from "viem";
 
-export async function updateDayPoolData(timestamp: bigint, address: Address, context: Context) {
-  const dayId = Math.floor(Number(timestamp) / 86400)
-  const dayStartTimestamp = dayId * 86400
-  const dayPoolId = `${address}-${dayId}`
-
-  const pool = await context.db.find(sPool, { id: address })
+export async function updatePoolStats(timestamp: bigint, pool: typeof sPool.$inferSelect, context: Context) {
   if (!pool) return
 
-  const poolData = await context.db.find(poolDayData, { id: dayPoolId })
-  const apr = await calculateAPR(pool, `${address}-${dayId - 1}`, context)
-  const HourId = (Math.round(Number(timestamp) / 3600))
-  const volumeUSD1D = await calculateVolumeForPeriod(pool, `${address}-${HourId - 24}`, context)
-  const volumeUSD30D = await calculateVolumeForPeriod(pool, `${address}-${HourId - (24 * 30)}`, context)
+  const dayId = Math.floor(Number(timestamp) / 86400)
+  const dayStartTimestamp = dayId * 86400
+  const dayPoolId = `${pool.id}-${dayId}`
 
+  const hourId = Math.floor(Number(timestamp) / 3600)
+  const hourStartUnix = hourId * 3600
+  const hourPoolID = `${pool.id}-${hourId}`
+
+  const apr = await calculateAPR(pool, `${pool.id}-${dayId - 1}`, context)
+  const volumeUSD1D = await calculateVolumeForPeriod(pool, `${pool.id}-${hourId - 24}`, context)
+  const volumeUSD30D = await calculateVolumeForPeriod(pool, `${pool.id}-${hourId - (24 * 30)}`, context)
+
+  await updateDayPoolData(pool, dayPoolId, dayStartTimestamp, apr, volumeUSD1D, volumeUSD30D, context)
+  await updateHourPoolData(pool, hourPoolID, hourStartUnix, context)
+}
+
+export async function updateDayPoolData(
+  pool: typeof sPool.$inferSelect,
+  dayPoolId: string,
+  startTS: number,
+  apr: string,
+  volumeUSD1D: string,
+  volumeUSD30D: string,
+  context: Context
+) {
+  const poolData = await context.db.find(poolDayData, { id: dayPoolId })
   if (!poolData) {
     await context.db.insert(poolDayData).values({
       id: dayPoolId, // pool address + "-" + day id
-      date: dayStartTimestamp,
-      pool: address,
+      date: startTS,
+      pool: pool.id,
       liquidity: pool.liquidity,
       sqrtPrice: pool.sqrtPrice,
       token0Price: pool.token0Price,
@@ -70,22 +84,19 @@ export async function updateDayPoolData(timestamp: bigint, address: Address, con
   }
 }
 
-export async function updateHourPoolData(timestamp: bigint, address: Address, context: Context) {
-  const hourId = Math.floor(Number(timestamp) / 3600)
-  const hourStartUnix = hourId * 3600
-  const hourPoolID = `${address}-${hourId}`
-
-  const pool = await context.db.find(sPool, { id: address })
-  if (!pool) return
-
+async function updateHourPoolData(
+  pool: typeof sPool.$inferSelect,
+  hourPoolID: string,
+  startTS: number,
+  context: Context
+) {
   const poolData = await context.db.find(poolHourData, { id: hourPoolID })
-  // const apr = await calculateAPR(pool, context)
 
   if (!poolData) {
     await context.db.insert(poolHourData).values({
       id: hourPoolID, // pool address + "-" + day id
-      periodStartUnix: hourStartUnix,
-      pool: address,
+      periodStartUnix: startTS,
+      pool: pool.id,
       liquidity: pool.liquidity,
       sqrtPrice: pool.sqrtPrice,
       token0Price: pool.token0Price,
@@ -134,7 +145,6 @@ async function calculateAPR(pool: typeof sPool.$inferSelect, dayPoolId: string, 
   if (!fromPool) return "0.00"
 
   const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD)
-
   const apr = periodFees.mul(365).div(pool.totalValueLockedUSD).mul(100)
 
   return apr.toFixed(2)
