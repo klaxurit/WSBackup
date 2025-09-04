@@ -1,0 +1,695 @@
+.VaultsPage {
+  padding: 0 1rem;
+  max-width: 1192px;
+  margin: 0 auto;
+
+  &__Content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  &__Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &__Title {
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      color: #aaa;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+  }
+
+  &__Search {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+
+    .SearchBar {
+      width: auto;
+
+      &.SearchBar__compact {
+        width: 42px;
+        min-width: 42px;
+        max-width: 42px;
+      }
+
+      &.expanded {
+        width: 220px;
+        min-width: 220px;
+        max-width: 220px;
+      }
+    }
+  }
+
+  &__Banner {
+    .swap-banner__content {
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translate(15%, -50%);
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+        z-index: 0;
+      }
+    }
+
+    .swap-banner__img {
+      position: relative;
+      z-index: 1;
+    }
+  }
+}
+
+.VaultDetailPage {
+  padding: 0 1rem;
+  max-width: 1192px;
+  margin: 0 auto;
+
+  &--loading,
+  &--error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+  }
+
+  &__Loading {
+    text-align: center;
+    color: #aaa;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #333;
+      border-top: 3px solid #e39229;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+  }
+
+  &__Error {
+    text-align: center;
+    color: #fff;
+
+    h2 {
+      color: #ff4d4d;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #aaa;
+      margin-bottom: 2rem;
+    }
+  }
+
+  &__BackLink {
+    color: #e39229;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &__HeaderLeft {
+    flex: 1;
+  }
+
+  &__HeaderRight {
+    text-align: right;
+  }
+
+  &__VaultInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__VaultTitle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+
+  &__VaultMeta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__Strategy {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e39229;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  &__ExplorerLink {
+    color: #aaa;
+    text-decoration: none;
+    padding-top: 0.5rem;
+
+    &:hover {
+      color: #e39229;
+    }
+  }
+
+  &__APR {
+    text-align: right;
+
+    &Label {
+      display: block;
+      color: #aaa;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    &Value {
+      display: block;
+      color: #00ffa3;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  }
+
+  &__Tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  }
+
+  &__Table {
+    td {
+      display: flex;
+    }
+    a {
+      line-height: 14px;
+    }
+  }
+
+  &__Tab {
+    background: none;
+    border: none;
+    color: #aaa;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+    }
+
+    &.active {
+      color: #e39229;
+      border-bottom-color: #e39229;
+    }
+  }
+
+  &__Overview {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__StatsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    gap: 1rem;
+  }
+
+  &__StatCard {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &Label {
+      display: block;
+      color: #aaa;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    &Value {
+      display: block;
+      color: #fff;
+      font-size: 1.5rem;
+    }
+
+    // Highlighted card for Total APR
+    &--highlight {
+      background: rgba(227, 146, 41, 0.1);
+      border: 1px solid rgba(227, 146, 41, 0.2);
+    }
+  }
+
+  &__StatValue {
+    font-weight: 800;
+
+    &--highlight {
+      color: #e39229;
+    }
+  }
+
+  &__DepositSection,
+  &__WithdrawSection {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  &__DepositInfo,
+  &__WithdrawInfo {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    span {
+      display: block;
+      color: #fff;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__DepositActions,
+  &__WithdrawActions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+    }
+  }
+
+  &__AutoCompound {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+
+    h4 {
+      color: #e39229;
+      font-size: 1.2rem;
+      margin: 0 0 1rem 0;
+    }
+
+    &APY {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #00ffa3;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #aaa;
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__MainContent {
+    display: grid;
+    grid-template-columns: 70% 30%;
+    gap: 2rem;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__LeftColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  &__RightColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__UserInfo {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 1.5rem;
+
+    h3 {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 1rem 0;
+    }
+  }
+
+
+  &__PositionValue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__PositionAmount {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  &__PositionShares {
+    color: #aaa;
+    font-size: 0.9rem;
+  }
+
+  &__AutoCompound {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+
+    &Header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      h4 {
+        color: #e39229;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+  }
+
+  &__Toggle {
+    display: flex;
+    align-items: center;
+  }
+
+  &__ToggleButton {
+    background: #333;
+    border: 1px solid #555;
+    color: #aaa;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: #777;
+    }
+
+    &.active {
+      background: #00ffa3;
+      border-color: #00ffa3;
+      color: #000;
+    }
+  }
+
+  &__APY {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #00ffa3;
+    margin-bottom: 0.75rem;
+  }
+
+  // Action Forms
+  &__ActionForms {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  &__FormTabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  }
+
+  &__FormTab {
+    background: none;
+    border: none;
+    color: #aaa;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+    }
+
+    &.active {
+      color: #e39229;
+      border-bottom-color: #e39229;
+    }
+  }
+
+  &__DepositForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__DepositModeTabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__DepositModeTab {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    color: #aaa;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: #555;
+    }
+
+    &.active {
+      background: #e39229;
+      border-color: #e39229;
+      color: #fff;
+    }
+  }
+
+  &__DoubleDeposit,
+  &__SingleDeposit {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__TokenSelector {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__TokenButton {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    color: #aaa;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: #555;
+    }
+
+    &.active {
+      background: #e39229;
+      border-color: #e39229;
+      color: #fff;
+    }
+  }
+
+  &__DepositSummary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1rem;
+
+    h4 {
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem 0;
+    }
+
+    p {
+      color: #aaa;
+      font-size: 0.8rem;
+      margin: 0.5rem 0 0 0;
+    }
+  }
+
+  &__WithdrawForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__WithdrawInput {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__PercentageButtons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  &__PercentageButton {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    color: #aaa;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: #555;
+    }
+  }
+
+  &__WithdrawSummary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  // Common Summary Items
+  &__SummaryItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    span:first-child {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    span:last-child {
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+
+  &__FormButton {
+    margin-top: 1rem;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

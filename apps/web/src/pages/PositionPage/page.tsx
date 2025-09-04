@@ -143,9 +143,9 @@ const PoolPage: React.FC = () => {
                   <Table
                     columns={columns}
                     data={filteredPositions}
-                    tableClassName="PoolPage__Table"
-                    wrapperClassName="PoolPage__TableWrapper"
-                    scrollClassName="PoolPage__TableScroll"
+                    tableClassName="Table"
+                    wrapperClassName="Table__Wrapper"
+                    scrollClassName="Table__Scroll"
                     emptyMessage="No positions found"
                   />
                 </div>

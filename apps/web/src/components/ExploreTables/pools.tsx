@@ -38,13 +38,14 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     {
       label: '#',
       key: 'index',
+      className: 'PoolsTable__IndexTd',
       render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="PoolsTable__IndexCell">
           <Link
             to={`/pool/${row.address}`}
-            style={{ textDecoration: 'none', color: 'inherit' }}
+            className="PoolsTable__IndexLink"
           >
-            <span className={`Table__Address`}>
+            <span className="Table__Address">
               {row.token0Symbol}/{row.token1Symbol}
             </span>
           </Link>
@@ -63,63 +64,84 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     {
       label: 'Pool',
       key: 'pool',
+      className: 'PoolsTable__PoolTd',
       sortable: true,
       sortValue: (row) => `${row.token0Symbol}/${row.token1Symbol}`,
       render: (row) => (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <TokenPairLogos
-            token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
-            token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
-            borderWidth={3}
-            separatorWidth={2.5}
-          />
-          <span style={{ fontWeight: 600 }}>{row.pool}</span>
+        <span className="PoolsTable__PoolCell">
+          <span className="PoolsTable__LogoWrapper">
+            <TokenPairLogos
+              token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
+              token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
+              borderWidth={2}
+              separatorWidth={1.5}
+              size={24}
+            />
+          </span>
+          <span className="PoolsTable__PoolName">{row.pool}</span>
         </span>
       )
     },
     {
       label: 'Fee Tier',
       key: 'fee',
+      className: 'PoolsTable__FeeTd',
       sortable: true,
       sortValue: (row) => row.fee,
-      render: (row) => (`${row.fee / 10000}%`)
+      render: (row) => (
+        <span className="PoolsTable__FeeCell">
+          {`${row.fee / 10000}%`}
+        </span>
+      )
     },
     {
       label: 'TVL',
       key: 'tvl',
+      className: 'PoolsTable__TvlTd',
       sortable: true,
       sortValue: (row) => {
         return row.tvlUSD
       },
       render: (row) => {
-        return row.tvlUSD !== 0
-          ? `$${formatNumber(row.tvlUSD)}`
-          : "-"
+        return (
+          <span className="PoolsTable__TvlCell">
+            {row.tvlUSD !== 0
+              ? `$${formatNumber(row.tvlUSD)}`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'Pool APR',
       key: 'apr',
+      className: 'PoolsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
         return row.apr;
       },
       render: (row) => {
-        return row.apr !== 0
-          ? `${row.apr.toFixed(2)}%`
-          : "-"
+        return (
+          <span className="PoolsTable__AprCell">
+            {row.apr !== 0
+              ? `${row.apr.toFixed(2)}%`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'BGT APR',
       key: 'bgtApr',
+      className: 'PoolsTable__BgtAprTd',
       render: () => {
-        return "-"
+        return <span className="PoolsTable__BgtAprCell">-</span>
       }
     },
     {
       label: 'Vol. 1d',
       key: 'vol1d',
+      className: 'PoolsTable__Vol1dTd',
       sortable: true,
       sortValue: (row) => {
         return row.dayVolumeUSD !== 0
@@ -127,22 +149,31 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
           : 0;
       },
       render: (row) => {
-        return row.dayVolumeUSD !== 0
-          ? `$${formatNumber(row.dayVolumeUSD)}`
-          : "-"
+        return (
+          <span className="PoolsTable__Vol1dCell">
+            {row.dayVolumeUSD !== 0
+              ? `$${formatNumber(row.dayVolumeUSD)}`
+              : "-"}
+          </span>
+        )
       }
     },
     {
       label: 'Vol. 30d',
       key: 'vol30d',
+      className: 'PoolsTable__Vol30dTd',
       sortable: true,
       sortValue: (row) => {
         return row.monthVolumeUSD
       },
       render: (row) => {
-        return row.monthVolumeUSD !== 0
-          ? `$${formatNumber(row.monthVolumeUSD)}`
-          : "-"
+        return (
+          <span className="PoolsTable__Vol30dCell">
+            {row.monthVolumeUSD !== 0
+              ? `$${formatNumber(row.monthVolumeUSD)}`
+              : "-"}
+          </span>
+        )
       }
     },
   ];

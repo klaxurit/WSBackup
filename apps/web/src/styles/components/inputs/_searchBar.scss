@@ -6,7 +6,7 @@
   position: relative;
   border-radius: 40px;
   border: 1px solid var(--surface3, #232323);
-  background: var(--surface1, #181818);
+  background: $white-004;
   height: 40px;
   width: auto;
   padding: 0 12px;
@@ -100,7 +100,7 @@
   justify-content: center;
   align-items: center;
   border-radius: 6px;
-  background: var(--surface3, #232323);
+  background: $white-008;
   color: var(--neutral3, #aaa);
   cursor: pointer;
 }
@@ -134,15 +134,4 @@
   .SearchBar.expanded {
     width: 120px;
   }
-}
-
-// Ajoutez à vos styles existants
-.SearchBar__compact {
-  display: flex;
-  height: 40px;
-  width: 44px;
-  padding: 16px 10px;
-  justify-content: center;
-  align-items: center;
-  gap: 16px; // taille initiale pour juste montrer l'icône
 }

@@ -36,6 +36,8 @@
 @use 'components/common/networkItem';
 @use 'components/common/modal';
 @use 'components/common/newBanner';
+@use 'components/common/tokenPairLogos';
+@use 'components/vaults/vault';
 
 @use 'components/tables/table';
 @use 'components/tables/pagination';
@@ -46,6 +48,7 @@
 @use 'pages/positionPage';
 @use 'pages/poolViewPage';
 @use 'pages/poolPage';
+@use 'pages/vaults';
 
 
 // @import 'themes/dark';

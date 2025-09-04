@@ -52,14 +52,12 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         }
       ])
     );
-    console.log("TokensMap créé:", Array.from(map.entries()));
     return map;
   }, [tokensList]);
 
   // Créer un map des pools par adresse pour récupérer les tokens
   const poolsMap = useMemo(() => {
     if (!poolsList || !poolsList.data || !Array.isArray(poolsList.data)) {
-      console.log("poolsList.data n'est pas un tableau:", poolsList);
       return new Map();
     }
     const map = new Map(
@@ -73,7 +71,6 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         }
       ])
     );
-    console.log("PoolsMap créé:", Array.from(map.entries()));
     return map;
   }, [poolsList]);
 
@@ -90,17 +87,12 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       return resp.json()
     },
     select: (data) => {
-      console.log("Données brutes des swaps:", data)
       return {
         pagination: {
           ...data.pagination,
           onPageChange: setCurrentPage
         },
         txs: data.data.map((s: any) => {
-          // Debug: afficher la structure complète d'un swap
-          console.log("Structure d'un swap:", s);
-
-          // Récupérer les informations des tokens depuis la base de données
           const getTokenInfo = (address: string) => {
             const token = tokensMap.get(address.toLowerCase());
             return token || {
