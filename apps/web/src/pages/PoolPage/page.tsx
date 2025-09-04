@@ -11,18 +11,103 @@ import { formatNumber } from '../../utils/formatNumber';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { formatUnits } from 'viem';
 
+const GET_TOP_POOLS = `
+  query GetTopPools {
+    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 10) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        feeTier
+        id
+        liquidity
+        poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
+          items {
+            tvlUSD
+            volumeUSD
+            apr
+            volumeUSD1D
+            volumeUSD30D
+          }
+        }
+        token0Ref {
+          name
+          id
+          symbol
+          logoUri
+        }
+        token1Ref {
+          id
+          name
+          symbol
+          logoUri
+        }
+        totalValueLockedBERA
+        totalValueLockedUSD
+        volumeUSD
+      }
+    }
+  }
+`;
+
+interface GraphQLPool {
+  id: string;
+  feeTier: number;
+  liquidity: string;
+  totalValueLockedUSD: number;
+  totalValueLockedBERA: number;
+  volumeUSD: number;
+  poolDayData: {
+    items: Array<{
+      tvlUSD: number;
+      volumeUSD: number;
+      apr: number;
+      volumeUSD1D: number;
+      volumeUSD30D: number;
+    }>;
+  };
+  token0Ref: {
+    id: string;
+    name: string;
+    symbol: string;
+    logoUri?: string;
+  };
+  token1Ref: {
+    id: string;
+    name: string;
+    symbol: string;
+    logoUri?: string;
+  };
+}
+
+interface GraphQLResponse {
+  pools: {
+    totalCount: number;
+    pageInfo: {
+      endCursor: string;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      startCursor: string;
+    };
+    items: GraphQLPool[];
+  };
+}
+
 interface Pool {
-  id?: string;
+  id: string;
   address: string;
   fee: number;
   liquidity: string;
-  sqrtPriceX96: string;
-  tickSpacing: number;
-  createdAt: string;
-  createdAtBlock: string;
-  isValid: boolean;
+  sqrtPriceX96?: string;
+  tickSpacing?: number;
+  createdAt?: string;
+  createdAtBlock?: string;
+  isValid?: boolean;
 
-  // Informations des tokens
   token0Address: string;
   token1Address: string;
   token0Symbol: string;
@@ -30,13 +115,11 @@ interface Pool {
   token0LogoUri?: string;
   token1LogoUri?: string;
 
-  // Stats du pool
   tvlUSD: number;
   dayVolumeUSD: number;
   monthVolumeUSD: number;
   apr: number;
 
-  // Structure legacy pour compatibilité
   token0?: {
     id: string;
     address: string;
@@ -65,25 +148,78 @@ interface Pool {
   }>;
 }
 
+const transformGraphQLPoolToPool = (graphqlPool: GraphQLPool): Pool => {
+  const latestDayData = graphqlPool.poolDayData.items[0];
+  const aprValue = latestDayData?.apr;
+
+  return {
+    id: graphqlPool.id,
+    address: graphqlPool.id,
+    fee: graphqlPool.feeTier,
+    liquidity: graphqlPool.liquidity,
+    token0Address: graphqlPool.token0Ref.id,
+    token1Address: graphqlPool.token1Ref.id,
+    token0Symbol: graphqlPool.token0Ref.symbol,
+    token1Symbol: graphqlPool.token1Ref.symbol,
+    token0LogoUri: graphqlPool.token0Ref.logoUri,
+    token1LogoUri: graphqlPool.token1Ref.logoUri,
+    tvlUSD: graphqlPool.totalValueLockedUSD,
+    dayVolumeUSD: latestDayData?.volumeUSD1D || 0,
+    monthVolumeUSD: latestDayData?.volumeUSD30D || 0,
+    apr: typeof aprValue === 'number' ? aprValue : (typeof aprValue === 'string' ? parseFloat(aprValue) : 0),
+    token0: {
+      id: graphqlPool.token0Ref.id,
+      address: graphqlPool.token0Ref.id,
+      symbol: graphqlPool.token0Ref.symbol,
+      name: graphqlPool.token0Ref.name,
+      logoUri: graphqlPool.token0Ref.logoUri,
+      decimals: 18
+    },
+    token1: {
+      id: graphqlPool.token1Ref.id,
+      address: graphqlPool.token1Ref.id,
+      symbol: graphqlPool.token1Ref.symbol,
+      name: graphqlPool.token1Ref.name,
+      logoUri: graphqlPool.token1Ref.logoUri,
+      decimals: 18
+    }
+  };
+};
+
 const PoolDetailPage: React.FC = () => {
   const { poolAddress } = useParams<{ poolAddress: string }>();
 
-  const { data: pools, isLoading: poolsLoading } = useQuery({
-    queryKey: ['pools'],
+  const { data: poolsData, isLoading: poolsLoading } = useQuery({
+    queryKey: ['topPools'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool`)
-      if (!resp.ok) return { data: [] };
-      return resp.json();
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_TOP_POOLS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data as GraphQLResponse;
     },
   });
 
-  // Find the specific pool
-  const pool: Pool | null = useMemo(() => {
-    if (!pools || !poolAddress || !pools.data) return null;
+  const pools: Pool[] = useMemo(() => {
+    if (!poolsData?.pools?.items) return [];
+    return poolsData.pools.items.map(transformGraphQLPoolToPool);
+  }, [poolsData]);
 
-    // Chercher dans les données avec une gestion d'erreur robuste
+  const pool: Pool | null = useMemo(() => {
+    if (!pools || !poolAddress) return null;
+
     try {
-      return pools.data.find((p: any) =>
+      return pools.find((p: Pool) =>
         p.address && p.address.toLowerCase() === poolAddress.toLowerCase()
       ) || null;
     } catch (error) {
@@ -92,10 +228,9 @@ const PoolDetailPage: React.FC = () => {
     }
   }, [pools, poolAddress]);
 
-  // Pool chart data query - temporairement désactivé en attendant que l'endpoint backend soit disponible
   const { data: chartData = [], isLoading: chartLoading } = useQuery({
     queryKey: ['pool-chart', poolAddress],
-    enabled: false, // Désactivé temporairement
+    enabled: false,
     queryFn: async () => {
       // TODO: Réactiver quand l'endpoint backend sera disponible
       // const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}`);
@@ -106,7 +241,6 @@ const PoolDetailPage: React.FC = () => {
       //   value: d.price,
       // }));
 
-      // Données mockées temporaires
       return [
         { time: (Math.floor(Date.now() / 1000) - 7 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.001 },
         { time: (Math.floor(Date.now() / 1000) - 6 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0012 },
@@ -129,14 +263,12 @@ const PoolDetailPage: React.FC = () => {
     return <div style={{ padding: 32 }}>Pool not found.</div>;
   }
 
-  // Latest statistics - utiliser les nouvelles propriétés ou fallback sur l'ancienne structure
   const stat = pool.PoolStatistic?.[0];
   const tvl = pool.tvlUSD || stat?.tvlUSD || null;
-  const volume1d = pool.dayVolumeUSD || (stat?.volOneDay ? Number(stat.volOneDay) : null);
-  const volume30d = pool.monthVolumeUSD || (stat?.volOneMonth ? Number(stat.volOneMonth) : null);
+  const volume1d = pool.dayVolumeUSD ? Number(pool.dayVolumeUSD) : (stat?.volOneDay ? Number(stat.volOneDay) : null);
+  const volume30d = pool.monthVolumeUSD ? Number(pool.monthVolumeUSD) : (stat?.volOneMonth ? Number(stat.volOneMonth) : null);
   const apr = pool.apr || stat?.apr || null;
 
-  // Calculer la liquidité en utilisant les décimaux des tokens si disponibles
   const liquidity = pool.token0 && pool.token1
     ? Number(formatUnits(BigInt(pool.liquidity || "0"), (pool.token0.decimals + pool.token1.decimals) / 2))
     : Number(pool.liquidity || "0");
@@ -222,7 +354,7 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">APR</h4>
                 <p className="Pool__StatCardLabel">
-                  {apr === null || isNaN(apr) ? 'N/A' : `${apr.toFixed(2)}%`}
+                  {apr === null || isNaN(apr) || typeof apr !== 'number' ? 'N/A' : `${apr.toFixed(2)}%`}
                 </p>
               </div>
               <div className="Pool__StatCard">
@@ -269,14 +401,14 @@ const PoolDetailPage: React.FC = () => {
                 symbol: pool.token0Symbol,
                 name: pool.token0Symbol,
                 logoUri: pool.token0LogoUri,
-                decimals: 18 // Valeur par défaut
+                decimals: 18
               } as any}
               initialToToken={{
                 address: pool.token1Address,
                 symbol: pool.token1Symbol,
                 name: pool.token1Symbol,
                 logoUri: pool.token1LogoUri,
-                decimals: 18 // Valeur par défaut
+                decimals: 18
               } as any}
             />
           </div>
