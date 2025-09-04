@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
-import { pools } from 'src/ponder/ponder.schema';
+import { pool } from 'src/ponder/ponder.schema';
 import { PonderService } from 'src/ponder/ponder.service';
 import { BerachainMeta } from 'src/ponder/ponder.type';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -20,20 +20,20 @@ export class TokenListService implements OnModuleInit {
     private readonly cgs: CoinGeckoService,
   ) { }
 
-  onModuleInit() {
-    // await this.updateGeneralList();
+  async onModuleInit() {
+    await this.updateGeneralList();
     this.updateInPoolStatus();
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async updateInPoolStatus() {
-    const currentPools = await this.ponder.database.select().from(pools);
+    const currentPools = await this.ponder.database.select().from(pool);
     const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
-      if (!tokensAddr.includes(pool.token0Address.toLowerCase())) {
-        tokensAddr.push(pool.token0Address.toLowerCase());
+      if (!tokensAddr.includes(pool.token0.toLowerCase())) {
+        tokensAddr.push(pool.token0.toLowerCase());
       }
-      if (!tokensAddr.includes(pool.token1Address.toLowerCase())) {
-        tokensAddr.push(pool.token1Address.toLowerCase());
+      if (!tokensAddr.includes(pool.token1.toLowerCase())) {
+        tokensAddr.push(pool.token1.toLowerCase());
       }
       return tokensAddr;
     }, [] as string[]);

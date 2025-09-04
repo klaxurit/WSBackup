@@ -4,7 +4,6 @@ import { PonderModule } from 'src/ponder/ponder.module';
 import { DatabaseModule } from 'src/database/database.module';
 import { BlockchainModule } from 'src/blockchain/blockchain.module';
 import { CoingeckoModule } from 'src/coingecko/coingecko.module';
-import { PriceTokenService } from './price.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenController } from './token.controller';
 
@@ -16,8 +15,8 @@ import { TokenController } from './token.controller';
     CoingeckoModule,
     ScheduleModule.forRoot(),
   ],
-  providers: [TokenListService, PriceTokenService],
+  providers: [TokenListService],
   exports: [],
   controllers: [TokenController],
 })
-export class TokenModule {}
+export class TokenModule { }
