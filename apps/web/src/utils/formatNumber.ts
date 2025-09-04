@@ -3,7 +3,7 @@ export function formatNumber(value: number | null | undefined) {
 
   const absValue = Math.abs(value);
   const sign = value < 0 ? '-' : '';
-  
+
   const suffixes = [
     { value: 1e15, suffix: 'Q' },  // Quadrillions
     { value: 1e12, suffix: 'T' },  // Trillions
@@ -11,7 +11,7 @@ export function formatNumber(value: number | null | undefined) {
     { value: 1e6, suffix: 'M' },   // Millions
     { value: 1e3, suffix: 'K' }    // Milliers
   ];
-  
+
   for (const { value: threshold, suffix } of suffixes) {
     if (absValue >= threshold) {
       const formatted = (absValue / threshold).toFixed(2);
