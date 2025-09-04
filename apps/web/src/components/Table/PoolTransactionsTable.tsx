@@ -8,6 +8,96 @@ interface PoolTransactionsTableProps {
   poolAddress: string;
 }
 
+// Requête GraphQL pour récupérer les transactions (filtrage côté client)
+const GET_POOL_TRANSACTIONS = `
+  query GetPoolTransactions($limit: Int = 20) {
+    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        from
+        gasPrice
+        gasUsed
+        id
+        timestamp
+        swaps {
+          totalCount
+          items {
+            amount1
+            amount0
+            amountUSD
+            recipient
+            pool {
+              id
+              token0Ref {
+                symbol
+                id
+                logoUri
+                decimals
+              }
+              token1Ref {
+                symbol
+                id
+                logoUri
+                decimals
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Interface pour les données GraphQL des transactions
+interface GraphQLTransaction {
+  id: string;
+  from: string;
+  timestamp: string;
+  swaps: {
+    items: Array<{
+      amount0: string;
+      amount1: string;
+      amountUSD: number;
+      recipient: string;
+      pool: {
+        id: string;
+        token0Ref: {
+          symbol: string;
+          id: string;
+          logoUri?: string;
+          decimals: number;
+        };
+        token1Ref: {
+          symbol: string;
+          id: string;
+          logoUri?: string;
+          decimals: number;
+        };
+      };
+    }>;
+  };
+}
+
+// Interface pour la réponse GraphQL
+interface GraphQLResponse {
+  transactions: {
+    totalCount: number;
+    pageInfo: {
+      endCursor: string;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      startCursor: string;
+    };
+    items: GraphQLTransaction[];
+  };
+}
+
 interface Transaction {
   id: string;
   recipient: string;
@@ -19,65 +109,122 @@ interface Transaction {
     token0: {
       symbol: string;
       logoUri?: string;
+      decimals: number;
     };
     token1: {
       symbol: string;
       logoUri?: string;
+      decimals: number;
     };
   };
   tokenIn: {
     symbol: string;
     logoUri?: string;
+    decimals: number;
   };
   tokenOut: {
     symbol: string;
     logoUri?: string;
+    decimals: number;
   };
   amountIn: string;
   amountOut: string;
 }
 
+// Fonction pour transformer les données GraphQL en format Transaction
+const transformGraphQLTransactionToTransaction = (graphqlTx: GraphQLTransaction, poolAddress: string): Transaction[] => {
+  const transactions: Transaction[] = [];
+
+  // Parcourir tous les swaps de cette transaction
+  graphqlTx.swaps.items.forEach((swap) => {
+    // Vérifier si ce swap concerne la pool spécifique
+    if (swap.pool.id.toLowerCase() === poolAddress.toLowerCase()) {
+      const isAmount0Positive = BigInt(swap.amount0) > 0n;
+
+      transactions.push({
+        id: graphqlTx.id,
+        recipient: swap.recipient,
+        amount0: swap.amount0,
+        amount1: swap.amount1,
+        createdAt: new Date(parseInt(graphqlTx.timestamp) * 1000).toISOString(),
+        transactionHash: graphqlTx.id,
+        pool: {
+          token0: {
+            symbol: swap.pool.token0Ref.symbol,
+            logoUri: swap.pool.token0Ref.logoUri,
+            decimals: swap.pool.token0Ref.decimals,
+          },
+          token1: {
+            symbol: swap.pool.token1Ref.symbol,
+            logoUri: swap.pool.token1Ref.logoUri,
+            decimals: swap.pool.token1Ref.decimals,
+          },
+        },
+        tokenIn: isAmount0Positive ? {
+          symbol: swap.pool.token0Ref.symbol,
+          logoUri: swap.pool.token0Ref.logoUri,
+          decimals: swap.pool.token0Ref.decimals,
+        } : {
+          symbol: swap.pool.token1Ref.symbol,
+          logoUri: swap.pool.token1Ref.logoUri,
+          decimals: swap.pool.token1Ref.decimals,
+        },
+        tokenOut: isAmount0Positive ? {
+          symbol: swap.pool.token1Ref.symbol,
+          logoUri: swap.pool.token1Ref.logoUri,
+          decimals: swap.pool.token1Ref.decimals,
+        } : {
+          symbol: swap.pool.token0Ref.symbol,
+          logoUri: swap.pool.token0Ref.logoUri,
+          decimals: swap.pool.token0Ref.decimals,
+        },
+        amountIn: isAmount0Positive ? swap.amount0 : swap.amount1,
+        amountOut: isAmount0Positive ? swap.amount1 : swap.amount0,
+      });
+    }
+  });
+
+  return transactions;
+};
+
 export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ poolAddress }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['pool-transactions', poolAddress],
-    enabled: false, // Désactivé temporairement en attendant que l'endpoint backend soit disponible
     queryFn: async () => {
-      // TODO: Réactiver quand l'endpoint backend sera disponible
-      // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}/swaps`);
-      // if (!resp.ok) return [];
-      // const allSwaps = await resp.json();
-      // 
-      // // Filter transactions for this specific pool and transform data
-      // const poolTransactions = allSwaps
-      //   .map((s: any) => {
-      //     if (s.amount0 > 0n) {
-      //       // A -> B
-      //       return {
-      //         ...s,
-      //         tokenIn: s.pool.token0,
-      //         tokenOut: s.pool.token1,
-      //         amountIn: s.amount0,
-      //         amountOut: s.amount1,
-      //     }
-      //   } else {
-      //       // B -> A
-      //       return {
-      //         ...s,
-      //         tokenIn: s.pool.token1,
-      //         tokenOut: s.pool.token0,
-      //         amountIn: s.amount1,
-      //         amountOut: s.amount0,
-      //     }
-      //   }
-      // });
-      // 
-      // return poolTransactions;
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: GET_POOL_TRANSACTIONS,
+          variables: { limit: 50 }
+        }),
+      });
 
-      // Données mockées temporaires
-      return [];
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data as GraphQLResponse;
     },
     staleTime: 30 * 1000, // 30 seconds
   });
+
+  // Transformer les données GraphQL en format Transaction
+  const transactions: Transaction[] = React.useMemo(() => {
+    if (!data?.transactions?.items) return [];
+
+    const allTransactions: Transaction[] = [];
+    data.transactions.items.forEach((tx) => {
+      const poolTransactions = transformGraphQLTransactionToTransaction(tx, poolAddress);
+      allTransactions.push(...poolTransactions);
+    });
+
+    return allTransactions;
+  }, [data, poolAddress]);
 
   const txColumns: TableColumn[] = [
     {
@@ -159,13 +306,15 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        if (row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
+        // Pour l'instant, on utilise amountUSD si disponible, sinon on calcule approximativement
+        const amountUSD = row.pool.token0.symbol === 'USDC' || row.pool.token0.symbol === 'USDT'
+          ? parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals))
+          : parseFloat(formatUnits(BigInt(row.amountOut), row.tokenOut.decimals));
 
-        const amount = (parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18)) * row.tokenIn.Statistic[0].price)
-        if (amount < 0.01) return "<0.01$"
+        if (amountUSD < 0.01) return "<0.01$"
         return (
           <span>
-            ${amount.toFixed(2)}
+            ${amountUSD.toFixed(2)}
           </span>
         )
       },
@@ -174,7 +323,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Token amount (sent)',
       key: 'amountIn',
       render: (row) => {
-        const amount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18))
+        const amount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
@@ -187,7 +336,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => {
-        const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
+        const amount = parseFloat(formatUnits(BigInt(row.amountOut), row.tokenOut.decimals))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
@@ -218,7 +367,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       <h3 className="Pool__TransactionsSectionTitle">Recent Transactions</h3>
       <Table
         columns={txColumns}
-        data={data || []}
+        data={transactions}
         isLoading={isLoading}
         tableClassName="Table"
         wrapperClassName="Table__Wrapper"

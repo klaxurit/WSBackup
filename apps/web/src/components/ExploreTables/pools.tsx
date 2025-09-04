@@ -127,8 +127,9 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
             <TokenPairLogos
               token0={{ address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
               token1={{ address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
-              borderWidth={3}
-              separatorWidth={2.5}
+              borderWidth={2}
+              separatorWidth={1.5}
+              size={28}
             />
           </span>
           <span className="PoolsTable__PoolName">{row.pool}</span>

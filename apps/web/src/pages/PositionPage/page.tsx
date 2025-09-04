@@ -5,13 +5,12 @@ import { Link } from 'react-router-dom';
 import '../../styles/pages/_positionPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { usePositions } from '../../hooks/usePositions';
+import { usePositionsHybrid } from '../../hooks/usePositionsHybrid';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import { FallbackImg } from '../../components/utils/FallbackImg';
-import { formatUnits } from 'viem';
 
 const GET_TOP_POOLS = `
   query GetTopPools {
@@ -123,7 +122,7 @@ const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): Formatte
     token1Symbol: graphqlPool.token1Ref.symbol,
     token0LogoUri: graphqlPool.token0Ref.logoUri,
     token1LogoUri: graphqlPool.token1Ref.logoUri,
-    fee: graphqlPool.feeTier,
+    fee: graphqlPool.feeTier / 10000, // Convertir en pourcentage
     apr: typeof aprValue === 'number' ? aprValue : (typeof aprValue === 'string' ? parseFloat(aprValue) : 0),
     tvlUSD: graphqlPool.totalValueLockedUSD,
   };
@@ -132,10 +131,16 @@ const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): Formatte
 };
 
 const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
-  const amount0 = parseFloat(formatUnits(row.position.amount0, row.pool.token0.decimals)).toFixed(2)
-  const amount1 = parseFloat(formatUnits(row.position.amount1, row.pool.token1.decimals)).toFixed(2)
-  const value0 = (Number(amount0) * row.pool.token0.TokenPrice[0].price)
-  const value1 = (Number(amount1) * row.pool.token1.TokenPrice[0].price)
+  // Les montants sont déjà des chaînes décimales depuis Ponder
+  const amount0 = parseFloat(row.position.amount0).toFixed(2)
+  const amount1 = parseFloat(row.position.amount1).toFixed(2)
+
+  // Vérifier si les prix sont disponibles
+  const token0Price = row.pool.token0.TokenPrice?.[0]?.price;
+  const token1Price = row.pool.token1.TokenPrice?.[0]?.price;
+
+  const value0 = token0Price ? (Number(amount0) * token0Price) : 0;
+  const value1 = token1Price ? (Number(amount1) * token1Price) : 0;
   const totalValue = (value0 + value1).toFixed(2);
 
   return (
@@ -160,7 +165,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
         </span>
       </div>
       <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-        ${totalValue}
+        {token0Price && token1Price ? `$${totalValue}` : 'Prix non disponible'}
       </div>
     </div>
   );
@@ -168,7 +173,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
 
 const PoolPage: React.FC = () => {
   const { isConnected } = useAccount()
-  const { positions, isLoading } = usePositions()
+  const { positions, isLoading } = usePositionsHybrid()
   const [statusFilter, setStatusFilter] = useState<'open' | 'closed'>('open')
 
   const filteredPositions = useMemo(() => {
@@ -200,14 +205,15 @@ const PoolPage: React.FC = () => {
         </Link>
       ),
     },
-    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.pool.fee / 10000}%`) },
+    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.pool.fee}%`) },
     {
       label: 'Position size', key: 'size', render: (row) => <PositionSizeCell row={row} />
     },
     {
       label: 'Pool APR', key: 'apr', render: (row) => {
-        return row.pool.apr !== 0
-          ? `${row.pool.apr.toFixed(2)}%`
+        const apr = row.pool.apr;
+        return apr && typeof apr === 'number' && apr !== 0
+          ? `${apr.toFixed(2)}%`
           : "-"
       }
     },
@@ -321,8 +327,9 @@ const PoolPage: React.FC = () => {
                         symbol: pool.token1Symbol,
                         logoUri: pool.token1LogoUri
                       }}
-                      borderWidth={3}
-                      separatorWidth={2.5}
+                      borderWidth={2}
+                      separatorWidth={1.5}
+                      size={28}
                     />
                     {(() => {
                       const displayToken0 = getPoolDisplayToken(pool.token0Address as `0x${string}`);
@@ -332,7 +339,7 @@ const PoolPage: React.FC = () => {
                       return `${symbol0} / ${symbol1}`;
                     })()} <span className="PoolPage__TopVersion">v3</span>
                   </div>
-                  <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
+                  <div className="PoolPage__TopFee">{pool.fee}% fee</div>
                   <div className="PoolPage__TopApr">
                     {pool.apr && typeof pool.apr === 'number' ? pool.apr.toFixed(2) : '0.00'}% APR
                   </div>
