@@ -11,7 +11,7 @@ interface ChartToolbarProps {
   isLoading?: boolean;
 }
 
-const BERYL_PURE = '#E39229';
+
 
 // Icônes SVG pour les types de charts
 const AreaChartIcon = () => (
@@ -61,6 +61,41 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   availableIntervals = ['1H', '1D', '1W', '1M', '1Y', 'MAX'],
   isLoading = false,
 }) => {
+  const [hoveredInterval, setHoveredInterval] = React.useState<ChartInterval | null>(null);
+  const [previousInterval, setPreviousInterval] = React.useState<ChartInterval | null>(null);
+  const [isFromHover, setIsFromHover] = React.useState(false);
+
+  // Gérer le changement d'intervalle
+  const handleIntervalChange = (newInterval: ChartInterval) => {
+    if (newInterval !== interval) {
+      setPreviousInterval(interval);
+      // Vérifier si l'ourson vient du hover
+      setIsFromHover(hoveredInterval === newInterval);
+      onIntervalChange(newInterval);
+      // Réinitialiser le hover
+      setHoveredInterval(null);
+    }
+  };
+
+  // Gérer le hover
+  const handleMouseEnter = (int: ChartInterval) => {
+    if (int !== interval && !isLoading) {
+      setHoveredInterval(int);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredInterval(null);
+  };
+
+  // Réinitialiser isFromHover après l'animation
+  React.useEffect(() => {
+    if (isFromHover) {
+      const timer = setTimeout(() => setIsFromHover(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isFromHover]);
+
   return (
     <div className="chart-toolbar">
       <div className="chart-toolbar__section chart-toolbar__section--left">
@@ -94,58 +129,40 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         {/* Intervalles avec design original */}
         <div className="chart-toolbar__intervals-original">
           {availableIntervals.map((int) => (
-            <div key={int} style={{ position: 'relative' }}>
+            <div key={int}>
+              {/* Ourson actif */}
               {interval === int && (
                 <img
                   src={lilBear}
-                  alt="Selected"
-                  style={{
-                    position: 'absolute',
-                    top: '-23px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: '45px',
-                    zIndex: 10,
-                    pointerEvents: 'none',
-                  }}
+                  alt="Active"
+                  className={`bear bear--active ${isFromHover ? 'from-hover' : ''}`}
                 />
               )}
+
+              {/* Ourson au hover (derrière le bouton) */}
+              {hoveredInterval === int && interval !== int && (
+                <img
+                  src={lilBear}
+                  alt="Hover"
+                  className="bear bear--hover"
+                />
+              )}
+
+              {/* Ourson qui disparaît (ancien intervalle) */}
+              {previousInterval === int && interval !== int && (
+                <img
+                  src={lilBear}
+                  alt="Disappearing"
+                  className="bear bear--disappearing"
+                />
+              )}
+
               <button
-                onClick={() => onIntervalChange(int)}
+                className={interval === int ? 'active' : ''}
+                onClick={() => handleIntervalChange(int)}
+                onMouseEnter={() => handleMouseEnter(int)}
+                onMouseLeave={handleMouseLeave}
                 disabled={isLoading}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  borderRadius: '20px',
-                  border: interval === int
-                    ? `1px solid ${BERYL_PURE}`
-                    : '1px solid #4B5563',
-                  background: interval === int
-                    ? `${BERYL_PURE}1A` // 10% d'opacité
-                    : 'transparent',
-                  color: interval === int ? '#fff' : '#D1D5DB',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: interval === int
-                    ? `0 4px 12px ${BERYL_PURE}33` // 20% d'opacité pour l'ombre
-                    : 'none',
-                  opacity: isLoading ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (interval !== int && !isLoading) {
-                    e.currentTarget.style.borderColor = '#6B7280';
-                    e.currentTarget.style.background = 'rgba(75, 85, 99, 0.3)';
-                    e.currentTarget.style.color = '#fff';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (interval !== int && !isLoading) {
-                    e.currentTarget.style.borderColor = '#4B5563';
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#D1D5DB';
-                  }
-                }}
               >
                 {int}
               </button>
@@ -154,12 +171,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         </div>
       </div>
 
-      {/* Indicateur de chargement */}
-      {isLoading && (
-        <div className="chart-toolbar__loading">
-          <div className="chart-toolbar__spinner" />
-        </div>
-      )}
+
     </div>
   );
 };

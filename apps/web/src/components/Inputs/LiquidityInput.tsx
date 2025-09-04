@@ -7,8 +7,17 @@ import { formatTokenAmount } from '../../utils/format';
 import { FallbackImg } from '../utils/FallbackImg';
 import type { Token } from '../../hooks/usePositions';
 
+// Type simple pour les tokens mockés
+interface MockToken {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoUri: string;
+}
+
 interface LiquidityInputProps {
-  selectedToken: BerachainToken | Token | null;
+  selectedToken: BerachainToken | Token | MockToken | null;
   onAmountChange: (amount: bigint) => void;
   value: bigint;
   isOverBalance: boolean;
@@ -28,7 +37,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
   const [inputValue, setInputValue] = useState('');
 
   const { address } = useAccount()
-  const { data: usdValue = 0 } = usePrice(selectedToken)
+  const { data: usdValue = 0 } = usePrice(selectedToken as any)
 
   const { data: balance, isLoading: loading } = useBalance({
     address,
@@ -47,7 +56,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
   useEffect(() => {
     if (!isInputting.current) {
       const formattedValue = value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18);
-      
+
       // Si la valeur correspond à ce que l'utilisateur a tapé, garder l'input utilisateur
       if (lastUserInput.current && value > 0n) {
         try {
@@ -60,7 +69,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
           // Si erreur de parsing, utiliser la valeur formatée
         }
       }
-      
+
       setInputValue(formattedValue);
     }
   }, [value, selectedToken?.decimals]);

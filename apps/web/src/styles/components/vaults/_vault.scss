@@ -1,0 +1,208 @@
+// Vault Components Styles
+
+// VaultModal
+.VaultModal {
+  background: #1a1a1a;
+  border-radius: 16px;
+  border: 1px solid #333;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  &__Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #333;
+
+    h3 {
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__Close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  &__Content {
+    padding: 1.5rem;
+  }
+
+  &__ModeSelector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__ModeButton {
+    flex: 1;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: #555;
+    }
+
+    &.active {
+      background: #e39229;
+      border-color: #e39229;
+      color: #fff;
+    }
+  }
+
+  &__DoubleDeposit,
+  &__SingleDeposit {
+    margin-bottom: 1.5rem;
+  }
+
+  &__TokenSelector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__TokenButton {
+    flex: 1;
+    background: #2a2a2a;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: #555;
+    }
+
+    &.active {
+      background: #e39229;
+      border-color: #e39229;
+      color: #fff;
+    }
+  }
+
+  &__Summary {
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    h4 {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem 0;
+    }
+
+    p {
+      color: #aaa;
+      font-size: 0.8rem;
+      margin: 0.5rem 0 0 0;
+    }
+  }
+
+  &__SummaryItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    span:first-child {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    span:last-child {
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+
+  &__WithdrawInfo {
+    background: #2a2a2a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    p {
+      color: #fff;
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__Footer {
+    padding: 1.5rem;
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// VaultActionButton specific styles
+.VaultDetailPage__ActionButton {
+  width: 100%;
+
+  &.btn__disabled {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    color: #666;
+    cursor: not-allowed;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      color: #666;
+    }
+  }
+
+  &.btn__main {
+    background: #e39229;
+    border: 1px solid #e39229;
+    color: #000;
+
+    &:hover {
+      background: #f0a040;
+      border: 1px solid #f0a040;
+    }
+  }
+}

@@ -89,7 +89,6 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         }
       ])
     );
-    console.log("TokensMap créé:", Array.from(map.entries()));
     return map;
   }, [tokensList]);
 
@@ -130,6 +129,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
           //     logoUri: null
           //   };
           // };
+
 
           if (s.swaps.items.length > 0) { // C'est un swap
             if (BigInt(s.swaps.items[0].amount0) > 0n) {

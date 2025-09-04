@@ -52,7 +52,8 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
     border: `${computedBorderWidth}px solid #FFC164`,
     background: '#FFC164',
     overflow: 'hidden',
-    verticalAlign: 'middle'
+    verticalAlign: 'middle',
+    flexShrink: 0 // Empêche le composant de se rétrécir dans les conteneurs flex
   };
 
   const baseHalfStyle: React.CSSProperties = {
@@ -69,7 +70,20 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
   const imageStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'contain',
+    imageRendering: 'auto'
+  };
+
+  const leftImageStyle: React.CSSProperties = {
+    ...imageStyle,
+    paddingRight: '5%',
+    transform: 'scale(1.05)'
+  };
+
+  const rightImageStyle: React.CSSProperties = {
+    ...imageStyle,
+    paddingLeft: '5%',
+    transform: 'scale(1.05)'
   };
 
   return (
@@ -82,9 +96,9 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
         }}
       >
         {displayToken0.logoUri ? (
-          <img src={displayToken0.logoUri} style={imageStyle} alt={displayToken0.symbol} />
+          <img src={displayToken0.logoUri} style={leftImageStyle} alt={displayToken0.symbol} />
         ) : (
-          <FallbackImg content={displayToken0.symbol} style={imageStyle} />
+          <FallbackImg content={displayToken0.symbol} style={leftImageStyle} />
         )}
       </div>
 
@@ -96,9 +110,9 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
         }}
       >
         {displayToken1.logoUri ? (
-          <img src={displayToken1.logoUri} style={imageStyle} alt={displayToken1.symbol} />
+          <img src={displayToken1.logoUri} style={rightImageStyle} alt={displayToken1.symbol} />
         ) : (
-          <FallbackImg content={displayToken1.symbol} style={imageStyle} />
+          <FallbackImg content={displayToken1.symbol} style={rightImageStyle} />
         )}
       </div>
 

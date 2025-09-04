@@ -58,6 +58,21 @@
 .Table__Scroll {
   overflow-x: auto;
   background: rgba(255, 255, 255, 0.03);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
 }
 
 .Table {
@@ -68,6 +83,10 @@
   font-size: 15px;
   color: #e0e0e0;
   background: none;
+
+  a {
+    line-height: 14px;
+  }
 }
 
 .Table thead th {
@@ -81,6 +100,9 @@
   z-index: 2;
   text-align: left;
   border-bottom: 1px solid #232323;
+  border-right: none; // Supprime les bordures entre les colonnes du header
+  height: 60px; // Hauteur fixe pour tous les headers
+  vertical-align: middle; // Centre le contenu verticalement
 
   &:nth-child(n+3) {
     text-align: right;
@@ -132,7 +154,7 @@
 
 .Table td {
   padding: 1rem;
-  border-bottom: 1px solid #232323;
+  // border-bottom: 1px solid #232323;
   vertical-align: middle;
 
   svg {
@@ -163,6 +185,17 @@
   border: 1px solid #232323;
   border-radius: 16px;
   overflow: hidden;
+
+  // Supprime les bordures entre les colonnes du header
+  thead th {
+    border-right: none !important;
+    border-left: none !important;
+  }
+
+  // Garde seulement la bordure du bas pour le header
+  thead tr {
+    border-bottom: 1px solid #232323;
+  }
 }
 
 .Table__TypeBadge {
@@ -192,29 +225,362 @@
 }
 
 // Pour la cellule du nom du token (TokensTable)
+.TokensTable__NameTd {
+  // S'assurer que la cellule du header n'a pas de hauteur supplémentaire
+  vertical-align: middle;
+  padding: 1rem; // Utilise le même padding que les autres headers
+  height: 60px; // Même hauteur fixe que les autres headers
+}
+
+// Pour centrer verticalement les TokenPairLogos dans les tableaux
+.Table td {
+
+  // S'assurer que les TokenPairLogos sont centrés verticalement
+  .TokenPairLogos {
+    vertical-align: middle;
+    display: inline-block;
+  }
+}
+
+// Styles spécifiques pour PoolsTable - uniformisation avec TokensTable
+
+// Cellule d'index (colonne #)
+.PoolsTable__IndexTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__IndexCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.PoolsTable__IndexLink {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #e39229;
+  }
+}
+
+// Cellule Pool
+.PoolsTable__PoolTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__PoolCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.PoolsTable__LogoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+
+  .TokenPairLogos {
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+}
+
+.PoolsTable__PoolName {
+  font-weight: 600;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Cellule Fee Tier
+.PoolsTable__FeeTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__FeeCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule TVL
+.PoolsTable__TvlTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__TvlCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Pool APR
+.PoolsTable__AprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__AprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule BGT APR
+.PoolsTable__BgtAprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__BgtAprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Vol. 1d
+.PoolsTable__Vol1dTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__Vol1dCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Vol. 30d
+.PoolsTable__Vol30dTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__Vol30dCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Styles spécifiques pour VaultsTable - uniformisation avec TokensTable et PoolsTable
+
+// Cellule d'index (colonne #)
+.VaultsTable__IndexTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.Table__Icon {
+  height: 24px;
+  width: 24px;
+}
+
+.VaultsTable__IndexCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.VaultsTable__IndexLink {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #e39229;
+  }
+}
+
+// Cellule Vault
+.VaultsTable__VaultTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__VaultCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.VaultsTable__LogoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  flex-shrink: 0;
+
+  .TokenPairLogos {
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+}
+
+.VaultsTable__VaultName {
+  font-weight: 600;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Cellule Strategy
+.VaultsTable__StrategyTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__StrategyCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.VaultsTable__StrategyBadge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e0e0e0;
+  white-space: nowrap;
+}
+
+// Cellule TVL
+.VaultsTable__TvlTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__TvlCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule APR
+.VaultsTable__AprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__AprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Fees APR
+.VaultsTable__FeesAprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__FeesAprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Rewards APR
+.VaultsTable__RewardsAprTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__RewardsAprCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Vol. 1d
+.VaultsTable__Vol1dTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__Vol1dCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+// Cellule Vol. 30d
+.VaultsTable__Vol30dTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__Vol30dCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
 .TokensTable__NameCell {
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 100%;
+  gap: 8px;
+  min-width: 0;
 }
 
 .TokensTable__LogoWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 24px;
+  flex-shrink: 0;
 }
 
 .TokensTable__Logo {
-  width: 32px !important;
-  height: 32px !important;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 2px solid rgb(255, 193, 100);
+  border: 1.5px solid rgb(255, 193, 100);
   background: #fff;
-  position: relative;
-  left: 0;
-  z-index: 2;
+  object-fit: cover;
 }
 
 .TokensTable__NameLink {
@@ -222,65 +588,18 @@
   color: #FFD056;
   text-decoration: none;
   cursor: pointer;
-}
-
-// Main table wrapper
-.Table__Wrapper {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.04);
+  transition: color 0.15s ease;
   overflow: hidden;
-}
+  text-overflow: ellipsis;
 
-// Scrollable container
-.Table__Scroll {
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-
-  &::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+  &:hover {
+    color: #e39229;
   }
 }
 
-// Main table
-.Table {
-  width: 100%;
-  min-width: 800px;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 15px;
-  color: #e0e0e0;
-  background: none;
-}
+// Styles unifiés pour tous les tableaux - déjà définis plus haut
 
-// Table headers
-.Table thead th {
-  position: sticky;
-  top: 0;
-  background: rgba(18, 17, 14, 0.98);
-  color: #aaa;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 16px 12px;
-  z-index: 2;
-  text-align: left;
-  border-bottom: 1px solid #232323;
-  white-space: nowrap;
-
-  &:nth-child(n+3) {
-    text-align: right;
-  }
-}
+// Table headers - styles déjà définis plus haut
 
 // Sortable header styles
 .Table__SortableHeader {
@@ -348,7 +667,7 @@
 // Table cells
 .Table td {
   padding: 12px;
-  border-bottom: 1px solid #232323;
+  // border-bottom: 1px solid #232323;
   vertical-align: middle;
   white-space: nowrap;
 
@@ -401,37 +720,7 @@
   font-style: italic;
 }
 
-// Token name cell styles
-.TokensTable__NameCell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.TokensTable__LogoWrapper {
-  flex-shrink: 0;
-}
-
-.TokensTable__Logo {
-  width: 24px;
-  height: 24px;
-  border-radius: 20px;
-  object-fit: cover;
-}
-
-.TokensTable__NameLink {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.15s ease;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  &:hover {
-    color: #e39229;
-  }
-}
+// Styles dupliqués supprimés - voir plus haut dans le fichier
 
 // Right-aligned columns for numerical data
 .Table thead th:nth-child(n+3) {
