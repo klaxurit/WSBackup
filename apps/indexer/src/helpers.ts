@@ -50,7 +50,7 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
           functionName: "totalSupply",
         }),
         (async () => {
-          const response = await fetch(`http://localhost:3000/token/${tokenAddress}`)
+          const response = await fetch(`${process.env.BACKEND_API_URL || "http://localhost:3000"}/token/${tokenAddress}`)
           if (!response.ok) return null
 
           const data: any = await response.json()
