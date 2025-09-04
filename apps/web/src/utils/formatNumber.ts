@@ -1,8 +1,12 @@
 export function formatNumber(value: number | null | undefined) {
   if (value === null || value === undefined || isNaN(value)) return '-';
 
-  const absValue = Math.abs(value);
-  const sign = value < 0 ? '-' : '';
+  // S'assurer que la valeur est un nombre
+  const numValue = typeof value === 'number' ? value : Number(value);
+  if (isNaN(numValue)) return '-';
+
+  const absValue = Math.abs(numValue);
+  const sign = numValue < 0 ? '-' : '';
 
   const suffixes = [
     { value: 1e15, suffix: 'Q' },  // Quadrillions
@@ -21,5 +25,5 @@ export function formatNumber(value: number | null | undefined) {
     }
   }
 
-  return parseFloat(value.toFixed(2)).toString()
+  return parseFloat(numValue.toFixed(2)).toString()
 } 

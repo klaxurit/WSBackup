@@ -13,6 +13,124 @@ import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { formatUnits } from 'viem';
 
+const GET_TOP_POOLS = `
+  query GetTopPools {
+    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 4) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        feeTier
+        id
+        liquidity
+        poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
+          items {
+            tvlUSD
+            volumeUSD
+            apr
+            volumeUSD1D
+            volumeUSD30D
+          }
+        }
+        token0Ref {
+          name
+          id
+          symbol
+          logoUri
+        }
+        token1Ref {
+          id
+          name
+          symbol
+          logoUri
+        }
+        totalValueLockedBERA
+        totalValueLockedUSD
+        volumeUSD
+      }
+    }
+  }
+`;
+
+interface GraphQLPool {
+  id: string;
+  feeTier: number;
+  liquidity: string;
+  totalValueLockedUSD: number;
+  totalValueLockedBERA: number;
+  volumeUSD: number;
+  poolDayData: {
+    items: Array<{
+      tvlUSD: number;
+      volumeUSD: number;
+      apr: number;
+      volumeUSD1D: number;
+      volumeUSD30D: number;
+    }>;
+  };
+  token0Ref: {
+    id: string;
+    name: string;
+    symbol: string;
+    logoUri?: string;
+  };
+  token1Ref: {
+    id: string;
+    name: string;
+    symbol: string;
+    logoUri?: string;
+  };
+}
+
+interface GraphQLResponse {
+  pools: {
+    totalCount: number;
+    pageInfo: {
+      endCursor: string;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      startCursor: string;
+    };
+    items: GraphQLPool[];
+  };
+}
+
+interface FormattedPool {
+  address: string;
+  token0Address: string;
+  token1Address: string;
+  token0Symbol: string;
+  token1Symbol: string;
+  token0LogoUri?: string;
+  token1LogoUri?: string;
+  fee: number;
+  apr: number;
+  tvlUSD: number;
+}
+
+const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): FormattedPool => {
+  const latestDayData = graphqlPool.poolDayData.items[0];
+  const aprValue = latestDayData?.apr;
+  const transformed = {
+    address: graphqlPool.id,
+    token0Address: graphqlPool.token0Ref.id,
+    token1Address: graphqlPool.token1Ref.id,
+    token0Symbol: graphqlPool.token0Ref.symbol,
+    token1Symbol: graphqlPool.token1Ref.symbol,
+    token0LogoUri: graphqlPool.token0Ref.logoUri,
+    token1LogoUri: graphqlPool.token1Ref.logoUri,
+    fee: graphqlPool.feeTier,
+    apr: typeof aprValue === 'number' ? aprValue : (typeof aprValue === 'string' ? parseFloat(aprValue) : 0),
+    tvlUSD: graphqlPool.totalValueLockedUSD,
+  };
+
+  return transformed;
+};
+
 const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
   const amount0 = parseFloat(formatUnits(row.position.amount0, row.pool.token0.decimals)).toFixed(2)
   const amount1 = parseFloat(formatUnits(row.position.amount1, row.pool.token1.decimals)).toFixed(2)
@@ -101,15 +219,37 @@ const PoolPage: React.FC = () => {
       )
     },
   ];
-  const { data: topPools = [] } = useQuery({
-    queryKey: ['topPools'],
+  const { data: topPoolsData, isLoading: topPoolsLoading, error: topPoolsError } = useQuery({
+    queryKey: ['topPoolsGraphQL'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool/top`)
-      if (!resp.ok) return []
 
-      return resp.json()
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_TOP_POOLS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data as GraphQLResponse;
+    },
+  });
+
+  // Transformer les données GraphQL en format FormattedPool
+  const topPools: FormattedPool[] = useMemo(() => {
+    if (!topPoolsData?.pools?.items) {
+      return [];
     }
-  })
+
+    const transformedPools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool);
+    return transformedPools;
+  }, [topPoolsData]);
 
   return (
     <div className="PoolPage">
@@ -160,37 +300,45 @@ const PoolPage: React.FC = () => {
         <div className="PoolPage__Right">
           <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
           <div className="PoolPage__TopList">
-            {topPools.map((pool: any) => (
-              <div className="PoolPage__TopCard" key={pool.address}>
-                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <TokenPairLogos
-                    token0={{
-                      address: pool.token0Address,
-                      symbol: pool.token0Symbol,
-                      logoUri: pool.token0LogoUri
-                    }}
-                    token1={{
-                      address: pool.token1Address,
-                      symbol: pool.token1Symbol,
-                      logoUri: pool.token1LogoUri
-                    }}
-                    borderWidth={3}
-                    separatorWidth={2.5}
-                  />
-                  {(() => {
-                    const displayToken0 = getPoolDisplayToken(pool.token0Address);
-                    const displayToken1 = getPoolDisplayToken(pool.token1Address);
-                    const symbol0 = displayToken0.symbol || pool.token0Symbol;
-                    const symbol1 = displayToken1.symbol || pool.token1Symbol;
-                    return `${symbol0} / ${symbol1}`;
-                  })()} <span className="PoolPage__TopVersion">v3</span>
+            {topPoolsLoading ? (
+              <p>Loading top pools...</p>
+            ) : topPoolsError ? (
+              <p>Error loading pools: {topPoolsError.message}</p>
+            ) : topPools.length === 0 ? (
+              <p>No pools available</p>
+            ) : (
+              topPools.map((pool: FormattedPool) => (
+                <div className="PoolPage__TopCard" key={pool.address}>
+                  <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <TokenPairLogos
+                      token0={{
+                        address: pool.token0Address,
+                        symbol: pool.token0Symbol,
+                        logoUri: pool.token0LogoUri
+                      }}
+                      token1={{
+                        address: pool.token1Address,
+                        symbol: pool.token1Symbol,
+                        logoUri: pool.token1LogoUri
+                      }}
+                      borderWidth={3}
+                      separatorWidth={2.5}
+                    />
+                    {(() => {
+                      const displayToken0 = getPoolDisplayToken(pool.token0Address as `0x${string}`);
+                      const displayToken1 = getPoolDisplayToken(pool.token1Address as `0x${string}`);
+                      const symbol0 = displayToken0.symbol || pool.token0Symbol;
+                      const symbol1 = displayToken1.symbol || pool.token1Symbol;
+                      return `${symbol0} / ${symbol1}`;
+                    })()} <span className="PoolPage__TopVersion">v3</span>
+                  </div>
+                  <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
+                  <div className="PoolPage__TopApr">
+                    {pool.apr && typeof pool.apr === 'number' ? pool.apr.toFixed(2) : '0.00'}% APR
+                  </div>
                 </div>
-                <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
-                <div className="PoolPage__TopApr">
-                  {pool.apr ? pool.apr.toFixed(2) : '0'}% APR
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

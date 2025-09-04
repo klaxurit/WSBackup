@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatUnits } from "viem";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 interface TransactionsTableProps {
   searchValue: string | null;
@@ -62,37 +62,6 @@ const GET_TRANSACTIONS = `
 
 export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1)
-  const itemByPage = 20
-  // const [itemByPage, setItemByPage] = useState(20)
-
-  // Récupérer la liste des tokens pour enrichir les transactions
-  const { data: tokensList } = useQuery({
-    queryKey: ['tokens'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
-      if (!resp.ok) return [];
-      const result = await resp.json();
-      return result.data || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Créer un map des tokens par adresse pour un accès rapide
-  const tokensMap = useMemo(() => {
-    if (!tokensList) return new Map();
-    const map = new Map(
-      tokensList.map((token: any) => [
-        token.address.toLowerCase(),
-        {
-          symbol: token.symbol,
-          name: token.name,
-          decimals: token.decimals,
-          logoUri: token.logoUri
-        }
-      ])
-    );
-    return map;
-  }, [tokensList]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions'],
