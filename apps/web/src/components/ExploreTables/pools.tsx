@@ -38,11 +38,13 @@ const GET_POOL_STATS = `
         name
         id
         symbol
+        logoUri
       }
       token1Ref {
         id
         name
         symbol
+        logoUri
       }
       totalValueLockedBERA
       totalValueLockedUSD
@@ -122,12 +124,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => (
         <span className="PoolsTable__PoolCell">
           <span className="PoolsTable__LogoWrapper">
-          <TokenPairLogos
-            token0={{ address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
-            token1={{ address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
-            borderWidth={3}
-            separatorWidth={2.5}
-          />
+            <TokenPairLogos
+              token0={{ address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
+              token1={{ address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
+              borderWidth={3}
+              separatorWidth={2.5}
+            />
           </span>
           <span className="PoolsTable__PoolName">{row.pool}</span>
 
@@ -202,7 +204,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         return (
           <span className="PoolsTable__Vol1dCell">
             {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD1D) > 0
-              ?  `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD1D))}`
+              ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD1D))}`
               : "-"}
           </span>
         )
@@ -219,7 +221,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => {
         return (
           <span className="PoolsTable__Vol30dCell">
-            { row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
+            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
               ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD30D))}`
               : "-"}
           </span>

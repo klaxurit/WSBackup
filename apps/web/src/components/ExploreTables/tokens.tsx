@@ -22,6 +22,7 @@ const GET_TOKENS_STATS = `
         totalSupply
         volumeUSD
         symbol
+        logoUri
         tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
           items {
             priceUSD

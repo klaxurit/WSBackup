@@ -42,10 +42,12 @@ const GET_TRANSACTIONS = `
               token0Ref {
                 symbol
                 id
+                logoUri
               }
               token1Ref {
                 symbol
                 id
+                logoUri
               }
             }
           }
@@ -243,7 +245,6 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       label: 'Token amount (sent)',
       key: 'amount1',
       render: (row) => {
-        console.log(row)
         const amount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>

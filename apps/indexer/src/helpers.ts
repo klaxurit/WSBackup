@@ -28,7 +28,7 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
 
   if (!tokenEntity) {
     try {
-      const [symbol, name, decimals, totalSupply] = await Promise.all([
+      const [symbol, name, decimals, totalSupply, logoUri] = await Promise.all([
         context.client.readContract({
           address: tokenAddress,
           abi: [{ name: "symbol", type: "function", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" }],
@@ -49,6 +49,14 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
           abi: [{ name: "totalSupply", type: "function", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" }],
           functionName: "totalSupply",
         }),
+        (async () => {
+          const response = await fetch(`http://localhost:3000/token/${tokenAddress}`)
+          if (!response.ok) return null
+
+          const data: any = await response.json()
+
+          return data?.logoUri || null
+        })()
       ]);
 
 
@@ -69,6 +77,7 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
         totalValueLockedUSDUntracked: "0",
         derivedETH: "0",
         whitelistPools: [],
+        ...(!!logoUri && { logoUri })
       });
     } catch (error) {
       console.error(`Error fetching token info for ${tokenAddress}:`, error);

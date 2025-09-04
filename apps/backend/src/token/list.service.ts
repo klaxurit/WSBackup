@@ -21,8 +21,8 @@ export class TokenListService implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    await this.updateGeneralList();
-    this.updateInPoolStatus();
+    // await this.updateGeneralList();
+    // this.updateInPoolStatus();
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)

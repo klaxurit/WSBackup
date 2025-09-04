@@ -26,6 +26,7 @@ export const token = onchainTable("token", (t) => ({
   decimals: t.integer().notNull(),
   totalSupply: t.numeric().notNull().default("0"),
   maxSupply: t.numeric().notNull().default("0"),
+  logoUri: t.text(),
   txCount: t.integer().notNull().default(0),
   poolCount: t.integer().notNull().default(0),
   whitelistPools: t.json().$type<string[]>().notNull().default([]),
