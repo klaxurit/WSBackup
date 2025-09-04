@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import '../../styles/pages/_positionPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { usePositionsHybrid } from '../../hooks/usePositionsHybrid';
+import { usePositionsGraphQL } from '../../hooks/usePositionsGraphQL';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
@@ -145,7 +145,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {amount0}
           {row.pool.token0.logoUri ? (
@@ -173,7 +173,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
 
 const PoolPage: React.FC = () => {
   const { isConnected } = useAccount()
-  const { positions, isLoading } = usePositionsHybrid()
+  const { positions, isLoading } = usePositionsGraphQL()
   const [statusFilter, setStatusFilter] = useState<'open' | 'closed'>('open')
 
   const filteredPositions = useMemo(() => {
