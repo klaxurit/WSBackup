@@ -37,7 +37,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
   const [inputValue, setInputValue] = useState('');
 
   const { address } = useAccount()
-  const { data: usdValue = 0 } = usePrice(selectedToken as any) // Type assertion temporaire pour MockToken
+  const { data: usdValue = 0 } = usePrice(selectedToken as any)
 
   const { data: balance, isLoading: loading } = useBalance({
     address,

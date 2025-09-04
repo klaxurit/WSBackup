@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { VaultsTable } from '../../components/ExploreTables/vaults';
 import { NewBanner } from '../../components/Common/NewBanner';
-import vaultIcon from '../../assets/vault_icon.png';
+import vaultIcon from '../../assets/coffre_icon.png';
 
 const VaultsPage: React.FC = () => {
   const [search, setSearch] = useState('');
