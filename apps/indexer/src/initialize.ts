@@ -1,6 +1,6 @@
 import { ponder } from "ponder:registry";
-import { pool as sPool, token as sToken } from "ponder:schema";
-import { findBeraPerToken, sqrtPriceX96ToTokenPrices } from "./utils/pricing";
+import { bundle, pool as sPool, token as sToken } from "ponder:schema";
+import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices, STABLE_TOKEN_POOL } from "./utils/pricing";
 import { updatePoolStats } from "./stats/pool";
 import { updateTokenStats } from "./stats/token";
 
@@ -26,6 +26,11 @@ ponder.on("WinniePool:Initialize", async ({ event, context }) => {
   pool.token1Price = price1Ratio.toString()
   await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
 
+  // update basePrice only one after sWbera pool init
+  if (pool.id === STABLE_TOKEN_POOL) {
+    const beraPriceUSD = await getBeraPriceInUSD(context)
+    await context.db.update(bundle, { id: '1' }).set(({ beraPriceUSD: beraPriceUSD.toString() }))
+  }
 
   if (debug) {
     console.log("-------------------------------")
@@ -34,7 +39,6 @@ ponder.on("WinniePool:Initialize", async ({ event, context }) => {
     console.log(`price0Ratio => ${price0Ratio}`)
     console.log(`price1Ratio => ${price1Ratio}`)
   }
-
 
   const t0derivedBera = await findBeraPerToken(token0, context, undefined, debug)
   const t1derivedBera = await findBeraPerToken(token1, context, undefined, debug)

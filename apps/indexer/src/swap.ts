@@ -104,6 +104,7 @@ ponder.on("WinniePool:Swap", async ({ event, context }) => {
   pool.volumeToken1 = new Decimal(pool.volumeToken1).plus(amount1Abs).toString()
   pool.volumeUSD = new Decimal(pool.volumeUSD).plus(totalAmountUSD).toString()
   pool.feesUSD = new Decimal(pool.feesUSD).plus(feeUSD).toString()
+
   // Update the pool with the new active liquidity, price, and tick.
   pool.liquidity = event.args.liquidity
   pool.tick = event.args.tick

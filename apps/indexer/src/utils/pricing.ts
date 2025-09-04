@@ -1,15 +1,15 @@
 import Decimal from "decimal.js";
 import { Context } from "ponder:registry";
 import { bundle, pool as sPool, token as sToken } from "ponder:schema";
-import { formatUnits } from "viem";
 
 const REFERENCE_TOKEN = "0x6969696969696969696969696969696969696969" // wBera
 const STABLE_COINS: string[] = [
-  // "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase(), // Honey
-  // "0x779Ded0c9e1022225f8E0630b35a9b54bE713736".toLowerCase(), // USDT0
-  // "0x549943e04f40284185054145c6E4e9568C1D3241".toLowerCase() // USDC.e
+  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase(), // Honey
+  "0x779Ded0c9e1022225f8E0630b35a9b54bE713736".toLowerCase(), // USDT0
+  "0x549943e04f40284185054145c6E4e9568C1D3241".toLowerCase(), // USDC.e
+  "0x1cE0a25D13CE4d52071aE7e02Cf1F6606F4C79d3".toLocaleLowerCase(), // NECT
 ]
-const STABLE_TOKEN_POOL = "0x3b9dba6dacf92eea27dff0a1f9c646e12d739df2" // wBera/Honey
+export const STABLE_TOKEN_POOL = "0x3b9dba6dacf92eea27dff0a1f9c646e12d739df2" // wBera/Honey
 const WHITELIST_TOKENS: `0x${string}`[] = [
   REFERENCE_TOKEN,
   "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase() as `0x${string}`
@@ -21,9 +21,6 @@ export async function getBeraPriceInUSD(context: Context): Promise<Decimal> {
     console.warn('Stable pool not found, using default BERA price 1.0')
     return Decimal("1")
   }
-
-  // if (honeyPool.token0 === REFERENCE_TOKEN) return new Decimal('1').div(new Decimal(honeyPool.token1Price))
-  // else return new Decimal(honeyPool.token0Price)
 
   if (honeyPool.token0 === REFERENCE_TOKEN) {
     // token0 = wBera, token1 = Honey : token1Price = Honey par wBera = prix wBera en USD
@@ -37,9 +34,6 @@ export async function getBeraPriceInUSD(context: Context): Promise<Decimal> {
 }
 
 export async function findBeraPerToken(token: typeof sToken.$inferSelect, context: Context, beraPriceUSD?: Decimal, logs = false): Promise<Decimal> {
-  // if (!logs && token.symbol === "POLLEN") {
-  //   logs = true
-  // }
   // if is wBera return 1
   if (token.id === REFERENCE_TOKEN) {
     // logs && console.log(`c'est le reference token retourne 1`)

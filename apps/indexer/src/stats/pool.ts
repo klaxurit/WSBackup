@@ -14,7 +14,7 @@ export async function updatePoolStats(timestamp: bigint, pool: typeof sPool.$inf
   const hourStartUnix = hourId * 3600
   const hourPoolID = `${pool.id}-${hourId}`
 
-  const apr = await calculateAPR(pool, `${pool.id}-${dayId - 1}`, context)
+  const apr = await calculateAPR(pool, timestamp, context)
   const volumeUSD1D = await calculateVolumeForPeriod(pool, `${pool.id}-${hourId - 24}`, context)
   const volumeUSD30D = await calculateVolumeForPeriod(pool, `${pool.id}-${hourId - (24 * 30)}`, context)
 
@@ -138,14 +138,30 @@ async function updateHourPoolData(
   }
 }
 
-async function calculateAPR(pool: typeof sPool.$inferSelect, dayPoolId: string, context: Context) {
-  if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") return "0.00"
+async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, context: Context) {
+  const dayId = Math.floor(Number(timestamp) / 86400)
+  let isWeek = true
+  let fromPool: typeof poolDayData.$inferSelect | typeof poolHourData.$inferSelect | null = null
 
-  const fromPool = await context.db.find(poolDayData, { id: dayPoolId })
-  if (!fromPool) return "0.00"
+  if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") {
+    return "0.00"
+  }
+
+  fromPool = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - 7}` }) // take one week data
+  if (!fromPool) {
+    // if we havent one week data take 1Day
+    const hourId = Math.floor(Number(timestamp) / 3600)
+    fromPool = await context.db.find(poolHourData, { id: `${pool.id}-${hourId - 24}` })
+    // if no data too, fuck
+    if (!fromPool) {
+      return "0.00"
+    }
+
+    isWeek = false
+  }
 
   const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD)
-  const apr = periodFees.mul(365).div(pool.totalValueLockedUSD).mul(100)
+  const apr = periodFees.mul(isWeek ? 52 : 365).div(pool.totalValueLockedUSD).mul(100)
 
   return apr.toFixed(2)
 }
