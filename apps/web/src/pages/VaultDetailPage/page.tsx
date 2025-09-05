@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon } from '../../components/SVGs';
@@ -6,24 +6,62 @@ import { formatNumber } from '../../utils/formatNumber';
 import { LiquidityInput } from '../../components/Inputs/LiquidityInput';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { VaultActionButton } from '../../components/Vault/VaultActionButton';
-// import { useAccount } from 'wagmi'; // Commenté car non utilisé pour le moment
+import { useQuery } from '@tanstack/react-query';
+import { useVault } from '../../hooks/useVault';
+import { formatUnits, parseUnits, type Address } from 'viem';
 
-interface VaultDetailPageProps { }
+const GET_STICKYVAULT = `
+  query GetStickyVaults($id: String = "") {
+    stickyVault(id: $id) {
+      id
+      totalValueLockedUSD
+      poolRef {
+        token0Ref {
+          id
+          name
+          symbol
+          logoUri
+          decimals
+        }
+        token1Ref {
+          id
+          logoUri
+          name
+          symbol
+          decimals
+        }
+      }
+    }
+  }
+`
 
-// Type simple pour les tokens mockés
-interface MockToken {
-  address: string;
-  symbol: string;
-  name: string;
-  decimals: number;
-  logoUri: string;
-}
+export const VaultDetailPage = () => {
+  const { vaultAddress } = useParams<{ vaultAddress: Address }>();
 
-export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
-  const { vaultAddress } = useParams<{ vaultAddress: string }>();
-  // const { address } = useAccount(); // Commenté car non utilisé pour le moment
+  const { data: vault, isLoading } = useQuery({
+    queryKey: ['stickyVaults'],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_STICKYVAULT, variables: { id: vaultAddress } }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.stickyVault
+    }
+  });
+
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
   const [depositMode, setDepositMode] = useState<'double' | 'single'>('double');
+
   const [token0Amount, setToken0Amount] = useState(0n);
   const [token1Amount, setToken1Amount] = useState(0n);
   const [singleTokenAmount, setSingleTokenAmount] = useState(0n);
@@ -31,50 +69,38 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
   const [withdrawAmount, setWithdrawAmount] = useState(0n);
   const [autoCompound, setAutoCompound] = useState(true);
 
-  // Mock vault data
-  const vault = {
-    address: vaultAddress,
-    name: 'WBERA/HONEY',
-    token0Address: '0x6969696969696969696969696969696969696969',
-    token1Address: '0xfcbd14dc51f0a4d49d5e53c2e0950e0bc26d0dce',
-    token0Symbol: 'WBERA',
-    token1Symbol: 'HONEY',
-    token0LogoUri: 'https://res.cloudinary.com/duv0g402y/raw/upload/v1717773645/src/assets/bera.png',
-    token1LogoUri: 'https://res.cloudinary.com/duv0g402y/raw/upload/v1717773645/src/assets/honey.png',
-    strategy: 'Auto-Compound',
-    tvlUSD: 1250000,
-    apr: 15.5,
-    feesApr: 8.2,
-    rewardsApr: 7.3,
-    dayVolumeUSD: 45000,
-    monthVolumeUSD: 1200000,
-    performanceFee: 10,
-    managementFee: 2,
-    underlyingPool: 'Uniswap V3',
-    createdAt: '2024-01-15T00:00:00Z'
-  };
+  const vaultManager = useVault({
+    vault,
+    amount0: token0Amount,
+    amount1: token1Amount,
+    slippageBps: 100 // 1%
+  })
 
   // Mock user position
   const userPosition = { shares: '1234.56', valueUSD: 1500.00 };
 
-  // Mock token data for LiquidityInput
-  const token0: MockToken = {
-    address: vault.token0Address,
-    symbol: vault.token0Symbol,
-    name: vault.token0Symbol,
-    decimals: 18,
-    logoUri: vault.token0LogoUri
-  };
+  const { token0, token1 } = useMemo(() => {
+    if (!vault) return { token0: null, token1: null }
+    return {
+      token0: {
+        address: vault.poolRef.token0Ref.id,
+        symbol: vault.poolRef.token0Ref.symbol,
+        name: vault.poolRef.token0Ref.name,
+        decimals: vault.poolRef.token0Ref.decimals,
+        logoUri: vault.poolRef.token0Ref.logoUri
+      },
+      token1: {
+        address: vault.poolRef.token1Ref.id,
+        symbol: vault.poolRef.token1Ref.symbol,
+        name: vault.poolRef.token1Ref.name,
+        decimals: vault.poolRef.token1Ref.decimals,
+        logoUri: vault.poolRef.token1Ref.logoUri
+      }
+    }
 
-  const token1: MockToken = {
-    address: vault.token1Address,
-    symbol: vault.token1Symbol,
-    name: vault.token1Symbol,
-    decimals: 18,
-    logoUri: vault.token1LogoUri
-  };
+  }, [vault])
 
-  if (!vault) {
+  if (!vault || !token0 || !token1) {
     return (
       <div className="VaultDetailPage VaultDetailPage--error">
         <div className="VaultDetailPage__Error">
@@ -88,6 +114,7 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
     );
   }
 
+  console.log(vaultManager)
   return (
     <div className="VaultDetailPage">
       {/* Header */}
@@ -98,28 +125,20 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
           </Link>
           <div className="VaultDetailPage__VaultInfo">
             <TokenPairLogos
-              token0={{
-                address: vault.token0Address,
-                logoUri: vault.token0LogoUri,
-                symbol: vault.token0Symbol
-              }}
-              token1={{
-                address: vault.token1Address,
-                logoUri: vault.token1LogoUri,
-                symbol: vault.token1Symbol
-              }}
+              token0={token0}
+              token1={token1}
               borderWidth={2}
               separatorWidth={1.5}
               size={32}
             />
             <div className="VaultDetailPage__VaultTitle">
-              <h1>{vault.name || `${vault.token0Symbol}/${vault.token1Symbol}`}</h1>
+              <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
                 <span className="VaultDetailPage__Strategy">
                   {vault.strategy || 'Auto-Compound'}
                 </span>
                 <a
-                  href={`https://berascan.com/address/${vault.address}`}
+                  href={`https://berascan.com/address/${vault.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="VaultDetailPage__ExplorerLink"
@@ -143,19 +162,19 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
           <div className="VaultDetailPage__StatsGrid">
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">Pool TVL</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault.tvlUSD)}</span>
+              <span className="VaultDetailPage__StatValue">${formatNumber(vault.totalValueLockedUSD)}</span>
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">Pool APR</span>
-              <span className="VaultDetailPage__StatValue">{vault.feesApr.toFixed(2)}%</span>
+              <span className="VaultDetailPage__StatValue">{vault?.feesApr || "0"}%</span>
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">BGT APR</span>
-              <span className="VaultDetailPage__StatValue">{vault.rewardsApr.toFixed(2)}%</span>
+              <span className="VaultDetailPage__StatValue">{vault?.rewardsApr || "0"}%</span>
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">Fees (7D)</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault.dayVolumeUSD * 7)}</span>
+              <span className="VaultDetailPage__StatValue">${formatNumber(vault?.dayVolumeUSD * 7)}</span>
             </div>
             <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
               <span className="VaultDetailPage__StatLabel">Total APR</span>
@@ -168,7 +187,7 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
           {/* Chart Section */}
           <div className="VaultDetailPage__ChartSection">
             <ChartWidget
-              tokenAddress={vault.token0Address}
+              tokenAddress={token0.address}
               height={400}
               showToolbar={true}
             />
@@ -271,7 +290,7 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
                   <h4>You will receive:</h4>
                   <div className="VaultDetailPage__SummaryItem">
                     <span>Pool Tokens</span>
-                    <span>~0</span>
+                    <span>{vaultManager.isQuoted ? formatUnits(vaultManager.quote.minShares || 0n, 18) : "~0"}</span>
                   </div>
                   <p>These shares represent your position in the auto-compounding vault.</p>
                 </div>
@@ -280,9 +299,11 @@ export const VaultDetailPage: React.FC<VaultDetailPageProps> = () => {
                 <div className="VaultDetailPage__FormButton">
                   <VaultActionButton
                     action="deposit"
-                    amount={depositMode === 'double' ? (token0Amount + token1Amount) : singleTokenAmount}
                     size="large"
                     customClassName="VaultDetailPage__ActionButton"
+                    vm={vaultManager}
+                    t0Symbol={token0.symbol}
+                    t1Symbol={token1.symbol}
                   />
                 </div>
               </div>

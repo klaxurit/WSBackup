@@ -1,21 +1,24 @@
 import React from 'react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '../Buttons/ConnectButton';
+import type { VaultManager } from '../../hooks/useVault';
 
 interface VaultActionButtonProps {
   action: 'deposit' | 'withdraw';
-  amount: bigint;
   size?: 'large' | 'small';
   customClassName?: string;
-  onClick?: () => void;
+  vm: VaultManager,
+  t0Symbol: string,
+  t1Symbol: string
 }
 
 export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
   action,
-  amount,
   size = 'large',
   customClassName = '',
-  onClick
+  vm,
+  t0Symbol,
+  t1Symbol
 }) => {
   const { isConnected } = useAccount();
 
@@ -25,13 +28,13 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
       <ConnectButton
         size={size}
         customClassName={customClassName}
-        onClick={onClick}
+        onClick={() => { }}
       />
     );
   }
 
-  // Si l'utilisateur est connecté mais n'a pas saisi de montant
-  if (amount === 0n) {
+  // Il manque des amounts
+  if (!vm.isReady) {
     return (
       <button
         className={`btn btn--${size} btn__disabled ${customClassName}`.trim()}
@@ -42,13 +45,25 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
     );
   }
 
+  // Il faut approve un token
+  if (!vm.isAllow) {
+    return (
+      <button
+        className={`btn btn--${size} btn__main ${customClassName}`.trim()}
+        onClick={vm.t0Allowance.isNeed ? vm.t0Allowance.allow : vm.t10Allowance.allow}
+      >
+        Approve {vm.t0Allowance.isNeed ? t0Symbol : t1Symbol}
+      </button>
+    );
+  }
+
   // Si l'utilisateur est connecté et a saisi un montant
   const buttonText = action === 'deposit' ? 'Deposit' : 'Withdraw';
 
   return (
     <button
       className={`btn btn--${size} btn__main ${customClassName}`.trim()}
-      onClick={onClick}
+      onClick={vm.depositeTwoSide.depose}
     >
       {buttonText}
     </button>

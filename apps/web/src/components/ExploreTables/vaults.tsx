@@ -6,38 +6,19 @@ import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
 
 interface VaultsTableProps {
+  vaults: any
   searchValue: string
 }
 
-// Mock data for vaults
-const MOCK_VAULTS = [
-  {
-    address: '0x2345678901234567890123456789012345678901',
-    name: 'WBERA/HONEY',
-    token0Address: '0x6969696969696969696969696969696969696969',
-    token1Address: '0x1111111111111111111111111111111111111111',
-    token0Symbol: 'WBERA',
-    token1Symbol: 'USDC',
-    token0LogoUri: '/tokens/wbera.png',
-    token1LogoUri: 'https://res.cloudinary.com/duv0g402y/raw/upload/v1717773645/src/assets/honey.png',
-    strategy: 'Stable Range',
-    tvlUSD: 850000,
-    apr: 12.3,
-    feesApr: 6.8,
-    rewardsApr: 5.5,
-    dayVolumeUSD: 32000,
-    monthVolumeUSD: 950000
-  }
-];
 
-export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
-  const vaults = useMemo(() => {
-    if (!searchValue) return MOCK_VAULTS
-    return MOCK_VAULTS.filter((vault: any) =>
-      (vault.name && vault.name.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (vault.address && vault.address.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (vault.token0Symbol && vault.token0Symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (vault.token1Symbol && vault.token1Symbol.toLowerCase().includes(searchValue.toLowerCase()))
+
+export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
+  const filteredVaults = useMemo(() => {
+    if (!searchValue) return vaults
+    return vaults.filter((vault: any) =>
+      (vault.id && vault.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (vault.poolRef.token0Ref.symbol && vault.poolRef.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (vault.poolRef.token1Ref.symbol && vault.poolRef.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
     );
   }, [searchValue]);
 
@@ -49,19 +30,19 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       render: (row) => (
         <span className="VaultsTable__IndexCell">
           <Link
-            to={`/vaults/${row.address}`}
+            to={`/vaults/${row.id}`}
             className="VaultsTable__IndexLink"
           >
             <span className="Table__Address">
-              {row.token0Symbol}/{row.token1Symbol}
+              {row.poolRef.token0Ref.symbol}/{row.poolRef.token1Ref.symbol}
             </span>
           </Link>
           <a
-            href={`https://berascan.com/address/${row.address}`}
+            href={`https://berascan.com/address/${row.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Icon"
-            title={row.address}
+            title={row.id}
           >
             <ExplorerIcon />
           </a>
@@ -73,19 +54,19 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       key: 'vault',
       className: 'VaultsTable__VaultTd',
       sortable: true,
-      sortValue: (row) => `${row.token0Symbol}/${row.token1Symbol}`,
+      sortValue: (row) => `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`,
       render: (row) => (
         <span className="VaultsTable__VaultCell">
           <span className="VaultsTable__LogoWrapper">
             <TokenPairLogos
-              token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
-              token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
+              token0={{ address: row.poolRef.token0Ref.id, logoUri: row.poolRef.token0Ref.logoUri, symbol: row.poolRef.token0Ref.symbol }}
+              token1={{ address: row.poolRef.token1Ref.id, logoUri: row.poolRef.token1Ref.logoUri, symbol: row.poolRef.token1Ref.symbol }}
               borderWidth={2}
               separatorWidth={1.5}
               size={28}
             />
           </span>
-          <span className="VaultsTable__VaultName">{row.name || `${row.token0Symbol}/${row.token1Symbol}`}</span>
+          <span className="VaultsTable__VaultName">{`${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`}</span>
         </span>
       )
     },
@@ -109,13 +90,13 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__TvlTd',
       sortable: true,
       sortValue: (row) => {
-        return row.tvlUSD || 0
+        return row.totalValueLockedUSD || 0
       },
       render: (row) => {
         return (
           <span className="VaultsTable__TvlCell">
-            {row.tvlUSD !== 0
-              ? `$${formatNumber(row.tvlUSD)}`
+            {row.totalValueLockedUSD !== 0
+              ? `$${formatNumber(row.totalValueLockedUSD)}`
               : "-"}
           </span>
         )
@@ -127,12 +108,13 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
-        return row.apr || 0;
+        return row?.apr || 0;
       },
       render: (row) => {
+        console.log(row)
         return (
           <span className="VaultsTable__AprCell">
-            {row.apr !== 0
+            {row?.apr && row.apr !== 0
               ? `${row.apr.toFixed(2)}%`
               : "-"}
           </span>
@@ -145,12 +127,12 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__FeesAprTd',
       sortable: true,
       sortValue: (row) => {
-        return row.feesApr || 0;
+        return row?.feesApr || 0;
       },
       render: (row) => {
         return (
           <span className="VaultsTable__FeesAprCell">
-            {row.feesApr !== 0
+            {row?.feesApr && row.feesApr !== 0
               ? `${row.feesApr.toFixed(2)}%`
               : "-"}
           </span>
@@ -163,12 +145,12 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__RewardsAprTd',
       sortable: true,
       sortValue: (row) => {
-        return row.rewardsApr || 0;
+        return row?.rewardsApr || 0;
       },
       render: (row) => {
         return (
           <span className="VaultsTable__RewardsAprCell">
-            {row.rewardsApr !== 0
+            {row?.rewardsApr && row.rewardsApr !== 0
               ? `${row.rewardsApr.toFixed(2)}%`
               : "-"}
           </span>
@@ -216,7 +198,7 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   return (
     <Table
       columns={columns}
-      data={vaults}
+      data={filteredVaults}
       isLoading={false}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
