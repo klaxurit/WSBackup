@@ -4,7 +4,6 @@ import { ConnectButton } from '../Buttons/ConnectButton';
 import type { VaultManager } from '../../hooks/useVault';
 
 interface VaultActionButtonProps {
-  action: 'deposit' | 'withdraw';
   size?: 'large' | 'small';
   customClassName?: string;
   vm: VaultManager,
@@ -13,7 +12,6 @@ interface VaultActionButtonProps {
 }
 
 export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
-  action,
   size = 'large',
   customClassName = '',
   vm,
@@ -47,26 +45,54 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
 
   // Il faut approve un token
   if (!vm.isAllow) {
+    const handler = vm.isWithdraw
+      ? vm.burnAllowance.allow
+      : vm.t0Allowance.isNeed ? vm.t0Allowance.allow : vm.t10Allowance.allow
+    const text = vm.isWithdraw
+      ? 'burn'
+      : vm.t0Allowance.isNeed ? t0Symbol : t1Symbol
+
     return (
       <button
         className={`btn btn--${size} btn__main ${customClassName}`.trim()}
-        onClick={vm.t0Allowance.isNeed ? vm.t0Allowance.allow : vm.t10Allowance.allow}
+        onClick={handler}
       >
-        Approve {vm.t0Allowance.isNeed ? t0Symbol : t1Symbol}
+        Approve {text}
       </button>
     );
   }
 
-  // Si l'utilisateur est connecté et a saisi un montant
-  const buttonText = action === 'deposit' ? 'Deposit' : 'Withdraw';
+
+  if (vm.isDeposite) {
+    return (
+      <button
+        className={`btn btn--${size} btn__main ${customClassName}`.trim()}
+        onClick={vm.depositeTwoSide.depose}
+      >
+        Deposit
+      </button>
+    );
+  } else {
+    return (
+      <button
+        className={`btn btn--${size} btn__main ${customClassName}`.trim()}
+        onClick={vm.withdraw.burn}
+      >
+        Withdraw
+      </button>
+    )
+  }
+
+
 
   return (
     <button
-      className={`btn btn--${size} btn__main ${customClassName}`.trim()}
-      onClick={vm.depositeTwoSide.depose}
+      className={`btn btn--${size} btn__disabled ${customClassName}`.trim()}
+      disabled
     >
-      {buttonText}
+      Error
     </button>
   );
+
 };
 

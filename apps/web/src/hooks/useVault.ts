@@ -6,16 +6,19 @@ import { currentChain } from '../config/wagmi';
 import { erc20Abi, type Address, type Hex } from 'viem';
 import { StickyVaultWithRouter } from '../config/abis/StickyVaultWithRouter';
 
-
-
 interface VaultConfig {
   vault?: any;
   amount0: bigint
   amount1: bigint
+  burnAmount: bigint
   slippageBps: number
+  mode: "double" | "single" | "withdraw"
 }
 
 export interface VaultManager {
+  mode: "double" | "single" | "withdraw",
+  isDeposite: boolean
+  isWithdraw: boolean
   isReady: boolean
   quote: {
     amount0Max: bigint | null
@@ -43,9 +46,23 @@ export interface VaultManager {
     hash?: Hex
     refetch: () => void
   }
+  burnAllowance: {
+    isNeed: boolean
+    current?: bigint
+    allow: () => void
+    isLoading: boolean
+    isApprove: boolean
+    hash?: Hex
+    refetch: () => void
+  }
   isAllow: boolean
   depositeTwoSide: {
     depose: () => void
+    isPending: boolean
+    hash?: Hex
+  },
+  withdraw: {
+    burn: () => void
     isPending: boolean
     hash?: Hex
   }
@@ -56,28 +73,34 @@ const bpsDown = (x: bigint, bps: number) =>
 const pctBps = (x: bigint, bps: number) =>
   (x * BigInt(bps)) / 10_000n;
 
-export const useVault = (config: VaultConfig) => {
+export const useVault = (config: VaultConfig): VaultManager => {
   const { address } = useAccount();
 
   const vaultAddr: Address = config.vault?.id
-  const isReady = !!address && !!vaultAddr && config.amount0 > 0n && config.amount1 > 0n
+
+  const isDeposite = config.mode === "double" || config.mode === "single"
+  const isWithdraw = config.mode === "withdraw"
+
+  const isReady = isDeposite
+    ? !!address && !!vaultAddr && config.amount0 > 0n && config.amount1 > 0n
+    : !!address && !!vaultAddr && config.burnAmount > 0n
 
   // Setup Max amount
   const amount0Max = config.amount0
   const amount1Max = config.amount1
 
-  // Quote
+  // Deposite - Quote
   const { data: quote } = useReadContract({
     address: vaultAddr,
     abi: StickyVaultWithRouter,
     functionName: "getMintAmounts",
     args: [amount0Max, amount1Max],
     query: {
-      enabled: isReady
+      enabled: isReady && isDeposite
     }
   })
 
-  // Slippage minima
+  // Deposite - Slippage minima
   const [amount0Min, amount1Min, minShares] = useMemo(() => {
     if (!quote) return [null, null, null]
     return [
@@ -88,7 +111,7 @@ export const useVault = (config: VaultConfig) => {
   }, [quote])
   const isQuoted = !!amount0Max && !!amount0Min && !!amount1Max && !!amount1Min && !!minShares
 
-  // Allowance token0
+  // Deposite - Allowance token0
   const { data: t0Allowance, isLoading: loadT0Allowance, refetch: checkT0Allowance } = useReadContract({
     address: (config.vault?.poolRef?.token0Ref?.id as Address),
     abi: erc20Abi,
@@ -126,7 +149,7 @@ export const useVault = (config: VaultConfig) => {
     approveT0(approveT0Config.request)
   }
 
-  // Allowance token1
+  // Deposite - Allowance token1
   const { data: t1Allowance, isLoading: loadT1Allowance, refetch: checkT1Allowance } = useReadContract({
     address: (config.vault?.poolRef?.token1Ref?.id as Address),
     abi: erc20Abi,
@@ -164,7 +187,47 @@ export const useVault = (config: VaultConfig) => {
     approveT1(approveT1Config.request)
   }
 
-  const isAllow = !t0NeedApproval && !t1NeedApproval
+  // Withdraw - Allowance VaultErc20
+  const { data: burnAllowance, isLoading: loadBurnAllowance, refetch: checkBurnAllowance } = useReadContract({
+    address: vaultAddr,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: address ? [address, CONTRACTS_ADDRESS.STICKYVAULT_ROUTER] : undefined,
+    query: {
+      enabled: isWithdraw && isReady
+    }
+  })
+  const burnNeedApproval = (burnAllowance || 0n) < config.burnAmount
+  const { data: approveBurnConfig } = useSimulateContract({
+    address: vaultAddr,
+    abi: erc20Abi,
+    functionName: 'approve',
+    args: [CONTRACTS_ADDRESS.STICKYVAULT_ROUTER, config.burnAmount],
+    chainId: currentChain.id,
+    query: {
+      enabled: isWithdraw && burnNeedApproval
+    }
+  })
+  const { data: approveBurnHash, writeContract: approveBurn, isPending: waitBurnApprov } = useWriteContract()
+  const burnApproveResult = useWaitForTransactionReceipt({
+    hash: approveBurnHash,
+    query: {
+      enabled: !!approveBurnHash
+    }
+  })
+  useEffect(() => {
+    if (burnApproveResult.isSuccess) {
+      checkBurnAllowance()
+    }
+  }, [t1ApproveResult.isSuccess, checkT1Allowance])
+  const handleApproveBurn = () => {
+    if (!approveBurnConfig?.request) return
+    approveBurn(approveBurnConfig.request)
+  }
+
+  const isAllow = isDeposite
+    ? !t0NeedApproval && !t1NeedApproval
+    : !burnNeedApproval
 
   // Deposite two side
   const { data: depositeTwoSideConfig } = useSimulateContract({
@@ -183,7 +246,33 @@ export const useVault = (config: VaultConfig) => {
     depositeTwo(depositeTwoSideConfig.request)
   }
 
+  // Withdraw
+  const { data: burnConfig } = useSimulateContract({
+    address: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
+    abi: StickyVaultRouter,
+    functionName: "removeLiquidity",
+    args: [vaultAddr, config.burnAmount, 0n, 0n, address!],
+    chainId: currentChain.id,
+    query: {
+      enabled: isWithdraw && isAllow
+    }
+  })
+  const { data: burnHash, writeContract: burn, isPending: waitBurn } = useWriteContract()
+  const handleBurn = () => {
+    if (!burnConfig) return
+    const min0 = bpsDown(burnConfig.result[0], config.slippageBps);
+    const min1 = bpsDown(burnConfig.result[1], config.slippageBps);
+    burn({
+      ...burnConfig.request,
+      args: [vaultAddr, config.burnAmount, min0, min1, address!]
+    })
+  }
+
+
   return {
+    mode: config.mode,
+    isDeposite,
+    isWithdraw,
     isReady,
     quote: {
       amount0Max,
@@ -211,11 +300,25 @@ export const useVault = (config: VaultConfig) => {
       hash: approveT1Hash,
       refetch: checkT1Allowance
     },
+    burnAllowance: {
+      isNeed: burnNeedApproval,
+      current: burnAllowance,
+      allow: handleApproveBurn,
+      isLoading: loadBurnAllowance,
+      isApprove: waitBurnApprov,
+      hash: approveBurnHash,
+      refetch: checkBurnAllowance
+    },
     isAllow,
     depositeTwoSide: {
       depose: handleDepositeTwo,
       isPending: waitDepositeTwo,
       hash: depositeTwoHash
+    },
+    withdraw: {
+      burn: handleBurn,
+      isPending: waitBurn,
+      hash: burnHash
     }
   }
   // const depositTwoSided = useCallback(async (params: DepositParams) => {

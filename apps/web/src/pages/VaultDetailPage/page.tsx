@@ -9,25 +9,54 @@ import { VaultActionButton } from '../../components/Vault/VaultActionButton';
 import { useQuery } from '@tanstack/react-query';
 import { useVault } from '../../hooks/useVault';
 import { formatUnits, parseUnits, type Address } from 'viem';
+import { useAccount } from 'wagmi';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "") {
     stickyVault(id: $id) {
+      collectedFeesToken0
+      collectedFeesToken1
+      collectedFeesUSD
+      createdAtBlockNumber
+      createdAtTimestamp
+      currentTick
       id
+      liquidity
+      manager
+      rebalanceCount
+      tickLower
+      tickUpper
+      totalValueLockedBERA
+      totalValueLockedToken0
+      totalValueLockedToken1
       totalValueLockedUSD
+      txCount
+      positions {
+        items {
+          currentValueToken0
+          currentValueToken1
+          depositedToken0
+          depositedToken1
+          id
+          shares
+          unrealizedPnL
+          user
+        }
+      }
       poolRef {
-        token0Ref {
+        id
+        token1Ref {
           id
           name
           symbol
           logoUri
           decimals
         }
-        token1Ref {
+        token0Ref {
           id
-          logoUri
           name
           symbol
+          logoUri
           decimals
         }
       }
@@ -36,6 +65,7 @@ const GET_STICKYVAULT = `
 `
 
 export const VaultDetailPage = () => {
+  const { address } = useAccount()
   const { vaultAddress } = useParams<{ vaultAddress: Address }>();
 
   const { data: vault, isLoading } = useQuery({
@@ -73,14 +103,19 @@ export const VaultDetailPage = () => {
     vault,
     amount0: token0Amount,
     amount1: token1Amount,
-    slippageBps: 100 // 1%
+    burnAmount: withdrawAmount,
+    slippageBps: 100, // 1%,
+    mode: activeTab === "deposit" ? depositMode : "withdraw"
   })
 
   // Mock user position
-  const userPosition = { shares: '1234.56', valueUSD: 1500.00 };
+  const userPosition = useMemo(() => {
+    if (!vault?.positions || vault.positions.items.length === 0 || !address) return null
+    return vault.positions.items.filter((p: any) => p.user === address.toLowerCase())[0]
+  }, [vault?.positions.items, address])
 
   const { token0, token1 } = useMemo(() => {
-    if (!vault) return { token0: null, token1: null }
+    if (!vault?.poolRef) return { token0: null, token1: null }
     return {
       token0: {
         address: vault.poolRef.token0Ref.id,
@@ -201,8 +236,8 @@ export const VaultDetailPage = () => {
             <h3>Your Deposits</h3>
             <div className="VaultDetailPage__UserPosition">
               <div className="VaultDetailPage__PositionValue">
-                <span className="VaultDetailPage__PositionAmount">${userPosition.valueUSD}</span>
-                <span className="VaultDetailPage__PositionShares">{userPosition.shares} WIN-{vault.token0Symbol}-{vault.token1Symbol}</span>
+                <span className="VaultDetailPage__PositionAmount">${userPosition?.valueUSD || "0"}</span>
+                <span className="VaultDetailPage__PositionShares">{userPosition?.shares || 0} WIN-{token0.symbol}-{token1.symbol}</span>
               </div>
             </div>
           </div>
@@ -298,7 +333,6 @@ export const VaultDetailPage = () => {
                 {/* Deposit Button */}
                 <div className="VaultDetailPage__FormButton">
                   <VaultActionButton
-                    action="deposit"
                     size="large"
                     customClassName="VaultDetailPage__ActionButton"
                     vm={vaultManager}
@@ -317,8 +351,8 @@ export const VaultDetailPage = () => {
                   <LiquidityInput
                     selectedToken={{
                       address: vault.address as `0x${string}`,
-                      symbol: `WIN-${vault.token0Symbol}-${vault.token1Symbol}`,
-                      name: `WIN-${vault.token0Symbol}-${vault.token1Symbol}`,
+                      symbol: `WIN-${token0.symbol}-${token1.symbol}`,
+                      name: `WIN-${token0.symbol}-${token1.symbol}`,
                       decimals: 18,
                       logoUri: '' // Chaîne vide au lieu d'undefined
                     }}
@@ -359,22 +393,23 @@ export const VaultDetailPage = () => {
                 {/* Withdraw Summary */}
                 <div className="VaultDetailPage__WithdrawSummary">
                   <div className="VaultDetailPage__SummaryItem">
-                    <span>Pooled {vault.token0Symbol}:</span>
-                    <span>0</span>
+                    <span>Pooled {token0.symbol}:</span>
+                    <span>{userPosition?.depositedToken0}</span>
                   </div>
                   <div className="VaultDetailPage__SummaryItem">
-                    <span>Pooled {vault.token1Symbol}:</span>
-                    <span>0</span>
+                    <span>Pooled {token1.symbol}:</span>
+                    <span>{userPosition?.depositedToken1}</span>
                   </div>
                 </div>
 
                 {/* Withdraw Button */}
                 <div className="VaultDetailPage__FormButton">
                   <VaultActionButton
-                    action="withdraw"
-                    amount={withdrawAmount}
                     size="large"
                     customClassName="VaultDetailPage__ActionButton"
+                    vm={vaultManager}
+                    t0Symbol={token0.symbol}
+                    t1Symbol={token1.symbol}
                   />
                 </div>
               </div>
