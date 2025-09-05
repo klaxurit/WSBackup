@@ -43,11 +43,23 @@ const GET_TRANSACTIONS = `
                 symbol
                 id
                 logoUri
+                decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
               token1Ref {
                 symbol
                 id
                 logoUri
+                decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
             }
           }
@@ -67,11 +79,6 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions', currentPage],
     queryFn: async () => {
-      console.log('🔍 TransactionsTable - Requête GraphQL:', {
-        query: GET_TRANSACTIONS,
-        url: import.meta.env.VITE_GRAPHQL_URL
-      });
-
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
@@ -82,25 +89,16 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         }),
       });
 
-      console.log('📡 TransactionsTable - Réponse HTTP:', {
-        status: resp.status,
-        ok: resp.ok,
-        headers: Object.fromEntries(resp.headers.entries())
-      });
-
       if (!resp.ok) {
-        console.error('❌ TransactionsTable - Erreur HTTP:', resp.status, resp.statusText);
         return { pageInfo: {}, items: [] }
       }
 
       const data = await resp.json()
-      console.log('📊 TransactionsTable - Données reçues:', data);
 
       if (data.errors) {
         console.error('❌ TransactionsTable - Erreurs GraphQL:', data.errors);
       }
 
-      console.log('✅ TransactionsTable - Données finales:', data.data.transactions);
       return data.data.transactions
     },
     select: (data) => {
@@ -111,8 +109,14 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
             return {
               ...s,
               ...s.swaps.items[0],
-              tokenIn: s.swaps.items[0].pool.token0Ref,
-              tokenOut: s.swaps.items[0].pool.token1Ref,
+              tokenIn: {
+                ...s.swaps.items[0].pool.token0Ref,
+                priceUSD: s.swaps.items[0].pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+              },
+              tokenOut: {
+                ...s.swaps.items[0].pool.token1Ref,
+                priceUSD: s.swaps.items[0].pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+              },
               amountIn: BigInt(s.swaps.items[0].amount0),
               amountOut: BigInt(s.swaps.items[0].amount1),
             }
@@ -121,8 +125,14 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
             return {
               ...s,
               ...s.swaps.items[0],
-              tokenIn: s.swaps.items[0].pool.token1Ref,
-              tokenOut: s.swaps.items[0].pool.token0Ref,
+              tokenIn: {
+                ...s.swaps.items[0].pool.token1Ref,
+                priceUSD: s.swaps.items[0].pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+              },
+              tokenOut: {
+                ...s.swaps.items[0].pool.token0Ref,
+                priceUSD: s.swaps.items[0].pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+              },
               amountIn: BigInt(s.swaps.items[0].amount1),
               amountOut: BigInt(s.swaps.items[0].amount0),
             }
@@ -221,13 +231,31 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        const amount = (parseFloat(row.amountUSD))
-        if (amount < 0.01) return "<0.01$"
+        // Calculer la valeur USD du token envoyé (tokenIn)
+        const tokenInAmount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18));
+        const tokenInPrice = parseFloat(row.tokenIn.priceUSD || '0');
+        const tokenInValueUSD = tokenInAmount * tokenInPrice;
+
+        // Si le prix n'est pas disponible, essayer avec le token reçu
+        if (tokenInPrice === 0) {
+          const tokenOutAmount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18));
+          const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
+          const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
+
+          if (tokenOutValueUSD < 0.01) return "<0.01$";
+          return (
+            <span>
+              ${tokenOutValueUSD.toFixed(2)}
+            </span>
+          );
+        }
+
+        if (tokenInValueUSD < 0.01) return "<0.01$";
         return (
           <span>
-            ${amount.toFixed(2)}
+            ${tokenInValueUSD.toFixed(2)}
           </span>
-        )
+        );
       },
     },
     {

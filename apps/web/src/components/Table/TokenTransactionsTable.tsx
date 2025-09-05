@@ -15,8 +15,8 @@ export interface Transaction {
 }
 
 const GET_TOKEN_TRANSACTIONS = `
-  query GetTokenTransactions($limit: Int = 20, $offset: Int = 0) {
-    transactions(limit: $limit, offset: $offset, orderBy: "timestamp", orderDirection: "desc") {
+  query GetTokenTransactions {
+    transactions(orderBy: "timestamp", orderDirection: "desc") {
       totalCount
       pageInfo {
         endCursor
@@ -44,12 +44,22 @@ const GET_TOKEN_TRANSACTIONS = `
                 id
                 logoUri
                 decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
               token1Ref {
                 symbol
                 id
                 logoUri
                 decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
             }
           }
@@ -72,11 +82,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: GET_TOKEN_TRANSACTIONS,
-          variables: {
-            limit: itemsPerPage,
-            offset: (currentPage - 1) * itemsPerPage
-          }
+          query: GET_TOKEN_TRANSACTIONS
         }),
       });
 
@@ -103,8 +109,20 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
               allTransactions.push({
                 ...tx,
                 ...swap,
-                tokenIn: isAmount0Positive ? swap.pool.token0Ref : swap.pool.token1Ref,
-                tokenOut: isAmount0Positive ? swap.pool.token1Ref : swap.pool.token0Ref,
+                tokenIn: isAmount0Positive ? {
+                  ...swap.pool.token0Ref,
+                  priceUSD: swap.pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+                } : {
+                  ...swap.pool.token1Ref,
+                  priceUSD: swap.pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+                },
+                tokenOut: isAmount0Positive ? {
+                  ...swap.pool.token1Ref,
+                  priceUSD: swap.pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+                } : {
+                  ...swap.pool.token0Ref,
+                  priceUSD: swap.pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+                },
                 amountIn: isAmount0Positive ? swap.amount0 : swap.amount1,
                 amountOut: isAmount0Positive ? swap.amount1 : swap.amount0,
               });
@@ -113,17 +131,26 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
         }
       });
 
+      // Pagination côté client
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedTransactions = allTransactions.slice(startIndex, endIndex);
+
+      const totalPages = Math.ceil(allTransactions.length / itemsPerPage);
+      const hasNextPage = currentPage < totalPages;
+      const hasPreviousPage = currentPage > 1;
+
       return {
         pagination: {
           currentPage,
-          totalPages: Math.ceil(data.totalCount / itemsPerPage),
+          totalPages,
           itemsPerPage,
-          totalItems: data.totalCount,
-          hasNextPage: data.pageInfo.hasNextPage,
-          hasPreviousPage: data.pageInfo.hasPreviousPage,
+          totalItems: allTransactions.length,
+          hasNextPage,
+          hasPreviousPage,
           onPageChange: setCurrentPage
         },
-        transactions: allTransactions
+        transactions: paginatedTransactions
       };
     }
   });
@@ -159,9 +186,23 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       label: 'USD',
       key: 'usd',
       render: (row) => {
-        const amount = parseFloat(row.amountUSD || '0');
-        if (amount < 0.01) return "<0.01$";
-        return `$${amount.toFixed(2)}`;
+        // Calculer la valeur USD du token envoyé (tokenIn)
+        const tokenInAmount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals || 18));
+        const tokenInPrice = parseFloat(row.tokenIn.priceUSD || '0');
+        const tokenInValueUSD = tokenInAmount * tokenInPrice;
+
+        // Si le prix n'est pas disponible, essayer avec le token reçu
+        if (tokenInPrice === 0) {
+          const tokenOutAmount = parseFloat(formatUnits(BigInt(row.amountOut), row.tokenOut.decimals || 18));
+          const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
+          const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
+
+          if (tokenOutValueUSD < 0.01) return "<0.01$";
+          return `$${tokenOutValueUSD.toFixed(2)}`;
+        }
+
+        if (tokenInValueUSD < 0.01) return "<0.01$";
+        return `$${tokenInValueUSD.toFixed(2)}`;
       }
     },
     {
@@ -181,7 +222,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => {
-        const amount = parseFloat(formatUnits(BigInt(row.amountOut), row.tokenOut.decimals || 18))
+        const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}

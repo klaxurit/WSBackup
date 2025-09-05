@@ -60,11 +60,6 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   const { data, isLoading } = useQuery({
     queryKey: ['poolStats', currentPage, searchValue],
     queryFn: async () => {
-      console.log('🔍 PoolsTable - Requête GraphQL:', {
-        query: GET_POOL_STATS,
-        url: import.meta.env.VITE_GRAPHQL_URL
-      });
-
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
@@ -75,21 +70,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         }),
       });
 
-      console.log('📡 PoolsTable - Réponse HTTP:', {
-        status: response.status,
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
       const data = await response.json();
-      console.log('📊 PoolsTable - Données reçues:', data);
 
       if (data.errors) {
-        console.error('❌ PoolsTable - Erreurs GraphQL:', data.errors);
         throw new Error(data.errors[0].message);
       }
 
-      console.log('✅ PoolsTable - Données finales:', data.data.pools);
       return data.data.pools;
     }
 

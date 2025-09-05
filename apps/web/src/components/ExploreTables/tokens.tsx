@@ -46,21 +46,9 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  console.log('🔧 TokensTable - Configuration:', {
-    searchValue,
-    currentPage,
-    itemsPerPage,
-    graphqlUrl: import.meta.env.VITE_GRAPHQL_URL
-  });
-
   const { data, isLoading } = useQuery({
     queryKey: ['tokensStats', currentPage, searchValue],
     queryFn: async () => {
-      console.log('🔍 TokensTable - Requête GraphQL:', {
-        query: GET_TOKENS_STATS,
-        url: import.meta.env.VITE_GRAPHQL_URL
-      });
-
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
@@ -71,21 +59,12 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
         }),
       });
 
-      console.log('📡 TokensTable - Réponse HTTP:', {
-        status: response.status,
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
       const data = await response.json();
-      console.log('📊 TokensTable - Données reçues:', data);
 
       if (data.errors) {
-        console.error('❌ TokensTable - Erreurs GraphQL:', data.errors);
         throw new Error(data.errors[0].message);
       }
 
-      console.log('✅ TokensTable - Données finales:', data.data.tokens);
       return data.data.tokens;
     }
   });
@@ -110,20 +89,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
     return filteredTokens.slice(startIndex, endIndex);
   }, [data, searchValue, currentPage, itemsPerPage]);
 
-  console.log('📋 TokensTable - Données traitées:', {
-    data,
-    tokens,
-    tokensLength: tokens.length,
-    isLoading,
-    searchValue,
-    currentPage
-  });
-
   const pagination = useMemo(() => {
-    if (!data) {
-      console.log('⚠️ TokensTable - Pas de données pour la pagination');
-      return undefined;
-    }
+    if (!data) return undefined;
 
     // Filtrage pour calculer le total
     let filteredTokens = data.items;
@@ -137,7 +104,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
 
     const totalPages = Math.ceil(filteredTokens.length / itemsPerPage);
 
-    const paginationData = {
+    return {
       currentPage,
       totalPages,
       itemsPerPage,
@@ -146,9 +113,6 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       hasPreviousPage: currentPage > 1,
       onPageChange: setCurrentPage
     };
-
-    console.log('📄 TokensTable - Pagination configurée:', paginationData);
-    return paginationData;
   }, [data, searchValue, currentPage, itemsPerPage]);
 
   const columns: TableColumn[] = [
