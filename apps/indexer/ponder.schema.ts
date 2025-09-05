@@ -334,6 +334,7 @@ export const vaultDeposit = onchainTable("vaultDeposit", (t) => ({
   timestamp: t.bigint().notNull(),
   user: t.hex().notNull(),
   vault: t.hex().notNull(),
+  vaultUserPosition: t.text().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
   shares: t.bigint().notNull(),
@@ -346,9 +347,11 @@ export const vaultWithdrawal = onchainTable("vaultWithdrawal", (t) => ({
   timestamp: t.bigint().notNull(),
   user: t.hex().notNull(),
   vault: t.hex().notNull(),
+  vaultUserPosition: t.text().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
-  share: t.bigint().notNull().default(0n)
+  share: t.bigint().notNull().default(0n),
+  liquidityBurned: t.bigint().notNull()
 }))
 
 export const vaultRebalance = onchainTable("vaultRebalance", (t) => ({
@@ -730,12 +733,20 @@ export const vaultDepositTxRelations = relations(vaultDeposit, ({ one }) => ({
   transaction: one(transaction, {
     fields: [vaultDeposit.transaction],
     references: [transaction.id]
+  }),
+  userPosition: one(vaultUserPosition, {
+    fields: [vaultDeposit.vaultUserPosition],
+    references: [vaultUserPosition.id]
   })
 }))
 export const vaultWithdrawalTxRelations = relations(vaultWithdrawal, ({ one }) => ({
   transaction: one(transaction, {
     fields: [vaultWithdrawal.transaction],
     references: [transaction.id]
+  }),
+  userPosition: one(vaultUserPosition, {
+    fields: [vaultWithdrawal.vaultUserPosition],
+    references: [vaultUserPosition.id]
   })
 }))
 export const vaultRebalanceTxRelations = relations(vaultRebalance, ({ one }) => ({

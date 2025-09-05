@@ -1,13 +1,15 @@
 import Decimal from "decimal.js";
 import { ponder } from "ponder:registry";
-import { bundle, pool, stickyVault, token, vaultDeposit, vaultUserPosition } from "ponder:schema";
+import { bundle, pool, stickyVault, token, vaultUserPosition, vaultWithdrawal } from "ponder:schema";
 import { formatUnits } from "viem";
 import { getOrCreateTransaction } from "../v3/helpers";
 
-ponder.on("svVaults:Minted", async ({ event, context }) => {
+ponder.on("svVaults:Burned", async ({ event, context }) => {
+  console.log("NEW BURNER", event)
+
   const ve = await context.db.find(stickyVault, { id: event.log.address })
   if (!ve) {
-    console.warn(`No vault found for this svVaults:Minted (${event.transaction.hash})`)
+    console.warn(`No vault found for this svVaults:Burned (${event.transaction.hash})`)
     return
   }
   const vault = { ...ve }
@@ -33,37 +35,34 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
 
   const userPosId = `${event.args.receiver}-${vault.id}`
 
-  const shares = new Decimal(formatUnits(event.args.mintAmount, 18))
-  const depositedToken0 = new Decimal(formatUnits(event.args.amount0In, t0.decimals))
-  const depositedToken1 = new Decimal(formatUnits(event.args.amount1In, t1.decimals))
-
-  // Update vault datas
-  vault.txCount += 1
-  vault.totalSupply = new Decimal(vault.totalSupply).plus(shares).toString()
-  vault.totalValueLockedToken0 = new Decimal(vault.totalValueLockedToken0).plus(depositedToken0).toString()
-  vault.totalValueLockedToken1 = new Decimal(vault.totalValueLockedToken1).plus(depositedToken1).toString()
-  vault.liquidity += event.args.liquidityMinted
-
-  const depositedT0Bera = depositedToken0.mul(t0.derivedBERA)
-  const depositedT1Bera = depositedToken1.mul(t1.derivedBERA)
-  const totalDepositedBera = depositedT0Bera.plus(depositedT1Bera)
-  vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).plus(totalDepositedBera).toString()
-  vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
-
-  // Update user vault position
   let uPE = await context.db.find(vaultUserPosition, { id: userPosId })
   if (!uPE) {
-    uPE = await context.db.insert(vaultUserPosition).values({
-      id: userPosId,
-      user: event.args.receiver,
-      vault: event.log.address
-    })
+    console.warn(`No token found for this pool: (${vPool.id})`)
+    return
   }
   const userPos = { ...uPE }
 
-  userPos.depositedToken0 = new Decimal(userPos.depositedToken0).plus(depositedToken0).toString()
-  userPos.depositedToken1 = new Decimal(userPos.depositedToken1).plus(depositedToken1).toString()
-  userPos.shares = new Decimal(userPos.shares).plus(shares).toString()
+  const sharesBurned = new Decimal(formatUnits(event.args.burnAmount, 18))
+  const burnedToken0 = new Decimal(formatUnits(event.args.amount0Out, t0.decimals))
+  const burnedToken1 = new Decimal(formatUnits(event.args.amount1Out, t1.decimals))
+
+  // Update vault datas
+  vault.txCount += 1
+  vault.totalSupply = new Decimal(vault.totalSupply).minus(sharesBurned).toString()
+  vault.totalValueLockedToken0 = new Decimal(vault.totalValueLockedToken0).minus(burnedToken0).toString()
+  vault.totalValueLockedToken1 = new Decimal(vault.totalValueLockedToken1).minus(burnedToken1).toString()
+  vault.liquidity -= event.args.liquidityBurned
+
+  const depositedT0Bera = burnedToken0.mul(t0.derivedBERA)
+  const depositedT1Bera = burnedToken1.mul(t1.derivedBERA)
+  const totalBurnedBera = depositedT0Bera.plus(depositedT1Bera)
+  vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).minus(totalBurnedBera).toString()
+  vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
+
+  // Update user vault position
+  userPos.depositedToken0 = new Decimal(userPos.depositedToken0).minus(burnedToken0).toString()
+  userPos.depositedToken1 = new Decimal(userPos.depositedToken1).minus(burnedToken1).toString()
+  userPos.shares = new Decimal(userPos.shares).minus(sharesBurned).toString()
   // currentValueToken0 = (user.shares / vault.totalSupply) * vault.totalAssets0
   userPos.currentValueToken0 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken0).toString()
   userPos.currentValueToken1 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken1).toString()
@@ -74,17 +73,17 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   // Create transaction
   const tx = await getOrCreateTransaction(context, event)
   // Create Vault deposit
-  await context.db.insert(vaultDeposit).values({
+  await context.db.insert(vaultWithdrawal).values({
     id: `${event.transaction.hash}#${event.log.logIndex}`,
     transaction: tx.id,
     timestamp: event.block.timestamp,
     user: event.args.receiver,
     vault: vault.id,
     vaultUserPosition: userPos.id,
-    amount0: event.args.amount0In,
-    amount1: event.args.amount1In,
-    shares: event.args.mintAmount,
-    liquidityMinted: event.args.liquidityMinted
+    amount0: event.args.amount0Out,
+    amount1: event.args.amount1Out,
+    shares: event.args.burnAmount,
+    liquidityBurned: event.args.liquidityBurned
   })
 
   await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
