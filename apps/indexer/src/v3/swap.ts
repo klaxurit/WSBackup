@@ -60,8 +60,10 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   const amount1USD = amount1Bera.mul(beraPriceUSD)
   const totalAmountUSD = amount0USD.plus(amount1USD)
 
-  const feeBera = totalAmountBera.mul(pool.feeTier).div(10000)
-  const feeUSD = totalAmountUSD.mul(pool.feeTier).div(10000) // Check la div par 1000000
+  // Les frais sont calculés sur la moitié du volume (un seul côté du swap)
+  const volumeForFees = totalAmountBera.div(2) // On prend la moitié puisque on a amount0 + amount1
+  const feeBera = volumeForFees.mul(pool.feeTier).div(1000000) // feeTier en ppm (parts per million)
+  const feeUSD = volumeForFees.mul(beraPriceUSD).mul(pool.feeTier).div(1000000)
 
   // logDebug(logContext, "Swap calculations completed", {
   //   beraPriceUSD: beraPriceUSD.toString(),
