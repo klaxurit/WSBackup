@@ -76,7 +76,7 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   // unrealizedPnL = 10660 - 10000 = +660 USD (+6.6% gain)
 
   // Create transaction
-  const tx = await getOrCreateTransaction(event, context)
+  const tx = await getOrCreateTransaction(context, event)
   // Create Vault deposit
   await context.db.insert(vaultDeposit).values({
     id: `${event.transaction.hash}#${event.log.logIndex}`,
