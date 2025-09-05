@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useAccount, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { CONTRACTS_ADDRESS } from '../config/contractsAddress';
 import { StickyVaultRouter } from '../config/abis/StickyVaultRouter';
@@ -70,8 +70,8 @@ export interface VaultManager {
 
 const bpsDown = (x: bigint, bps: number) =>
   (x * BigInt(10000 - bps)) / 10000n;
-const pctBps = (x: bigint, bps: number) =>
-  (x * BigInt(bps)) / 10_000n;
+// const pctBps = (x: bigint, bps: number) =>
+//   (x * BigInt(bps)) / 10_000n;
 
 export const useVault = (config: VaultConfig): VaultManager => {
   const { address } = useAccount();

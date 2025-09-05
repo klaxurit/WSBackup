@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon } from '../../components/SVGs';
@@ -8,7 +8,7 @@ import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { VaultActionButton } from '../../components/Vault/VaultActionButton';
 import { useQuery } from '@tanstack/react-query';
 import { useVault } from '../../hooks/useVault';
-import { formatUnits, parseUnits, type Address } from 'viem';
+import { formatUnits, type Address } from 'viem';
 import { useAccount } from 'wagmi';
 
 const GET_STICKYVAULT = `
@@ -134,6 +134,14 @@ export const VaultDetailPage = () => {
     }
 
   }, [vault])
+
+  if (isLoading) {
+    return (
+      <div className="VaultDetailPage VaultDetailPage--error">
+        <h2>Loading...</h2>
+      </div>
+    );
+  }
 
   if (!vault || !token0 || !token1) {
     return (
