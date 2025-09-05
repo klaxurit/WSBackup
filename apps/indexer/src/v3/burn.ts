@@ -3,12 +3,12 @@ import { factory as sFactory, burn as sBurn, pool as sPool, tick as sTick, token
 import { getOrCreateTransaction, getTickId } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
 import Decimal from "decimal.js";
-import { updateProtocolDayData } from "./stats/porotocolDay";
-import { updatePoolStats } from "./stats/pool";
-import { updateTokenStats } from "./stats/token";
+import { updateProtocolDayData } from "../stats/porotocolDay";
+import { updatePoolStats } from "../stats/pool";
+import { updateTokenStats } from "../stats/token";
 import { formatUnits } from "viem";
 
-ponder.on("WinniePool:Burn", async ({ event, context }) => {
+ponder.on("v3Pool:Burn", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
   if (!factoryEntity) return;
   const factory = { ...factoryEntity }

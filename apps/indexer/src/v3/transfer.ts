@@ -2,16 +2,16 @@ import { and, eq } from "ponder";
 import { ponder } from "ponder:registry";
 import { pool as sPool, position, token } from "ponder:schema";
 import { zeroAddress } from "viem";
-import { updatePoolStats } from "./stats/pool";
-import { updateTokenStats } from "./stats/token";
+import { updatePoolStats } from "../stats/pool";
+import { updateTokenStats } from "../stats/token";
 
-ponder.on("WinniePositionManager:Transfer", async ({ event, context }) => {
+ponder.on("v3PositionManager:Transfer", async ({ event, context }) => {
   const positionId = event.args.tokenId.toString();
   if (event.args.from === zeroAddress) { // Mint
     try {
       const positionData = await context.client.readContract({
-        address: context.contracts.WinniePositionManager.address,
-        abi: context.contracts.WinniePositionManager.abi,
+        address: context.contracts.v3PositionManager.address,
+        abi: context.contracts.v3PositionManager.abi,
         functionName: "positions",
         args: [event.args.tokenId],
       });

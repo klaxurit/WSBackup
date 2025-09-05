@@ -1,7 +1,7 @@
 import { ponder } from "ponder:registry";
 import { getOrCreateFactory, getOrCreateToken } from "./helpers";
 import { bundle, factory, pool, token } from "ponder:schema";
-import { logFactory, logDebug } from "./utils/logger";
+import { logFactory, logDebug } from "../utils/logger";
 
 const WHITELIST_TOKENS = [
   "0x6969696969696969696969696969696969696969", // wBera
@@ -16,7 +16,7 @@ const WHITELIST_TOKENS = [
 
 ]
 
-ponder.on("WinnieFactory:PoolCreated", async ({ event, context }) => {
+ponder.on("v3Factory:PoolCreated", async ({ event, context }) => {
   // const logContext = {
   //   event: 'factory',
   //   pool: event.args.pool,

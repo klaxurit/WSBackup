@@ -3,7 +3,7 @@ import { ponder } from "ponder:registry";
 import { position, positionSnapshot, token } from "ponder:schema";
 import { formatUnits } from "viem";
 
-ponder.on("WinniePositionManager:DecreaseLiquidity", async ({ event, context }) => {
+ponder.on("v3PositionManager:DecreaseLiquidity", async ({ event, context }) => {
   const positionId = event.args.tokenId.toString();
   let existingPosition = await context.db.find(position, { id: positionId });
   if (!existingPosition) return
