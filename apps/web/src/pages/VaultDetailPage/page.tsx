@@ -69,7 +69,7 @@ export const VaultDetailPage = () => {
   const { vaultAddress } = useParams<{ vaultAddress: Address }>();
 
   const { data: vault, isLoading } = useQuery({
-    queryKey: ['stickyVaults'],
+    queryKey: ['stickyVault', vaultAddress],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
