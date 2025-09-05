@@ -38,6 +38,7 @@
 @use 'components/common/newBanner';
 @use 'components/common/tokenPairLogos';
 @use 'components/vaults/vault';
+@use 'components/transitions/pageTransition';
 
 @use 'components/tables/table';
 @use 'components/tables/pagination';

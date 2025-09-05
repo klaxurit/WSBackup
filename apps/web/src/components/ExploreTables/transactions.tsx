@@ -102,7 +102,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
           // };
 
 
-          if (s.swaps.items.length > 0) { // C'est un swap
+          if (s.swaps?.items?.length > 0) { // C'est un swap
             if (BigInt(s.swaps.items[0].amount0) > 0n) {
               // A -> B
               return {
@@ -169,11 +169,11 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
 
         return (
           <a
-            href={`https://berascan.com/tx/${row.id}`}
+            href={`https://berascan.com/tx/${row.id || ''}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Address"
-            title={`https://berascan.com/tx/${row.id}`}
+            title={`https://berascan.com/tx/${row.id || ''}`}
           >
             {text}
           </a>

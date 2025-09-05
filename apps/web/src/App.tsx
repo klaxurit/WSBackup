@@ -15,10 +15,16 @@ import PoolDetailPage from './pages/PoolPage/page'
 import VaultsPage from './pages/VaultsPage/page'
 import VaultDetailPage from './pages/VaultDetailPage/page'
 import { Footer } from './components/Footer/Footer'
+import { PageTransition } from './components/Transitions/PageTransition'
+import { usePageTransition } from './hooks/usePageTransition'
 
-function App() {
+function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const { reconnect } = useReconnect();
+  const { isLoading, loadingText } = usePageTransition({
+    loadingDelay: 100,
+    minimumLoadingTime: 200,
+  });
 
   useEffect(() => {
     reconnect();
@@ -29,10 +35,10 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="app-main">
+    <div className="app">
+      <Navbar />
+      <main className="app-main">
+        <PageTransition isLoading={isLoading} loadingText={loadingText}>
           <Routes>
             <Route path="/" element={
               <div className="swap-page">
@@ -53,9 +59,17 @@ function App() {
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />
             <Route path="/pool/:poolAddress" element={<PoolDetailPage />} />
           </Routes>
-        </main>
-        <Footer />
-      </div>
+        </PageTransition>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   )
 }

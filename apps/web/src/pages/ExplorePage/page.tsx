@@ -4,6 +4,7 @@ import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
 import { NewBanner } from '../../components/Common/NewBanner';
+import { HoverScale, PageContentTransition } from '../../components/Transitions';
 import beeIcon from '../../assets/bee_icon.png';
 import { useLocation } from 'react-router-dom';
 
@@ -25,19 +26,21 @@ const ExplorePage: React.FC = () => {
 
 
   return (
-    <div className="ExplorePage">
+    <PageContentTransition className="ExplorePage">
       <NewBanner title="Explore" subtitle="Discover your next trading opportunities" image={beeIcon} />
+
       <div className="ExplorePage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="ExplorePage__Tabs" style={{ display: 'flex', gap: 8 }}>
           {TABS.map(tab => (
-            <button
-              key={tab.key}
-              className={activeTab === tab.key ? 'Table__FilterBtn active' : 'Table__FilterBtn'}
-              onClick={() => setActiveTab(tab.key as 'tokens' | 'pools' | 'transactions')}
-              type="button"
-            >
-              {tab.label}
-            </button>
+            <HoverScale key={tab.key} scale={1.05}>
+              <button
+                className={activeTab === tab.key ? 'Table__FilterBtn active' : 'Table__FilterBtn'}
+                onClick={() => setActiveTab(tab.key as 'tokens' | 'pools' | 'transactions')}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            </HoverScale>
           ))}
         </div>
         <SearchBar
@@ -47,10 +50,11 @@ const ExplorePage: React.FC = () => {
           activeTab={TABS.find(t => t.key === activeTab)?.label}
         />
       </div>
+
       {activeTab === 'tokens' && <TokensTable searchValue={search} />}
       {activeTab === 'pools' && <PoolsTable searchValue={search} />}
       {activeTab === 'transactions' && <TransactionsTable searchValue={search} />}
-    </div>
+    </PageContentTransition>
   );
 };
 

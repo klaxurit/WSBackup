@@ -82,13 +82,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'index',
       render: (row) => (
         <a
-          href={`https://berascan.com/address/${row.id}`}
+          href={`https://berascan.com/address/${row.id || ''}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
-          title={row.id}
+          title={row.id || ''}
         >
-          {row.id.slice(0, 4) + '...' + row.id.slice(-4)}
+          {row.id ? row.id.slice(0, 4) + '...' + row.id.slice(-4) : 'N/A'}
         </a>
       )
     },
@@ -106,9 +106,9 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
               : <FallbackImg content={row.symbol} className="TokensTable__Logo" />}
           </span>
           <Link
-            to={`/tokens/${row.id}`}
+            to={`/tokens/${row.id || ''}`}
             className="TokensTable__NameLink"
-            title={`View ${row.name} details`}
+            title={`View ${row.name || 'Unknown'} details`}
           >
             {row.symbol} - {row.name}
           </Link>
@@ -120,10 +120,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'price',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData.items.length > 0 ? row.tokenDayData.items[0].priceUSD : 0;
+        return row.tokenDayData?.items?.length > 0 ? row.tokenDayData.items[0].priceUSD : 0;
       },
       render: (row) => {
-        return row.tokenDayData.items.length > 0
+        return row.tokenDayData?.items?.length > 0
           ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].priceUSD))}`
           : '-'
       }
@@ -133,10 +133,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1h',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
+        return row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
       },
       render: (row) => {
-        const evolution = row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
+        const evolution = row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
         if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
@@ -151,10 +151,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1d',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
+        return row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
       },
       render: (row) => {
-        const evolution = row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
+        const evolution = row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
         if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
@@ -169,12 +169,12 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'fdv',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].fdv
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].fdv
           ? parseFloat(row.tokenDayData.items[0].fdv)
           : 0;
       },
       render: (row) => {
-        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].fdv !== "0"
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].fdv !== "0"
           ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].fdv))}`
           : '-'
       }
@@ -184,10 +184,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'mcap',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].marketCap ? row.tokenDayData.items[0].marketCap : 0;
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].marketCap ? row.tokenDayData.items[0].marketCap : 0;
       },
       render: (row) => {
-        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].marketCap !== 0
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].marketCap !== 0
           ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].marketCap))}`
           : '-'
       }
@@ -197,12 +197,12 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'volume',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].volume24hUSD
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].volume24hUSD
           ? parseFloat(row.tokenDayData.items[0].volume24hUSD)
           : 0;
       },
       render: (row) => {
-        return row.tokenDayData.items.length > 0 && parseFloat(row.tokenDayData.items[0].volume24hUSD) !== 0
+        return row.tokenDayData?.items?.length > 0 && parseFloat(row.tokenDayData.items[0].volume24hUSD) !== 0
           ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].volume24hUSD))}`
           : '-'
       }

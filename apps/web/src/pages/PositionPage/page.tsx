@@ -11,6 +11,7 @@ import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import { FallbackImg } from '../../components/utils/FallbackImg';
+import { PageContentTransition, StaggerTransition, HoverScale } from '../../components/Transitions';
 
 const GET_TOP_POOLS = `
   query GetTopPools {
@@ -258,23 +259,31 @@ const PoolPage: React.FC = () => {
   }, [topPoolsData]);
 
   return (
-    <div className="PoolPage">
+    <PageContentTransition className="PoolPage">
       <NewBanner title="Pools" subtitle="Manage your liquidity pools and positions" image={honeyIcon} />
       <div className="PoolPage__ContentWrapper">
         {/* Left Section (70%) */}
         <div className="PoolPage__Left">
           <div className="PoolPage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <h2 className="PoolPage__Title">Your positions</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
-                className={`PoolPage__FilterBtn ${statusFilter === 'open' ? 'is-active' : ''}`}
-                onClick={() => setStatusFilter('open')}
-              >Open</button>
-              <button
-                className={`PoolPage__FilterBtn ${statusFilter === 'closed' ? 'is-active' : ''}`}
-                onClick={() => setStatusFilter('closed')}
-              >Closed</button>
-              {isConnected && <Link className="PoolPage__NewBtn" to="/pools/create">New</Link>}
+            <div className="PoolPage__FilterButtons" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <HoverScale scale={1.05}>
+                <button
+                  className={`PoolPage__FilterBtn ${statusFilter === 'open' ? 'is-active' : ''}`}
+                  onClick={() => setStatusFilter('open')}
+                >Open</button>
+              </HoverScale>
+              <HoverScale scale={1.05}>
+                <button
+                  className={`PoolPage__FilterBtn ${statusFilter === 'closed' ? 'is-active' : ''}`}
+                  onClick={() => setStatusFilter('closed')}
+                >Closed</button>
+              </HoverScale>
+              {isConnected && (
+                <HoverScale scale={1.05}>
+                  <Link className="PoolPage__NewBtn" to="/pools/create">New</Link>
+                </HoverScale>
+              )}
             </div>
           </div>
           {isConnected
@@ -313,43 +322,47 @@ const PoolPage: React.FC = () => {
             ) : topPools.length === 0 ? (
               <p>No pools available</p>
             ) : (
-              topPools.map((pool: FormattedPool) => (
-                <div className="PoolPage__TopCard" key={pool.address}>
-                  <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <TokenPairLogos
-                      token0={{
-                        address: pool.token0Address,
-                        symbol: pool.token0Symbol,
-                        logoUri: pool.token0LogoUri
-                      }}
-                      token1={{
-                        address: pool.token1Address,
-                        symbol: pool.token1Symbol,
-                        logoUri: pool.token1LogoUri
-                      }}
-                      borderWidth={2}
-                      separatorWidth={1.5}
-                      size={28}
-                    />
-                    {(() => {
-                      const displayToken0 = getPoolDisplayToken(pool.token0Address as `0x${string}`);
-                      const displayToken1 = getPoolDisplayToken(pool.token1Address as `0x${string}`);
-                      const symbol0 = displayToken0.symbol || pool.token0Symbol;
-                      const symbol1 = displayToken1.symbol || pool.token1Symbol;
-                      return `${symbol0} / ${symbol1}`;
-                    })()} <span className="PoolPage__TopVersion">v3</span>
-                  </div>
-                  <div className="PoolPage__TopFee">{pool.fee}% fee</div>
-                  <div className="PoolPage__TopApr">
-                    {pool.apr && typeof pool.apr === 'number' ? pool.apr.toFixed(2) : '0.00'}% APR
-                  </div>
-                </div>
-              ))
+              <StaggerTransition staggerDelay={0.1}>
+                {topPools.map((pool: FormattedPool) => (
+                  <HoverScale key={pool.address} scale={1.02}>
+                    <div className="PoolPage__TopCard">
+                      <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <TokenPairLogos
+                          token0={{
+                            address: pool.token0Address,
+                            symbol: pool.token0Symbol,
+                            logoUri: pool.token0LogoUri
+                          }}
+                          token1={{
+                            address: pool.token1Address,
+                            symbol: pool.token1Symbol,
+                            logoUri: pool.token1LogoUri
+                          }}
+                          borderWidth={2}
+                          separatorWidth={1.5}
+                          size={28}
+                        />
+                        {(() => {
+                          const displayToken0 = getPoolDisplayToken(pool.token0Address as `0x${string}`);
+                          const displayToken1 = getPoolDisplayToken(pool.token1Address as `0x${string}`);
+                          const symbol0 = displayToken0.symbol || pool.token0Symbol;
+                          const symbol1 = displayToken1.symbol || pool.token1Symbol;
+                          return `${symbol0} / ${symbol1}`;
+                        })()} <span className="PoolPage__TopVersion">v3</span>
+                      </div>
+                      <div className="PoolPage__TopFee">{pool.fee}% fee</div>
+                      <div className="PoolPage__TopApr">
+                        {pool.apr && typeof pool.apr === 'number' ? pool.apr.toFixed(2) : '0.00'}% APR
+                      </div>
+                    </div>
+                  </HoverScale>
+                ))}
+              </StaggerTransition>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </PageContentTransition>
   );
 };
 

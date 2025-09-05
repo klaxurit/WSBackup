@@ -96,7 +96,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => (
         <span className="PoolsTable__IndexCell">
           <Link
-            to={`/pool/${row.id}`}
+            to={`/pool/${row.id || ''}`}
             className="PoolsTable__IndexLink"
           >
             <span className="Table__Address">
@@ -104,11 +104,11 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
             </span>
           </Link>
           <a
-            href={`https://berascan.com/address/${row.id}`}
+            href={`https://berascan.com/address/${row.id || ''}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Icon"
-            title={row.id}
+            title={row.id || ''}
           >
             <ExplorerIcon />
           </a>
@@ -173,12 +173,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       className: 'PoolsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
-        return row.poolDayData.items[0]?.apr || "0";
+        return row.poolDayData?.items?.[0]?.apr || "0";
       },
       render: (row) => {
         return (
           <span className="PoolsTable__AprCell">
-            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].apr) > 0
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].apr) > 0
               ? `${row.poolDayData.items[0].apr}%`
               : "-"}
           </span>
@@ -199,12 +199,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       className: 'PoolsTable__Vol1dTd',
       sortable: true,
       sortValue: (row) => {
-        return row.poolDayData.items[0]?.volumeUSD1D || 0;
+        return row.poolDayData?.items?.[0]?.volumeUSD1D || 0;
       },
       render: (row) => {
         return (
           <span className="PoolsTable__Vol1dCell">
-            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD1D) > 0
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].volumeUSD1D) > 0
               ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD1D))}`
               : "-"}
           </span>
@@ -222,7 +222,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => {
         return (
           <span className="PoolsTable__Vol30dCell">
-            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
               ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD30D))}`
               : "-"}
           </span>

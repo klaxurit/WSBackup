@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { NewBanner } from '../Common/NewBanner';
+import { PageContentTransition } from '../Transitions/PageContentTransition';
 import bear from '../../assets/bear_icon.png';
 import SwapForm from '../SwapForm/SwapForm';
 import { ChartWidget } from '../Charts/ChartWidget';
@@ -74,7 +75,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   const selectedToken = fromToken || toToken;
 
   return (
-    <div className={`swap-page-layout ${className}`}>
+    <PageContentTransition className={`swap-page-layout ${className}`}>
       <div className="swap-page-layout__banner">
         <NewBanner
           title="Swap"
@@ -110,6 +111,6 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
           />
         </div>
       </div>
-    </div>
+    </PageContentTransition>
   );
 };
