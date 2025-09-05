@@ -10,14 +10,14 @@ export async function updateTokenStats(timestamp: bigint, token: typeof sToken.$
 
   const hourId = Math.floor(Number(timestamp) / 3600)
   const hourStartUnix = hourId * 3600
-  const hourTokenID = `${token.id}-${hourId} `
+  const hourTokenID = `${token.id}-${hourId}`
 
   const tokenPrice = await getPriceInUSD(token, context)
-  const oneDayEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - 24} `, context)
-  const oneMonthEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - (24 * 30)} `, context)
+  const oneDayEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - 24}`, context)
+  const oneMonthEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - (24 * 30)}`, context)
   const marketCap = await getMarketcap(token, tokenPrice)
   const fdv = await getFDV(token, tokenPrice)
-  const volume24hUSD = await getVolumeByPeriod(token, `${token.id}-${hourId - 24} `, context)
+  const volume24hUSD = await getVolumeByPeriod(token, `${token.id}-${hourId - 24}`, context)
 
   await updateDayTokenData(token, dayTokenId, dayStartTimestamp, tokenPrice, oneDayEvo, oneMonthEvo, marketCap, fdv, volume24hUSD, context)
   await updateHourTokenData(token, hourTokenID, hourStartUnix, tokenPrice, context)
