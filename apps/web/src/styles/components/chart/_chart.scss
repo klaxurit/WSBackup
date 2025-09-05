@@ -1,3 +1,7 @@
+// Import des composants de chart
+@import './chart-widget';
+@import './chart-toolbar';
+
 .chart-fake-overlay {
   position: absolute;
   top: 0;

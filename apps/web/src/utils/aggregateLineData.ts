@@ -8,7 +8,8 @@ export function aggregateLineData(
   data: LineChartPoint[],
   interval: ChartInterval
 ): LineChartPoint[] {
-  if (interval === 'MAX') return data;
+  // Pas de MAX dans ChartInterval, on utilise 1Y comme maximum
+  if (interval === '1Y') return data;
   if (!data || data.length === 0) return [];
 
   const groupBy = (timestamp: number): string => {
@@ -32,7 +33,7 @@ export function aggregateLineData(
       case '1M':
         return `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
 
-      case '1Y':
+      case '1Y' as any:
         return `${date.getUTCFullYear()}`;
 
       default:

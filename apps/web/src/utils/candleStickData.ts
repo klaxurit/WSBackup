@@ -12,7 +12,7 @@ export function convertToCandlestickData(
   tokenDecimals?: number
 ): CandlestickPoint[] {
   if (!apiData || apiData.length === 0) return [];
-  if (interval === 'MAX') {
+  if (interval === '1Y') {
     // Pour MAX, on groupe par jour par défaut
     return groupIntoCandlesticks(apiData, '1D', tokenDecimals);
   }
@@ -31,6 +31,8 @@ export function convertLineDataToCandlesticks(
   if (!lineData || lineData.length === 0) return [];
 
   const apiFormat: ApiDataPoint[] = lineData.map(point => ({
+    time: point.time,
+    value: point.value,
     timestamp: (point.time as number) * 1000, // Convertir en milliseconds
     price: point.value,
   }));
@@ -48,13 +50,13 @@ function groupIntoCandlesticks(
 ): CandlestickPoint[] {
   // Normaliser les prix si nécessaire
   const normalizedData = tokenDecimals
-    ? data.map(d => ({ ...d, price: d.price / Math.pow(10, tokenDecimals) }))
+    ? data.map(d => ({ ...d, price: (d.price || d.value) / Math.pow(10, tokenDecimals) }))
     : data;
 
   // Convertir en LineChartPoint pour utiliser la logique existante
   const linePoints: LineChartPoint[] = normalizedData.map(d => ({
-    time: Math.floor(d.timestamp / 1000) as UTCTimestamp,
-    value: d.price,
+    time: Math.floor((d.timestamp || d.time * 1000) / 1000) as UTCTimestamp,
+    value: d.price || d.value,
   }));
 
   // Grouper par intervalle
@@ -71,8 +73,7 @@ function groupIntoCandlesticks(
         open: ohlc.open,
         high: ohlc.high,
         low: ohlc.low,
-        close: ohlc.close,
-        volume: ohlc.volume, // Pour l'instant 0, sera implémenté plus tard
+        close: ohlc.close
       });
     }
   }
@@ -151,7 +152,6 @@ export function generateOHLCFromSinglePrice(
     high: Math.max(...allPrices),
     low: Math.min(...allPrices),
     close,
-    volume: Math.floor(Math.random() * 1000000), // Volume simulé
   };
 }
 

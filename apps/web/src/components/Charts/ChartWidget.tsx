@@ -9,14 +9,16 @@ import {
   type Time,
   createTextWatermark
 } from 'lightweight-charts';
-import type { ChartType, ChartInterval, LineChartPoint, CandlestickPoint } from '../../types/chart';
-import { useChartData } from '../../utils/useChartData';
+import type { ChartType, ChartInterval, ChartMetric, LineChartPoint, CandlestickPoint } from '../../types/chart';
+import { usePonderChartData } from '../../hooks/usePonderChartData';
 import { ChartToolbar } from './ChartToolbar';
 
 export interface ChartWidgetProps {
   tokenAddress?: string | null;
+  poolAddress?: string | null;
   chartType?: ChartType;
   interval?: ChartInterval;
+  metric?: ChartMetric;
   height?: number;
   showToolbar?: boolean;
   backgroundColor?: string;
@@ -24,7 +26,7 @@ export interface ChartWidgetProps {
   priceFormatter?: (price: number) => string;
   onChartTypeChange?: (type: ChartType) => void;
   onIntervalChange?: (interval: ChartInterval) => void;
-  tokenDecimals?: number;
+  onMetricChange?: (metric: ChartMetric) => void;
   showNoDataOverlay?: boolean;
   noDataMessage?: string;
   dataType?: 'token' | 'pool';
@@ -36,8 +38,10 @@ const defaultBg = 'transparent';
 
 export const ChartWidget: React.FC<ChartWidgetProps> = ({
   tokenAddress,
+  poolAddress,
   chartType = 'area',
   interval = '1D',
+  metric = 'price',
   height = 500,
   showToolbar = true,
   backgroundColor = defaultBg,
@@ -45,7 +49,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   priceFormatter,
   onChartTypeChange,
   onIntervalChange,
-  tokenDecimals,
+  onMetricChange,
   showNoDataOverlay = false,
   noDataMessage = "No data available"
 }) => {
@@ -56,14 +60,30 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   // États locaux pour les contrôles
   const [localChartType, setLocalChartType] = useState<ChartType>(chartType);
   const [localInterval, setLocalInterval] = useState<ChartInterval>(interval);
+  const [localMetric, setLocalMetric] = useState<ChartMetric>(metric);
 
-  // Hook de données unifié
-  const { data, isLoading, error } = useChartData(
+  // Synchroniser les états locaux avec les props
+  useEffect(() => {
+    setLocalChartType(chartType);
+  }, [chartType]);
+
+  useEffect(() => {
+    setLocalInterval(interval);
+  }, [interval]);
+
+  useEffect(() => {
+    setLocalMetric(metric);
+  }, [metric]);
+
+  // Hook de données Ponder
+  const { data, isLoading, error } = usePonderChartData(
+    poolAddress || null,
     tokenAddress || null,
+    localMetric,
     localChartType,
-    localInterval,
-    tokenDecimals
+    localInterval
   );
+
 
   // Données factices pour les cas où on n'a pas de données réelles
   const fakeData = useMemo(() => {
@@ -74,8 +94,10 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }));
   }, []);
 
+
   // Détermine si on doit utiliser les données factices
-  const shouldUseFakeData = !data || data.length === 0 || error;
+  // Utiliser les données factices seulement si on n'a pas d'adresse ou si on a une erreur de configuration
+  const shouldUseFakeData = (!poolAddress && !tokenAddress) || (error && error.message.includes('environment variable'));
   const chartData = shouldUseFakeData ? fakeData : data;
 
   // Initialisation et mise à jour du chart
@@ -292,6 +314,11 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     onIntervalChange?.(newInterval);
   };
 
+  const handleMetricChange = (newMetric: ChartMetric) => {
+    setLocalMetric(newMetric);
+    onMetricChange?.(newMetric);
+  };
+
   // Affichage du message de chargement ou d'erreur
   const showOverlay = isLoading || showNoDataOverlay || (error && !shouldUseFakeData);
   const overlayMessage = isLoading
@@ -306,8 +333,10 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
         <ChartToolbar
           chartType={localChartType}
           interval={localInterval}
+          metric={localMetric}
           onChartTypeChange={handleChartTypeChange}
           onIntervalChange={handleIntervalChange}
+          onMetricChange={handleMetricChange}
           isLoading={isLoading}
         />
       )}

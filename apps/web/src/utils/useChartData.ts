@@ -4,8 +4,7 @@ import type {
   ChartInterval,
   LineChartPoint,
   CandlestickPoint,
-  ApiDataPoint,
-  ProcessedChartData
+  ApiDataPoint
 } from '../types/chart';
 import { ChartDataProcessor } from '../utils/chartDataProcessor';
 
@@ -19,7 +18,6 @@ const getStaleTimeForInterval = (interval: ChartInterval): number => {
     case '1W': return 30 * 60 * 1000;     // 30 minutes
     case '1M': return 60 * 60 * 1000;     // 1 heure
     case '1Y': return 2 * 60 * 60 * 1000; // 2 heures
-    case 'MAX': return 4 * 60 * 60 * 1000; // 4 heures
     default: return 10 * 60 * 1000;
   }
 };
@@ -30,8 +28,7 @@ const getRefetchIntervalForInterval = (interval: ChartInterval): number | false 
     case '1D': return 5 * 60 * 1000;  // Refresh toutes les 5 minutes
     case '1W': return 15 * 60 * 1000; // Refresh toutes les 15 minutes
     case '1M':
-    case '1Y':
-    case 'MAX': return false; // Pas de refresh auto pour les longues périodes
+    case '1Y': return false; // Pas de refresh auto pour les longues périodes
     default: return false;
   }
 };
@@ -49,7 +46,7 @@ export function useChartData<T extends ChartType>(
   const query = useQuery({
     queryKey: ['chart-data', tokenAddress, chartType, interval, tokenDecimals],
     enabled: !!tokenAddress,
-    queryFn: async (): Promise<ProcessedChartData[T]> => {
+    queryFn: async (): Promise<LineChartPoint[] | CandlestickPoint[]> => {
       if (!tokenAddress) {
         throw new Error('Token address is required');
       }
@@ -75,7 +72,7 @@ export function useChartData<T extends ChartType>(
       }));
 
       // Traitement des données selon le type de chart
-      return ChartDataProcessor.processForChart(apiData, chartType, interval, tokenDecimals);
+      return ChartDataProcessor.processForChart(apiData, chartType, interval, tokenDecimals) as LineChartPoint[] | CandlestickPoint[];
     },
     staleTime: getStaleTimeForInterval(interval),
     refetchInterval: getRefetchIntervalForInterval(interval),
@@ -84,7 +81,7 @@ export function useChartData<T extends ChartType>(
   });
 
   // Calcul des statistiques si on a des données
-  const stats = query.data ? ChartDataProcessor.getDataStats(query.data) : null;
+  const stats = query.data ? ChartDataProcessor.getDataStats(query.data as any[]) : null;
 
   return {
     ...query,
@@ -211,8 +208,8 @@ export function useCompareChartData(
       if (!token1Base || !token2Base) return null;
 
       return {
-        token1: normalize(token1Data.data, token1Base),
-        token2: normalize(token2Data.data, token2Base),
+        token1: normalize(token1Data.data as any[], token1Base),
+        token2: normalize(token2Data.data as any[], token2Base),
       };
     },
     staleTime: Infinity,
@@ -257,7 +254,7 @@ export function usePaginatedChartData(
       }));
 
       return {
-        data: ChartDataProcessor.processForChart(apiData, chartType, interval),
+        data: ChartDataProcessor.processForChart(apiData, chartType, interval) as LineChartPoint[] | CandlestickPoint[],
         pagination: result.pagination,
       };
     },
