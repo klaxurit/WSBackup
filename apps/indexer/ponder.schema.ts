@@ -190,8 +190,8 @@ export const stickyVault = onchainTable("stickyVault", (t) => ({
   totalValueLockedToken0: t.numeric().notNull().default("0"), // Total t0 in vault
   totalValueLockedToken1: t.numeric().notNull().default("0"), // total t1 in vault
   // Pool position (v3) state
-  tickLower: t.hex(),
-  tickUpper: t.hex(),
+  tickLower: t.integer(),
+  tickUpper: t.integer(),
   currentTick: t.integer(),
   liquidity: t.bigint().notNull().default(0n), // liquidity active in pool
   collectedFeesToken0: t.numeric().notNull().default("0"),
@@ -398,10 +398,14 @@ export const poolDayData = onchainTable("pool_day_data", (t) => ({
   volumeUSD: t.numeric().notNull().default("0"),
   feesUSD: t.numeric().notNull().default("0"),
   txCount: t.integer().notNull().default(0),
-  open: t.numeric().notNull().default("0"),
-  high: t.numeric().notNull().default("0"),
-  low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0"),
+  t0open: t.numeric().notNull().default("0"),
+  t1open: t.numeric().notNull().default("0"),
+  t0high: t.numeric().notNull().default("0"),
+  t1high: t.numeric().notNull().default("0"),
+  t0low: t.numeric().notNull().default("0"),
+  t1low: t.numeric().notNull().default("0"),
+  t0close: t.numeric().notNull().default("0"),
+  t1close: t.numeric().notNull().default("0"),
   apr: t.numeric().notNull().default("0"),
   volumeUSD1D: t.numeric().notNull().default("0"),
   volumeUSD30D: t.numeric().notNull().default("0"),
@@ -428,10 +432,14 @@ export const poolHourData = onchainTable("pool_hour_data", (t) => ({
   volumeUSD: t.numeric().notNull().default("0"),
   feesUSD: t.numeric().notNull().default("0"),
   txCount: t.integer().notNull().default(0),
-  open: t.numeric().notNull().default("0"),
-  high: t.numeric().notNull().default("0"),
-  low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0")
+  t0open: t.numeric().notNull().default("0"),
+  t1open: t.numeric().notNull().default("0"),
+  t0high: t.numeric().notNull().default("0"),
+  t1high: t.numeric().notNull().default("0"),
+  t0low: t.numeric().notNull().default("0"),
+  t1low: t.numeric().notNull().default("0"),
+  t0close: t.numeric().notNull().default("0"),
+  t1close: t.numeric().notNull().default("0"),
 }), (table) => ({
   periodIndex: index().on(table.periodStartUnix),
   poolIndex: index().on(table.pool),
