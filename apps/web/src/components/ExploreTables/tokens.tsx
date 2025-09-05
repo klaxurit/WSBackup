@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
 
 const GET_TOKENS_STATS = `
@@ -43,38 +43,113 @@ const GET_TOKENS_STATS = `
 `
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  console.log('🔧 TokensTable - Configuration:', {
+    searchValue,
+    currentPage,
+    itemsPerPage,
+    graphqlUrl: import.meta.env.VITE_GRAPHQL_URL
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['tokensStats'],
+    queryKey: ['tokensStats', currentPage, searchValue],
     queryFn: async () => {
+      console.log('🔍 TokensTable - Requête GraphQL:', {
+        query: GET_TOKENS_STATS,
+        url: import.meta.env.VITE_GRAPHQL_URL
+      });
+
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_TOKENS_STATS }),
+        body: JSON.stringify({
+          query: GET_TOKENS_STATS
+        }),
+      });
+
+      console.log('📡 TokensTable - Réponse HTTP:', {
+        status: response.status,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
       });
 
       const data = await response.json();
+      console.log('📊 TokensTable - Données reçues:', data);
 
       if (data.errors) {
+        console.error('❌ TokensTable - Erreurs GraphQL:', data.errors);
         throw new Error(data.errors[0].message);
       }
 
-      return data.data.tokens.items;
+      console.log('✅ TokensTable - Données finales:', data.data.tokens);
+      return data.data.tokens;
     }
   });
 
   const tokens = useMemo(() => {
-    if (!data) return []
+    if (!data?.items) return [];
 
-    if (!searchValue || searchValue === '') return data
+    // Filtrage par recherche
+    let filteredTokens = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredTokens = data.items.filter((token: any) =>
+        token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.id.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
 
-    return data.filter((token: any) =>
-      token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.id.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [searchValue, data]);
+    // Pagination côté client
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    return filteredTokens.slice(startIndex, endIndex);
+  }, [data, searchValue, currentPage, itemsPerPage]);
+
+  console.log('📋 TokensTable - Données traitées:', {
+    data,
+    tokens,
+    tokensLength: tokens.length,
+    isLoading,
+    searchValue,
+    currentPage
+  });
+
+  const pagination = useMemo(() => {
+    if (!data) {
+      console.log('⚠️ TokensTable - Pas de données pour la pagination');
+      return undefined;
+    }
+
+    // Filtrage pour calculer le total
+    let filteredTokens = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredTokens = data.items.filter((token: any) =>
+        token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.id.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+
+    const totalPages = Math.ceil(filteredTokens.length / itemsPerPage);
+
+    const paginationData = {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems: filteredTokens.length,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+      onPageChange: setCurrentPage
+    };
+
+    console.log('📄 TokensTable - Pagination configurée:', paginationData);
+    return paginationData;
+  }, [data, searchValue, currentPage, itemsPerPage]);
 
   const columns: TableColumn[] = [
     {
@@ -219,6 +294,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       scrollClassName="Table__Scroll"
       defaultSortKey="volume"
       defaultSortDirection="desc"
+      pagination={pagination}
     />
   )
 }

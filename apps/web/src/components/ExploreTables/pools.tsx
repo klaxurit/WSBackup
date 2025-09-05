@@ -4,7 +4,7 @@ import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 
 interface PoolsTableProps {
@@ -54,39 +54,92 @@ const GET_POOL_STATS = `
   }`
 
 export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['poolStats'],
+    queryKey: ['poolStats', currentPage, searchValue],
     queryFn: async () => {
+      console.log('🔍 PoolsTable - Requête GraphQL:', {
+        query: GET_POOL_STATS,
+        url: import.meta.env.VITE_GRAPHQL_URL
+      });
+
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_POOL_STATS }),
+        body: JSON.stringify({
+          query: GET_POOL_STATS
+        }),
+      });
+
+      console.log('📡 PoolsTable - Réponse HTTP:', {
+        status: response.status,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
       });
 
       const data = await response.json();
+      console.log('📊 PoolsTable - Données reçues:', data);
 
       if (data.errors) {
+        console.error('❌ PoolsTable - Erreurs GraphQL:', data.errors);
         throw new Error(data.errors[0].message);
       }
 
+      console.log('✅ PoolsTable - Données finales:', data.data.pools);
       return data.data.pools;
     }
 
   });
 
   const pools = useMemo(() => {
-    if (!data) return []
-    // Normalement il n'y a plus besoin de ce useMemo, il faut passer toutes les params de paginations 
-    // et de searchValue dans la requête au dessus et il retournera seulement les resultats paginé
-    if (!searchValue) return data.items
-    return data.items.filter((pool: any) =>
-      (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
-    );
-  }, [searchValue, data]);
+    if (!data?.items) return [];
+
+    // Filtrage par recherche
+    let filteredPools = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredPools = data.items.filter((pool: any) =>
+        (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+      );
+    }
+
+    // Pagination côté client
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    return filteredPools.slice(startIndex, endIndex);
+  }, [data, searchValue, currentPage, itemsPerPage]);
+
+  const pagination = useMemo(() => {
+    if (!data) return undefined;
+
+    // Filtrage pour calculer le total
+    let filteredPools = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredPools = data.items.filter((pool: any) =>
+        (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+      );
+    }
+
+    const totalPages = Math.ceil(filteredPools.length / itemsPerPage);
+
+    return {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems: filteredPools.length,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+      onPageChange: setCurrentPage
+    };
+  }, [data, searchValue, currentPage, itemsPerPage]);
 
   const columns: TableColumn[] = [
     {
@@ -241,6 +294,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       scrollClassName="Table__Scroll"
       defaultSortKey="tvl"
       defaultSortDirection="desc"
+      pagination={pagination}
     />
   )
 }

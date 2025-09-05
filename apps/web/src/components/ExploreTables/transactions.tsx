@@ -9,8 +9,8 @@ interface TransactionsTableProps {
 }
 
 const GET_TRANSACTIONS = `
-  query GetTransactions($limit: Int = 20) {
-    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+  query GetTransactions {
+    transactions(orderBy: "timestamp", orderDirection: "desc") {
       totalCount
       pageInfo {
         endCursor
@@ -62,79 +62,99 @@ const GET_TRANSACTIONS = `
 
 export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20;
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', currentPage],
     queryFn: async () => {
+      console.log('🔍 TransactionsTable - Requête GraphQL:', {
+        query: GET_TRANSACTIONS,
+        url: import.meta.env.VITE_GRAPHQL_URL
+      });
+
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_TRANSACTIONS }),
+        body: JSON.stringify({
+          query: GET_TRANSACTIONS
+        }),
       });
-      if (!resp.ok) return []
+
+      console.log('📡 TransactionsTable - Réponse HTTP:', {
+        status: resp.status,
+        ok: resp.ok,
+        headers: Object.fromEntries(resp.headers.entries())
+      });
+
+      if (!resp.ok) {
+        console.error('❌ TransactionsTable - Erreur HTTP:', resp.status, resp.statusText);
+        return { pageInfo: {}, items: [] }
+      }
 
       const data = await resp.json()
+      console.log('📊 TransactionsTable - Données reçues:', data);
 
+      if (data.errors) {
+        console.error('❌ TransactionsTable - Erreurs GraphQL:', data.errors);
+      }
+
+      console.log('✅ TransactionsTable - Données finales:', data.data.transactions);
       return data.data.transactions
     },
     select: (data) => {
-      // console.log("Données brutes des swaps:", data)
-      return {
-        pagination: {
-          ...data.pageInfo,
-          onPageChange: setCurrentPage
-        },
-        txs: data.items.map((s: any) => {
-          // Debug: afficher la structure complète d'un swap
-          // console.log("Structure d'un swap:", s);
-
-          // Récupérer les informations des tokens depuis la base de données
-          // const getTokenInfo = (address: string) => {
-          //   const token = tokensMap.get(address.toLowerCase());
-          //   return token || {
-          //     symbol: 'Unknown',
-          //     name: 'Unknown Token',
-          //     decimals: 18,
-          //     logoUri: null
-          //   };
-          // };
-
-
-          if (s.swaps?.items?.length > 0) { // C'est un swap
-            if (BigInt(s.swaps.items[0].amount0) > 0n) {
-              // A -> B
-              return {
-                ...s,
-                ...s.swaps.items[0],
-                tokenIn: s.swaps.items[0].pool.token0Ref,
-                tokenOut: s.swaps.items[0].pool.token1Ref,
-                amountIn: BigInt(s.swaps.items[0].amount0),
-                amountOut: BigInt(s.swaps.items[0].amount1),
-              }
-            } else {
-              // B -> A
-              return {
-                ...s,
-                ...s.swaps.items[0],
-                tokenIn: s.swaps.items[0].pool.token1Ref,
-                tokenOut: s.swaps.items[0].pool.token0Ref,
-                amountIn: BigInt(s.swaps.items[0].amount1),
-                amountOut: BigInt(s.swaps.items[0].amount0),
-              }
+      const allTxs = data.items.map((s: any) => {
+        if (s.swaps?.items?.length > 0) { // C'est un swap
+          if (BigInt(s.swaps.items[0].amount0) > 0n) {
+            // A -> B
+            return {
+              ...s,
+              ...s.swaps.items[0],
+              tokenIn: s.swaps.items[0].pool.token0Ref,
+              tokenOut: s.swaps.items[0].pool.token1Ref,
+              amountIn: BigInt(s.swaps.items[0].amount0),
+              amountOut: BigInt(s.swaps.items[0].amount1),
+            }
+          } else {
+            // B -> A
+            return {
+              ...s,
+              ...s.swaps.items[0],
+              tokenIn: s.swaps.items[0].pool.token1Ref,
+              tokenOut: s.swaps.items[0].pool.token0Ref,
+              amountIn: BigInt(s.swaps.items[0].amount1),
+              amountOut: BigInt(s.swaps.items[0].amount0),
             }
           }
+        }
 
-          return null
-        })
+        return null
+      }).filter(Boolean);
+
+      // Pagination côté client
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedTxs = allTxs.slice(startIndex, endIndex);
+
+      return {
+        pagination: {
+          currentPage,
+          totalPages: Math.ceil(allTxs.length / itemsPerPage),
+          itemsPerPage,
+          totalItems: allTxs.length,
+          hasNextPage: currentPage < Math.ceil(allTxs.length / itemsPerPage),
+          hasPreviousPage: currentPage > 1,
+          onPageChange: setCurrentPage
+        },
+        txs: paginatedTxs
       }
     }
   });
 
   useEffect(() => {
     refetch()
-  }, [currentPage, searchValue])
+  }, [currentPage, searchValue, refetch])
 
   const txColumns: TableColumn[] = [
     {

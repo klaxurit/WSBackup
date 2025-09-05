@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Table, { type TableColumn } from '../Table/Table';
 import { FallbackImg } from '../utils/FallbackImg';
@@ -10,8 +10,8 @@ interface PoolTransactionsTableProps {
 
 // Requête GraphQL pour récupérer les transactions (filtrage côté client)
 const GET_POOL_TRANSACTIONS = `
-  query GetPoolTransactions($limit: Int = 20) {
-    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+  query GetPoolTransactions($limit: Int = 20, $offset: Int = 0) {
+    transactions(limit: $limit, offset: $offset, orderBy: "timestamp", orderDirection: "desc") {
       totalCount
       pageInfo {
         endCursor
@@ -188,8 +188,11 @@ const transformGraphQLTransactionToTransaction = (graphqlTx: GraphQLTransaction,
 };
 
 export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ poolAddress }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['pool-transactions', poolAddress],
+    queryKey: ['pool-transactions', poolAddress, currentPage],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
@@ -198,7 +201,10 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         },
         body: JSON.stringify({
           query: GET_POOL_TRANSACTIONS,
-          variables: { limit: 50 }
+          variables: {
+            limit: itemsPerPage,
+            offset: (currentPage - 1) * itemsPerPage
+          }
         }),
       });
 
@@ -225,6 +231,22 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
 
     return allTransactions;
   }, [data, poolAddress]);
+
+  const pagination = useMemo(() => {
+    if (!data?.transactions) return undefined;
+
+    const totalPages = Math.ceil(data.transactions.totalCount / itemsPerPage);
+
+    return {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems: data.transactions.totalCount,
+      hasNextPage: data.transactions.pageInfo.hasNextPage,
+      hasPreviousPage: data.transactions.pageInfo.hasPreviousPage,
+      onPageChange: setCurrentPage
+    };
+  }, [data, currentPage, itemsPerPage]);
 
   const txColumns: TableColumn[] = [
     {
@@ -373,6 +395,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         wrapperClassName="Table__Wrapper"
         scrollClassName="Table__Scroll"
         emptyMessage="No transactions found for this pool"
+        pagination={pagination}
       />
     </div>
   );
