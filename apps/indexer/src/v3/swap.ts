@@ -60,8 +60,8 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   const amount1USD = amount1Bera.mul(beraPriceUSD)
   const totalAmountUSD = amount0USD.plus(amount1USD)
 
-  const feeBera = totalAmountBera.mul(pool.feeTier).div(1000000)
-  const feeUSD = totalAmountUSD.mul(pool.feeTier).div(1000000) // Check la div par 1000000
+  const feeBera = totalAmountBera.mul(pool.feeTier).div(10000)
+  const feeUSD = totalAmountUSD.mul(pool.feeTier).div(10000) // Check la div par 1000000
 
   // logDebug(logContext, "Swap calculations completed", {
   //   beraPriceUSD: beraPriceUSD.toString(),
@@ -124,7 +124,7 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   token0.txCount += 1
   token0.totalValueLocked = Decimal(token0.totalValueLocked).plus(amount0).toString()
   token0.volume = new Decimal(token0.volume).plus(amount0Abs).toString()
-  token0.volumeUSD = Decimal(token0.volumeUSD).plus(totalAmountUSD).toString()
+  token0.volumeUSD = Decimal(token0.volumeUSD).plus(amount0USD).toString()
   token0.feesUSD = Decimal(token0.feesUSD).plus(feeUSD).toString()
 
   // update token1

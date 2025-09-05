@@ -85,7 +85,7 @@ export async function updateDayPoolData(
       ...(r.t1open === "0" && { t1open: pool.token1Price }),
       ...(parseFloat(r.t1high) < parseFloat(pool.token1Price) && { t1high: pool.token1Price }),
       ...(parseFloat(r.t1low) > parseFloat(pool.token1Price) && { t1low: pool.token1Price }),
-      t1close: pool.token0Price,
+      t1close: pool.token1Price,
       apr,
       volumeUSD1D,
       volumeUSD30D
@@ -119,10 +119,14 @@ async function updateHourPoolData(
       volumeUSD: pool.volumeUSD,
       feesUSD: pool.feesUSD,
       txCount: pool.txCount,
-      open: pool.token0Price,
-      high: pool.token0Price,
-      low: pool.token0Price,
-      close: pool.token1Price,
+      t0open: pool.token0Price,
+      t0high: pool.token0Price,
+      t0low: pool.token0Price,
+      t0close: pool.token0Price,
+      t1open: pool.token1Price,
+      t1high: pool.token1Price,
+      t1low: pool.token1Price,
+      t1close: pool.token1Price,
     })
   } else {
     await context.db.update(poolHourData, { id: hourPoolID }).set((r) => ({
