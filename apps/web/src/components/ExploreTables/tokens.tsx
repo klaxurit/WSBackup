@@ -5,26 +5,74 @@ import { Link } from 'react-router-dom';
 import { useMemo } from "react";
 import { formatNumber } from "../../utils/formatNumber";
 
+const GET_TOKENS_STATS = `
+  query GetTokensStats {
+    tokens {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        feesUSD
+        id
+        name
+        totalSupply
+        volumeUSD
+        symbol
+        logoUri
+        tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            priceUSD
+            close
+            high
+            low
+            open
+            oneDayEvo
+            oneMonthEvo
+            marketCap
+            fdv
+            volume24hUSD
+          }
+        }
+      }
+    }
+  }
+`
+
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   const { data, isLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
-      if (!resp.ok) return { data: [] };
-      return resp.json();
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_TOKENS_STATS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.tokens.items;
     }
   });
 
   const tokens = useMemo(() => {
     if (!data) return []
-    // Filtrer seulement les tokens IN_POOL
-    const inPoolTokens = data.filter((token: any) => token.status === 'IN_POOL')
-    if (!searchValue || searchValue === '') return inPoolTokens
 
-    return inPoolTokens.filter((token: any) =>
+    if (!searchValue || searchValue === '') return data
+
+    return data.filter((token: any) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.address.toLowerCase().includes(searchValue.toLowerCase())
+      token.id.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [searchValue, data]);
 
@@ -34,13 +82,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'index',
       render: (row) => (
         <a
-          href={`https://berascan.com/address/${row.address}`}
+          href={`https://berascan.com/address/${row.id}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
-          title={row.address}
+          title={row.id}
         >
-          {row.address.slice(0, 4) + '...' + row.address.slice(-4)}
+          {row.id.slice(0, 4) + '...' + row.id.slice(-4)}
         </a>
       )
     },
@@ -58,7 +106,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
               : <FallbackImg content={row.symbol} className="TokensTable__Logo" />}
           </span>
           <Link
-            to={`/tokens/${row.address}`}
+            to={`/tokens/${row.id}`}
             className="TokensTable__NameLink"
             title={`View ${row.name} details`}
           >
@@ -72,10 +120,12 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'price',
       sortable: true,
       sortValue: (row) => {
-        return row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].price : 0;
+        return row.tokenDayData.items.length > 0 ? row.tokenDayData.items[0].priceUSD : 0;
       },
       render: (row) => {
-        return row.TokenDailyStats?.length > 0 ? `$${formatNumber(row.TokenDailyStats[0].price)}` : '-'
+        return row.tokenDayData.items.length > 0
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].priceUSD))}`
+          : '-'
       }
     },
     {
@@ -83,11 +133,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1h',
       sortable: true,
       sortValue: (row) => {
-        return row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange1h : 0;
+        return row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
       },
       render: (row) => {
-        const evolution = row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange1h : 0;
-        if (evolution === 0) return '-';
+        const evolution = row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
+        if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
           <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
@@ -101,11 +151,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1d',
       sortable: true,
       sortValue: (row) => {
-        return row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange24h : 0;
+        return row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
       },
       render: (row) => {
-        const evolution = row.TokenDailyStats?.length > 0 ? row.TokenDailyStats[0].priceChange24h : 0;
-        if (evolution === 0) return '-';
+        const evolution = row.tokenDayData.items.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
+        if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
           <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
@@ -119,11 +169,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'fdv',
       sortable: true,
       sortValue: (row) => {
-        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].fdv ? row.TokenDailyStats[0].fdv : 0;
+        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].fdv
+          ? parseFloat(row.tokenDayData.items[0].fdv)
+          : 0;
       },
       render: (row) => {
-        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].fdv !== 0 && row.TokenDailyStats[0].fdv
-          ? `$${formatNumber(row.TokenDailyStats[0].fdv)}`
+        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].fdv !== "0"
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].fdv))}`
           : '-'
       }
     },
@@ -132,11 +184,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'mcap',
       sortable: true,
       sortValue: (row) => {
-        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].marketCap ? row.TokenDailyStats[0].marketCap : 0;
+        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].marketCap ? row.tokenDayData.items[0].marketCap : 0;
       },
       render: (row) => {
-        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].marketCap !== 0 && row.TokenDailyStats[0].marketCap
-          ? `$${formatNumber(row.TokenDailyStats[0].marketCap)}`
+        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].marketCap !== 0
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].marketCap))}`
           : '-'
       }
     },
@@ -145,13 +197,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'volume',
       sortable: true,
       sortValue: (row) => {
-        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].volumeUSD24h
-          ? row.TokenDailyStats[0].volumeUSD24h
+        return row.tokenDayData.items.length > 0 && row.tokenDayData.items[0].volume24hUSD
+          ? parseFloat(row.tokenDayData.items[0].volume24hUSD)
           : 0;
       },
       render: (row) => {
-        return row.TokenDailyStats?.length > 0 && row.TokenDailyStats[0].volumeUSD24h !== 0
-          ? `$${formatNumber(row.TokenDailyStats[0].volumeUSD24h)}`
+        return row.tokenDayData.items.length > 0 && parseFloat(row.tokenDayData.items[0].volume24hUSD) !== 0
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].volume24hUSD))}`
           : '-'
       }
     },

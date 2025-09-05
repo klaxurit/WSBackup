@@ -65,9 +65,25 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
               ref={textareaRef}
               className="From__Input"
               value={formatUnits(inputValue, preSelected?.decimals || 18)}
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="0"
-              onChange={e => onInputChange(parseUnits(e.target.value, preSelected?.decimals || 18))}
+              onChange={e => {
+                const val = e.target.value;
+                // Validation améliorée
+                if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
+                  try {
+                    const parsedAmount = parseUnits(val, preSelected?.decimals || 18);
+                    if (parsedAmount >= 0n) {
+                      onInputChange(parsedAmount);
+                    }
+                  } catch (error) {
+                    console.warn('Invalid input amount:', val);
+                  }
+                } else if (val === '') {
+                  onInputChange(0n);
+                }
+              }}
               readOnly={disabled}
               onClick={disabled ? onInputClick : undefined}
               onBlur={onBlur}

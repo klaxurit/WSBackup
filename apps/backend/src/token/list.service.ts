@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { BlockchainService } from 'src/blockchain/blockchain.service';
 import { CoinGeckoService } from 'src/coingecko/coingecko.service';
 import { DatabaseService } from 'src/database/database.service';
-import { pools } from 'src/ponder/ponder.schema';
+import { pool } from 'src/ponder/ponder.schema';
 import { PonderService } from 'src/ponder/ponder.service';
 import { BerachainMeta } from 'src/ponder/ponder.type';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -21,25 +21,41 @@ export class TokenListService implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    await this.updateGeneralList();
+    // await this.updateGeneralList();
+    // this.updateInPoolStatus();
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async updateInPoolStatus() {
+    const currentPools = await this.ponder.database.select().from(pool);
+    const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
+      if (!tokensAddr.includes(pool.token0.toLowerCase())) {
+        tokensAddr.push(pool.token0.toLowerCase());
+      }
+      if (!tokensAddr.includes(pool.token1.toLowerCase())) {
+        tokensAddr.push(pool.token1.toLowerCase());
+      }
+      return tokensAddr;
+    }, [] as string[]);
+
+    await this.db.client.$transaction(async (tx) => {
+      for (const tokenAddr of tokensInPools) {
+        const onChainSupply = await this.getTotalSupply(tokenAddr);
+
+        await tx.token.update({
+          where: { address: tokenAddr },
+          data: {
+            totalSupply: onChainSupply?.toString(),
+            status: 'IN_POOL',
+          },
+        });
+      }
+    });
   }
 
   // Fetch all tokens from berachain metadata
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   public async updateGeneralList() {
-    const currentPools = await this.ponder.database.select().from(pools);
-    const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
-
-      if (!tokensAddr.includes(pool.token0Address)) {
-        tokensAddr.push(pool.token0Address.toLowerCase());
-      }
-      if (!tokensAddr.includes(pool.token1Address)) {
-        tokensAddr.push(pool.token1Address.toLowerCase());
-      }
-      console.log(tokensAddr, pool.token0Address, pool.token1Address)
-      return tokensAddr;
-    }, [] as string[]);
-
     const resp = await fetch(this.BerachainMetasURL);
     if (!resp.ok) return;
 
@@ -47,15 +63,6 @@ export class TokenListService implements OnModuleInit {
 
     await this.db.client.$transaction(async (tx) => {
       for (const token of tokens.tokens) {
-        const inPool = tokensInPools.includes(token.address.toLowerCase());
-
-        let totalSupply = 0n;
-        if (inPool) {
-          const onChainSupply = await this.getTotalSupply(token.address);
-          if (onChainSupply) {
-            totalSupply = onChainSupply;
-          }
-        }
         const details = token.extensions?.coingeckoId
           ? await this.getDetails(token.extensions.coingeckoId)
           : null;
@@ -70,9 +77,9 @@ export class TokenListService implements OnModuleInit {
             name: token.name,
             symbol: token.symbol,
             decimals: token.decimals,
-            totalSupply: totalSupply.toString(),
+            totalSupply: '0',
 
-            status: inPool ? 'IN_POOL' : 'DISCOVERED',
+            status: 'DISCOVERED',
 
             logoUri: token.logoURI,
             coingeckoId: token.extensions?.coingeckoId,
@@ -88,11 +95,6 @@ export class TokenListService implements OnModuleInit {
             website: token.website,
             twitter: token.twitter,
             description: token.description,
-            status: inPool ? 'IN_POOL' : 'DISCOVERED',
-            ...(totalSupply &&
-              totalSupply > 0n && {
-              totalSupply: totalSupply.toString(),
-            }),
           },
         });
       }

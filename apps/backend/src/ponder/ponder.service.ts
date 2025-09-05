@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { QueryWithTypings, SQLWrapper } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/pg-proxy';
 import { EventSource } from 'eventsource';
-import { liquidityEvent, pools, positions, swaps } from './ponder.schema';
+import { pool } from './ponder.schema';
 
 @Injectable()
 export class PonderService implements OnModuleInit, OnModuleDestroy {
@@ -31,7 +31,7 @@ export class PonderService implements OnModuleInit, OnModuleDestroy {
       'http://localhost:42069/sql';
 
     this.superjson = await eval('import("superjson")');
-    this.schema = { pools, swaps, positions, liquidityEvent };
+    this.schema = { pool };
     this.setupDatabase();
     this.logger.log(`Ponder SQL client initialized with URL: ${this.baseUrl}`);
   }

@@ -1,5 +1,5 @@
 import { createConfig, factory } from "ponder";
-import { CONTRACTS, FactoryABI, PoolABI } from "@repo/contracts";
+import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI } from "@repo/contracts";
 
 export default createConfig({
   database: {
@@ -38,7 +38,13 @@ export default createConfig({
         },
         parameter: "pool",
       }),
-      startBlock: 7402490
-    }
+      startBlock: 7402490,
+    },
+    WinniePositionManager: {
+      chain: "mainnet",
+      abi: PositionManagerABI,
+      address: CONTRACTS.POSITION_MANAGER,
+      startBlock: 7402490,
+    },
   },
 });

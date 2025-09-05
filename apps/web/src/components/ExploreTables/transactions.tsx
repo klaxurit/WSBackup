@@ -2,149 +2,131 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatUnits } from "viem";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 interface TransactionsTableProps {
   searchValue: string | null;
 }
 
+const GET_TRANSACTIONS = `
+  query GetTransactions($limit: Int = 20) {
+    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        from
+        gasPrice
+        gasUsed
+        id
+        timestamp
+        burns {
+          totalCount
+        }
+        collects {
+          totalCount
+        }
+        swaps {
+          totalCount
+          items {
+            amount1
+            amount0
+            amountUSD
+            recipient
+            pool {
+              id
+              token0Ref {
+                symbol
+                id
+                logoUri
+              }
+              token1Ref {
+                symbol
+                id
+                logoUri
+              }
+            }
+          }
+        }
+        mints {
+          totalCount
+        }
+      }
+    }
+  }
+`
+
 export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1)
-  // const [itemByPage, setItemByPage] = useState(20)
-  const itemByPage = 20
-
-  // Récupérer la liste des tokens pour enrichir les transactions
-  const { data: tokensList } = useQuery({
-    queryKey: ['tokens'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
-      if (!resp.ok) return [];
-      const result = await resp.json();
-      return result.data || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Récupérer la liste des pools pour avoir les adresses des tokens
-  const { data: poolsList } = useQuery({
-    queryKey: ['pools'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pools`);
-      if (!resp.ok) return [];
-      const result = await resp.json();
-      console.log("API /pools response:", result);
-      return result.data || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Créer un map des tokens par adresse pour un accès rapide
-  const tokensMap = useMemo(() => {
-    if (!tokensList) return new Map();
-    const map = new Map(
-      tokensList.map((token: any) => [
-        token.address.toLowerCase(),
-        {
-          symbol: token.symbol,
-          name: token.name,
-          decimals: token.decimals,
-          logoUri: token.logoUri
-        }
-      ])
-    );
-    console.log("TokensMap créé:", Array.from(map.entries()));
-    return map;
-  }, [tokensList]);
-
-  // Créer un map des pools par adresse pour récupérer les tokens
-  const poolsMap = useMemo(() => {
-    if (!poolsList || !poolsList.data || !Array.isArray(poolsList.data)) {
-      console.log("poolsList.data n'est pas un tableau:", poolsList);
-      return new Map();
-    }
-    const map = new Map(
-      poolsList.data.map((pool: any) => [
-        pool.address.toLowerCase(),
-        {
-          token0Address: pool.token0Address,
-          token1Address: pool.token1Address,
-          token0Symbol: pool.token0Symbol,
-          token1Symbol: pool.token1Symbol
-        }
-      ])
-    );
-    console.log("PoolsMap créé:", Array.from(map.entries()));
-    return map;
-  }, [poolsList]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/indexer/swaps?` + new URLSearchParams({
-        currentPage: `${currentPage}`,
-        itemByPage: `${itemByPage}`,
-        searchValue: searchValue || ""
-      }).toString()
-      )
+      const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_TRANSACTIONS }),
+      });
       if (!resp.ok) return []
-      return resp.json()
+
+      const data = await resp.json()
+
+      return data.data.transactions
     },
     select: (data) => {
-      console.log("Données brutes des swaps:", data)
+      // console.log("Données brutes des swaps:", data)
       return {
         pagination: {
-          ...data.pagination,
+          ...data.pageInfo,
           onPageChange: setCurrentPage
         },
-        txs: data.data.map((s: any) => {
+        txs: data.items.map((s: any) => {
           // Debug: afficher la structure complète d'un swap
-          console.log("Structure d'un swap:", s);
+          // console.log("Structure d'un swap:", s);
 
           // Récupérer les informations des tokens depuis la base de données
-          const getTokenInfo = (address: string) => {
-            const token = tokensMap.get(address.toLowerCase());
-            return token || {
-              symbol: 'Unknown',
-              name: 'Unknown Token',
-              decimals: 18,
-              logoUri: null
-            };
-          };
+          // const getTokenInfo = (address: string) => {
+          //   const token = tokensMap.get(address.toLowerCase());
+          //   return token || {
+          //     symbol: 'Unknown',
+          //     name: 'Unknown Token',
+          //     decimals: 18,
+          //     logoUri: null
+          //   };
+          // };
 
-          // Récupérer les adresses des tokens depuis le pool
-          const poolInfo = poolsMap.get(s.poolAddress.toLowerCase());
-          let token0Address = '0x0000000000000000000000000000000000000000';
-          let token1Address = '0x0000000000000000000000000000000000000000';
 
-          if (poolInfo) {
-            token0Address = poolInfo.token0Address;
-            token1Address = poolInfo.token1Address;
-          } else {
-            console.log("Pool non trouvé pour l'adresse:", s.poolAddress);
-          }
-
-          const token0 = getTokenInfo(token0Address);
-          const token1 = getTokenInfo(token1Address);
-
-          if (BigInt(s.amount0) > 0n) {
-            // A -> B
-            return {
-              ...s,
-              tokenIn: token0,
-              tokenOut: token1,
-              amountIn: s.amount0,
-              amountOut: s.amount1,
-            }
-          } else {
-            // B -> A
-            return {
-              ...s,
-              tokenIn: token1,
-              tokenOut: token0,
-              amountIn: s.amount1,
-              amountOut: s.amount0,
+          if (s.swaps.items.length > 0) { // C'est un swap
+            if (BigInt(s.swaps.items[0].amount0) > 0n) {
+              // A -> B
+              return {
+                ...s,
+                ...s.swaps.items[0],
+                tokenIn: s.swaps.items[0].pool.token0Ref,
+                tokenOut: s.swaps.items[0].pool.token1Ref,
+                amountIn: BigInt(s.swaps.items[0].amount0),
+                amountOut: BigInt(s.swaps.items[0].amount1),
+              }
+            } else {
+              // B -> A
+              return {
+                ...s,
+                ...s.swaps.items[0],
+                tokenIn: s.swaps.items[0].pool.token1Ref,
+                tokenOut: s.swaps.items[0].pool.token0Ref,
+                amountIn: BigInt(s.swaps.items[0].amount1),
+                amountOut: BigInt(s.swaps.items[0].amount0),
+              }
             }
           }
+
+          return null
         })
       }
     }
@@ -154,7 +136,6 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     refetch()
   }, [currentPage, searchValue])
 
-  console.log(data)
   const txColumns: TableColumn[] = [
     {
       label: 'Time',
@@ -163,7 +144,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         let text
         const now = new Date();
         // Corriger le timestamp : createdAt est en secondes, pas en millisecondes
-        const txTime = new Date(Number(row.createdAt) * 1000);
+        const txTime = new Date(Number(row.timestamp) * 1000);
         const diffMs = now.getTime() - txTime.getTime();
         const diffMin = Math.floor(diffMs / 60000);
 
@@ -188,11 +169,11 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
 
         return (
           <a
-            href={`https://berascan.com/tx/${row.transactionHash}`}
+            href={`https://berascan.com/tx/${row.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Address"
-            title={row.recipient}
+            title={`https://berascan.com/tx/${row.id}`}
           >
             {text}
           </a>
@@ -205,19 +186,22 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           Swap
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />}
+          {row.tokenIn.logoUri
+            ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
+            : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
+          }
           for
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />}
+          {row.tokenOut.logoUri
+            ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
+            : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
+          }
         </span>
       ),
     },
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        // Vérifier que Statistic existe et a des données
-        if (!row.tokenIn.Statistic || row.tokenIn.Statistic.length === 0 || row.tokenIn.Statistic[0]?.price === 0) return "-"
-
-        const amount = (parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18)) * row.tokenIn.Statistic[0].price)
+        const amount = (parseFloat(row.amountUSD))
         if (amount < 0.01) return "<0.01$"
         return (
           <span>
@@ -257,13 +241,13 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       key: 'wallet',
       render: (row) => (
         <a
-          href={`https://berascan.com/address/${row.recipient}`}
+          href={`https://berascan.com/address/${row.swaps.items[0].recipient}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
-          title={row.recipient}
+          title={row.swaps.items[0].recipient}
         >
-          {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
+          {row.swaps.items[0].recipient.slice(0, 6) + '...' + row.swaps.items[0].recipient.slice(-4)}
         </a>
       ),
     },

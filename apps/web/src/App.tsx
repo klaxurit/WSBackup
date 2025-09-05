@@ -12,6 +12,8 @@ import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
 import PoolDetailPage from './pages/PoolPage/page'
+import VaultsPage from './pages/VaultsPage/page'
+import VaultDetailPage from './pages/VaultDetailPage/page'
 import { Footer } from './components/Footer/Footer'
 
 function App() {
@@ -41,6 +43,8 @@ function App() {
               </div>
             } />
             <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/vaults" element={<VaultsPage />} />
+            <Route path="/vaults/:vaultAddress" element={<VaultDetailPage />} />
             <Route path="/pools" element={<PoolPage />} />
             <Route path="/pools/create" element={<CreatePoolPage />} />
             <Route path="/pools/:tokenId" element={<PoolViewPage />} />

@@ -1,0 +1,228 @@
+@use "../../utils" as *;
+
+$beryl-pure: #E39229;
+$border-color: #4B5563;
+$hover-border-color: #6B7280;
+$text-color: #D1D5DB;
+$hover-bg: #241500;
+
+@keyframes bearAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: translateX(-50%) translateY(-5px) scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes bearHover {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+    z-index: 1;
+    /* Commence derrière */
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: translateX(-50%) translateY(15px) scale(0.85);
+    z-index: 1;
+    /* Reste derrière, juste les oreilles qui dépassent */
+  }
+
+  100% {
+    opacity: 0.6;
+    transform: translateX(-50%) translateY(7px) scale(0.9);
+    z-index: 1;
+    /* Finit derrière, juste les oreilles visibles */
+  }
+}
+
+@keyframes bearPop {
+  0% {
+    opacity: 0.6;
+    transform: translateX(-50%) translateY(12px) scale(0.9);
+    z-index: 1;
+    /* Commence depuis la position hover (juste les oreilles) */
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    z-index: 10;
+    /* Monte directement vers la position finale */
+  }
+}
+
+@keyframes bearDisappear {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+  }
+}
+
+@keyframes bearIdle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-2px) scale(1.02);
+  }
+}
+
+.chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+
+  &__section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    &--left {
+      flex: 1;
+    }
+  }
+
+  &__chart-types {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #180E00;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    color: $text-color;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 14px;
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      border-color: $hover-border-color;
+      background: $hover-bg;
+      color: #fff;
+      transform: scale(1.02);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    &--active {
+      border-color: $beryl-pure;
+      background: #180E00;
+      color: $beryl-pure;
+    }
+
+    &-label {
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  &__separator {
+    width: 1px;
+    height: 32px;
+    background: $border-color;
+    opacity: 0.5;
+  }
+
+  &__intervals-original {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    >div {
+      position: relative;
+    }
+
+    button {
+      position: relative;
+      z-index: 10; // Au-dessus des oursons au hover
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 20px;
+      border: 1px solid $border-color;
+      background: #180E00;
+      color: $text-color;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 1;
+
+      &:hover:not(:disabled) {
+        border-color: $hover-border-color;
+        background: $hover-bg;
+        color: #fff;
+        transform: scale(1.02);
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+        transition: all 0.1s ease-out;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &.active {
+        border-color: $beryl-pure;
+        background: #180E00;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba($beryl-pure, 0.2);
+      }
+    }
+
+    .bear {
+      position: absolute;
+      top: -23px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 45px;
+      z-index: 11;
+      pointer-events: none;
+
+      &--active {
+        animation: bearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+      }
+
+      &--hover {
+        animation: bearHover 0.3s ease-out forwards;
+        z-index: 1;
+      }
+
+      &--disappearing {
+        animation: bearDisappear 0.3s ease-in forwards;
+        z-index: 1;
+      }
+    }
+  }
+}

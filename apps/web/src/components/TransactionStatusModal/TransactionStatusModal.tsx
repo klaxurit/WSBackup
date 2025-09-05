@@ -96,8 +96,27 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const shouldShowButton = !isSuccess || (isSuccess && open);
 
+  useEffect(() => {
+    if (isSuccess && open) {
+      const timer = setTimeout(() => {
+        handleCloseAndRefresh();
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, open]);
+
+  const handleCloseAndRefresh = () => {
+    onClose();
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
+
+  const handleModalClose = isSuccess ? handleCloseAndRefresh : onClose;
+
   return (
-    <Modal open={open} onClose={onClose} className="TransactionModal__box" overlayClassName="TransactionModal__overlay">
+    <Modal open={open} onClose={handleModalClose} className="TransactionModal__box" overlayClassName="TransactionModal__overlay">
       {isError ? (
         <div className="TransactionModal__error">
           <div className="TransactionModal__head" style={{ marginBottom: 16 }}>
@@ -117,7 +136,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         <>
           <div className="TransactionModal__head">
             <span className="TransactionModal__title">You're swapping</span>
-            <button className="TransactionModal__close" onClick={onClose} aria-label="Close">
+            <button className="TransactionModal__close" onClick={isSuccess ? handleCloseAndRefresh : onClose} aria-label="Close">
               &#10005;
             </button>
           </div>

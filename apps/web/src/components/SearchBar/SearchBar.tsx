@@ -15,7 +15,7 @@ export const SearchBar = ({
   mode = 'default',
   activeTab,
 }: SearchBarProps) => {
-  const [isExpanded, setIsExpanded] = useState(mode === 'expanded');
+  const [isExpanded, setIsExpanded] = useState(mode === 'expanded' || mode === 'default');
   const [showPlaceholder, setShowPlaceholder] = useState(mode !== 'compact');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,9 +52,9 @@ export const SearchBar = ({
     }
   }, [isExpanded, mode]);
 
-  const className = `SearchBar ${mode === 'compact' && !isExpanded ? 'SearchBar__compact' : ''} ${mode === 'compact' && isExpanded ? 'expanded' : ''}`;
+  const className = `SearchBar ${mode === 'compact' && !isExpanded ? 'SearchBar__compact' : ''} ${mode === 'compact' && isExpanded ? 'expanded' : ''} ${mode === 'expanded' ? 'expanded' : ''}`;
   const placeholderText = mode === 'compact' ? (networksList ? "Search networks" : "Search tokens") :
-    !networksList ? "Search tokens" : "Search tokens";
+    !networksList ? "Search" : "Search tokens, pools, transactions";
 
   const showRightContent = !(mode === 'compact' && !isExpanded);
 

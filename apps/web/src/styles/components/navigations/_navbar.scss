@@ -34,18 +34,20 @@
     align-items: center;
     color: white;
     border: none;
+
     button {
       background-image: url('/src/assets/bear_button.svg');
       background-size: 100%;
       background-position: center;
       background-repeat: no-repeat;
+
       &:hover {
         background-image: url('/src/assets/bear_btn_hover.svg');
         background-size: 100%;
         background-position: center;
         background-repeat: no-repeat;
       }
-    
+
       &:active {
         background-image: url('/src/assets/bear_btn_click.svg');
         background-size: 100%;
@@ -164,6 +166,29 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+// Styles spécifiques pour la SearchBar dans la Navbar
+.Navbar__SearchBar {
+  position: relative;
+  z-index: 30;
+
+  .SearchBar {
+    width: auto;
+    min-width: 200px;
+    max-width: 400px;
+
+    &.expanded {
+      width: 300px;
+      min-width: 300px;
+      max-width: 400px;
+    }
+
+    .SearchBar__input {
+      width: 100%;
+      min-width: 150px;
+    }
+  }
 }
 
 @media (max-width: 767px) {

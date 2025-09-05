@@ -25,6 +25,7 @@ const PoolViewPage: React.FC = () => {
     if (!tokenId) return
     return getPosition(tokenId)
   }, [getPosition, tokenId])
+
   const pool = posData?.pool
   const position = posData?.position
 
@@ -100,7 +101,7 @@ const PoolViewPage: React.FC = () => {
     <div className="PoolView__Container">
       <div className="PoolView__Card">
         <PoolHeader
-          address={`#${posData.nftTokenId} ${pool.address}`}
+          address={`#${position.tokenId} ${pool.address}`}
           usdValue={"$2222"}
         />
 

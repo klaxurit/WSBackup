@@ -2,8 +2,8 @@
 
 .Divider {
   border-radius: 1000px 1000px var(--FULL, 1000px) 1000px;
-  border: 6px solid #151311;
-  background: #151311;
+  border: 6px solid #180E00;
+  background: #180E00;
   position: absolute;
   display: flex;
   align-items: flex-start;
@@ -12,7 +12,7 @@
   left: calc(50% - 25px);
   z-index: 1;
   overflow: hidden;
-  background-color: #12110e;
+  background-color: #180E00;
   outline: none;
 
   &__imgWrapper {

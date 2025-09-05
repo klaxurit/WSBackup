@@ -1,104 +1,42 @@
-import { InferSelectModel, relations } from 'drizzle-orm';
+import { InferSelectModel } from 'drizzle-orm';
 import {
   bigint,
   integer,
-  pgEnum,
   pgTable,
-  primaryKey,
-  text,
+  text
 } from 'drizzle-orm/pg-core';
 
-export const pools = pgTable('pools', {
-  address: text().primaryKey(),
-  token0Address: text().notNull(),
-  token1Address: text().notNull(),
-  tickSpacing: integer(),
-  fee: integer(),
-  createdAt: bigint({ mode: 'bigint' }).notNull(),
-  createdAtBlock: bigint({ mode: 'bigint' }).notNull(),
+export const pool = pgTable('pool', {
+  id: text().primaryKey(), // Adresse
+  createdAtTimestamp: bigint({ mode: 'bigint' }).notNull(),
+  createdAtBlockNumber: bigint({ mode: 'bigint' }).notNull(),
+  token0: text().notNull(),
+  token1: text().notNull(),
+  feeTier: integer().notNull(),
+  liquidity: bigint({ mode: 'bigint' }).notNull().default(0n),
+  sqrtPrice: bigint({ mode: 'bigint' }).notNull().default(0n),
+  tick: integer(),
+  observationIndex: integer().notNull().default(0),
+  volumeToken0: text().notNull().default("0"),
+  volumeToken1: text().notNull().default("0"),
+  volumeUSD: text().notNull().default("0"),
+  untrackedVolumeUSD: text().notNull().default("0"),
+  feesUSD: text().notNull().default("0"),
+  txCount: integer().notNull().default(0),
+  collectedFeesToken0: text().notNull().default("0"),
+  collectedFeesToken1: text().notNull().default("0"),
+  collectedFeesUSD: text().notNull().default("0"),
+  totalValueLockedToken0: text().notNull().default("0"),
+  totalValueLockedToken1: text().notNull().default("0"),
+  totalValueLockedUSD: text().notNull().default("0"),
+  totalValueLockedBERA: text().notNull().default("0"),
+  token0Price: text().notNull().default("0"),
+  token1Price: text().notNull().default("0"),
+  liquidityProviderCount: integer().notNull().default(0),
+
+  totalValueLockedUSDUntracked: text().notNull().default("0"),
+  feeGrowthGlobal1X128: bigint({ mode: 'bigint' }).notNull().default(0n),
+  feeGrowthGlobal0X128: bigint({ mode: 'bigint' }).notNull().default(0n),
 });
 
-export const poolsRelations = relations(pools, ({ many }) => ({
-  swaps: many(swaps),
-  positions: many(positions),
-  liquidityEvent: many(liquidityEvent),
-}));
-export type Pool = InferSelectModel<typeof pools>;
-
-export const swaps = pgTable('swaps', {
-  id: text().primaryKey(),
-  poolAddress: text(),
-  sender: text().notNull(),
-  recipient: text().notNull(),
-  amount0: bigint({ mode: 'bigint' }).notNull(),
-  amount1: bigint({ mode: 'bigint' }).notNull(),
-  sqrtPriceX96: bigint({ mode: 'bigint' }).notNull(),
-  liquidity: bigint({ mode: 'bigint' }).notNull(),
-  tick: integer().notNull(),
-  createdAt: bigint({ mode: 'bigint' }).notNull(),
-  blockNumber: bigint({ mode: 'bigint' }).notNull(),
-  transactionHash: text().notNull(),
-});
-
-export const swapsRelations = relations(swaps, ({ one }) => ({
-  pool: one(pools, {
-    fields: [swaps.poolAddress],
-    references: [pools.address],
-  }),
-}));
-export type Swap = InferSelectModel<typeof swaps>;
-
-export const positions = pgTable(
-  'positions',
-  {
-    poolAddress: text(),
-    owner: text().notNull(),
-    tickLower: integer().notNull(),
-    tickUpper: integer().notNull(),
-    liquidity: bigint({ mode: 'bigint' }).notNull(),
-    amount0: bigint({ mode: 'bigint' }).notNull(),
-    amount1: bigint({ mode: 'bigint' }).notNull(),
-    createdAt: bigint({ mode: 'bigint' }).notNull(),
-    updatedAt: bigint({ mode: 'bigint' }).notNull(),
-  },
-  (table) => [
-    primaryKey({
-      columns: [
-        table.poolAddress,
-        table.owner,
-        table.tickLower,
-        table.tickUpper,
-      ],
-    }),
-  ],
-);
-
-export const positionsRelations = relations(positions, ({ one }) => ({
-  pool: one(pools, {
-    fields: [positions.poolAddress],
-    references: [pools.address],
-  }),
-}));
-
-export const liquidityEventTypeEnum = pgEnum('type', ['MINT', 'BURN']);
-export const liquidityEvent = pgTable('liquidity_events', {
-  id: text().primaryKey(),
-  poolAddress: text(),
-  owner: text().notNull(),
-  type: liquidityEventTypeEnum('type'),
-  tickLower: integer().notNull(),
-  tickUpper: integer().notNull(),
-  amount: bigint({ mode: 'bigint' }).notNull(),
-  amount0: bigint({ mode: 'bigint' }).notNull(),
-  amount1: bigint({ mode: 'bigint' }).notNull(),
-  createdAt: bigint({ mode: 'bigint' }).notNull(),
-  blockNumber: bigint({ mode: 'bigint' }).notNull(),
-  transactionHash: text().notNull(),
-});
-
-export const liquidityEventRelations = relations(liquidityEvent, ({ one }) => ({
-  pool: one(pools, {
-    fields: [liquidityEvent.poolAddress],
-    references: [pools.address],
-  }),
-}));
+export type Pool = InferSelectModel<typeof pool>;

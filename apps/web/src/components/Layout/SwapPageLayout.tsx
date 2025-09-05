@@ -109,7 +109,6 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             dataType={chartConfig.dataType}
           /> */}
         </div>
-
         <div className="swap-page-layout__swap">
           <SwapForm
             toggleSidebar={onToggleSidebar}

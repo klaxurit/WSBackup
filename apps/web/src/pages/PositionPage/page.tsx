@@ -5,120 +5,187 @@ import { Link } from 'react-router-dom';
 import '../../styles/pages/_positionPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { usePositions } from '../../hooks/usePositions';
+import { usePositionsGraphQL } from '../../hooks/usePositionsGraphQL';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
-import { getAmountsForPosition } from '../../utils/positionManager';
-import { usePrice } from '../../hooks/usePrice';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 
-// Composant pour afficher la taille de position avec valeur USD
+const GET_TOP_POOLS = `
+  query GetTopPools {
+    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 4) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        feeTier
+        id
+        liquidity
+        poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
+          items {
+            tvlUSD
+            volumeUSD
+            apr
+            volumeUSD1D
+            volumeUSD30D
+          }
+        }
+        token0Ref {
+          name
+          id
+          symbol
+          logoUri
+        }
+        token1Ref {
+          id
+          name
+          symbol
+          logoUri
+        }
+        totalValueLockedBERA
+        totalValueLockedUSD
+        volumeUSD
+      }
+    }
+  }
+`;
+
+interface GraphQLPool {
+  id: string;
+  feeTier: number;
+  liquidity: string;
+  totalValueLockedUSD: number;
+  totalValueLockedBERA: number;
+  volumeUSD: number;
+  poolDayData: {
+    items: Array<{
+      tvlUSD: number;
+      volumeUSD: number;
+      apr: number;
+      volumeUSD1D: number;
+      volumeUSD30D: number;
+    }>;
+  };
+  token0Ref: {
+    id: string;
+    name: string;
+    symbol: string;
+    logoUri?: string;
+  };
+  token1Ref: {
+    id: string;
+    name: string;
+    symbol: string;
+    logoUri?: string;
+  };
+}
+
+interface GraphQLResponse {
+  pools: {
+    totalCount: number;
+    pageInfo: {
+      endCursor: string;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      startCursor: string;
+    };
+    items: GraphQLPool[];
+  };
+}
+
+interface FormattedPool {
+  address: string;
+  token0Address: string;
+  token1Address: string;
+  token0Symbol: string;
+  token1Symbol: string;
+  token0LogoUri?: string;
+  token1LogoUri?: string;
+  fee: number;
+  apr: number;
+  tvlUSD: number;
+}
+
+const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): FormattedPool => {
+  const latestDayData = graphqlPool.poolDayData.items[0];
+  const aprValue = latestDayData?.apr;
+  const transformed = {
+    address: graphqlPool.id,
+    token0Address: graphqlPool.token0Ref.id,
+    token1Address: graphqlPool.token1Ref.id,
+    token0Symbol: graphqlPool.token0Ref.symbol,
+    token1Symbol: graphqlPool.token1Ref.symbol,
+    token0LogoUri: graphqlPool.token0Ref.logoUri,
+    token1LogoUri: graphqlPool.token1Ref.logoUri,
+    fee: graphqlPool.feeTier / 10000, // Convertir en pourcentage
+    apr: typeof aprValue === 'number' ? aprValue : (typeof aprValue === 'string' ? parseFloat(aprValue) : 0),
+    tvlUSD: graphqlPool.totalValueLockedUSD,
+  };
+
+  return transformed;
+};
+
 const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
-  const price0 = usePrice(row.pool.token0);
-  const price1 = usePrice(row.pool.token1);
+  // Les montants sont déjà des chaînes décimales depuis Ponder
+  const amount0 = parseFloat(row.position.amount0).toFixed(2)
+  const amount1 = parseFloat(row.position.amount1).toFixed(2)
 
-  const display0 = getPoolDisplayToken(row.pool.token0.address);
-  const display1 = getPoolDisplayToken(row.pool.token1.address);
-  const logo0 = display0.logoUri || row.pool.token0.logoUri;
-  const logo1 = display1.logoUri || row.pool.token1.logoUri;
-  const symbol0 = display0.symbol || row.pool.token0.symbol;
-  const symbol1 = display1.symbol || row.pool.token1.symbol;
+  // Vérifier si les prix sont disponibles
+  const token0Price = row.pool.token0.TokenPrice?.[0]?.price;
+  const token1Price = row.pool.token1.TokenPrice?.[0]?.price;
 
-  const value0 = parseFloat(row.__amount0 || '0') * (price0.data || 0);
-  const value1 = parseFloat(row.__amount1 || '0') * (price1.data || 0);
-  const totalValue = value0 + value1;
+  const value0 = token0Price ? (Number(amount0) * token0Price) : 0;
+  const value1 = token1Price ? (Number(amount1) * token1Price) : 0;
+  const totalValue = (value0 + value1).toFixed(2);
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {row.__amount0}
-          {logo0 ? (
-            <img src={logo0} alt={symbol0} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          {amount0}
+          {row.pool.token0.logoUri ? (
+            <img src={row.pool.token0.logoUri} alt={row.pool.token0.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           ) : (
-            <FallbackImg content={symbol0} style={{ width: 16, height: 16, borderRadius: 999 }} />
+            <FallbackImg content={row.pool.token0.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           )}
         </span>
         <span style={{ opacity: 0.6 }}>·</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {row.__amount1}
-          {logo1 ? (
-            <img src={logo1} alt={symbol1} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          {amount1}
+          {row.pool.token1.logoUri ? (
+            <img src={row.pool.token1.logoUri} alt={row.pool.token1.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           ) : (
-            <FallbackImg content={symbol1} style={{ width: 16, height: 16, borderRadius: 999 }} />
+            <FallbackImg content={row.pool.token1.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           )}
         </span>
       </div>
       <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-        ${totalValue.toFixed(2)}
+        {token0Price && token1Price ? `$${totalValue}` : 'Prix non disponible'}
       </div>
     </div>
   );
 };
 
-
-const isPositionOpen = (row: any) => {
-  try {
-    return BigInt(row?.position?.liquidity ?? '0') > 0n;
-  } catch {
-    return false;
-  }
-};
-
 const PoolPage: React.FC = () => {
   const { isConnected } = useAccount()
-  const { positions, isLoading } = usePositions()
+  const { positions, isLoading } = usePositionsGraphQL()
   const [statusFilter, setStatusFilter] = useState<'open' | 'closed'>('open')
 
-  const positionsWithAmounts = useMemo(() => {
-    return (positions || []).map((row: any) => {
-      const hasPoolData = row?.pool && row?.pool?.sqrtPriceX96 && row?.pool?.tick !== undefined && row?.pool?.tick !== null
-      const hasPositionData = row?.position && row.position.tickLower !== undefined && row.position.tickUpper !== undefined
-      let amount0 = '0'
-      let amount1 = '0'
-
-      if (hasPoolData && hasPositionData) {
-        try {
-          const { amount0: a0, amount1: a1 } = getAmountsForPosition({
-            liquidity: row.position.liquidity ?? '0',
-            tickLower: row.position.tickLower,
-            tickUpper: row.position.tickUpper,
-            tickCurrent: row.pool.tick,
-            sqrtPriceX96: row.pool.sqrtPriceX96 ?? '0',
-            fee: row.position.fee ?? row.pool.fee,
-            token0: { address: row.pool.token0.address, decimals: row.pool.token0.decimals, symbol: row.pool.token0.symbol },
-            token1: { address: row.pool.token1.address, decimals: row.pool.token1.decimals, symbol: row.pool.token1.symbol },
-          })
-          amount0 = a0
-          amount1 = a1
-        } catch { }
-      }
-
-      const displayToken0 = getPoolDisplayToken(row.pool.token0.address);
-      const displayToken1 = getPoolDisplayToken(row.pool.token1.address);
-      const symbol0 = displayToken0.symbol || row.pool.token0.symbol;
-      const symbol1 = displayToken1.symbol || row.pool.token1.symbol;
-
-      return {
-        ...row,
-        __amount0: amount0,
-        __amount1: amount1,
-        __symbol0: symbol0,
-        __symbol1: symbol1,
-        __isOpen: isPositionOpen(row),
-      }
-    })
-  }, [positions])
-
   const filteredPositions = useMemo(() => {
-    if (statusFilter === 'open') return positionsWithAmounts.filter((p: any) => p.__isOpen)
-    return positionsWithAmounts.filter((p: any) => !p.__isOpen)
-  }, [positionsWithAmounts, statusFilter])
+    return positions.filter((p: any) => {
+      return statusFilter === "open"
+        ? p.liquidity !== "0"
+        : p.liquidity === "0"
+    })
+  }, [positions, statusFilter])
 
   const columns: TableColumn[] = [
-    { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.nftTokenId) },
+    { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.position.tokenId) },
     {
       label: 'Pair',
       key: 'pair',
@@ -133,39 +200,62 @@ const PoolPage: React.FC = () => {
               borderWidth={2}
               separatorWidth={1.5}
             />
-            {`${row.__symbol0} / ${row.__symbol1}`}
+            {`${row.pool.token0.symbol} / ${row.pool.token1.symbol}`}
           </span>
         </Link>
       ),
     },
-    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.position.fee / 10000}%`) },
+    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.pool.fee}%`) },
     {
       label: 'Position size', key: 'size', render: (row) => <PositionSizeCell row={row} />
     },
     {
       label: 'Pool APR', key: 'apr', render: (row) => {
-        return row.pool.PoolStatistic.length > 0 && row.pool.PoolStatistic[0].apr !== 0
-          ? `${row.pool.PoolStatistic[0].apr.toFixed(2)}%`
+        const apr = row.pool.apr;
+        return apr && typeof apr === 'number' && apr !== 0
+          ? `${apr.toFixed(2)}%`
           : "-"
       }
     },
     {
       label: '', key: 'actions', render: (row) => (
-        <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link to={`/pools/${row.position.tokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <button className="PoolPage__ManageBtn">Manage</button>
         </Link>
       )
     },
   ];
-  const { data: topPools = [] } = useQuery({
-    queryKey: ['topPools'],
+  const { data: topPoolsData, isLoading: topPoolsLoading, error: topPoolsError } = useQuery({
+    queryKey: ['topPoolsGraphQL'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/pool/top`)
-      if (!resp.ok) return []
 
-      return resp.json()
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_TOP_POOLS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data as GraphQLResponse;
+    },
+  });
+
+  // Transformer les données GraphQL en format FormattedPool
+  const topPools: FormattedPool[] = useMemo(() => {
+    if (!topPoolsData?.pools?.items) {
+      return [];
     }
-  })
+
+    const transformedPools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool);
+    return transformedPools;
+  }, [topPoolsData]);
 
   return (
     <div className="PoolPage">
@@ -195,19 +285,16 @@ const PoolPage: React.FC = () => {
                 </div>
               )
               : (
-                <>
-                  <div className="PoolPage__TableWrapper">
-                    <Table
-                      columns={columns}
-                      data={filteredPositions}
-                      tableClassName="PoolPage__Table"
-                      wrapperClassName="PoolPage__TableWrapper"
-                      scrollClassName="PoolPage__TableScroll"
-                      emptyMessage="No positions found"
-                    />
-                  </div>
-                  {/* <button className="PoolPage__ClosedBtn">View closed positions</button> */}
-                </>
+                <div className="PoolPage__TableWrapper">
+                  <Table
+                    columns={columns}
+                    data={filteredPositions}
+                    tableClassName="Table"
+                    wrapperClassName="Table__Wrapper"
+                    scrollClassName="Table__Scroll"
+                    emptyMessage="No positions found"
+                  />
+                </div>
               )
             : (
               <div className="PoolPage__TableWrapper">
@@ -219,37 +306,46 @@ const PoolPage: React.FC = () => {
         <div className="PoolPage__Right">
           <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
           <div className="PoolPage__TopList">
-            {topPools.map((pool: any) => (
-              <div className="PoolPage__TopCard" key={pool.address}>
-                <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <TokenPairLogos
-                    token0={{
-                      address: pool.token0Address,
-                      symbol: pool.token0Symbol,
-                      logoUri: pool.token0LogoUri
-                    }}
-                    token1={{
-                      address: pool.token1Address,
-                      symbol: pool.token1Symbol,
-                      logoUri: pool.token1LogoUri
-                    }}
-                    borderWidth={3}
-                    separatorWidth={2.5}
-                  />
-                  {(() => {
-                    const displayToken0 = getPoolDisplayToken(pool.token0Address);
-                    const displayToken1 = getPoolDisplayToken(pool.token1Address);
-                    const symbol0 = displayToken0.symbol || pool.token0Symbol;
-                    const symbol1 = displayToken1.symbol || pool.token1Symbol;
-                    return `${symbol0} / ${symbol1}`;
-                  })()} <span className="PoolPage__TopVersion">v3</span>
+            {topPoolsLoading ? (
+              <p>Loading top pools...</p>
+            ) : topPoolsError ? (
+              <p>Error loading pools: {topPoolsError.message}</p>
+            ) : topPools.length === 0 ? (
+              <p>No pools available</p>
+            ) : (
+              topPools.map((pool: FormattedPool) => (
+                <div className="PoolPage__TopCard" key={pool.address}>
+                  <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <TokenPairLogos
+                      token0={{
+                        address: pool.token0Address,
+                        symbol: pool.token0Symbol,
+                        logoUri: pool.token0LogoUri
+                      }}
+                      token1={{
+                        address: pool.token1Address,
+                        symbol: pool.token1Symbol,
+                        logoUri: pool.token1LogoUri
+                      }}
+                      borderWidth={2}
+                      separatorWidth={1.5}
+                      size={28}
+                    />
+                    {(() => {
+                      const displayToken0 = getPoolDisplayToken(pool.token0Address as `0x${string}`);
+                      const displayToken1 = getPoolDisplayToken(pool.token1Address as `0x${string}`);
+                      const symbol0 = displayToken0.symbol || pool.token0Symbol;
+                      const symbol1 = displayToken1.symbol || pool.token1Symbol;
+                      return `${symbol0} / ${symbol1}`;
+                    })()} <span className="PoolPage__TopVersion">v3</span>
+                  </div>
+                  <div className="PoolPage__TopFee">{pool.fee}% fee</div>
+                  <div className="PoolPage__TopApr">
+                    {pool.apr && typeof pool.apr === 'number' ? pool.apr.toFixed(2) : '0.00'}% APR
+                  </div>
                 </div>
-                <div className="PoolPage__TopFee">{pool.fee / 10000}% fee</div>
-                <div className="PoolPage__TopApr">
-                  {pool.apr ? pool.apr.toFixed(2) : '0'}% APR
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
