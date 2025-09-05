@@ -1,12 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { NewBanner } from '../Common/NewBanner';
 import { PageContentTransition } from '../Transitions/PageContentTransition';
 import bear from '../../assets/bear_icon.png';
 import SwapForm from '../SwapForm/SwapForm';
 import { ChartWidget } from '../Charts/ChartWidget';
-import type { ChartType, ChartInterval } from '../../types/chart';
-import { DEFAULT_TOKEN } from '../../utils/lineChart';
-import { getStatsAddress } from '../../utils/tokenMapping';
+import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
+import { usePoolSelectionWithFallback } from '../../hooks/usePoolSelection';
+import { usePoolByTokens } from '../../hooks/usePonderChartData';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface SwapPageLayoutProps {
@@ -23,7 +23,8 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
   const [fromToken, setFromToken] = useState<BerachainToken | null>(null);
   const [toToken, setToToken] = useState<BerachainToken | null>(null);
   const [chartType, setChartType] = useState<ChartType>('area');
-  const [interval, setInterval] = useState<ChartInterval>('1H');
+  const [interval, setInterval] = useState<ChartInterval>('1D');
+  const [metric, setMetric] = useState<ChartMetric>('price');
 
   const handleTokensChange = useCallback((
     _poolAddress: string | null,
@@ -34,30 +35,57 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
     setToToken(newToToken);
   }, []);
 
-  // Configuration du chart basée sur le token sélectionné
-  const chartConfig = React.useMemo(() => {
-    // Priorité : fromToken d'abord, puis toToken si pas de fromToken
-    const selectedToken = fromToken || toToken;
+  // Gestion de la sélection de pool avec fallback
+  const poolSelection = usePoolSelectionWithFallback(fromToken, toToken);
 
-    if (!selectedToken) {
+  // Adresses par défaut pour WBERA/HONEY
+  const DEFAULT_WBERA_ADDRESS = '0x6969696969696969696969696969696969696969';
+  const DEFAULT_HONEY_ADDRESS = '0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce';
+
+  // Recherche de la pool par défaut WBERA/HONEY
+  const { data: defaultPoolData } = usePoolByTokens(
+    DEFAULT_WBERA_ADDRESS,
+    DEFAULT_HONEY_ADDRESS
+  );
+
+  // Configuration du chart basée sur la sélection de pool
+  const chartConfig = useMemo(() => {
+    // Si on a une pool trouvée (soit pour les tokens sélectionnés, soit en fallback)
+    if (poolSelection.poolAddress || poolSelection.fallbackPoolAddress || defaultPoolData) {
+      const poolAddress = poolSelection.poolAddress || poolSelection.fallbackPoolAddress || defaultPoolData?.id;
+      const isUsingFallback = poolSelection.isUsingFallback || !poolSelection.poolAddress;
+
       return {
-        type: 'default',
-        tokenAddress: DEFAULT_TOKEN,
-        message: "These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon.",
-        showOverlay: true,
+        type: 'pool',
+        poolAddress,
+        message: isUsingFallback
+          ? "Affichage de la pool WBERA/HONEY par défaut"
+          : `Données de la pool ${fromToken?.symbol || 'Token1'}/${toToken?.symbol || 'Token2'}`,
+        showOverlay: false,
+        dataType: 'pool' as const
+      };
+    }
+
+    // Si on a un seul token, afficher ses données
+    if (fromToken || toToken) {
+      const selectedToken = fromToken || toToken;
+      return {
+        type: 'token',
+        tokenAddress: selectedToken!.address,
+        message: `Données de ${selectedToken!.symbol}`,
+        showOverlay: false,
         dataType: 'token' as const
       };
     }
 
-    const statsAddress = getStatsAddress(selectedToken.address as `0x${string}`);
+    // Par défaut, afficher un message d'attente
     return {
-      type: 'single-token',
-      tokenAddress: statsAddress,
-      message: `Showing price data for ${selectedToken.symbol}${statsAddress !== selectedToken.address ? ' (using WBERA data)' : ''}`,
-      showOverlay: false,
+      type: 'waiting',
+      message: "Sélectionnez des tokens pour voir les données de chart",
+      showOverlay: true,
       dataType: 'token' as const
     };
-  }, [fromToken, toToken]);
+  }, [fromToken, toToken, poolSelection, defaultPoolData]);
 
   const handleChartTypeChange = (newType: ChartType) => {
     setChartType(newType);
@@ -67,12 +95,20 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
     setInterval(newInterval);
   };
 
+  const handleMetricChange = (newMetric: ChartMetric) => {
+    setMetric(newMetric);
+  };
+
   const getNoDataMessage = () => {
+    if (poolSelection.isLoading) {
+      return "Recherche de la pool...";
+    }
+    if (poolSelection.error && !poolSelection.isUsingFallback) {
+      return poolSelection.error;
+    }
     return chartConfig.message;
   };
 
-  // Déterminer le token à utiliser pour les décimales
-  const selectedToken = fromToken || toToken;
 
   return (
     <PageContentTransition className={`swap-page-layout ${className}`}>
@@ -87,18 +123,19 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
 
       <div className="swap-page-layout__container">
         <div className="swap-page-layout__chart">
-
           <ChartWidget
-            tokenAddress={chartConfig.tokenAddress}
+            tokenAddress={chartConfig.type === 'token' ? chartConfig.tokenAddress : null}
+            poolAddress={chartConfig.type === 'pool' ? chartConfig.poolAddress : null}
             chartType={chartType}
             interval={interval}
+            metric={metric}
             height={500}
             showToolbar={true}
             priceFormatter={priceFormatter}
             onChartTypeChange={handleChartTypeChange}
             onIntervalChange={handleIntervalChange}
-            tokenDecimals={selectedToken?.decimals}
-            showNoDataOverlay={chartConfig.showOverlay}
+            onMetricChange={handleMetricChange}
+            showNoDataOverlay={chartConfig.showOverlay || poolSelection.isLoading}
             noDataMessage={getNoDataMessage()}
             dataType={chartConfig.dataType}
           />

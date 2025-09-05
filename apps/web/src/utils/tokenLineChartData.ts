@@ -1,5 +1,6 @@
 import { cleanLineData, filterOutliers, shouldNormalize, normalizeLineData, filterLWCBounds } from './lineChart';
 import { aggregateLineData } from './aggregateLineData';
+import type { ChartInterval } from '../types/chart';
 import type { LineChartPoint } from '../types/chart';
 
 export function getTokenLineChartData(
@@ -12,5 +13,5 @@ export function getTokenLineChartData(
     ? normalizeLineData(filtered, tokenDecimals)
     : filtered;
   const cleaned = filterLWCBounds(cleanLineData(normalized));
-  return aggregateLineData(cleaned, interval);
+  return aggregateLineData(cleaned, interval as ChartInterval);
 } 

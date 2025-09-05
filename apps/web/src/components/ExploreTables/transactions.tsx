@@ -96,7 +96,7 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       const data = await resp.json()
 
       if (data.errors) {
-        console.error('❌ TransactionsTable - Erreurs GraphQL:', data.errors);
+        throw new Error(data.errors[0].message);
       }
 
       return data.data.transactions

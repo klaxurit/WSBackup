@@ -1,12 +1,14 @@
-import React from 'react';
-import type { ChartType, ChartInterval } from '../../types/chart';
+import React, { useState, useRef, useEffect } from 'react';
+import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import lilBear from '../../assets/lil_bear.png';
 
 interface ChartToolbarProps {
   chartType: ChartType;
   interval: ChartInterval;
+  metric: ChartMetric;
   onChartTypeChange: (type: ChartType) => void;
   onIntervalChange: (interval: ChartInterval) => void;
+  onMetricChange: (metric: ChartMetric) => void;
   availableIntervals?: ChartInterval[];
   isLoading?: boolean;
 }
@@ -53,17 +55,38 @@ const chartTypeLabels: Record<ChartType, string> = {
   candlestick: 'Candles',
 };
 
+// Configuration des métriques
+const metricLabels: Record<ChartMetric, string> = {
+  price: 'Price',
+  tvl: 'TVL',
+  volume: 'Volume',
+  fees: 'Fees',
+};
+
+const metricIcons: Record<ChartMetric, string> = {
+  price: '💰',
+  tvl: '🏦',
+  volume: '📊',
+  fees: '💸',
+};
+
 export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   chartType,
   interval,
+  metric,
   onChartTypeChange,
   onIntervalChange,
-  availableIntervals = ['1H', '1D', '1W', '1M', '1Y', 'MAX'],
+  onMetricChange,
+  availableIntervals = ['1H', '1D', '1W', '1M', '1Y'],
   isLoading = false,
 }) => {
   const [hoveredInterval, setHoveredInterval] = React.useState<ChartInterval | null>(null);
   const [previousInterval, setPreviousInterval] = React.useState<ChartInterval | null>(null);
   const [isFromHover, setIsFromHover] = React.useState(false);
+
+  // États pour le dropdown des métriques
+  const [isMetricDropdownOpen, setIsMetricDropdownOpen] = useState(false);
+  const metricDropdownRef = useRef<HTMLDivElement>(null);
 
   // Gérer le changement d'intervalle
   const handleIntervalChange = (newInterval: ChartInterval) => {
@@ -95,6 +118,24 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isFromHover]);
+
+  // Fermer le dropdown des métriques quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (metricDropdownRef.current && !metricDropdownRef.current.contains(event.target as Node)) {
+        setIsMetricDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Gérer la sélection de métrique
+  const handleMetricSelect = (newMetric: ChartMetric) => {
+    onMetricChange(newMetric);
+    setIsMetricDropdownOpen(false);
+  };
 
   return (
     <div className="chart-toolbar">
@@ -171,7 +212,58 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         </div>
       </div>
 
+      <div className="chart-toolbar__section chart-toolbar__section--right">
+        {/* Dropdown des métriques */}
+        <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
+          <button
+            className={`chart-toolbar__metrics-trigger ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger--open' : ''} ${isLoading ? 'chart-toolbar__metrics-trigger--disabled' : ''}`}
+            onClick={() => !isLoading && setIsMetricDropdownOpen(!isMetricDropdownOpen)}
+            disabled={isLoading}
+          >
+            <span className="chart-toolbar__metrics-trigger-icon">
+              {metricIcons[metric]}
+            </span>
+            <span className="chart-toolbar__metrics-trigger-label">
+              {metricLabels[metric]}
+            </span>
+            <svg
+              className={`chart-toolbar__metrics-trigger-arrow ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
+              width="12"
+              height="8"
+              viewBox="0 0 12 8"
+              fill="none"
+            >
+              <path
+                d="M1 1.5L6 6.5L11 1.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
 
+          {isMetricDropdownOpen && (
+            <div className="chart-toolbar__metrics-menu">
+              {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => (
+                <button
+                  key={metricOption}
+                  className={`chart-toolbar__metrics-option ${metric === metricOption ? 'chart-toolbar__metrics-option--active' : ''
+                    }`}
+                  onClick={() => handleMetricSelect(metricOption)}
+                >
+                  <span className="chart-toolbar__metrics-option-icon">
+                    {metricIcons[metricOption]}
+                  </span>
+                  <span className="chart-toolbar__metrics-option-label">
+                    {metricLabels[metricOption]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
