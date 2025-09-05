@@ -4,12 +4,12 @@ import { getOrCreateTransaction } from "./helpers";
 import { CONTRACTS } from "@repo/contracts";
 import { Decimal } from "decimal.js";
 import { formatUnits } from "viem";
-import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices } from "./utils/pricing";
-import { updateProtocolDayData } from "./stats/porotocolDay";
-import { updatePoolStats } from "./stats/pool";
-import { updateTokenStats } from "./stats/token";
+import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices } from "../utils/pricing";
+import { updateProtocolDayData } from "../stats/porotocolDay";
+import { updatePoolStats } from "../stats/pool";
+import { updateTokenStats } from "../stats/token";
 
-ponder.on("WinniePool:Swap", async ({ event, context }) => {
+ponder.on("v3Pool:Swap", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
   if (!factoryEntity) return;
   const factory = { ...factoryEntity }

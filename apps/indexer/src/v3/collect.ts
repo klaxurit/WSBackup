@@ -3,12 +3,12 @@ import { factory as sFactory, pool as sPool, token as sToken, collect as sCollec
 import { CONTRACTS } from "@repo/contracts";
 import Decimal from "decimal.js";
 import { getOrCreateTransaction } from "./helpers";
-import { updateProtocolDayData } from "./stats/porotocolDay";
-import { updatePoolStats } from "./stats/pool";
-import { updateTokenStats } from "./stats/token";
+import { updateProtocolDayData } from "../stats/porotocolDay";
+import { updatePoolStats } from "../stats/pool";
+import { updateTokenStats } from "../stats/token";
 import { formatUnits } from "viem";
 
-ponder.on("WinniePool:Collect", async ({ event, context }) => {
+ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
   if (!factoryEntity) return;
   const factory = { ...factoryEntity }

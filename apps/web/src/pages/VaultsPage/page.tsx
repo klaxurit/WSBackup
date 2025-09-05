@@ -4,9 +4,58 @@ import { VaultsTable } from '../../components/ExploreTables/vaults';
 import { NewBanner } from '../../components/Common/NewBanner';
 import { ButtonTransition, CardTransition, PageContentTransition } from '../../components/Transitions';
 import vaultIcon from '../../assets/coffre_icon.png';
+import { useQuery } from '@tanstack/react-query';
+
+const GET_STICKYVAULTS = `
+  query GetStickyVaults {
+  stickyVaults {
+    items {
+      id
+      poolRef {
+        token0Ref {
+          id
+          name
+          symbol
+          logoUri
+        }
+        token1Ref {
+          name
+          id
+          logoUri
+          symbol
+        }
+      }
+      totalValueLockedUSD
+      collectedFeesUSD
+    }
+  }
+}
+`
 
 const VaultsPage: React.FC = () => {
   const [search, setSearch] = useState('');
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['stickyVaults'],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_STICKYVAULTS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.stickyVaults.items
+    }
+
+  });
 
   return (
     <PageContentTransition className="VaultsPage">
@@ -29,8 +78,14 @@ const VaultsPage: React.FC = () => {
         </div>
 
         <div className="VaultsPage__Table">
-          <VaultsTable searchValue={search} />
+          {isLoading
+            ? <p>Loading...</p>
+            : !!data
+              ? <VaultsTable vaults={data} searchValue={search} />
+              : <p>No Vaults</p>
+          }
         </div>
+
 
         {/* Test button to access a vault directly */}
         <CardTransition index={0} delay={0.1}>

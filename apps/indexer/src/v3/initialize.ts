@@ -1,10 +1,10 @@
 import { ponder } from "ponder:registry";
 import { bundle, pool as sPool, token as sToken } from "ponder:schema";
-import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices, STABLE_TOKEN_POOL } from "./utils/pricing";
-import { updatePoolStats } from "./stats/pool";
-import { updateTokenStats } from "./stats/token";
+import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices, STABLE_TOKEN_POOL } from "../utils/pricing";
+import { updatePoolStats } from "../stats/pool";
+import { updateTokenStats } from "../stats/token";
 
-ponder.on("WinniePool:Initialize", async ({ event, context }) => {
+ponder.on("v3Pool:Initialize", async ({ event, context }) => {
   let poolEntity = await context.db.find(sPool, { id: event.log.address });
   if (!poolEntity) return;
   const pool = { ...poolEntity }

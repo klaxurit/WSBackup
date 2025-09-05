@@ -1,4 +1,5 @@
 import { index, onchainTable, relations } from "ponder";
+import { oneWorld } from "viem/chains";
 
 // ============ ENTITIES ============
 
@@ -178,6 +179,47 @@ export const bundle = onchainTable("bundle", (t) => ({
   beraPriceUSD: t.numeric().notNull().default("0")
 }))
 
+export const stickyVault = onchainTable("stickyVault", (t) => ({
+  id: t.hex().primaryKey(), // Address
+  createdAtTimestamp: t.bigint().notNull(),
+  createdAtBlockNumber: t.bigint().notNull(),
+  pool: t.hex().notNull(),
+  manager: t.hex().notNull(),
+  // ERC20 vault state
+  totalSupply: t.numeric().notNull().default("0"), // Total shares circulating
+  totalValueLockedToken0: t.numeric().notNull().default("0"), // Total t0 in vault
+  totalValueLockedToken1: t.numeric().notNull().default("0"), // total t1 in vault
+  // Pool position (v3) state
+  tickLower: t.hex(),
+  tickUpper: t.hex(),
+  currentTick: t.integer(),
+  liquidity: t.bigint().notNull().default(0n), // liquidity active in pool
+  collectedFeesToken0: t.numeric().notNull().default("0"),
+  collectedFeesToken1: t.numeric().notNull().default("0"),
+  // Stats
+  totalValueLockedBERA: t.numeric().notNull().default("0"),
+  totalValueLockedUSD: t.numeric().notNull().default("0"),
+  collectedFeesUSD: t.numeric().notNull().default("0"),
+  rebalanceCount: t.integer().notNull().default(0),
+  txCount: t.integer().notNull().default(0),
+  apy: t.numeric().notNull().default("0")
+}))
+
+export const vaultUserPosition = onchainTable("vaultUserPosition", (t) => ({
+  id: t.text().primaryKey(), // user-vault
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
+  shares: t.numeric().notNull().default("0"),
+  depositedToken0: t.numeric().notNull().default("0"),
+  depositedToken1: t.numeric().notNull().default("0"),
+  currentValueToken0: t.numeric().notNull().default("0"),
+  currentValueToken1: t.numeric().notNull().default("0"),
+  unrealizedPnL: t.integer()
+}), (table) => ({
+  userIndex: index().on(table.user),
+  vaultIndex: index().on(table.vault),
+}))
+
 // ============ EVENTS ============
 
 export const mint = onchainTable("mint", (t) => ({
@@ -285,6 +327,43 @@ export const flash = onchainTable("flash", (t) => ({
   poolIndex: index().on(table.pool),
   timestampIndex: index().on(table.timestamp),
 }));
+
+export const vaultDeposit = onchainTable("vaultDeposit", (t) => ({
+  id: t.text().primaryKey(),
+  transaction: t.hex().notNull(),
+  timestamp: t.bigint().notNull(),
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
+  vaultUserPosition: t.text().notNull(),
+  amount0: t.bigint().notNull(),
+  amount1: t.bigint().notNull(),
+  shares: t.bigint().notNull(),
+  liquidityMinted: t.bigint().notNull()
+}))
+
+export const vaultWithdrawal = onchainTable("vaultWithdrawal", (t) => ({
+  id: t.text().primaryKey(),
+  transaction: t.hex().notNull(),
+  timestamp: t.bigint().notNull(),
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
+  vaultUserPosition: t.text().notNull(),
+  amount0: t.bigint().notNull(),
+  amount1: t.bigint().notNull(),
+  share: t.bigint().notNull().default(0n),
+  liquidityBurned: t.bigint().notNull()
+}))
+
+export const vaultRebalance = onchainTable("vaultRebalance", (t) => ({
+  id: t.text().primaryKey(),
+  transaction: t.hex().notNull(),
+  timestamp: t.bigint().notNull(),
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
+  amount0: t.bigint().notNull(),
+  amount1: t.bigint().notNull(),
+  share: t.bigint().notNull().default(0n)
+}))
 
 // ============ DONNÉES HISTORIQUES ============
 
@@ -441,6 +520,32 @@ export const tickHourData = onchainTable("tick_hour_data", (t) => ({
   tickIndex: index().on(table.tick),
 }));
 
+// VaultDayData {
+//   id: string // vault-day
+//   vault: StickyVault
+//   date: number
+//   tvlUSD: number
+//   volumeUSD: number
+//   feesUSD: number
+//   apy: number
+//   priceRange: { lower: number, upper: number }
+//   utilizationRate: number // % liquidity in range
+// }
+
+// UserVaultData {
+//   id: string // user-vault
+//   user: string
+//   vault: StickyVault
+//   totalDeposited0: bigint
+//   totalDeposited1: bigint
+//   totalWithdrawn0: bigint
+//   totalWithdrawn1: bigint
+//   currentShares: bigint
+//   realizedPnL: number
+//   unrealizedPnL: number
+//   firstDepositTimestamp: number
+// }
+
 // ============ RELATIONS ============
 
 export const poolRelations = relations(pool, ({ one, many }) => ({
@@ -577,6 +682,76 @@ export const collectTxRelations = relations(collect, ({ one }) => ({
 export const flashTxRelations = relations(flash, ({ one }) => ({
   transaction: one(transaction, {
     fields: [flash.transaction],
+    references: [transaction.id]
+  })
+}))
+
+export const stickyVaultRelations = relations(stickyVault, ({ one, many }) => ({
+  // token0Ref: one(token, {
+  //   fields: [stickyVault.token0],
+  //   references: [token.id]
+  // }),
+  // token1Ref: one(token, {
+  //   fields: [stickyVault.token1],
+  //   references: [token.id]
+  // }),
+  poolRef: one(pool, {
+    fields: [stickyVault.pool],
+    references: [pool.id]
+  }),
+  deposits: many(vaultDeposit),
+  withdrawals: many(vaultWithdrawal),
+  rebalances: many(vaultRebalance),
+  positions: many(vaultUserPosition)
+}))
+export const positionVaultRelations = relations(vaultUserPosition, ({ one }) => ({
+  stickyVault: one(stickyVault, {
+    fields: [vaultUserPosition.vault],
+    references: [stickyVault.id]
+  })
+}))
+
+export const vaultDepositVaultRelations = relations(vaultDeposit, ({ one }) => ({
+  stickyVault: one(stickyVault, {
+    fields: [vaultDeposit.vault],
+    references: [stickyVault.id]
+  })
+}))
+export const vaultWithdrawalVaultRelations = relations(vaultWithdrawal, ({ one }) => ({
+  stickyVault: one(stickyVault, {
+    fields: [vaultWithdrawal.vault],
+    references: [stickyVault.id]
+  })
+}))
+export const vaultRebalanceVaultRelations = relations(vaultRebalance, ({ one }) => ({
+  stickyVault: one(stickyVault, {
+    fields: [vaultRebalance.vault],
+    references: [stickyVault.id]
+  })
+}))
+export const vaultDepositTxRelations = relations(vaultDeposit, ({ one }) => ({
+  transaction: one(transaction, {
+    fields: [vaultDeposit.transaction],
+    references: [transaction.id]
+  }),
+  userPosition: one(vaultUserPosition, {
+    fields: [vaultDeposit.vaultUserPosition],
+    references: [vaultUserPosition.id]
+  })
+}))
+export const vaultWithdrawalTxRelations = relations(vaultWithdrawal, ({ one }) => ({
+  transaction: one(transaction, {
+    fields: [vaultWithdrawal.transaction],
+    references: [transaction.id]
+  }),
+  userPosition: one(vaultUserPosition, {
+    fields: [vaultWithdrawal.vaultUserPosition],
+    references: [vaultUserPosition.id]
+  })
+}))
+export const vaultRebalanceTxRelations = relations(vaultRebalance, ({ one }) => ({
+  transaction: one(transaction, {
+    fields: [vaultRebalance.transaction],
     references: [transaction.id]
   })
 }))
