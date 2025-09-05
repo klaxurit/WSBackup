@@ -28,7 +28,7 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
 
   if (!tokenEntity) {
     try {
-      const [symbol, name, decimals, totalSupply, logoUri] = await Promise.all([
+      const [symbol, name, decimals, totalSupply] = await Promise.all([
         context.client.readContract({
           address: tokenAddress,
           abi: [{ name: "symbol", type: "function", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" }],
@@ -49,15 +49,17 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
           abi: [{ name: "totalSupply", type: "function", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" }],
           functionName: "totalSupply",
         }),
-        (async () => {
-          const response = await fetch(`${process.env.BACKEND_API_URL || "http://localhost:3000"}/token/${tokenAddress}`)
-          if (!response.ok) return null
-
-          const data: any = await response.json()
-
-          return data?.logoUri || null
-        })()
       ]);
+
+      let logoUri: string | null = null
+      try {
+        const response = await fetch(`${process.env.BACKEND_API_URL || "http://localhost:3000"}/token/${tokenAddress}`)
+        if (!response.ok) throw new Error(`Cannot fetch ${symbol} logoUri`)
+        const data: any = await response.json()
+        logoUri = data?.logoUri || null
+      } catch (err: any) {
+        console.warn("Error logoUri fetch: ", err?.message)
+      }
 
 
       tokenEntity = await context.db.insert(token).values({
