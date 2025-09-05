@@ -9,8 +9,8 @@ interface TransactionsTableProps {
 }
 
 const GET_TRANSACTIONS = `
-  query GetTransactions($limit: Int = 20) {
-    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+  query GetTransactions {
+    transactions(orderBy: "timestamp", orderDirection: "desc") {
       totalCount
       pageInfo {
         endCursor
@@ -43,11 +43,23 @@ const GET_TRANSACTIONS = `
                 symbol
                 id
                 logoUri
+                decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
               token1Ref {
                 symbol
                 id
                 logoUri
+                decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
             }
           }
@@ -62,79 +74,97 @@ const GET_TRANSACTIONS = `
 
 export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20;
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', currentPage],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_TRANSACTIONS }),
+        body: JSON.stringify({
+          query: GET_TRANSACTIONS
+        }),
       });
-      if (!resp.ok) return []
+
+      if (!resp.ok) {
+        return { pageInfo: {}, items: [] }
+      }
 
       const data = await resp.json()
+
+      if (data.errors) {
+        console.error('❌ TransactionsTable - Erreurs GraphQL:', data.errors);
+      }
 
       return data.data.transactions
     },
     select: (data) => {
-      // console.log("Données brutes des swaps:", data)
-      return {
-        pagination: {
-          ...data.pageInfo,
-          onPageChange: setCurrentPage
-        },
-        txs: data.items.map((s: any) => {
-          // Debug: afficher la structure complète d'un swap
-          // console.log("Structure d'un swap:", s);
-
-          // Récupérer les informations des tokens depuis la base de données
-          // const getTokenInfo = (address: string) => {
-          //   const token = tokensMap.get(address.toLowerCase());
-          //   return token || {
-          //     symbol: 'Unknown',
-          //     name: 'Unknown Token',
-          //     decimals: 18,
-          //     logoUri: null
-          //   };
-          // };
-
-
-          if (s.swaps.items.length > 0) { // C'est un swap
-            if (BigInt(s.swaps.items[0].amount0) > 0n) {
-              // A -> B
-              return {
-                ...s,
-                ...s.swaps.items[0],
-                tokenIn: s.swaps.items[0].pool.token0Ref,
-                tokenOut: s.swaps.items[0].pool.token1Ref,
-                amountIn: BigInt(s.swaps.items[0].amount0),
-                amountOut: BigInt(s.swaps.items[0].amount1),
-              }
-            } else {
-              // B -> A
-              return {
-                ...s,
-                ...s.swaps.items[0],
-                tokenIn: s.swaps.items[0].pool.token1Ref,
-                tokenOut: s.swaps.items[0].pool.token0Ref,
-                amountIn: BigInt(s.swaps.items[0].amount1),
-                amountOut: BigInt(s.swaps.items[0].amount0),
-              }
+      const allTxs = data.items.map((s: any) => {
+        if (s.swaps?.items?.length > 0) { // C'est un swap
+          if (BigInt(s.swaps.items[0].amount0) > 0n) {
+            // A -> B
+            return {
+              ...s,
+              ...s.swaps.items[0],
+              tokenIn: {
+                ...s.swaps.items[0].pool.token0Ref,
+                priceUSD: s.swaps.items[0].pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+              },
+              tokenOut: {
+                ...s.swaps.items[0].pool.token1Ref,
+                priceUSD: s.swaps.items[0].pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+              },
+              amountIn: BigInt(s.swaps.items[0].amount0),
+              amountOut: BigInt(s.swaps.items[0].amount1),
+            }
+          } else {
+            // B -> A
+            return {
+              ...s,
+              ...s.swaps.items[0],
+              tokenIn: {
+                ...s.swaps.items[0].pool.token1Ref,
+                priceUSD: s.swaps.items[0].pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+              },
+              tokenOut: {
+                ...s.swaps.items[0].pool.token0Ref,
+                priceUSD: s.swaps.items[0].pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+              },
+              amountIn: BigInt(s.swaps.items[0].amount1),
+              amountOut: BigInt(s.swaps.items[0].amount0),
             }
           }
+        }
 
-          return null
-        })
+        return null
+      }).filter(Boolean);
+
+      // Pagination côté client
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedTxs = allTxs.slice(startIndex, endIndex);
+
+      return {
+        pagination: {
+          currentPage,
+          totalPages: Math.ceil(allTxs.length / itemsPerPage),
+          itemsPerPage,
+          totalItems: allTxs.length,
+          hasNextPage: currentPage < Math.ceil(allTxs.length / itemsPerPage),
+          hasPreviousPage: currentPage > 1,
+          onPageChange: setCurrentPage
+        },
+        txs: paginatedTxs
       }
     }
   });
 
   useEffect(() => {
     refetch()
-  }, [currentPage, searchValue])
+  }, [currentPage, searchValue, refetch])
 
   const txColumns: TableColumn[] = [
     {
@@ -169,11 +199,11 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
 
         return (
           <a
-            href={`https://berascan.com/tx/${row.id}`}
+            href={`https://berascan.com/tx/${row.id || ''}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Address"
-            title={`https://berascan.com/tx/${row.id}`}
+            title={`https://berascan.com/tx/${row.id || ''}`}
           >
             {text}
           </a>
@@ -201,13 +231,31 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        const amount = (parseFloat(row.amountUSD))
-        if (amount < 0.01) return "<0.01$"
+        // Calculer la valeur USD du token envoyé (tokenIn)
+        const tokenInAmount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18));
+        const tokenInPrice = parseFloat(row.tokenIn.priceUSD || '0');
+        const tokenInValueUSD = tokenInAmount * tokenInPrice;
+
+        // Si le prix n'est pas disponible, essayer avec le token reçu
+        if (tokenInPrice === 0) {
+          const tokenOutAmount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18));
+          const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
+          const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
+
+          if (tokenOutValueUSD < 0.01) return "<0.01$";
+          return (
+            <span>
+              ${tokenOutValueUSD.toFixed(2)}
+            </span>
+          );
+        }
+
+        if (tokenInValueUSD < 0.01) return "<0.01$";
         return (
           <span>
-            ${amount.toFixed(2)}
+            ${tokenInValueUSD.toFixed(2)}
           </span>
-        )
+        );
       },
     },
     {

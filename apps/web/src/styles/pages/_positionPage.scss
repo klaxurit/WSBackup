@@ -9,6 +9,12 @@
   gap: 32px;
   min-height: 80vh;
 
+  &__FilterButtons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__ContentWrapper {
     display: flex;
     flex-direction: row;
@@ -207,7 +213,7 @@
     border-radius: 12px;
     padding: 16px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-    margin-bottom: 0;
+    margin-bottom: 8pxncore ;
     color: #e0e0e0;
     display: flex;
     flex-direction: column;

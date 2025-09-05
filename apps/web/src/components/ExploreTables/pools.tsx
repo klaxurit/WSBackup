@@ -4,7 +4,7 @@ import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
 import { Link } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 
 interface PoolsTableProps {
@@ -54,15 +54,20 @@ const GET_POOL_STATS = `
   }`
 
 export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['poolStats'],
+    queryKey: ['poolStats', currentPage, searchValue],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_POOL_STATS }),
+        body: JSON.stringify({
+          query: GET_POOL_STATS
+        }),
       });
 
       const data = await response.json();
@@ -77,16 +82,50 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   });
 
   const pools = useMemo(() => {
-    if (!data) return []
-    // Normalement il n'y a plus besoin de ce useMemo, il faut passer toutes les params de paginations 
-    // et de searchValue dans la requête au dessus et il retournera seulement les resultats paginé
-    if (!searchValue) return data.items
-    return data.items.filter((pool: any) =>
-      (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
-    );
-  }, [searchValue, data]);
+    if (!data?.items) return [];
+
+    // Filtrage par recherche
+    let filteredPools = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredPools = data.items.filter((pool: any) =>
+        (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+      );
+    }
+
+    // Pagination côté client
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    return filteredPools.slice(startIndex, endIndex);
+  }, [data, searchValue, currentPage, itemsPerPage]);
+
+  const pagination = useMemo(() => {
+    if (!data) return undefined;
+
+    // Filtrage pour calculer le total
+    let filteredPools = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredPools = data.items.filter((pool: any) =>
+        (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+      );
+    }
+
+    const totalPages = Math.ceil(filteredPools.length / itemsPerPage);
+
+    return {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems: filteredPools.length,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+      onPageChange: setCurrentPage
+    };
+  }, [data, searchValue, currentPage, itemsPerPage]);
 
   const columns: TableColumn[] = [
     {
@@ -96,7 +135,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => (
         <span className="PoolsTable__IndexCell">
           <Link
-            to={`/pool/${row.id}`}
+            to={`/pool/${row.id || ''}`}
             className="PoolsTable__IndexLink"
           >
             <span className="Table__Address">
@@ -104,11 +143,11 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
             </span>
           </Link>
           <a
-            href={`https://berascan.com/address/${row.id}`}
+            href={`https://berascan.com/address/${row.id || ''}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Icon"
-            title={row.id}
+            title={row.id || ''}
           >
             <ExplorerIcon />
           </a>
@@ -127,8 +166,9 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
             <TokenPairLogos
               token0={{ address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
               token1={{ address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
-              borderWidth={3}
-              separatorWidth={2.5}
+              borderWidth={2}
+              separatorWidth={1.5}
+              size={28}
             />
           </span>
           <span className="PoolsTable__PoolName">{row.pool}</span>
@@ -172,12 +212,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       className: 'PoolsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
-        return row.poolDayData.items[0]?.apr || "0";
+        return row.poolDayData?.items?.[0]?.apr || "0";
       },
       render: (row) => {
         return (
           <span className="PoolsTable__AprCell">
-            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].apr) > 0
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].apr) > 0
               ? `${row.poolDayData.items[0].apr}%`
               : "-"}
           </span>
@@ -198,12 +238,12 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       className: 'PoolsTable__Vol1dTd',
       sortable: true,
       sortValue: (row) => {
-        return row.poolDayData.items[0]?.volumeUSD1D || 0;
+        return row.poolDayData?.items?.[0]?.volumeUSD1D || 0;
       },
       render: (row) => {
         return (
           <span className="PoolsTable__Vol1dCell">
-            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD1D) > 0
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].volumeUSD1D) > 0
               ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD1D))}`
               : "-"}
           </span>
@@ -221,7 +261,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       render: (row) => {
         return (
           <span className="PoolsTable__Vol30dCell">
-            {row.poolDayData.items.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].volumeUSD30D) > 0
               ? `$${formatNumber(parseFloat(row.poolDayData.items[0].volumeUSD30D))}`
               : "-"}
           </span>
@@ -240,6 +280,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       scrollClassName="Table__Scroll"
       defaultSortKey="tvl"
       defaultSortDirection="desc"
+      pagination={pagination}
     />
   )
 }

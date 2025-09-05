@@ -233,12 +233,12 @@
   top: 110%;
   right: 0;
   min-width: 240px;
-  background: #232323;
+  background: #180E00;
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
   z-index: 100;
   padding: 14px;
-  border: 1.5px solid #393939;
+  border: 1px solid $white-008;
 }
 
 .Navbar__CopyButton {
@@ -295,7 +295,7 @@
 
 .Navbar__DisconnectButton {
   width: 100%;
-  background: #282828;
+  background: $white-008;
   color: #fff;
   border: none;
   border-radius: 8px;

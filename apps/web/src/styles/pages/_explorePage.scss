@@ -16,6 +16,12 @@
     gap: 32px;
   }
 
+  &__Tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   &__Search {
     position: relative;
     min-width: 40px;

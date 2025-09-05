@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { VaultsTable } from '../../components/ExploreTables/vaults';
 import { NewBanner } from '../../components/Common/NewBanner';
+import { ButtonTransition, CardTransition, PageContentTransition } from '../../components/Transitions';
 import vaultIcon from '../../assets/coffre_icon.png';
 import { useQuery } from '@tanstack/react-query';
 
@@ -57,7 +58,7 @@ const VaultsPage: React.FC = () => {
   });
 
   return (
-    <div className="VaultsPage">
+    <PageContentTransition className="VaultsPage">
       <div className="VaultsPage__Header">
         <NewBanner
           image={vaultIcon}
@@ -84,8 +85,25 @@ const VaultsPage: React.FC = () => {
               : <p>No Vaults</p>
           }
         </div>
+
+
+        {/* Test button to access a vault directly */}
+        <CardTransition index={0} delay={0.1}>
+          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <p style={{ color: '#aaa', marginBottom: '1rem' }}>
+              Test: Access a vault directly
+            </p>
+            <ButtonTransition
+              variant="primary"
+              size="medium"
+              onClick={() => window.location.href = '/vaults/0x1234567890123456789012345678901234567890'}
+            >
+              View WBERA/HONEY Vault
+            </ButtonTransition>
+          </div>
+        </CardTransition>
       </div>
-    </div>
+    </PageContentTransition>
   );
 };
 
