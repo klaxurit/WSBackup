@@ -17,7 +17,7 @@ const getStaleTimeForInterval = (interval: ChartInterval): number => {
     case '1D': return 10 * 60 * 1000;     // 10 minutes  
     case '1W': return 30 * 60 * 1000;     // 30 minutes
     case '1M': return 60 * 60 * 1000;     // 1 heure
-    case '1Y': return 2 * 60 * 60 * 1000; // 2 heures
+    case '4H': return 5 * 60 * 1000; // 5 minutes
     default: return 10 * 60 * 1000;
   }
 };
@@ -28,7 +28,7 @@ const getRefetchIntervalForInterval = (interval: ChartInterval): number | false 
     case '1D': return 5 * 60 * 1000;  // Refresh toutes les 5 minutes
     case '1W': return 15 * 60 * 1000; // Refresh toutes les 15 minutes
     case '1M':
-    case '1Y': return false; // Pas de refresh auto pour les longues périodes
+    case '4H': return 2 * 60 * 1000; // Refresh toutes les 2 minutes
     default: return false;
   }
 };

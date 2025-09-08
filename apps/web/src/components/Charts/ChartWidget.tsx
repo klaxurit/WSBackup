@@ -316,6 +316,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
   const handleMetricChange = (newMetric: ChartMetric) => {
     setLocalMetric(newMetric);
+    // Si on change vers une métrique autre que 'price' et que le type est 'candlestick',
+    // on force le passage à 'area'
+    if (newMetric !== 'price' && localChartType === 'candlestick') {
+      setLocalChartType('area');
+      onChartTypeChange?.('area');
+    }
     onMetricChange?.(newMetric);
   };
 

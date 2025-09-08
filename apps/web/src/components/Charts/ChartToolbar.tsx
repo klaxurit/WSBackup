@@ -77,7 +77,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   onChartTypeChange,
   onIntervalChange,
   onMetricChange,
-  availableIntervals = ['1H', '1D', '1W', '1M', '1Y'],
+  availableIntervals = ['1H', '4H', '1D', '1W', '1M'],
   isLoading = false,
 }) => {
   const [hoveredInterval, setHoveredInterval] = React.useState<ChartInterval | null>(null);
@@ -145,15 +145,16 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           {(['area', 'line', 'candlestick'] as ChartType[]).map((type) => {
             const Icon = chartTypeIcons[type];
             const isActive = chartType === type;
+            const isDisabled = type === 'candlestick' && metric !== 'price';
 
             return (
               <button
                 key={type}
                 className={`chart-toolbar__button chart-toolbar__chart-type ${isActive ? 'chart-toolbar__button--active' : ''
-                  }`}
-                onClick={() => onChartTypeChange(type)}
-                title={chartTypeLabels[type]}
-                disabled={isLoading}
+                  } ${isDisabled ? 'chart-toolbar__button--disabled' : ''}`}
+                onClick={() => !isDisabled && onChartTypeChange(type)}
+                title={isDisabled ? 'Candlestick only available for Price metric' : chartTypeLabels[type]}
+                disabled={isLoading || isDisabled}
               >
                 <Icon />
                 <span className="chart-toolbar__button-label">

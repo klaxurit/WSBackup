@@ -263,7 +263,7 @@ function getIntervalSeconds(interval: ChartInterval): number {
     case '1D': return 86400;
     case '1W': return 604800;
     case '1M': return 2629746;
-    case '1Y': return 86400; // 1 jour pour 1Y
+    case '4H': return 14400; // 4 heures
     default: return 3600;
   }
 }

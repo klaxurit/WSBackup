@@ -138,6 +138,21 @@ $hover-bg: #241500;
       color: $beryl-pure;
     }
 
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #0F0A00;
+      border-color: #374151;
+      color: #6B7280;
+
+      &:hover {
+        transform: none;
+        border-color: #374151;
+        background: #0F0A00;
+        color: #6B7280;
+      }
+    }
+
     &-label {
       font-size: 12px;
       font-weight: 600;
