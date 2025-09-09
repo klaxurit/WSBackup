@@ -56,6 +56,17 @@ ponder.on("v3PositionManager:DecreaseLiquidity", async ({ event, context }) => {
   position.withdrawnToken0 = new Decimal(position.withdrawnToken0).plus(amount0).toString()
   position.withdrawnToken1 = new Decimal(position.withdrawnToken1).plus(amount1).toString()
 
+  const positionData = await context.client.readContract({
+    address: context.contracts.v3PositionManager.address,
+    abi: context.contracts.v3PositionManager.abi,
+    functionName: "positions",
+    args: [event.args.tokenId],
+  });
+  if (positionData) {
+    position.feeGrowthInside0LastX128 = positionData[8]
+    position.feeGrowthInside1LastX128 = positionData[9]
+  }
+
   await context.db.update(sFactory, { id: CONTRACTS.FACTORY }).set({
     ...Object.fromEntries(Object.entries(factory).filter(([key]) => key !== 'id'))
   })

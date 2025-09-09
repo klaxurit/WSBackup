@@ -118,17 +118,17 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   // CRITICAL: Validate TVL operations to prevent negative values
   const oldTVLT0 = pool.totalValueLockedToken0
   const oldTVLT1 = pool.totalValueLockedToken1
-  
+
   pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).plus(amount0).toString()
   pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).plus(amount1).toString()
-  
+
   // Prevent negative TVL from bad swap calculations
   if (new Decimal(pool.totalValueLockedToken0).lt(0)) {
     console.error(`🚨 NEGATIVE TVL0 in swap: ${pool.id} - ${oldTVLT0} + ${amount0} = ${pool.totalValueLockedToken0}`)
     pool.totalValueLockedToken0 = "0"
   }
   if (new Decimal(pool.totalValueLockedToken1).lt(0)) {
-    console.error(`🚨 NEGATIVE TVL1 in swap: ${pool.id} - ${oldTVLT1} + ${amount1} = ${pool.totalValueLockedToken1}`)  
+    console.error(`🚨 NEGATIVE TVL1 in swap: ${pool.id} - ${oldTVLT1} + ${amount1} = ${pool.totalValueLockedToken1}`)
     pool.totalValueLockedToken1 = "0"
   }
   if (debug) {
@@ -173,6 +173,30 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   const poolTVLt1Bera = new Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA)
   pool.totalValueLockedBERA = poolTVLt0Bera.plus(poolTVLt1Bera).toString()
   pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
+
+  // Update feeGrowthGlobal
+  const poolFeesGrowth = await context.client.multicall({
+    contracts: [
+      {
+        address: pool.id,
+        abi: context.contracts.v3Pool.abi,
+        functionName: "feeGrowthGlobal0X128"
+      },
+      {
+        address: pool.id,
+        abi: context.contracts.v3Pool.abi,
+        functionName: "feeGrowthGlobal1X128"
+      }
+    ]
+  })
+  if (poolFeesGrowth) {
+    if (poolFeesGrowth[0].status === "success") {
+      pool.feeGrowthGlobal0X128 = poolFeesGrowth[0].result
+    }
+    if (poolFeesGrowth[1].status === "success") {
+      pool.feeGrowthGlobal1X128 = poolFeesGrowth[1].result
+    }
+  }
 
   if (debug) {
     console.log(`poolTVLt0Bera => tvlT0 * t0.derived => ${pool.totalValueLockedToken0} * ${token0.derivedBERA} = ${poolTVLt0Bera}`)

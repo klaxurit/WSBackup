@@ -15,45 +15,63 @@ import { ClaimInput } from '../../../components/Inputs/ClaimInput';
 import { useQuery } from '@tanstack/react-query';
 
 const GET_POSITION = `
-query GetTransactions($id: String!) {
+query GetPosition($id: String!) {
   position(id: $id) {
     id
-      tokenId
-      withdrawnToken1
-      withdrawnToken0
-      depositedToken0
-      depositedToken1
+    tokenId
+    owner
+    liquidity
+    tickLower
+    tickUpper
+    depositedToken0
+    depositedToken1
+    withdrawnToken0
+    withdrawnToken1
+    collectedFeesToken0
+    collectedFeesToken1
+    feeGrowthInside0LastX128
+    feeGrowthInside1LastX128
+    poolRef {
+      id
+      feeTier
       liquidity
-      poolRef {
-        token0Ref {
-          logoUri
-          id
-          name
-          symbol
-          tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
-            items {
-              priceUSD
-            }
-          }
-        }
-        token1Ref {
-          id
-          logoUri
-          name
-          symbol
-          tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
-            items {
-              priceUSD
-            }
-          }
-        }
-        feeTier
-        poolDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+      sqrtPrice
+      tick
+      token0Price
+      token1Price
+      totalValueLockedUSD
+      feeGrowthGlobal0X128
+      feeGrowthGlobal1X128
+      token0Ref {
+        id
+        name
+        symbol
+        decimals
+        logoUri
+        tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
           items {
-            apr
+            priceUSD
           }
         }
       }
+      token1Ref {
+        id
+        name
+        symbol
+        decimals
+        logoUri
+        tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            priceUSD
+          }
+        }
+      }
+      poolDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+        items {
+          apr
+        }
+      }
+    }
   }
 }
 `
@@ -77,15 +95,61 @@ const PoolViewPage: React.FC = () => {
       if (!response.ok) return null
       const data = await response.json();
 
-      return data.data.positions.items
+      return data.data.position
     },
     enabled: !!tokenId
   })
 
-  console.log("LALA", posData)
 
-  const pool = posData?.pool
-  const position = posData?.position
+  const pool = posData?.poolRef
+  const position = posData
+
+  // Transform tokens to match expected interface
+  const token0 = pool?.token0Ref ? {
+    TokenPrice: [],
+    address: pool.token0Ref.id,
+    coingeckoId: "",
+    createdAt: "",
+    decimals: pool.token0Ref.decimals,
+    description: "",
+    discoveredAt: "",
+    isStableCoin: false,
+    isVerifiedManually: false,
+    lastActivityAt: "",
+    lastEnrichmentAt: "",
+    logoUri: pool.token0Ref.logoUri || "",
+    metadata: {},
+    name: pool.token0Ref.name,
+    status: "",
+    symbol: pool.token0Ref.symbol,
+    totalSupply: "0",
+    twitter: "",
+    updatedAt: "",
+    website: ""
+  } : null
+
+  const token1 = pool?.token1Ref ? {
+    TokenPrice: [],
+    address: pool.token1Ref.id,
+    coingeckoId: "",
+    createdAt: "",
+    decimals: pool.token1Ref.decimals,
+    description: "",
+    discoveredAt: "",
+    isStableCoin: false,
+    isVerifiedManually: false,
+    lastActivityAt: "",
+    lastEnrichmentAt: "",
+    logoUri: pool.token1Ref.logoUri || "",
+    metadata: {},
+    name: pool.token1Ref.name,
+    status: "",
+    symbol: pool.token1Ref.symbol,
+    totalSupply: "0",
+    twitter: "",
+    updatedAt: "",
+    website: ""
+  } : null
 
   const pm = usePositionManager(posData, config)
   const { inRange, positionDetails } = pm
@@ -114,14 +178,14 @@ const PoolViewPage: React.FC = () => {
       return {
         isDisabled: false,
         onClick: () => pm.approveToken0(),
-        text: `Approve ${pool?.token0.symbol}`
+        text: `Approve ${token0?.symbol}`
       }
     }
     if (pm.token1NeedApproval) {
       return {
         isDisabled: false,
         onClick: () => pm.approveToken1(),
-        text: `Approve ${pool?.token1.symbol}`
+        text: `Approve ${token1?.symbol}`
       }
     }
     if (pm.canAddLiquidity) {
@@ -146,7 +210,8 @@ const PoolViewPage: React.FC = () => {
       </div>
     );
   }
-  if (!pool || !position || !positionDetails) {
+
+  if (!pool || !position || !positionDetails || !token0 || !token1) {
     return (
       <div className="PoolView__Container">
         <div className="PoolView__Card">
@@ -155,17 +220,18 @@ const PoolViewPage: React.FC = () => {
       </div>
     );
   }
+  console.log(positionDetails)
   return (
     <div className="PoolView__Container">
       <div className="PoolView__Card">
         <PoolHeader
-          address={`#${position.tokenId} ${pool.address}`}
-          usdValue={"$2222"}
+          address={`#${position.tokenId} ${pool.id}`}
+          usdValue={positionDetails?.totalTokens ? `$${positionDetails.totalTokens.toFixed(2)}` : "Loading..."}
         />
 
         <PoolInfo
-          token0={pool.token0}
-          token1={pool.token1}
+          token0={token0!}
+          token1={token1!}
           inRange={inRange}
         />
 
@@ -180,19 +246,19 @@ const PoolViewPage: React.FC = () => {
         />
 
         <PoolStats
-          positionValue={"n/a"}
+          positionValue={positionDetails?.currentPrice}
           totalPoolTokens={positionDetails?.totalTokens}
           depositedToken0={positionDetails?.token0Amount}
           depositedToken1={positionDetails?.token1Amount}
           share={positionDetails?.liquidityShare}
-          token0={pool?.token0}
-          token1={pool?.token1}
+          token0={token0}
+          token1={token1}
         />
 
         <PositionFees
           pm={pm}
-          token0={pool.token0}
-          token1={pool.token1}
+          token0={token0!}
+          token1={token1!}
         />
 
       </div>
@@ -211,13 +277,13 @@ const PoolViewPage: React.FC = () => {
             <>
               <div className="PoolView__Form">
                 <LiquidityInput
-                  selectedToken={pool.token0}
+                  selectedToken={token0!}
                   onAmountChange={(amount: bigint) => setConfig({ ...config, addLiquidity: { t0Amount: amount, t1Amount: config.addLiquidity?.t1Amount || 0n } })}
                   value={config?.addLiquidity?.t0Amount || 0n}
                   isOverBalance={false}
                 />
                 <LiquidityInput
-                  selectedToken={pool.token1}
+                  selectedToken={token1!}
                   onAmountChange={(amount: bigint) => setConfig({ ...config, addLiquidity: { t1Amount: amount, t0Amount: config.addLiquidity?.t0Amount || 0n } })}
                   value={config?.addLiquidity?.t1Amount || 0n}
                   isOverBalance={false}

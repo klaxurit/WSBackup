@@ -24,7 +24,7 @@ const PoolStats: React.FC<PoolStatsProps> = ({
   <div className="PoolView__Stats">
     <div className="PoolView__StatRow">
       <div className="PoolView__StatLabel">Current position value</div>
-      <div className="PoolView__StatValue">{positionValue}</div>
+      <div className="PoolView__StatValue">${positionValue}</div>
     </div>
 
     <div className="PoolView__StatRow">
@@ -70,7 +70,7 @@ const PoolStats: React.FC<PoolStatsProps> = ({
 
     <div className="PoolView__StatRow">
       <span className="PoolView__StatLabel">Share of pool</span>
-      <span className="PoolView__StatValue">{share}</span>
+      <span className="PoolView__StatValue">{share}%</span>
     </div>
   </div>
 );
