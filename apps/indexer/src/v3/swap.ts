@@ -115,8 +115,22 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
     console.log(`TVLT0 + amount0 = ${pool.totalValueLockedToken0} + ${amount0}`)
     console.log(`TVLT1 + amount1 = ${pool.totalValueLockedToken1} + ${amount1}`)
   }
+  // CRITICAL: Validate TVL operations to prevent negative values
+  const oldTVLT0 = pool.totalValueLockedToken0
+  const oldTVLT1 = pool.totalValueLockedToken1
+  
   pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).plus(amount0).toString()
   pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).plus(amount1).toString()
+  
+  // Prevent negative TVL from bad swap calculations
+  if (new Decimal(pool.totalValueLockedToken0).lt(0)) {
+    console.error(`🚨 NEGATIVE TVL0 in swap: ${pool.id} - ${oldTVLT0} + ${amount0} = ${pool.totalValueLockedToken0}`)
+    pool.totalValueLockedToken0 = "0"
+  }
+  if (new Decimal(pool.totalValueLockedToken1).lt(0)) {
+    console.error(`🚨 NEGATIVE TVL1 in swap: ${pool.id} - ${oldTVLT1} + ${amount1} = ${pool.totalValueLockedToken1}`)  
+    pool.totalValueLockedToken1 = "0"
+  }
   if (debug) {
     console.log(`TVLT0 = ${pool.totalValueLockedToken0}`)
     console.log(`TVLT1 = ${pool.totalValueLockedToken1}`)

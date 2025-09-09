@@ -53,8 +53,8 @@ ponder.on("v3PositionManager:IncreaseLiquidity", async ({ event, context }) => {
   factory.totalValueLockedUSD = Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
   position.liquidity += event.args.liquidity
-  position.depositedToken0 = new Decimal(position.withdrawnToken0).plus(amount0).toString()
-  position.depositedToken1 = new Decimal(position.withdrawnToken1).plus(amount1).toString()
+  position.depositedToken0 = new Decimal(position.depositedToken0).plus(amount0).toString()
+  position.depositedToken1 = new Decimal(position.depositedToken1).plus(amount1).toString()
 
   await context.db.update(sFactory, { id: CONTRACTS.FACTORY }).set({
     ...Object.fromEntries(Object.entries(factory).filter(([key]) => key !== 'id'))

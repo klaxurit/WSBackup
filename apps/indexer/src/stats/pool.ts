@@ -157,37 +157,100 @@ async function updateHourPoolData(
 
 async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, context: Context) {
   const dayId = Math.floor(Number(timestamp) / 86400)
-  let isWeek = true
+  const hourId = Math.floor(Number(timestamp) / 3600)
   let fromPool: typeof poolDayData.$inferSelect | typeof poolHourData.$inferSelect | null = null
+  let actualDaysBack = 0
+  let actualHoursBack = 0
 
   if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") {
     return "0.00"
   }
 
-  fromPool = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - 7}` }) // take one week data
-  if (!fromPool) {
-    // if we havent one week data take 1Day
-    const hourId = Math.floor(Number(timestamp) / 3600)
-    fromPool = await context.db.find(poolHourData, { id: `${pool.id}-${hourId - 24}` })
-    // if no data too, fuck
-    if (!fromPool) {
-      return "0.00"
+  // Try to find the most recent week data (search backwards up to 14 days)
+  for (let i = 7; i <= 14 && !fromPool; i++) {
+    fromPool = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - i}` })
+    if (fromPool) {
+      actualDaysBack = i
+      break
     }
+  }
 
-    isWeek = false
+  // If no week data found, try hour data (search backwards up to 7 days worth of hours)
+  if (!fromPool) {
+    for (let i = 24; i <= 24 * 7 && !fromPool; i += 24) {
+      fromPool = await context.db.find(poolHourData, { id: `${pool.id}-${hourId - i}` })
+      if (fromPool) {
+        actualHoursBack = i
+        break
+      }
+    }
+  }
+
+  // Still no data found, try searching for any available day data for this pool
+  if (!fromPool) {
+    // Search backwards further for any day data (up to 30 days)
+    for (let i = 15; i <= 30 && !fromPool; i++) {
+      fromPool = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - i}` })
+      if (fromPool) {
+        actualDaysBack = i
+        break
+      }
+    }
+  }
+
+  if (!fromPool) {
+    console.warn(`No historical data to calculate APR for pool: ${pool.id}`)
+    return "0.00"
   }
 
   const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD)
-  const apr = periodFees.mul(isWeek ? 52 : 365).div(pool.totalValueLockedUSD).mul(100)
+  if (periodFees.lte(0)) return "0.00"
 
+  // Calculate APR based on actual time period found
+  let annualMultiplier: number
+  if (actualDaysBack > 0) {
+    // Day-based calculation
+    annualMultiplier = 365 / actualDaysBack
+  } else if (actualHoursBack > 0) {
+    // Hour-based calculation  
+    annualMultiplier = (365 * 24) / actualHoursBack
+  } else {
+    // Fallback to weekly calculation
+    annualMultiplier = 52
+  }
+
+  const apr = periodFees.mul(annualMultiplier).div(pool.totalValueLockedUSD).mul(100)
   return apr.toFixed(2)
 }
 
-async function calculateVolumeForPeriod(pool: typeof sPool.$inferSelect, dayPoolId: string, context: Context) {
+async function calculateVolumeForPeriod(pool: typeof sPool.$inferSelect, targetHourPoolId: string, context: Context) {
   if (!pool.volumeUSD || pool.volumeUSD === "0") return "0"
 
-  const fromPool = await context.db.find(poolHourData, { id: dayPoolId })
+  // Extract hour ID from target
+  const targetHourMatch = targetHourPoolId.match(/-([0-9]+)$/)
+  if (!targetHourMatch || !targetHourMatch[1]) return "0"
+
+  const targetHour = parseInt(targetHourMatch[1])
+  const poolId = targetHourPoolId.substring(0, targetHourPoolId.lastIndexOf('-'))
+
+  // Search backwards for the most recent available data near the target hour
+  let fromPool: typeof poolHourData.$inferSelect | null = null
+
+  // Try exact hour first, then search backwards up to 7 days (168 hours)
+  for (let i = 0; i <= 168 && !fromPool; i++) {
+    const searchHour = targetHour - i
+    fromPool = await context.db.find(poolHourData, { id: `${poolId}-${searchHour}` })
+  }
+
+  if (!fromPool) {
+    // Search further backwards for any hour data (up to 30 days)
+    for (let i = 168; i <= 720 && !fromPool; i += 24) {
+      fromPool = await context.db.find(poolHourData, { id: `${poolId}-${targetHour - i}` })
+    }
+  }
+
   if (!fromPool) return "0"
 
-  return new Decimal(pool.volumeUSD).minus(fromPool.volumeUSD).toString()
+  const volumeDiff = new Decimal(pool.volumeUSD).minus(fromPool.volumeUSD)
+  return volumeDiff.gt(0) ? volumeDiff.toString() : "0"
 }

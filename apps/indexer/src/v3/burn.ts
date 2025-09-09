@@ -58,7 +58,6 @@ ponder.on("v3Pool:Burn", async ({ event, context }) => {
   token1.volumeUSD = new Decimal(token1.volumeUSD).plus(amount1USD).toString()
 
   pool.txCount += 1
-  pool.liquidity -= event.args.amount
   pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).minus(amount0).toString()
   pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).minus(amount1).toString()
   pool.totalValueLockedBERA = Decimal(pool.totalValueLockedBERA).minus(totalAmountBera).toString()
@@ -68,15 +67,16 @@ ponder.on("v3Pool:Burn", async ({ event, context }) => {
   pool.volumeUSD = new Decimal(pool.volumeUSD).plus(totalAmountUSD).toString()
   pool.liquidityProviderCount -= 1
 
+  // Only subtract from ACTIVE liquidity if position is in current tick range
+  if (pool.tick !== null && event.args.tickLower <= pool.tick && event.args.tickUpper > pool.tick) {
+    pool.liquidity -= event.args.amount
+  }
+
   // reset aggregates with new amounts
   factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
   factory.totalValueLockedUSD = Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
   factory.totalVolumeBERA = new Decimal(factory.totalVolumeBERA).plus(totalAmountBera).toString()
   factory.totalVolumeUSD = new Decimal(factory.totalVolumeUSD).plus(totalAmountUSD).toString()
-
-  if (pool.tick !== null && event.args.tickLower <= pool.tick && event.args.tickUpper > pool.tick) {
-    pool.liquidity -= event.args.amount
-  }
 
   // Crate Burn event
   await context.db.insert(sBurn).values({
