@@ -8,23 +8,81 @@ import '../../../styles/pages/_positionPage.scss';
 import '../../../styles/pages/_poolViewPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
 import { usePositionManager, type UsePositionManagerDatas } from '../../../hooks/usePositionManager';
-import { usePositions } from '../../../hooks/usePositions';
 import { PositionFees } from '../../../components/PoolView/PositionFees';
 import { Modal } from '../../../components/Common/Modal';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import { ClaimInput } from '../../../components/Inputs/ClaimInput';
+import { useQuery } from '@tanstack/react-query';
+
+const GET_POSITION = `
+query GetTransactions($id: String!) {
+  position(id: $id) {
+    id
+      tokenId
+      withdrawnToken1
+      withdrawnToken0
+      depositedToken0
+      depositedToken1
+      liquidity
+      poolRef {
+        token0Ref {
+          logoUri
+          id
+          name
+          symbol
+          tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+            items {
+              priceUSD
+            }
+          }
+        }
+        token1Ref {
+          id
+          logoUri
+          name
+          symbol
+          tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+            items {
+              priceUSD
+            }
+          }
+        }
+        feeTier
+        poolDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            apr
+          }
+        }
+      }
+  }
+}
+`
 
 const PoolViewPage: React.FC = () => {
   const [config, setConfig] = useState<UsePositionManagerDatas>({})
   const { tokenId } = useParams<{ tokenId: string }>();
-  const { getPosition, isLoading, refetch: refetchPosition } = usePositions()
   const [modalType, setModalType] = useState<null | 'add' | 'remove' | 'success'>(null);
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
+  const { data: posData, isLoading, refetch: refetchPosition } = useQuery({
+    queryKey: ["position", tokenId],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_POSITION, variables: { id: tokenId?.toString() || "0" } }),
+      });
 
-  const posData = useMemo(() => {
-    if (!tokenId) return
-    return getPosition(tokenId)
-  }, [getPosition, tokenId])
+      if (!response.ok) return null
+      const data = await response.json();
+
+      return data.data.positions.items
+    },
+    enabled: !!tokenId
+  })
+
+  console.log("LALA", posData)
 
   const pool = posData?.pool
   const position = posData?.position

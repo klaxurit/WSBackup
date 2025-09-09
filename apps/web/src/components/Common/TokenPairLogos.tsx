@@ -1,9 +1,11 @@
 import React from "react";
 import { FallbackImg } from "../utils/FallbackImg";
 import { getPoolDisplayToken } from "../../utils/tokenMapping";
+import type { Address } from "viem";
 
 interface Token {
-  address: string;
+  id: Address
+  address: Address;
   logoUri?: string | null;
   symbol: string;
 }
@@ -27,7 +29,8 @@ export const TokenPairLogos: React.FC<TokenPairLogosProps> = ({
 }) => {
 
   const getTokenDisplay = (token: Token) => {
-    const displayInfo = getPoolDisplayToken(token.address as any);
+    const address: Address = !token.address && token.id.startsWith("0x") ? token.id : token.address
+    const displayInfo = getPoolDisplayToken(address);
     return {
       logoUri: displayInfo?.logoUri || token.logoUri,
       symbol: displayInfo?.symbol || token.symbol

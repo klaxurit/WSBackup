@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 import '../../styles/pages/_positionPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { usePositionsGraphQL } from '../../hooks/usePositionsGraphQL';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { PageContentTransition, StaggerTransition, HoverScale } from '../../components/Transitions';
+import type { Address } from 'viem';
 
 const GET_TOP_POOLS = `
   query GetTopPools {
@@ -55,6 +55,51 @@ const GET_TOP_POOLS = `
     }
   }
 `;
+const GET_USER_POSITIONS = `
+query GetTransactions($owner: String) {
+  positions(where: {owner: $owner}) {
+    items {
+      id
+      poolRef {
+        token0Ref {
+          logoUri
+          id
+          name
+          symbol
+          tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+            items {
+              priceUSD
+            }
+          }
+        }
+        token1Ref {
+          id
+          logoUri
+          name
+          symbol
+          tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+            items {
+              priceUSD
+            }
+          }
+        }
+        feeTier
+        poolDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            apr
+          }
+        }
+      }
+      tokenId
+      withdrawnToken1
+      withdrawnToken0
+      depositedToken0
+      depositedToken1
+      liquidity
+    }
+  }
+}
+`
 
 interface GraphQLPool {
   id: string;
@@ -100,6 +145,7 @@ interface GraphQLResponse {
 }
 
 interface FormattedPool {
+  id: Address
   address: string;
   token0Address: string;
   token1Address: string;
@@ -116,6 +162,7 @@ const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): Formatte
   const latestDayData = graphqlPool.poolDayData.items[0];
   const aprValue = latestDayData?.apr;
   const transformed = {
+    id: graphqlPool.id as Address,
     address: graphqlPool.id,
     token0Address: graphqlPool.token0Ref.id,
     token1Address: graphqlPool.token1Ref.id,
@@ -133,12 +180,12 @@ const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): Formatte
 
 const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
   // Les montants sont déjà des chaînes décimales depuis Ponder
-  const amount0 = parseFloat(row.position.amount0).toFixed(2)
-  const amount1 = parseFloat(row.position.amount1).toFixed(2)
+  const amount0 = (parseFloat(row.depositedToken0) - parseFloat(row.withdrawnToken0)).toFixed(2)
+  const amount1 = (parseFloat(row.depositedToken1) - parseFloat(row.withdrawnToken1)).toFixed(2)
 
   // Vérifier si les prix sont disponibles
-  const token0Price = row.pool.token0.TokenPrice?.[0]?.price;
-  const token1Price = row.pool.token1.TokenPrice?.[0]?.price;
+  const token0Price = row.poolRef.token0Ref.tokenDayData.items?.[0]?.priceUSD;
+  const token1Price = row.poolRef.token1Ref.tokenDayData.items?.[0]?.priceUSD;
 
   const value0 = token0Price ? (Number(amount0) * token0Price) : 0;
   const value1 = token1Price ? (Number(amount1) * token1Price) : 0;
@@ -149,83 +196,50 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {amount0}
-          {row.pool.token0.logoUri ? (
-            <img src={row.pool.token0.logoUri} alt={row.pool.token0.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          {row.poolRef.token0Ref.logoUri ? (
+            <img src={row.poolRef.token0Ref.logoUri} alt={row.poolRef.token0Ref.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           ) : (
-            <FallbackImg content={row.pool.token0.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
+            <FallbackImg content={row.poolRef.token0Ref.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           )}
         </span>
         <span style={{ opacity: 0.6 }}>·</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {amount1}
-          {row.pool.token1.logoUri ? (
-            <img src={row.pool.token1.logoUri} alt={row.pool.token1.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
+          {row.poolRef.token1Ref.logoUri ? (
+            <img src={row.poolRef.token1Ref.logoUri} alt={row.poolRef.token1Ref.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           ) : (
-            <FallbackImg content={row.pool.token1.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
+            <FallbackImg content={row.poolRef.token1Ref.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           )}
         </span>
       </div>
       <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-        {token0Price && token1Price ? `$${totalValue}` : 'Prix non disponible'}
+        {token0Price && token1Price ? `$${totalValue}` : ''}
       </div>
     </div>
   );
 };
 
 const PoolPage: React.FC = () => {
-  const { isConnected } = useAccount()
-  const { positions, isLoading } = usePositionsGraphQL()
+  const { address, isConnected } = useAccount()
   const [statusFilter, setStatusFilter] = useState<'open' | 'closed'>('open')
+  const { data: positions, isLoading } = useQuery({
+    queryKey: ['positions', address],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_USER_POSITIONS, variables: { owner: address } }),
+      });
 
-  const filteredPositions = useMemo(() => {
-    return positions.filter((p: any) => {
-      return statusFilter === "open"
-        ? p.liquidity !== "0"
-        : p.liquidity === "0"
-    })
-  }, [positions, statusFilter])
+      if (!response.ok) return null
+      const data = await response.json();
 
-  const columns: TableColumn[] = [
-    { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.position.tokenId) },
-    {
-      label: 'Pair',
-      key: 'pair',
-      render: (row) => (
-        <Link to={`/pools/${row.nftTokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
-            <TokenPairLogos
-              token0={row.pool.token0}
-              token1={row.pool.token1}
-              size={28}
-              gap={3}
-              borderWidth={2}
-              separatorWidth={1.5}
-            />
-            {`${row.pool.token0.symbol} / ${row.pool.token1.symbol}`}
-          </span>
-        </Link>
-      ),
+      return data.data.positions.items
     },
-    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.pool.fee}%`) },
-    {
-      label: 'Position size', key: 'size', render: (row) => <PositionSizeCell row={row} />
-    },
-    {
-      label: 'Pool APR', key: 'apr', render: (row) => {
-        const apr = row.pool.apr;
-        return apr && typeof apr === 'number' && apr !== 0
-          ? `${apr.toFixed(2)}%`
-          : "-"
-      }
-    },
-    {
-      label: '', key: 'actions', render: (row) => (
-        <Link to={`/pools/${row.position.tokenId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <button className="PoolPage__ManageBtn">Manage</button>
-        </Link>
-      )
-    },
-  ];
+    enabled: !!address
+  })
   const { data: topPoolsData, isLoading: topPoolsLoading, error: topPoolsError } = useQuery({
     queryKey: ['topPoolsGraphQL'],
     queryFn: async () => {
@@ -237,16 +251,63 @@ const PoolPage: React.FC = () => {
         },
         body: JSON.stringify({ query: GET_TOP_POOLS }),
       });
-
+      if (!response.ok) return null
       const data = await response.json();
-
-      if (data.errors) {
-        throw new Error(data.errors[0].message);
-      }
 
       return data.data as GraphQLResponse;
     },
   });
+
+  const filteredPositions = useMemo(() => {
+    if (!positions) return []
+    return positions.filter((p: any) => {
+      return statusFilter === "open"
+        ? p.liquidity !== "0"
+        : p.liquidity === "0"
+    })
+  }, [positions, statusFilter])
+
+  const columns: TableColumn[] = [
+    { label: 'TokenId', key: 'tokenid', render: (row) => ('#' + row.tokenId) },
+    {
+      label: 'Pair',
+      key: 'pair',
+      render: (row) => (
+        <Link to={`/pools/${row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
+            <TokenPairLogos
+              token0={row.poolRef.token0Ref}
+              token1={row.poolRef.token1Ref}
+              size={28}
+              gap={3}
+              borderWidth={2}
+              separatorWidth={1.5}
+            />
+            {`${row.poolRef.token0Ref.symbol} / ${row.poolRef.token1Ref.symbol}`}
+          </span>
+        </Link>
+      ),
+    },
+    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.poolRef.feeTier / 1000}%`) },
+    {
+      label: 'Position size', key: 'size', render: (row) => <PositionSizeCell row={row} />
+    },
+    {
+      label: 'Pool APR', key: 'apr', render: (row) => {
+        const apr: string = row.poolRef.poolDayData.items[0].apr || "0";
+        return apr !== "0"
+          ? `${apr}%`
+          : "-"
+      }
+    },
+    {
+      label: '', key: 'actions', render: (row) => (
+        <Link to={`/pools/${row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <button className="PoolPage__ManageBtn">Manage</button>
+        </Link>
+      )
+    },
+  ];
 
   // Transformer les données GraphQL en format FormattedPool
   const topPools: FormattedPool[] = useMemo(() => {
@@ -329,12 +390,14 @@ const PoolPage: React.FC = () => {
                       <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <TokenPairLogos
                           token0={{
-                            address: pool.token0Address,
+                            id: pool.id as Address,
+                            address: pool.token0Address as Address,
                             symbol: pool.token0Symbol,
                             logoUri: pool.token0LogoUri
                           }}
                           token1={{
-                            address: pool.token1Address,
+                            id: pool.id as Address,
+                            address: pool.token1Address as Address,
                             symbol: pool.token1Symbol,
                             logoUri: pool.token1LogoUri
                           }}
