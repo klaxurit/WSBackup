@@ -88,6 +88,12 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   const [isMetricDropdownOpen, setIsMetricDropdownOpen] = useState(false);
   const metricDropdownRef = useRef<HTMLDivElement>(null);
 
+  // États pour les dropdowns mobile
+  const [isChartTypeDropdownOpen, setIsChartTypeDropdownOpen] = useState(false);
+  const [isIntervalDropdownOpen, setIsIntervalDropdownOpen] = useState(false);
+  const chartTypeDropdownRef = useRef<HTMLDivElement>(null);
+  const intervalDropdownRef = useRef<HTMLDivElement>(null);
+
   // Gérer le changement d'intervalle
   const handleIntervalChange = (newInterval: ChartInterval) => {
     if (newInterval !== interval) {
@@ -119,11 +125,17 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
     }
   }, [isFromHover]);
 
-  // Fermer le dropdown des métriques quand on clique ailleurs
+  // Fermer les dropdowns quand on clique ailleurs
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (metricDropdownRef.current && !metricDropdownRef.current.contains(event.target as Node)) {
         setIsMetricDropdownOpen(false);
+      }
+      if (chartTypeDropdownRef.current && !chartTypeDropdownRef.current.contains(event.target as Node)) {
+        setIsChartTypeDropdownOpen(false);
+      }
+      if (intervalDropdownRef.current && !intervalDropdownRef.current.contains(event.target as Node)) {
+        setIsIntervalDropdownOpen(false);
       }
     };
 
@@ -137,79 +149,212 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
     setIsMetricDropdownOpen(false);
   };
 
+  // Gérer la sélection de type de chart
+  const handleChartTypeSelect = (newChartType: ChartType) => {
+    onChartTypeChange(newChartType);
+    setIsChartTypeDropdownOpen(false);
+  };
+
+  // Gérer la sélection d'intervalle
+  const handleIntervalSelect = (newInterval: ChartInterval) => {
+    handleIntervalChange(newInterval);
+    setIsIntervalDropdownOpen(false);
+  };
+
   return (
     <div className="chart-toolbar">
-      <div className="chart-toolbar__section chart-toolbar__section--left">
-        {/* Types de charts */}
-        <div className="chart-toolbar__chart-types">
-          {(['area', 'line', 'candlestick'] as ChartType[]).map((type) => {
-            const Icon = chartTypeIcons[type];
-            const isActive = chartType === type;
-            const isDisabled = type === 'candlestick' && metric !== 'price';
+      {/* Version Desktop */}
+      <div className="chart-toolbar__desktop">
+        <div className="chart-toolbar__section chart-toolbar__section--left">
+          {/* Types de charts */}
+          <div className="chart-toolbar__chart-types">
+            {(['area', 'line', 'candlestick'] as ChartType[]).map((type) => {
+              const Icon = chartTypeIcons[type];
+              const isActive = chartType === type;
+              const isDisabled = type === 'candlestick' && metric !== 'price';
 
-            return (
-              <button
-                key={type}
-                className={`chart-toolbar__button chart-toolbar__chart-type ${isActive ? 'chart-toolbar__button--active' : ''
-                  } ${isDisabled ? 'chart-toolbar__button--disabled' : ''}`}
-                onClick={() => !isDisabled && onChartTypeChange(type)}
-                title={isDisabled ? 'Candlestick only available for Price metric' : chartTypeLabels[type]}
-                disabled={isLoading || isDisabled}
-              >
-                <Icon />
-                <span className="chart-toolbar__button-label">
-                  {chartTypeLabels[type]}
-                </span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={type}
+                  className={`chart-toolbar__button chart-toolbar__chart-type ${isActive ? 'chart-toolbar__button--active' : ''
+                    } ${isDisabled ? 'chart-toolbar__button--disabled' : ''}`}
+                  onClick={() => !isDisabled && onChartTypeChange(type)}
+                  title={isDisabled ? 'Candlestick only available for Price metric' : chartTypeLabels[type]}
+                  disabled={isLoading || isDisabled}
+                >
+                  <Icon />
+                  <span className="chart-toolbar__button-label">
+                    {chartTypeLabels[type]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Séparateur */}
+          <div className="chart-toolbar__separator" />
+
+          {/* Intervalles avec design original */}
+          <div className="chart-toolbar__intervals-original">
+            {availableIntervals.map((int) => (
+              <div key={int}>
+                {/* Ourson actif */}
+                {interval === int && (
+                  <img
+                    src={lilBear}
+                    alt="Active"
+                    className={`bear bear--active ${isFromHover ? 'from-hover' : ''}`}
+                  />
+                )}
+
+                {/* Ourson au hover (derrière le bouton) */}
+                {hoveredInterval === int && interval !== int && (
+                  <img
+                    src={lilBear}
+                    alt="Hover"
+                    className="bear bear--hover"
+                  />
+                )}
+
+                {/* Ourson qui disparaît (ancien intervalle) */}
+                {previousInterval === int && interval !== int && (
+                  <img
+                    src={lilBear}
+                    alt="Disappearing"
+                    className="bear bear--disappearing"
+                  />
+                )}
+
+                <button
+                  className={interval === int ? 'active' : ''}
+                  onClick={() => handleIntervalChange(int)}
+                  onMouseEnter={() => handleMouseEnter(int)}
+                  onMouseLeave={handleMouseLeave}
+                  disabled={isLoading}
+                >
+                  {int}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* Séparateur */}
-        <div className="chart-toolbar__separator" />
-
-        {/* Intervalles avec design original */}
-        <div className="chart-toolbar__intervals-original">
-          {availableIntervals.map((int) => (
-            <div key={int}>
-              {/* Ourson actif */}
-              {interval === int && (
-                <img
-                  src={lilBear}
-                  alt="Active"
-                  className={`bear bear--active ${isFromHover ? 'from-hover' : ''}`}
-                />
-              )}
-
-              {/* Ourson au hover (derrière le bouton) */}
-              {hoveredInterval === int && interval !== int && (
-                <img
-                  src={lilBear}
-                  alt="Hover"
-                  className="bear bear--hover"
-                />
-              )}
-
-              {/* Ourson qui disparaît (ancien intervalle) */}
-              {previousInterval === int && interval !== int && (
-                <img
-                  src={lilBear}
-                  alt="Disappearing"
-                  className="bear bear--disappearing"
-                />
-              )}
-
-              <button
-                className={interval === int ? 'active' : ''}
-                onClick={() => handleIntervalChange(int)}
-                onMouseEnter={() => handleMouseEnter(int)}
-                onMouseLeave={handleMouseLeave}
-                disabled={isLoading}
+      {/* Version Mobile */}
+      <div className="chart-toolbar__mobile">
+        <div className="chart-toolbar__mobile-row">
+          {/* Dropdown Type de Chart */}
+          <div className="chart-toolbar__mobile-dropdown" ref={chartTypeDropdownRef}>
+            <button
+              className={`chart-toolbar__mobile-trigger ${isChartTypeDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              onClick={() => !isLoading && setIsChartTypeDropdownOpen(!isChartTypeDropdownOpen)}
+              disabled={isLoading}
+            >
+              <span className="chart-toolbar__mobile-trigger-icon">
+                {React.createElement(chartTypeIcons[chartType])}
+              </span>
+              <span className="chart-toolbar__mobile-trigger-label">
+                {chartTypeLabels[chartType]}
+              </span>
+              <svg
+                className={`chart-toolbar__mobile-trigger-arrow ${isChartTypeDropdownOpen ? 'chart-toolbar__mobile-trigger-arrow--open' : ''}`}
+                width="12"
+                height="8"
+                viewBox="0 0 12 8"
+                fill="none"
               >
-                {int}
-              </button>
-            </div>
-          ))}
+                <path
+                  d="M1 1.5L6 6.5L11 1.5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {isChartTypeDropdownOpen && (
+              <>
+                <div
+                  className="chart-toolbar__mobile-overlay"
+                  onClick={() => setIsChartTypeDropdownOpen(false)}
+                />
+                <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--open`}>
+                  {(['area', 'line', 'candlestick'] as ChartType[]).map((type) => {
+                    const Icon = chartTypeIcons[type];
+                    const isActive = chartType === type;
+                    const isDisabled = type === 'candlestick' && metric !== 'price';
+
+                    return (
+                      <button
+                        key={type}
+                        className={`chart-toolbar__mobile-option ${isActive ? 'chart-toolbar__mobile-option--active' : ''} ${isDisabled ? 'chart-toolbar__mobile-option--disabled' : ''}`}
+                        onClick={() => !isDisabled && handleChartTypeSelect(type)}
+                        disabled={isDisabled}
+                      >
+                        <span className="chart-toolbar__mobile-option-icon">
+                          <Icon />
+                        </span>
+                        <span className="chart-toolbar__mobile-option-label">
+                          {chartTypeLabels[type]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Dropdown Intervalle */}
+          <div className="chart-toolbar__mobile-dropdown" ref={intervalDropdownRef}>
+            <button
+              className={`chart-toolbar__mobile-trigger ${isIntervalDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              onClick={() => !isLoading && setIsIntervalDropdownOpen(!isIntervalDropdownOpen)}
+              disabled={isLoading}
+            >
+              <span className="chart-toolbar__mobile-trigger-label">
+                {interval}
+              </span>
+              <svg
+                className={`chart-toolbar__mobile-trigger-arrow ${isIntervalDropdownOpen ? 'chart-toolbar__mobile-trigger-arrow--open' : ''}`}
+                width="12"
+                height="8"
+                viewBox="0 0 12 8"
+                fill="none"
+              >
+                <path
+                  d="M1 1.5L6 6.5L11 1.5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {isIntervalDropdownOpen && (
+              <>
+                <div
+                  className="chart-toolbar__mobile-overlay"
+                  onClick={() => setIsIntervalDropdownOpen(false)}
+                />
+                <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--open`}>
+                  {availableIntervals.map((int) => (
+                    <button
+                      key={int}
+                      className={`chart-toolbar__mobile-option ${interval === int ? 'chart-toolbar__mobile-option--active' : ''}`}
+                      onClick={() => handleIntervalSelect(int)}
+                    >
+                      <span className="chart-toolbar__mobile-option-label">
+                        {int}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -245,23 +390,49 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           </button>
 
           {isMetricDropdownOpen && (
-            <div className="chart-toolbar__metrics-menu">
-              {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => (
-                <button
-                  key={metricOption}
-                  className={`chart-toolbar__metrics-option ${metric === metricOption ? 'chart-toolbar__metrics-option--active' : ''
-                    }`}
-                  onClick={() => handleMetricSelect(metricOption)}
-                >
-                  <span className="chart-toolbar__metrics-option-icon">
-                    {metricIcons[metricOption]}
-                  </span>
-                  <span className="chart-toolbar__metrics-option-label">
-                    {metricLabels[metricOption]}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <>
+              {/* Overlay pour mobile uniquement */}
+              <div
+                className="chart-toolbar__mobile-overlay"
+                onClick={() => setIsMetricDropdownOpen(false)}
+              />
+              {/* Menu desktop traditionnel */}
+              <div className="chart-toolbar__metrics-menu">
+                {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => (
+                  <button
+                    key={metricOption}
+                    className={`chart-toolbar__metrics-option ${metric === metricOption ? 'chart-toolbar__metrics-option--active' : ''
+                      }`}
+                    onClick={() => handleMetricSelect(metricOption)}
+                  >
+                    <span className="chart-toolbar__metrics-option-icon">
+                      {metricIcons[metricOption]}
+                    </span>
+                    <span className="chart-toolbar__metrics-option-label">
+                      {metricLabels[metricOption]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {/* Menu mobile bottom sheet */}
+              <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--metrics chart-toolbar__mobile-menu--open`}>
+                {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => (
+                  <button
+                    key={metricOption}
+                    className={`chart-toolbar__mobile-option ${metric === metricOption ? 'chart-toolbar__mobile-option--active' : ''
+                      }`}
+                    onClick={() => handleMetricSelect(metricOption)}
+                  >
+                    <span className="chart-toolbar__mobile-option-icon">
+                      {metricIcons[metricOption]}
+                    </span>
+                    <span className="chart-toolbar__mobile-option-label">
+                      {metricLabels[metricOption]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
