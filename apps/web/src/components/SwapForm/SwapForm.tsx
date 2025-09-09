@@ -7,12 +7,11 @@ import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
-import { formatUnits, parseUnits, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
 import { Loader } from '../Loader/Loader';
-import { useTokenStats } from "../../hooks/useTokenStats";
 import { ensureArray } from '../../utils/dataValidation';
 
 interface FormProps {
@@ -53,10 +52,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
-    const { data: fromTokenStats } = useTokenStats(fromToken?.address as `0x${string}` || null);
-    const { data: toTokenStats } = useTokenStats(toToken?.address as `0x${string}` || null);
-    const priceFrom = fromTokenStats?.price || 0;
-    const priceTo = toTokenStats?.price || 0;
     const { data: tokens } = useTokens();
 
     const swap = useSwap({
@@ -196,12 +191,25 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     }, [poolAddress, fromToken, toToken, onPoolChange]);
 
     useEffect(() => {
-      if (!fromToken && tokens) {
+      if (!fromToken && tokens && tokens.length > 0) {
         const tokensArray = ensureArray(tokens) as BerachainToken[];
         const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
-        if (bera) setFromToken(bera);
+        if (bera) {
+          setFromToken(bera);
+        }
       }
     }, [tokens, fromToken]);
+
+    // Effet supplémentaire pour s'assurer que BERA est sélectionné même si fromToken est null
+    useEffect(() => {
+      if (tokens && tokens.length > 0 && !fromToken && !initialFromToken) {
+        const tokensArray = ensureArray(tokens) as BerachainToken[];
+        const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+        if (bera) {
+          setFromToken(bera);
+        }
+      }
+    }, [tokens, fromToken, initialFromToken]);
 
     useEffect(() => {
       if (initialFromToken && initialFromToken.address !== fromToken?.address) {
@@ -223,13 +231,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const handleToAmountChange = useCallback((amount: bigint) => {
       setEditing('to');
       setToAmount(amount);
-      if (priceFrom && priceTo && toToken && fromToken && amount > 0n) {
-        const toAmountFloat = parseFloat(formatUnits(amount, toToken?.decimals || 18));
-        const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
-        const fromAmountWei = parseUnits(fromAmountFloat.toFixed(fromToken.decimals), fromToken?.decimals || 18);
-        setFromAmount(fromAmountWei);
-      }
-    }, [priceFrom, priceTo, toToken, fromToken]);
+    }, []);
 
     const formClasses = [
       'Form',
