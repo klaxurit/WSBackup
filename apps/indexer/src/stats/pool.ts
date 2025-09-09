@@ -199,7 +199,7 @@ async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, 
   }
 
   if (!fromPool) {
-    console.warn(`No historical data to calculate APR for pool: ${pool.id}`)
+    // console.warn(`No historical data to calculate APR for pool: ${pool.id}`)
     return "0.00"
   }
 

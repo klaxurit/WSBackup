@@ -30,29 +30,9 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const amount1 = new Decimal(formatUnits(event.args.amount1, token1.decimals))
 
   factory.txCount += 1
-  // ❌ CRITICAL FIX: Fee collection doesn't change TVL - fees are earned rewards, not liquidity removal
-  // Removed: factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
-
   token0.txCount += 1
-  // ❌ CRITICAL FIX: Fee collection doesn't reduce token TVL - tokens just change hands from pool to user
-  // Removed: token0.totalValueLocked = Decimal(token0.totalValueLocked).minus(amount0).toString()
-  // token0.totalValueLockedUSD = Decimal(token0.totalValueLocked).mul(new Decimal(token0.derivedBERA).mul(beraPriceUSD)).toString()
-
   token1.txCount += 1
-  // ❌ CRITICAL FIX: Fee collection doesn't reduce token TVL - tokens just change hands from pool to user
-  // Removed: token1.totalValueLocked = Decimal(token1.totalValueLocked).minus(amount1).toString()
-  // token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(new Decimal(token1.derivedBERA).mul(beraPriceUSD)).toString()
-
   pool.txCount += 1
-  // ❌ CRITICAL FIX: Fee collection doesn't change pool liquidity - it only transfers earned fees to users
-  // Removed: pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).minus(amount0).toString()
-  // Removed: pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).minus(amount1).toString()
-
-  // Pool TVL remains unchanged during fee collection - only fee tracking is updated
-  // const poolTVLt0Bera = new Decimal(pool.totalValueLockedToken0).mul(token0.derivedBERA)
-  // const poolTVLt1Bera = new Decimal(pool.totalValueLockedToken1).mul(token1.derivedBERA)
-  // pool.totalValueLockedBERA = poolTVLt0Bera.plus(poolTVLt1Bera).toString()
-  // pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
   const amount0Bera = amount0.mul(token0.derivedBERA)
   const amount1Bera = amount1.mul(token1.derivedBERA)
