@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { VaultsTable } from '../../components/ExploreTables/vaults';
 import { NewBanner } from '../../components/Common/NewBanner';
-import { ButtonTransition, CardTransition, PageContentTransition } from '../../components/Transitions';
+import { PageContentTransition } from '../../components/Transitions';
 import vaultIcon from '../../assets/coffre_icon.png';
 import { useQuery } from '@tanstack/react-query';
 
