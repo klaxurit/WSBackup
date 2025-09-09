@@ -36,15 +36,43 @@ ponder.on("v3Pool:Burn", async ({ event, context }) => {
 
   const amount0Bera = amount0Abs.mul(token0.derivedBERA)
   const amount1Bera = amount1Abs.mul(token1.derivedBERA)
+  const totalAmountBera = amount0Bera.plus(amount1Bera)
 
   const amount0USD = amount0Bera.mul(beraPriceUSD)
   const amount1USD = amount1Bera.mul(beraPriceUSD)
   const totalAmountUSD = amount0USD.plus(amount1USD)
 
   factory.txCount += 1
-  pool.txCount += 1
+  factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
+
   token0.txCount += 1
+  token0.totalValueLocked = Decimal(token0.totalValueLocked).minus(amount0).toString()
+  token0.totalValueLockedUSD = Decimal(token0.totalValueLocked).mul(Decimal(token0.derivedBERA).mul(beraPriceUSD)).toString()
+  token0.volume = new Decimal(token0.volume).plus(amount0Abs).toString()
+  token0.volumeUSD = new Decimal(token0.volumeUSD).plus(amount0USD).toString()
+
   token1.txCount += 1
+  token1.totalValueLocked = Decimal(token1.totalValueLocked).minus(amount1).toString()
+  token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(Decimal(token1.derivedBERA).mul(beraPriceUSD)).toString()
+  token1.volume = new Decimal(token1.volume).plus(amount1Abs).toString()
+  token1.volumeUSD = new Decimal(token1.volumeUSD).plus(amount1USD).toString()
+
+  pool.txCount += 1
+  pool.liquidity -= event.args.amount
+  pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).minus(amount0).toString()
+  pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).minus(amount1).toString()
+  pool.totalValueLockedBERA = Decimal(pool.totalValueLockedBERA).minus(totalAmountBera).toString()
+  pool.totalValueLockedUSD = Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
+  pool.volumeToken0 = new Decimal(pool.volumeToken0).plus(amount0Abs).toString()
+  pool.volumeToken1 = new Decimal(pool.volumeToken1).plus(amount1Abs).toString()
+  pool.volumeUSD = new Decimal(pool.volumeUSD).plus(totalAmountUSD).toString()
+  pool.liquidityProviderCount -= 1
+
+  // reset aggregates with new amounts
+  factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
+  factory.totalValueLockedUSD = Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
+  factory.totalVolumeBERA = new Decimal(factory.totalVolumeBERA).plus(totalAmountBera).toString()
+  factory.totalVolumeUSD = new Decimal(factory.totalVolumeUSD).plus(totalAmountUSD).toString()
 
   if (pool.tick !== null && event.args.tickLower <= pool.tick && event.args.tickUpper > pool.tick) {
     pool.liquidity -= event.args.amount

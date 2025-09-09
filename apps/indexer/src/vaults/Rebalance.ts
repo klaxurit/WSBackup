@@ -14,4 +14,6 @@ ponder.on("svVaults:Rebalance", async ({ event, context }) => {
   vault.tickUpper = event.args.upperTick_
   vault.liquidity = event.args.liquidityAfter
   vault.rebalanceCount += 1
+
+  await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
 })

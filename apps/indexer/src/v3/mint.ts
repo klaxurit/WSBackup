@@ -76,6 +76,7 @@ ponder.on("v3Pool:Mint", async ({ event, context }) => {
   pool.totalValueLockedToken1 = new Decimal(pool.totalValueLockedToken1).plus(amount1).toString()
   pool.totalValueLockedBERA = Decimal(pool.totalValueLockedBERA).plus(totalAmountBera).toString()
   pool.totalValueLockedUSD = Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
+  pool.liquidityProviderCount += 1
 
   // logDebug(logContext, "TVL calculations completed", {
   //   token0TVL: {

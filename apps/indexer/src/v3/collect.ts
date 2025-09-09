@@ -34,11 +34,11 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
 
   token0.txCount += 1
   token0.totalValueLocked = Decimal(token0.totalValueLocked).minus(amount0).toString()
-  token0.totalValueLockedUSD = Decimal(token0.totalValueLocked).mul(beraPriceUSD).toString()
+  token0.totalValueLockedUSD = Decimal(token0.totalValueLocked).mul(new Decimal(token0.derivedBERA).mul(beraPriceUSD)).toString()
 
   token1.txCount += 1
   token1.totalValueLocked = Decimal(token1.totalValueLocked).minus(amount1).toString()
-  token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(beraPriceUSD).toString()
+  token1.totalValueLockedUSD = Decimal(token1.totalValueLocked).mul(new Decimal(token1.derivedBERA).mul(beraPriceUSD)).toString()
 
   pool.txCount += 1
   pool.totalValueLockedToken0 = new Decimal(pool.totalValueLockedToken0).minus(amount0).toString()
@@ -49,14 +49,19 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   pool.totalValueLockedBERA = poolTVLt0Bera.plus(poolTVLt1Bera).toString()
   pool.totalValueLockedUSD = new Decimal(pool.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
+  const amount0Bera = amount0.mul(token0.derivedBERA)
+  const amount1Bera = amount1.mul(token1.derivedBERA)
+  const totalCollectedBera = amount0Bera.plus(amount1Bera)
+  const totalCollectedUSD = totalCollectedBera.mul(beraPriceUSD)
+
   pool.collectedFeesToken0 = new Decimal(pool.collectedFeesToken0).plus(amount0).toString()
   pool.collectedFeesToken1 = new Decimal(pool.collectedFeesToken1).plus(amount1).toString()
+  pool.collectedFeesUSD = Decimal(pool.collectedFeesUSD).plus(totalCollectedUSD).toString()
 
   const poolCollectedFeesT0Bera = new Decimal(pool.collectedFeesToken0).mul(token0.derivedBERA)
   const poolCollectedFeesT1Bera = new Decimal(pool.collectedFeesToken1).mul(token1.derivedBERA)
   const poolCollectedFeesTotalBera = poolCollectedFeesT0Bera.plus(poolCollectedFeesT1Bera)
   const poolCollectedFeesTotalUSD = poolCollectedFeesTotalBera.mul(beraPriceUSD)
-  pool.collectedFeesUSD = Decimal(pool.collectedFeesUSD).plus(poolCollectedFeesTotalUSD).toString()
 
   factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
   factory.totalValueLockedUSD = Decimal(factory.totalValueLockedBERA).mul(beraPriceUSD).toString()
@@ -88,3 +93,4 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   await updateTokenStats(event.block.timestamp, token0, context)
   await updateTokenStats(event.block.timestamp, token1, context)
 })
+

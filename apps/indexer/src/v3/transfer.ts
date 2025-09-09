@@ -35,8 +35,8 @@ ponder.on("v3PositionManager:Transfer", async ({ event, context }) => {
         pool: posPool[0]?.id || "0x",
         token0: positionData[2] || "0x",
         token1: positionData[3] || "0x",
-        tickLower: /* positionData[5] || */ "0x0",
-        tickUpper: /* positionData[6] || */ "0x0",
+        tickLower: /* positionData[5] || */ "0x0", // Id of tick row in DB.
+        tickUpper: /* positionData[6] || */ "0x0", // Id of tick row in DB.
         liquidity: positionData[7] || 0n,
         depositedToken0: "0",
         depositedToken1: "0",
