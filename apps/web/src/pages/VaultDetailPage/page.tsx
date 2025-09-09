@@ -104,6 +104,8 @@ export const VaultDetailPage = () => {
     amount0: token0Amount,
     amount1: token1Amount,
     burnAmount: withdrawAmount,
+    amountOneSide: singleTokenAmount,
+    tokenOneSide: selectedToken,
     slippageBps: 100, // 1%,
     mode: activeTab === "deposit" ? depositMode : "withdraw"
   })

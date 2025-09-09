@@ -3,13 +3,16 @@ import { useAccount, useReadContract, useSimulateContract, useWaitForTransaction
 import { CONTRACTS_ADDRESS } from '../config/contractsAddress';
 import { StickyVaultRouter } from '../config/abis/StickyVaultRouter';
 import { currentChain } from '../config/wagmi';
-import { erc20Abi, type Address, type Hex } from 'viem';
+import { encodeAbiParameters, erc20Abi, type Address, type Hex } from 'viem';
 import { StickyVaultWithRouter } from '../config/abis/StickyVaultWithRouter';
+import { useSwap } from './useSwap';
 
 interface VaultConfig {
   vault?: any;
   amount0: bigint
   amount1: bigint
+  amountOneSide: bigint
+  tokenOneSide: 'token0' | 'token1'
   burnAmount: bigint
   slippageBps: number
   mode: "double" | "single" | "withdraw"
@@ -20,6 +23,7 @@ export interface VaultManager {
   isDeposite: boolean
   isWithdraw: boolean
   isReady: boolean
+  isOneSide: boolean
   quote: {
     amount0Max: bigint | null
     amount0Min: bigint | null
@@ -45,6 +49,15 @@ export interface VaultManager {
     isApprove: boolean
     hash?: Hex
     refetch: () => void
+  },
+  osAllowance: {
+    isNeed: boolean
+    current?: bigint
+    allow: () => void
+    isLoading: boolean
+    isApprove: boolean
+    hash?: Hex
+    refetch: () => void
   }
   burnAllowance: {
     isNeed: boolean
@@ -57,6 +70,11 @@ export interface VaultManager {
   }
   isAllow: boolean
   depositeTwoSide: {
+    depose: () => void
+    isPending: boolean
+    hash?: Hex
+  },
+  depositeOneSide: {
     depose: () => void
     isPending: boolean
     hash?: Hex
@@ -80,9 +98,17 @@ export const useVault = (config: VaultConfig): VaultManager => {
 
   const isDeposite = config.mode === "double" || config.mode === "single"
   const isWithdraw = config.mode === "withdraw"
+  const isOneSide = config.mode === "single"
+
+  const oneSideTokenIn = config.tokenOneSide === "token0"
+    ? config.vault?.poolRef?.token0Ref?.id as Address
+    : config.vault?.poolRef?.token1Ref?.id as Address
+  const oneSideTokenOut = config.tokenOneSide === "token0"
+    ? config.vault?.poolRef?.token1Ref?.id as Address
+    : config.vault?.poolRef?.token0Ref?.id as Address
 
   const isReady = isDeposite
-    ? !!address && !!vaultAddr && config.amount0 > 0n && config.amount1 > 0n
+    ? !!address && !!vaultAddr && (config.mode === "double" ? (config.amount0 > 0n && config.amount1 > 0n) : (config.amountOneSide > 0n && !!oneSideTokenIn))
     : !!address && !!vaultAddr && config.burnAmount > 0n
 
   // Setup Max amount
@@ -111,7 +137,7 @@ export const useVault = (config: VaultConfig): VaultManager => {
   }, [quote])
   const isQuoted = !!amount0Max && !!amount0Min && !!amount1Max && !!amount1Min && !!minShares
 
-  // Deposite - Allowance token0
+  // Deposite - Two Side - Allowance token0
   const { data: t0Allowance, isLoading: loadT0Allowance, refetch: checkT0Allowance } = useReadContract({
     address: (config.vault?.poolRef?.token0Ref?.id as Address),
     abi: erc20Abi,
@@ -149,7 +175,7 @@ export const useVault = (config: VaultConfig): VaultManager => {
     approveT0(approveT0Config.request)
   }
 
-  // Deposite - Allowance token1
+  // Deposite - Two Side - Allowance token1
   const { data: t1Allowance, isLoading: loadT1Allowance, refetch: checkT1Allowance } = useReadContract({
     address: (config.vault?.poolRef?.token1Ref?.id as Address),
     abi: erc20Abi,
@@ -185,6 +211,44 @@ export const useVault = (config: VaultConfig): VaultManager => {
   const handleApproveT1 = () => {
     if (!approveT1Config?.request) return
     approveT1(approveT1Config.request)
+  }
+
+  // Deposite - One Side - Allowance token
+  const { data: osAllowance, isLoading: osLoadAllowance, refetch: osCheckAllowance } = useReadContract({
+    address: oneSideTokenIn,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: address ? [address, CONTRACTS_ADDRESS.STICKYVAULT_ROUTER] : undefined,
+    query: {
+      enabled: isOneSide && isReady
+    }
+  })
+  const osNeedApproval = (osAllowance || 0n) < config.amountOneSide
+  const { data: osApproveConfig } = useSimulateContract({
+    address: oneSideTokenIn,
+    abi: erc20Abi,
+    functionName: 'approve',
+    args: [CONTRACTS_ADDRESS.STICKYVAULT_ROUTER, config.amountOneSide],
+    chainId: currentChain.id,
+    query: {
+      enabled: isOneSide && isReady && osNeedApproval
+    }
+  })
+  const { data: osApproveHash, writeContract: osApprove, isPending: osWaitApprov } = useWriteContract()
+  const osApproveResult = useWaitForTransactionReceipt({
+    hash: osApproveHash,
+    query: {
+      enabled: !!osApproveHash
+    }
+  })
+  useEffect(() => {
+    if (osApproveResult.isSuccess) {
+      osCheckAllowance()
+    }
+  }, [osApproveResult.isSuccess, osCheckAllowance])
+  const osHandleApprove = () => {
+    if (!osApproveConfig?.request) return
+    osApprove(osApproveConfig.request)
   }
 
   // Withdraw - Allowance VaultErc20
@@ -226,7 +290,7 @@ export const useVault = (config: VaultConfig): VaultManager => {
   }
 
   const isAllow = isDeposite
-    ? !t0NeedApproval && !t1NeedApproval
+    ? isOneSide ? !osNeedApproval : !t0NeedApproval && !t1NeedApproval
     : !burnNeedApproval
 
   // Deposite two side
@@ -244,6 +308,64 @@ export const useVault = (config: VaultConfig): VaultManager => {
   const handleDepositeTwo = () => {
     if (!depositeTwoSideConfig) return
     depositeTwo(depositeTwoSideConfig.request)
+  }
+
+  // Deposite One side
+  const swap = useSwap({
+    tokenIn: oneSideTokenIn,
+    tokenOut: oneSideTokenOut,
+    amountIn: config.amountOneSide / 2n,
+  })
+  const swapData = useMemo(() => {
+    if (swap.status !== "ready" || !swap?.quote?.amountOutMinimum || !swap.optimizedRoute?.transactionData?.args) return null
+
+    const functionName = swap.optimizedRoute?.transactionData?.functionName
+    const to = swap.optimizedRoute?.transactionData?.to
+    if (!functionName || !to) return null
+    const abi = swap.optimizedRoute?.transactionData?.abi.filter((a: any) => a.name === functionName)
+    if (!abi[0].inputs) return null
+
+    return {
+      router: to,
+      amountIn: config.amountOneSide,
+      minAmountOut: swap.quote.amountOutMinimum,
+      zeroForOne: config.tokenOneSide === "token0",
+      routeData: encodeAbiParameters(
+        abi[0].inputs,
+        swap.optimizedRoute.transactionData.args
+      )
+    }
+  }, [swap])
+  const { data: osQuote } = useReadContract({
+    address: vaultAddr,
+    abi: StickyVaultWithRouter,
+    functionName: "getMintAmounts",
+    args: [config.amountOneSide / 2n, (swap.quote?.amountOut || 0n)],
+    query: {
+      enabled: isReady && isOneSide && isAllow && !!swap.quote
+    }
+  })
+  const { data: depositeOneSideConfig } = useSimulateContract({
+    address: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
+    abi: StickyVaultRouter,
+    functionName: "addLiquiditySingle",
+    args: [
+      vaultAddr,
+      config.amountOneSide,
+      bpsDown((osQuote?.[2] || 0n), config.slippageBps),
+      BigInt(config.slippageBps),
+      swapData!,
+      address!
+    ],
+    query: {
+      enabled: isOneSide && isReady && !!swapData && !!osQuote && isAllow
+    }
+  })
+  console.log("ICI", depositeOneSideConfig)
+  const { data: depositeOneHash, writeContract: depositeone, isPending: waitDepositeOne } = useWriteContract()
+  const handleDepositeOne = () => {
+    if (!depositeOneSideConfig) return
+    depositeone(depositeOneSideConfig.request)
   }
 
   // Withdraw
@@ -274,6 +396,7 @@ export const useVault = (config: VaultConfig): VaultManager => {
     isDeposite,
     isWithdraw,
     isReady,
+    isOneSide,
     quote: {
       amount0Max,
       amount0Min,
@@ -300,6 +423,15 @@ export const useVault = (config: VaultConfig): VaultManager => {
       hash: approveT1Hash,
       refetch: checkT1Allowance
     },
+    osAllowance: {
+      isNeed: osNeedApproval,
+      current: osAllowance,
+      allow: osHandleApprove,
+      isLoading: osLoadAllowance,
+      isApprove: osWaitApprov,
+      hash: osApproveHash,
+      refetch: osCheckAllowance
+    },
     burnAllowance: {
       isNeed: burnNeedApproval,
       current: burnAllowance,
@@ -314,6 +446,11 @@ export const useVault = (config: VaultConfig): VaultManager => {
       depose: handleDepositeTwo,
       isPending: waitDepositeTwo,
       hash: depositeTwoHash
+    },
+    depositeOneSide: {
+      depose: handleDepositeOne,
+      isPending: waitDepositeOne,
+      hash: depositeOneHash
     },
     withdraw: {
       burn: handleBurn,

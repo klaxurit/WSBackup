@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '../Buttons/ConnectButton';
 import type { VaultManager } from '../../hooks/useVault';
@@ -19,6 +19,14 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
   t1Symbol
 }) => {
   const { isConnected } = useAccount();
+  const allowData = useMemo(() => {
+    if (vm.isWithdraw) return { handler: vm.burnAllowance.allow, text: "burn" }
+    if (vm.isDeposite && vm.isOneSide) return { handler: vm.osAllowance.allow, text: "deposit" }
+    if (vm.t0Allowance.isNeed) return { handler: vm.t0Allowance.allow, text: t0Symbol }
+    if (vm.t0Allowance.isNeed) return { handler: vm.t10Allowance.allow, text: t1Symbol }
+
+    return { handler: () => { }, text: '' }
+  }, [vm])
 
   // Si l'utilisateur n'est pas connecté, utiliser le ConnectButton standard
   if (!isConnected) {
@@ -45,19 +53,12 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
 
   // Il faut approve un token
   if (!vm.isAllow) {
-    const handler = vm.isWithdraw
-      ? vm.burnAllowance.allow
-      : vm.t0Allowance.isNeed ? vm.t0Allowance.allow : vm.t10Allowance.allow
-    const text = vm.isWithdraw
-      ? 'burn'
-      : vm.t0Allowance.isNeed ? t0Symbol : t1Symbol
-
     return (
       <button
         className={`btn btn--${size} btn__main ${customClassName}`.trim()}
-        onClick={handler}
+        onClick={allowData.handler}
       >
-        Approve {text}
+        Approve {allowData.text}
       </button>
     );
   }
@@ -67,7 +68,7 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
     return (
       <button
         className={`btn btn--${size} btn__main ${customClassName}`.trim()}
-        onClick={vm.depositeTwoSide.depose}
+        onClick={vm.isOneSide ? vm.depositeOneSide.depose : vm.depositeTwoSide.depose}
       >
         Deposit
       </button>
