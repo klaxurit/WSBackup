@@ -288,7 +288,7 @@ const PoolPage: React.FC = () => {
         </Link>
       ),
     },
-    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.poolRef.feeTier / 1000}%`) },
+    { label: 'Fee Tier', key: 'fee', render: (row) => (`${row.poolRef.feeTier / 10000}%`) },
     {
       label: 'Position size', key: 'size', render: (row) => <PositionSizeCell row={row} />
     },
