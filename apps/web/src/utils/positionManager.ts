@@ -3,12 +3,8 @@ import { encodeSqrtRatioX96, TickMath, Pool, Position } from "@uniswap/v3-sdk"
 import JSBI from 'jsbi'
 import { parseUnits } from "viem"
 
-export const priceToTick = (token0: Token, token1: Token, price: bigint, sqrtPriceX96: JSBI | null = null, is0to1: boolean): number | null => {
+export const priceToTick = (sqrtPriceX96: JSBI | null = null): number | null => {
   try {
-    if (!sqrtPriceX96) {
-      sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, price, is0to1)
-    }
-
     if (!sqrtPriceX96) return null
     return TickMath.getTickAtSqrtRatio(sqrtPriceX96)
   } catch (err) {
@@ -23,13 +19,11 @@ export const tickToPrice = (tick: number, token0: Token, token1: Token): number 
   return parseFloat(price.toSignificant(6))
 }
 
-export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint, is0to1: boolean) => {
+export const getInitialSqrtPriceX96 = (token0: Token, token1: Token, initialPrice: bigint, priceIsToken1PerToken0: boolean) => {
   try {
-    const token0Amount = is0to1 ? initialPrice : parseUnits("1", token0.decimals)
-    const token1Amount = is0to1 ? parseUnits("1", token1.decimals) : initialPrice
+    const token0Amount = priceIsToken1PerToken0 ? parseUnits("1", token1.decimals) : initialPrice
+    const token1Amount = priceIsToken1PerToken0 ? initialPrice : parseUnits("1", token0.decimals)
 
-    console.log("token0Amount", token0Amount, is0to1)
-    console.log("token1Amount", token1Amount)
     // encodeSqrtRatioX96(the amount of token1, the amount of token0)
     return encodeSqrtRatioX96(token1Amount.toString(), token0Amount.toString())
   } catch (err) {

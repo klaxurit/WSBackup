@@ -24,7 +24,7 @@ interface usePositionManagerParams {
   minPrice: string
   maxPrice: string
   initialPrice: bigint
-  is0to1: boolean
+  priceIsToken1PerToken0: boolean
 }
 
 const parseToken = (bt: BerachainToken | null): Token | null => {
@@ -33,6 +33,9 @@ const parseToken = (bt: BerachainToken | null): Token | null => {
   const addr = (bt.address === zeroAddress) ? "0x6969696969696969696969696969696969696969" : bt.address
   return new Token(currentChain.id, addr, bt.decimals, bt.symbol, bt.name)
 }
+
+// In Uniswap v3, the token with the lower address value is considered token0, and the other is token1.
+//  The price is always expressed as the amount of token1 per token0.
 
 export const usePoolManager = ({
   btoken0,
@@ -43,7 +46,7 @@ export const usePoolManager = ({
   minPrice,
   maxPrice,
   initialPrice,
-  is0to1
+  priceIsToken1PerToken0
 }: usePositionManagerParams) => {
 
 
@@ -113,6 +116,7 @@ export const usePoolManager = ({
     })
   }, [token0, token1, fee])
 
+
   /*
    * Create Uniswap SDK Pool
    */
@@ -136,9 +140,20 @@ export const usePoolManager = ({
       } else {
         if (!token0 || !token1 || initialPrice <= 0n) return null
 
-        const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice, is0to1)
+        let amount1: string
+        let amount0: string
+
+        if (priceIsToken1PerToken0) {
+          amount1 = initialPrice.toString()
+          amount0 = parseUnits("1", token0.decimals).toString()
+        } else {
+          amount1 = BigInt(parseUnits("1", token1.decimals)).toString()
+          amount0 = initialPrice.toString()
+        }
+        const sqrtPriceX96 = encodeSqrtRatioX96(amount1, amount0)
+
         if (!sqrtPriceX96) return null
-        const tick = priceToTick(token0, token1, initialPrice, sqrtPriceX96, is0to1)
+        const tick = priceToTick(sqrtPriceX96)
         if (!tick) return null
 
         const pool = new Pool(
@@ -155,7 +170,7 @@ export const usePoolManager = ({
     } catch (err) {
       return null
     }
-  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData, is0to1])
+  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData, priceIsToken1PerToken0])
 
 
 
@@ -576,7 +591,6 @@ export const usePoolManager = ({
     resetWrap()
   }
 
-  console.log(prices)
   return {
     // PoolState
     status,

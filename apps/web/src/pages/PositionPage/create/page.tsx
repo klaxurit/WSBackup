@@ -41,7 +41,7 @@ const CreatePoolPage: React.FC = () => {
   const [inputAmount, setInputAmount] = useState<bigint>(0n);
   const [inputToken, setInputToken] = useState<"token0" | "token1">("token0");
   const [initialPrice, setInitialPrice] = useState<bigint>(0n)
-  const [is0to1, setIs0To1] = useState<boolean>(true)
+  const [priceIsToken1PerToken0, setPriceIsToken1PerToken0] = useState<boolean>(false)
 
   const { data: balance0 } = useBalance({
     address,
@@ -98,7 +98,7 @@ const CreatePoolPage: React.FC = () => {
     minPrice,
     maxPrice,
     initialPrice,
-    is0to1
+    priceIsToken1PerToken0
   })
 
   const { insufficient0, insufficient1 } = useMemo(() => {
@@ -561,8 +561,8 @@ const CreatePoolPage: React.FC = () => {
                           <InitialPriceInput
                             tokens={[token0!, token1!]}
                             onAmountChange={setInitialPrice}
-                            onTokenSelect={(t) => { setIs0To1(t.address.toLowerCase() === token0!.address.toLowerCase()) }}
-                            value={initialPrice || 0n}
+                            onTokenSelect={(t) => { setPriceIsToken1PerToken0(t.address.toLowerCase() === token1!.address.toLowerCase()) }}
+                            value={initialPrice}
                           />
                         </div>
                       </div>
