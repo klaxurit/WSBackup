@@ -54,6 +54,9 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
     const { data: tokens } = useTokens();
 
+    // État pour forcer le refresh des inputs
+    const [refreshKey, setRefreshKey] = useState(0);
+
     const swap = useSwap({
       tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
       tokenOut: (toToken?.address as `0x${string}`) || zeroAddress,
@@ -89,10 +92,19 @@ export const SwapForm: React.FC<FormProps> = React.memo(
 
     const handleCloseModal = () => {
       setShowModal(false);
-      if (swap.status === 'error') {
-        swap.reset();
-      }
     };
+
+
+    const handleRefreshInputs = useCallback(() => {
+      setFromAmount(0n);
+      setToAmount(0n);
+      setEditing(null);
+      setTimeout(() => {
+        swap.reset();
+      }, 100);
+      setRefreshKey(prev => prev + 1);
+    }, [swap]);
+
     const handleSwitchTokens = useCallback(() => {
       const currentFromToken = fromToken;
       const currentToToken = toToken;
@@ -136,13 +148,15 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     }
     const isButtonEnabled = useMemo(() => {
       const hasValidTokens = !!(fromToken && toToken);
-      const hasValidAmount = fromAmount > 0n && toAmount > 0n;
-      const validStatuses = ["ready", "error"];
-      const isValidStatus = validStatuses.includes(swap.status) ||
-        (swap.status === "idle" && hasValidAmount);
+      const hasValidAmount = fromAmount > 0n;
 
-      return hasValidTokens && hasValidAmount && isValidStatus;
-    }, [fromToken, toToken, fromAmount, toAmount, swap.status]);
+      // Bloquer seulement si le swap est en cours de chargement
+      const isNotLoading = !["loading-routes", "quoting"].includes(swap.status);
+
+      const enabled = hasValidTokens && hasValidAmount && isNotLoading;
+
+      return enabled;
+    }, [fromToken, toToken, fromAmount, swap.status]);
 
     const btnText = useMemo(() => {
       if (!fromToken || !toToken) return "Select a token"
@@ -178,10 +192,12 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken) {
+      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken && fromAmount > 0n) {
         setToAmount(swap.quote.amountOut)
+      } else if (fromAmount === 0n && editing !== 'to') {
+        setToAmount(0n);
       }
-    }, [swap.quote, editing, fromToken, toToken])
+    }, [swap.quote, editing, fromToken, toToken, fromAmount])
 
     useEffect(() => {
       if (onPoolChange) {
@@ -238,6 +254,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       isSticky ? 'Form--sticky' : '',
       customClassName || ''
     ].filter(Boolean).join(' ');
+    
 
     useEffect(() => {
       if (!paramOpen) return;
@@ -293,6 +310,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
 
           <div className="Inputs">
             <FromInput
+              key={`from-${refreshKey}`}
               selectedToken={fromToken}
               onTokenSelect={handleFromTokenSelect}
               onAmountChange={handleFromAmountChange}
@@ -309,6 +327,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               onClick={handleSwitchTokens}
             />
             <SwapToInput
+              key={`to-${refreshKey}`}
               steps={{ totalRatio: 0, steps: [] }}
               preSelected={toToken}
               onSelect={handleToTokenSelect}
@@ -350,6 +369,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
           inputAmount={fromAmount}
           outputAmount={toAmount}
           swap={swap}
+          onRefreshInputs={handleRefreshInputs}
         />
       </div >
     );

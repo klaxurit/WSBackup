@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useImperativeHandle, forwardRef, type ChangeEvent } from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
 import { usePrice } from '../../hooks/usePrice';
@@ -24,13 +24,17 @@ interface LiquidityInputProps {
   disabled?: boolean;
 }
 
-export const LiquidityInput: React.FC<LiquidityInputProps> = ({
+export interface LiquidityInputRef {
+  refresh: () => void;
+}
+
+export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>(({
   selectedToken,
   onAmountChange,
   value,
   isOverBalance,
   disabled = false,
-}) => {
+}, ref) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isInputting = useRef(false);
   const lastUserInput = useRef<string>('');
@@ -100,6 +104,22 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
       onAmountChange(balance?.value || 0n)
     }
   }
+
+  // Fonction de refresh pour remettre à zéro l'input
+  const refreshInput = () => {
+    setInputValue('');
+    onAmountChange(0n);
+    isInputting.current = false;
+    lastUserInput.current = '';
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
+
+  // Exposer la fonction de refresh via useImperativeHandle
+  useImperativeHandle(ref, () => ({
+    refresh: refreshInput,
+  }), []);
   return (
     <div className="LiquidityInput">
       <div className="Inputs">
@@ -169,4 +189,4 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
       </div>
     </div>
   );
-};
+});

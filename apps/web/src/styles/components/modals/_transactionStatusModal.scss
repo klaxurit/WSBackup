@@ -15,10 +15,10 @@
 }
 
 .TransactionModal__box {
-  background: var(--Neutral-Onyx-blacker-bis, #12110e);
-  border-radius: var(--XL, 28px);
-  border: 1px solid var(--Neutral-Onyx-darker-ters, #1d1c1a);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  background: #180E00;
+  border-radius: 16px;
+  border: 1px solid $white-008;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   padding: 20px 24px;
   min-width: 340px;
   max-width: 420px;
@@ -27,6 +27,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  backdrop-filter: blur(10px);
 }
 
 .TransactionModal__head {
@@ -96,7 +97,7 @@
   border-radius: 50%;
   background: $onyx-medium;
   object-fit: contain;
-  border: 1.5px solid $onyx-medium;
+  border: 1.5px solid $beryl-pure;
   margin-left: 12px;
 }
 
