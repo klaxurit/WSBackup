@@ -164,8 +164,8 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         <span className="PoolsTable__PoolCell">
           <span className="PoolsTable__LogoWrapper">
             <TokenPairLogos
-              token0={{ address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
-              token1={{ address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
+              token0={{ id: row.token0Ref.id, address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
+              token1={{ id: row.token1Ref.id, address: row.token1Ref.id, logoUri: row.token1Ref.logoUri, symbol: row.token1Ref.symbol }}
               borderWidth={2}
               separatorWidth={1.5}
               size={28}

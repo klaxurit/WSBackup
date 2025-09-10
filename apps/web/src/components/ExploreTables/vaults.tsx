@@ -59,8 +59,8 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
         <span className="VaultsTable__VaultCell">
           <span className="VaultsTable__LogoWrapper">
             <TokenPairLogos
-              token0={{ address: row.poolRef.token0Ref.id, logoUri: row.poolRef.token0Ref.logoUri, symbol: row.poolRef.token0Ref.symbol }}
-              token1={{ address: row.poolRef.token1Ref.id, logoUri: row.poolRef.token1Ref.logoUri, symbol: row.poolRef.token1Ref.symbol }}
+              token0={{ id: row.poolRef.token0Ref.id, address: row.poolRef.token0Ref.id, logoUri: row.poolRef.token0Ref.logoUri, symbol: row.poolRef.token0Ref.symbol }}
+              token1={{ id: row.poolRef.token1Ref.id, address: row.poolRef.token1Ref.id, logoUri: row.poolRef.token1Ref.logoUri, symbol: row.poolRef.token1Ref.symbol }}
               borderWidth={2}
               separatorWidth={1.5}
               size={28}

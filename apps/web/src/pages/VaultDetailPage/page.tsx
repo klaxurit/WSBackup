@@ -120,6 +120,7 @@ export const VaultDetailPage = () => {
     if (!vault?.poolRef) return { token0: null, token1: null }
     return {
       token0: {
+        id: vault.poolRef.token0Ref.id,
         address: vault.poolRef.token0Ref.id,
         symbol: vault.poolRef.token0Ref.symbol,
         name: vault.poolRef.token0Ref.name,
@@ -127,6 +128,7 @@ export const VaultDetailPage = () => {
         logoUri: vault.poolRef.token0Ref.logoUri
       },
       token1: {
+        id: vault.poolRef.token1Ref.id,
         address: vault.poolRef.token1Ref.id,
         symbol: vault.poolRef.token1Ref.symbol,
         name: vault.poolRef.token1Ref.name,

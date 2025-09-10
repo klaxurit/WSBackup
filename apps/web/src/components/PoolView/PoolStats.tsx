@@ -1,6 +1,13 @@
 import React from 'react';
 import { FallbackImg } from '../utils/FallbackImg';
-import type { Token } from '../../hooks/usePositions';
+import type { Address } from 'viem';
+
+interface Token {
+  id: Address
+  address: Address;
+  logoUri?: string | null;
+  symbol: string;
+}
 
 interface PoolStatsProps {
   positionValue: string;

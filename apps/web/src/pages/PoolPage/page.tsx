@@ -10,6 +10,8 @@ import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTa
 import { formatNumber } from '../../utils/formatNumber';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { formatUnits } from 'viem';
+import type { GraphQLPool, Pool } from '../../types/api';
+import { transformGraphQLPoolToPool } from '../../types/api';
 
 const GET_TOP_POOLS = `
   query GetTopPools {
@@ -54,36 +56,6 @@ const GET_TOP_POOLS = `
   }
 `;
 
-interface GraphQLPool {
-  id: string;
-  feeTier: number;
-  liquidity: string;
-  totalValueLockedUSD: number;
-  totalValueLockedBERA: number;
-  volumeUSD: number;
-  poolDayData: {
-    items: Array<{
-      tvlUSD: number;
-      volumeUSD: number;
-      apr: number;
-      volumeUSD1D: number;
-      volumeUSD30D: number;
-    }>;
-  };
-  token0Ref: {
-    id: string;
-    name: string;
-    symbol: string;
-    logoUri?: string;
-  };
-  token1Ref: {
-    id: string;
-    name: string;
-    symbol: string;
-    logoUri?: string;
-  };
-}
-
 interface GraphQLResponse {
   pools: {
     totalCount: number;
@@ -96,95 +68,6 @@ interface GraphQLResponse {
     items: GraphQLPool[];
   };
 }
-
-interface Pool {
-  id: string;
-  address: string;
-  fee: number;
-  liquidity: string;
-  sqrtPriceX96?: string;
-  tickSpacing?: number;
-  createdAt?: string;
-  createdAtBlock?: string;
-  isValid?: boolean;
-
-  token0Address: string;
-  token1Address: string;
-  token0Symbol: string;
-  token1Symbol: string;
-  token0LogoUri?: string;
-  token1LogoUri?: string;
-
-  tvlUSD: number;
-  dayVolumeUSD: number;
-  monthVolumeUSD: number;
-  apr: number;
-
-  token0?: {
-    id: string;
-    address: string;
-    symbol: string;
-    name: string;
-    logoUri?: string;
-    decimals: number;
-  };
-  token1?: {
-    id: string;
-    address: string;
-    symbol: string;
-    name: string;
-    logoUri?: string;
-    decimals: number;
-  };
-  PoolStatistic?: Array<{
-    id: string;
-    tvlUSD: number;
-    volOneDay: string;
-    volOneMonth: string;
-    apr: number;
-    createdAt: string;
-    impermanentLoss: number;
-    healthScore: number;
-  }>;
-}
-
-const transformGraphQLPoolToPool = (graphqlPool: GraphQLPool): Pool => {
-  const latestDayData = graphqlPool.poolDayData.items[0];
-  const aprValue = latestDayData?.apr;
-
-  return {
-    id: graphqlPool.id,
-    address: graphqlPool.id,
-    fee: graphqlPool.feeTier,
-    liquidity: graphqlPool.liquidity,
-    token0Address: graphqlPool.token0Ref.id,
-    token1Address: graphqlPool.token1Ref.id,
-    token0Symbol: graphqlPool.token0Ref.symbol,
-    token1Symbol: graphqlPool.token1Ref.symbol,
-    token0LogoUri: graphqlPool.token0Ref.logoUri,
-    token1LogoUri: graphqlPool.token1Ref.logoUri,
-    tvlUSD: graphqlPool.totalValueLockedUSD,
-    dayVolumeUSD: latestDayData?.volumeUSD1D || 0,
-    monthVolumeUSD: latestDayData?.volumeUSD30D || 0,
-    apr: typeof aprValue === 'number' ? aprValue : (typeof aprValue === 'string' ? parseFloat(aprValue) : 0),
-    token0: {
-      id: graphqlPool.token0Ref.id,
-      address: graphqlPool.token0Ref.id,
-      symbol: graphqlPool.token0Ref.symbol,
-      name: graphqlPool.token0Ref.name,
-      logoUri: graphqlPool.token0Ref.logoUri,
-      decimals: 18
-    },
-    token1: {
-      id: graphqlPool.token1Ref.id,
-      address: graphqlPool.token1Ref.id,
-      symbol: graphqlPool.token1Ref.symbol,
-      name: graphqlPool.token1Ref.name,
-      logoUri: graphqlPool.token1Ref.logoUri,
-      decimals: 18
-    }
-  };
-};
 
 const PoolDetailPage: React.FC = () => {
   const { poolAddress } = useParams<{ poolAddress: string }>();
@@ -306,11 +189,13 @@ const PoolDetailPage: React.FC = () => {
                   <div className="Pool__SectionHeadTitleLeft">
                     <TokenPairLogos
                       token0={{
+                        id: pool.token0Address,
                         address: pool.token0Address,
                         symbol: pool.token0Symbol,
                         logoUri: pool.token0LogoUri
                       }}
                       token1={{
+                        id: pool.token1Address,
                         address: pool.token1Address,
                         symbol: pool.token1Symbol,
                         logoUri: pool.token1LogoUri

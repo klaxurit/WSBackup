@@ -13,6 +13,7 @@ import { Modal } from '../../../components/Common/Modal';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import { ClaimInput } from '../../../components/Inputs/ClaimInput';
 import { useQuery } from '@tanstack/react-query';
+import { transformGraphQLTokenToLegacyToken } from '../../../types/api';
 
 const GET_POSITION = `
 query GetPosition($id: String!) {
@@ -105,51 +106,8 @@ const PoolViewPage: React.FC = () => {
   const position = posData
 
   // Transform tokens to match expected interface
-  const token0 = pool?.token0Ref ? {
-    TokenPrice: [],
-    address: pool.token0Ref.id,
-    coingeckoId: "",
-    createdAt: "",
-    decimals: pool.token0Ref.decimals,
-    description: "",
-    discoveredAt: "",
-    isStableCoin: false,
-    isVerifiedManually: false,
-    lastActivityAt: "",
-    lastEnrichmentAt: "",
-    logoUri: pool.token0Ref.logoUri || "",
-    metadata: {},
-    name: pool.token0Ref.name,
-    status: "",
-    symbol: pool.token0Ref.symbol,
-    totalSupply: "0",
-    twitter: "",
-    updatedAt: "",
-    website: ""
-  } : null
-
-  const token1 = pool?.token1Ref ? {
-    TokenPrice: [],
-    address: pool.token1Ref.id,
-    coingeckoId: "",
-    createdAt: "",
-    decimals: pool.token1Ref.decimals,
-    description: "",
-    discoveredAt: "",
-    isStableCoin: false,
-    isVerifiedManually: false,
-    lastActivityAt: "",
-    lastEnrichmentAt: "",
-    logoUri: pool.token1Ref.logoUri || "",
-    metadata: {},
-    name: pool.token1Ref.name,
-    status: "",
-    symbol: pool.token1Ref.symbol,
-    totalSupply: "0",
-    twitter: "",
-    updatedAt: "",
-    website: ""
-  } : null
+  const token0 = pool?.token0Ref ? transformGraphQLTokenToLegacyToken(pool.token0Ref) : null
+  const token1 = pool?.token1Ref ? transformGraphQLTokenToLegacyToken(pool.token1Ref) : null
 
   const pm = usePositionManager(posData, config)
   const { inRange, positionDetails } = pm
