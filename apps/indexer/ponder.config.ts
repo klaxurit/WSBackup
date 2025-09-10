@@ -1,5 +1,5 @@
 import { createConfig, factory } from "ponder";
-import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI, StickyVaultFactoryABI, StickyVaultRouter, StickyVaultWithRouter } from "@repo/contracts";
+import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI, StickyVaultFactoryABI, StickyVaultRouter, StickyVaultWithRouter } from "./src/utils/abi";
 
 export default createConfig({
   database: {

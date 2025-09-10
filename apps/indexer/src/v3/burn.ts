@@ -1,12 +1,12 @@
 import { ponder } from "ponder:registry";
 import { factory as sFactory, burn as sBurn, pool as sPool, tick as sTick, token as sToken, transaction as sTransaction, bundle } from "ponder:schema";
 import { getOrCreateTransaction, getTickId } from "./helpers";
-import { CONTRACTS } from "@repo/contracts";
 import Decimal from "decimal.js";
 import { updateProtocolDayData } from "../stats/porotocolDay";
 import { updatePoolStats } from "../stats/pool";
 import { updateTokenStats } from "../stats/token";
 import { formatUnits } from "viem";
+import { CONTRACTS } from "../utils/abi";
 
 ponder.on("v3Pool:Burn", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });

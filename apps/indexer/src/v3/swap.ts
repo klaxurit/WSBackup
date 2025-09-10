@@ -1,7 +1,7 @@
 import { ponder } from "ponder:registry";
 import { bundle, factory as sFactory, pool as sPool, swap as sSwap, token as sToken } from "ponder:schema";
 import { getOrCreateTransaction } from "./helpers";
-import { CONTRACTS } from "@repo/contracts";
+import { CONTRACTS } from "../utils/abi";
 import { Decimal } from "decimal.js";
 import { formatUnits } from "viem";
 import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices } from "../utils/pricing";

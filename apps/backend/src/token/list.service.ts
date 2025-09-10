@@ -21,7 +21,7 @@ export class TokenListService implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    // await this.updateGeneralList();
+    await this.updateGeneralList();
     // this.updateInPoolStatus();
   }
 

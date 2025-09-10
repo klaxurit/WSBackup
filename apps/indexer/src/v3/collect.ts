@@ -1,6 +1,6 @@
 import { ponder } from "ponder:registry";
 import { factory as sFactory, pool as sPool, token as sToken, collect as sCollect, bundle, position } from "ponder:schema";
-import { CONTRACTS } from "@repo/contracts";
+import { CONTRACTS } from "../utils/abi";
 import Decimal from "decimal.js";
 import { getOrCreateTransaction } from "./helpers";
 import { updateProtocolDayData } from "../stats/porotocolDay";
@@ -39,31 +39,6 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const totalCollectedBera = amount0Bera.plus(amount1Bera)
   const totalCollectedUSD = totalCollectedBera.mul(beraPriceUSD)
 
-  // const userPosition = await context.db.sql.query.position.findFirst({
-  //   where: (t, { and, eq }) =>
-  //     and(
-  //       eq(t.owner, event.args.owner),
-  //       eq(t.pool, pool.id),
-  //       eq(t.tickLower, event.args.tickLower),
-  //       eq(t.tickUpper, event.args.tickUpper)
-  //     )
-  // })
-  // console.log("ici", userPosition)
-  // if (userPosition && userPosition.tokenId) {
-  //   const positionData = await context.client.readContract({
-  //     address: context.contracts.v3PositionManager.address,
-  //     abi: context.contracts.v3PositionManager.abi,
-  //     functionName: "positions",
-  //     args: [userPosition.tokenId],
-  //   });
-  //   if (positionData) {
-  //     await context.db.update(position, { id: userPosition.id }).set({
-  //       feeGrowthInside0LastX128: positionData[8],
-  //       feeGrowthInside1LastX128: positionData[9]
-  //     })
-  //   }
-  // }
-
   pool.collectedFeesToken0 = new Decimal(pool.collectedFeesToken0).plus(amount0).toString()
   pool.collectedFeesToken1 = new Decimal(pool.collectedFeesToken1).plus(amount1).toString()
   pool.collectedFeesUSD = Decimal(pool.collectedFeesUSD).plus(totalCollectedUSD).toString()
@@ -72,8 +47,6 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const poolCollectedFeesT1Bera = new Decimal(pool.collectedFeesToken1).mul(token1.derivedBERA)
   const poolCollectedFeesTotalBera = poolCollectedFeesT0Bera.plus(poolCollectedFeesT1Bera)
   const poolCollectedFeesTotalUSD = poolCollectedFeesTotalBera.mul(beraPriceUSD)
-
-  // Update position feeGrowth.
 
   const collectId = `${event.transaction.hash}#${event.log.logIndex}`;
   const txEntity = await getOrCreateTransaction(context, event);

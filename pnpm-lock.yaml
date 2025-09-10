@@ -181,9 +181,6 @@ importers:
 
   apps/indexer:
     dependencies:
-      '@repo/contracts':
-        specifier: '*'
-        version: link:../../packages/contracts
       decimal.js:
         specifier: ^10.6.0
         version: 10.6.0
@@ -300,19 +297,6 @@ importers:
       vite:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@22.15.32)(sass-embedded@1.89.2)
-
-  packages/contracts:
-    dependencies:
-      viem:
-        specifier: ^2.30.0
-        version: 2.31.3(typescript@5.8.2)(zod@3.22.4)
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      tsx:
-        specifier: ^4.0.0
-        version: 4.20.3
 
   packages/db:
     dependencies:

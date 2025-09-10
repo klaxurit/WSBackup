@@ -1,7 +1,6 @@
 import { ponder } from "ponder:registry";
 import { getOrCreateFactory, getOrCreateToken } from "./helpers";
 import { bundle, factory, pool, token } from "ponder:schema";
-import { logFactory, logDebug } from "../utils/logger";
 
 const WHITELIST_TOKENS = [
   "0x6969696969696969696969696969696969696969", // wBera
@@ -17,20 +16,6 @@ const WHITELIST_TOKENS = [
 ]
 
 ponder.on("v3Factory:PoolCreated", async ({ event, context }) => {
-  // const logContext = {
-  //   event: 'factory',
-  //   pool: event.args.pool,
-  //   token0: event.args.token0,
-  //   token1: event.args.token1,
-  //   txHash: event.transaction.hash,
-  //   blockNumber: event.block.number
-  // }
-
-  // logDebug(logContext, "Processing PoolCreated event", {
-  //   fee: event.args.fee,
-  //   tickSpacing: event.args.tickSpacing
-  // })
-
   // Load factory
   const factoryEntity = await getOrCreateFactory(context, event.log.address);
 
@@ -102,15 +87,4 @@ ponder.on("v3Factory:PoolCreated", async ({ event, context }) => {
         whitelistPools: [...row.whitelistPools, event.args.pool]
       })),
   ]);
-
-  // logFactory(logContext, {
-  //   poolAddress: event.args.pool,
-  //   token0Symbol: token0Entity.symbol,
-  //   token1Symbol: token1Entity.symbol,
-  //   fee: event.args.fee,
-  //   tickSpacing: event.args.tickSpacing,
-  //   factoryPoolCount: factoryEntity.poolCount + 1,
-  //   token0PoolCount: token0Entity.poolCount + 1,
-  //   token1PoolCount: token1Entity.poolCount + 1
-  // })
 })

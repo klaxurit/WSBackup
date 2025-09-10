@@ -1,5 +1,4 @@
 import { index, onchainTable, relations } from "ponder";
-import { oneWorld } from "viem/chains";
 
 // ============ ENTITIES ============
 

@@ -1,4 +1,4 @@
-import { CONTRACTS } from "@repo/contracts";
+import { CONTRACTS } from "../utils/abi";
 import Decimal from "decimal.js";
 import { ponder } from "ponder:registry";
 import { bundle, position as sPosition, token, factory as sFactory, pool as sPool } from "ponder:schema";
