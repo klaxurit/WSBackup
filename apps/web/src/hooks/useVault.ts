@@ -41,7 +41,7 @@ export interface VaultManager {
     hash?: Hex
     refetch: () => void
   }
-  t10Allowance: {
+  t1Allowance: {
     isNeed: boolean
     current?: bigint
     allow: () => void
@@ -414,7 +414,7 @@ export const useVault = (config: VaultConfig): VaultManager => {
       hash: approveT0Hash,
       refetch: checkT0Allowance
     },
-    t10Allowance: {
+    t1Allowance: {
       isNeed: t1NeedApproval,
       current: t1Allowance,
       allow: handleApproveT1,
