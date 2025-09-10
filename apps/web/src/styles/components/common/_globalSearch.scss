@@ -1,0 +1,205 @@
+@use "../../utils" as *;
+
+.GlobalSearch {
+  &__Dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #180E00;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    border: 1px solid $white-008;
+    padding: 8px;
+    max-height: 340px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 4px;
+
+    // Scrollbar styling
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+
+  &__Section {
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__SectionTitle {
+    font-weight: 600;
+    color: $beryl-pure;
+    font-size: 13px;
+    margin: 4px 0 4px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__DropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    position: relative;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    &:active {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  &__TokenInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0; // Permet au texte de se tronquer
+  }
+
+  &__TokenLogo {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #232323;
+    background: #fff;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__PoolLogos {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    width: 36px;
+    height: 28px;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  &__PoolLogo {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #232323;
+    background: #fff;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    &--token0 {
+      left: 0;
+      z-index: 2;
+    }
+
+    &--token1 {
+      left: 14px;
+      z-index: 1;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__TokenSymbol {
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__TokenName {
+    color: #aaa;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  &__PoolFee {
+    color: #aaa;
+    font-size: 13px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &__NoResults {
+    color: #aaa;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 14px;
+    font-style: italic;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 767px) {
+  .GlobalSearch {
+    &__Dropdown {
+      max-height: 280px;
+      padding: 6px;
+    }
+
+    &__DropdownItem {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    &__TokenLogo,
+    &__PoolLogo {
+      width: 20px;
+      height: 20px;
+    }
+
+    &__PoolLogos {
+      width: 32px;
+      height: 24px;
+    }
+
+    &__PoolLogo--token1 {
+      left: 12px;
+    }
+  }
+}

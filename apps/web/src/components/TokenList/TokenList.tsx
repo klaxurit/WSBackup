@@ -26,17 +26,18 @@ export const TokenList = ({
   onlyPoolToken
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
-  const { data: tokens } = useTokens()
+  const { data: tokens, isLoading: tokensLoading, error: tokensError } = useTokens()
   const { address, isConnected } = useAccount()
 
-  const { data: tokensStats } = useQuery({
+  const { data: tokensStats, isLoading: tokensStatsLoading } = useQuery({
     queryKey: ["tokensStatsForList"],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`)
       if (!resp.ok) return { data: [] as any[] }
       return resp.json()
     },
-    staleTime: 60_000
+    staleTime: 60_000,
+    enabled: isOpen // Ne charger que quand la modal est ouverte
   })
 
   const tokensArray = ensureArray<BerachainToken>(tokens);
@@ -47,6 +48,10 @@ export const TokenList = ({
   };
 
   const filteredTokens = useMemo(() => {
+    if (!tokens || tokensLoading) {
+      return [];
+    }
+
     const tokensArray = ensureArray(tokens) as BerachainToken[];
 
     const onlyPoolOrAllTokens = onlyPoolToken
@@ -55,21 +60,49 @@ export const TokenList = ({
 
     const tokensWithoutBGT = onlyPoolOrAllTokens.filter(t => t.symbol !== 'BGT')
 
-    if (searchValue === "") return tokensWithoutBGT;
-    return tokensWithoutBGT.filter((token) =>
+    // Déduplication des tokens par adresse pour éviter les doublons
+    const uniqueTokens = tokensWithoutBGT.reduce((acc, token) => {
+      const key = token.address.toLowerCase();
+      if (!acc.has(key)) {
+        acc.set(key, token);
+      }
+      return acc;
+    }, new Map<string, BerachainToken>());
+
+    const deduplicatedTokens = Array.from(uniqueTokens.values());
+
+    if (searchValue === "") {
+      return deduplicatedTokens;
+    }
+
+    return deduplicatedTokens.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchValue.toLowerCase())
     );
-  }, [searchValue, tokensArray, onlyPoolToken]);
+  }, [searchValue, tokens, tokensLoading, onlyPoolToken]);
 
   const availableTokensForPopular = useMemo(() => {
+    if (!tokens || tokensLoading) return [];
+
     const tokensArray = ensureArray(tokens) as BerachainToken[];
 
     const baseTokens = onlyPoolToken
       ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
       : tokensArray
-    return baseTokens.filter(t => t.symbol !== 'BGT');
-  }, [tokens, onlyPoolToken]);
+
+    const tokensWithoutBGT = baseTokens.filter(t => t.symbol !== 'BGT');
+
+    // Déduplication des tokens par adresse pour éviter les doublons
+    const uniqueTokens = tokensWithoutBGT.reduce((acc, token) => {
+      const key = token.address.toLowerCase();
+      if (!acc.has(key)) {
+        acc.set(key, token);
+      }
+      return acc;
+    }, new Map<string, BerachainToken>());
+
+    return Array.from(uniqueTokens.values());
+  }, [tokens, tokensLoading, onlyPoolToken]);
 
   const marketCapByAddress = useMemo(() => {
     const map = new Map<string, number>()
@@ -158,6 +191,12 @@ export const TokenList = ({
     return [...filteredTokens].sort((a, b) => getMarketCap(b) - getMarketCap(a))
   }, [filteredTokens, balances, isConnected, tokensStats, marketCapByAddress])
 
+  // Gestion des états de chargement et d'erreur
+  const isLoading = tokensLoading || tokensStatsLoading;
+  const hasError = !!tokensError;
+  const hasTokens = tokensArray.length > 0;
+
+
   return (
     <Modal open={isOpen} onClose={onClose} className="Modal" overlayClassName="NetworksList">
       <div className="Modal__Header">
@@ -181,24 +220,54 @@ export const TokenList = ({
         setSearchValue={setSearchValue}
         networksList={true}
       />
-      {searchValue === "" && (
-        <PopularTokens
-          tokens={availableTokensForPopular}
-          onTokenSelect={handleTokenSelect}
-          selectedToken={selectedToken}
-        />
-      )}
 
-      <div className="Modal__Content">
-        {sortedTokens.map((token) => (
-          <TokenItem
-            key={token.address || token.symbol}
-            token={token}
-            isSelected={selectedToken?.address === token.address}
-            onSelect={handleTokenSelect.bind(null, token)}
-          />
-        ))}
-      </div>
+      {/* Affichage conditionnel basé sur l'état de chargement */}
+      {isLoading ? (
+        <div className="Modal__Content">
+          <div className="Modal__Loading">
+            <div className="Modal__LoadingText">Loading tokens...</div>
+          </div>
+        </div>
+      ) : hasError ? (
+        <div className="Modal__Content">
+          <div className="Modal__Error">
+            <div className="Modal__ErrorText">Failed to load tokens. Please try again.</div>
+            <button
+              className="Modal__RetryButton"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : !hasTokens ? (
+        <div className="Modal__Content">
+          <div className="Modal__Empty">
+            <div className="Modal__EmptyText">No tokens available</div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {searchValue === "" && (
+            <PopularTokens
+              tokens={availableTokensForPopular}
+              onTokenSelect={handleTokenSelect}
+              selectedToken={selectedToken}
+            />
+          )}
+
+          <div className="Modal__Content">
+            {sortedTokens.map((token, index) => (
+              <TokenItem
+                key={`${token.address || token.symbol}-${index}`}
+                token={token}
+                isSelected={selectedToken?.address === token.address}
+                onSelect={handleTokenSelect.bind(null, token)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </Modal>
   );
 };

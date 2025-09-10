@@ -17,39 +17,38 @@ import type {
 const INTERVAL_CONFIG = {
   '1H': {
     period: 'hour' as const,
-    limit: 24, // 24 heures
+    limit: 1000, // Maximum autorisé par l'API (1000 heures = ~42 jours)
+    groupBy: 1, // 1 heure par point
     staleTime: 60 * 1000, // 1 minute
     refetchInterval: 60 * 1000
   },
   '4H': {
     period: 'hour' as const,
-    limit: 168, // 7 jours (168h / 4h = 42 points)
+    limit: 1000, // Maximum autorisé par l'API (1000 heures = ~42 jours)
+    groupBy: 4, // 4 heures par point
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5 * 60 * 1000
   },
   '1D': {
     period: 'day' as const,
-    limit: 7, // 7 jours
+    limit: 90, // 3 mois de données daily
+    groupBy: 1, // 1 jour par point
     staleTime: 10 * 60 * 1000, // 10 minutes
     refetchInterval: 10 * 60 * 1000
   },
   '1W': {
     period: 'day' as const,
-    limit: 30, // 30 jours (4 semaines)
+    limit: 90, // 3 mois de données daily
+    groupBy: 7, // 7 jours par point
     staleTime: 30 * 60 * 1000, // 30 minutes
     refetchInterval: 30 * 60 * 1000
   },
   '1M': {
     period: 'day' as const,
-    limit: 90, // 90 jours (3 mois)
+    limit: 90, // 3 mois de données daily
+    groupBy: 30, // 30 jours par point
     staleTime: 60 * 60 * 1000, // 1 heure
     refetchInterval: 60 * 60 * 1000
-  },
-  '1Y': {
-    period: 'day' as const,
-    limit: 365, // 365 jours (1 an)
-    staleTime: 2 * 60 * 60 * 1000, // 2 heures
-    refetchInterval: 2 * 60 * 60 * 1000
   }
 };
 
@@ -87,10 +86,16 @@ const buildPoolQuery = (poolAddress: string, _metric: ChartMetric, interval: Cha
           tvlUSD
           volumeUSD
           feesUSD
-          open
-          high
-          low
-          close
+          token0Price
+          token1Price
+          t0open
+          t0high
+          t0low
+          t0close
+          t1open
+          t1high
+          t1low
+          t1close
         }
       }
     }
@@ -132,27 +137,217 @@ const buildTokenQuery = (tokenAddress: string, _metric: ChartMetric, interval: C
   `;
 };
 
+// Fonction pour grouper les données de pool selon l'intervalle
+const groupPoolDataByInterval = (
+  data: PoolDayData[] | PoolHourData[],
+  interval: ChartInterval
+): (PoolDayData | PoolHourData)[] => {
+  const config = INTERVAL_CONFIG[interval];
+
+  if (config.groupBy === 1) {
+    // Pas de groupement nécessaire
+    return data;
+  }
+
+  const groupedData: (PoolDayData | PoolHourData)[] = [];
+  const sortedData = [...data].sort((a, b) => {
+    const timeA = 'periodStartUnix' in a ? a.periodStartUnix : a.date;
+    const timeB = 'periodStartUnix' in b ? b.periodStartUnix : b.date;
+    return timeA - timeB;
+  });
+
+  for (let i = 0; i < sortedData.length; i += config.groupBy) {
+    const group = sortedData.slice(i, i + config.groupBy);
+    if (group.length === 0) continue;
+
+    // Prendre le premier élément comme base
+    const baseItem = { ...group[0] };
+
+    // Ajuster le timestamp pour représenter le début de la période groupée
+    if ('periodStartUnix' in baseItem) {
+      // Pour les données hourly, ajuster selon l'intervalle
+      if (config.period === 'hour') {
+        if (config.groupBy === 4) {
+          // Pour 4H, arrondir à l'heure la plus proche divisible par 4
+          const hour = Math.floor(baseItem.periodStartUnix / 3600);
+          const roundedHour = Math.floor(hour / 4) * 4;
+          baseItem.periodStartUnix = roundedHour * 3600;
+        }
+      }
+    } else if ('date' in baseItem) {
+      // Pour les données daily, ajuster selon l'intervalle
+      if (config.period === 'day') {
+        if (config.groupBy === 7) {
+          // Pour 1W, arrondir au début de la semaine (lundi)
+          const date = new Date(baseItem.date * 1000);
+          const dayOfWeek = date.getDay();
+          const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 = dimanche, 1 = lundi
+          date.setDate(date.getDate() - daysToMonday);
+          baseItem.date = Math.floor(date.getTime() / 1000);
+        } else if (config.groupBy === 30) {
+          // Pour 1M, arrondir au premier du mois
+          const date = new Date(baseItem.date * 1000);
+          date.setDate(1);
+          baseItem.date = Math.floor(date.getTime() / 1000);
+        }
+      }
+    }
+
+    // Calculer les moyennes pour les métriques numériques
+    baseItem.tvlUSD = (group.reduce((sum, item) => sum + parseFloat(item.tvlUSD), 0) / group.length).toString();
+    baseItem.volumeUSD = (group.reduce((sum, item) => sum + parseFloat(item.volumeUSD), 0) / group.length).toString();
+    baseItem.feesUSD = (group.reduce((sum, item) => sum + parseFloat(item.feesUSD), 0) / group.length).toString();
+    baseItem.token0Price = (group.reduce((sum, item) => sum + parseFloat(item.token0Price), 0) / group.length).toString();
+    baseItem.token1Price = (group.reduce((sum, item) => sum + parseFloat(item.token1Price), 0) / group.length).toString();
+
+    // Pour les données OHLC, prendre le premier open, le max high, le min low, et le dernier close
+    baseItem.t0open = group[0].t0open;
+    baseItem.t0high = Math.max(...group.map(item => parseFloat(item.t0high))).toString();
+    baseItem.t0low = Math.min(...group.map(item => parseFloat(item.t0low))).toString();
+    baseItem.t0close = group[group.length - 1].t0close;
+
+    baseItem.t1open = group[0].t1open;
+    baseItem.t1high = Math.max(...group.map(item => parseFloat(item.t1high))).toString();
+    baseItem.t1low = Math.min(...group.map(item => parseFloat(item.t1low))).toString();
+    baseItem.t1close = group[group.length - 1].t1close;
+
+    groupedData.push(baseItem);
+  }
+
+  return groupedData;
+};
+
+// Fonction pour grouper les données de token selon l'intervalle
+const groupTokenDataByInterval = (
+  data: TokenDayData[] | TokenHourData[],
+  interval: ChartInterval
+): (TokenDayData | TokenHourData)[] => {
+  const config = INTERVAL_CONFIG[interval];
+
+  if (config.groupBy === 1) {
+    // Pas de groupement nécessaire
+    return data;
+  }
+
+  const groupedData: (TokenDayData | TokenHourData)[] = [];
+  const sortedData = [...data].sort((a, b) => {
+    const timeA = 'periodStartUnix' in a ? a.periodStartUnix : a.date;
+    const timeB = 'periodStartUnix' in b ? b.periodStartUnix : b.date;
+    return timeA - timeB;
+  });
+
+  for (let i = 0; i < sortedData.length; i += config.groupBy) {
+    const group = sortedData.slice(i, i + config.groupBy);
+    if (group.length === 0) continue;
+
+    // Prendre le premier élément comme base
+    const baseItem = { ...group[0] };
+
+    // Ajuster le timestamp pour représenter le début de la période groupée
+    if ('periodStartUnix' in baseItem) {
+      // Pour les données hourly, ajuster selon l'intervalle
+      if (config.period === 'hour') {
+        if (config.groupBy === 4) {
+          // Pour 4H, arrondir à l'heure la plus proche divisible par 4
+          const hour = Math.floor(baseItem.periodStartUnix / 3600);
+          const roundedHour = Math.floor(hour / 4) * 4;
+          baseItem.periodStartUnix = roundedHour * 3600;
+        }
+      }
+    } else if ('date' in baseItem) {
+      // Pour les données daily, ajuster selon l'intervalle
+      if (config.period === 'day') {
+        if (config.groupBy === 7) {
+          // Pour 1W, arrondir au début de la semaine (lundi)
+          const date = new Date(baseItem.date * 1000);
+          const dayOfWeek = date.getDay();
+          const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 = dimanche, 1 = lundi
+          date.setDate(date.getDate() - daysToMonday);
+          baseItem.date = Math.floor(date.getTime() / 1000);
+        } else if (config.groupBy === 30) {
+          // Pour 1M, arrondir au premier du mois
+          const date = new Date(baseItem.date * 1000);
+          date.setDate(1);
+          baseItem.date = Math.floor(date.getTime() / 1000);
+        }
+      }
+    }
+
+    // Calculer les moyennes pour les métriques numériques
+    baseItem.priceUSD = (group.reduce((sum, item) => sum + parseFloat(item.priceUSD), 0) / group.length).toString();
+    baseItem.volumeUSD = (group.reduce((sum, item) => sum + parseFloat(item.volumeUSD), 0) / group.length).toString();
+    baseItem.totalValueLockedUSD = (group.reduce((sum, item) => sum + parseFloat(item.totalValueLockedUSD), 0) / group.length).toString();
+    baseItem.feesUSD = (group.reduce((sum, item) => sum + parseFloat(item.feesUSD), 0) / group.length).toString();
+
+    // Pour les données OHLC, prendre le premier open, le max high, le min low, et le dernier close
+    baseItem.open = group[0].open;
+    baseItem.high = Math.max(...group.map(item => parseFloat(item.high))).toString();
+    baseItem.low = Math.min(...group.map(item => parseFloat(item.low))).toString();
+    baseItem.close = group[group.length - 1].close;
+
+    groupedData.push(baseItem);
+  }
+
+  return groupedData;
+};
+
 // Fonction pour traiter les données de pool
 const processPoolData = (
   data: PoolDayData[] | PoolHourData[],
   metric: ChartMetric,
-  chartType: ChartType
+  chartType: ChartType,
+  interval: ChartInterval
 ): LineChartPoint[] | CandlestickPoint[] => {
   if (!data || data.length === 0) return [];
 
-  const sortedData = [...data].reverse(); // Trier par ordre chronologique
+  // Grouper les données selon l'intervalle
+  const groupedData = groupPoolDataByInterval(data, interval);
+  // Trier par ordre chronologique croissant (du plus ancien au plus récent)
+  const sortedData = [...groupedData].sort((a, b) => {
+    const timeA = 'periodStartUnix' in a ? a.periodStartUnix : a.date;
+    const timeB = 'periodStartUnix' in b ? b.periodStartUnix : b.date;
+    return timeA - timeB;
+  });
+
+  // Dédupliquer les données avec le même timestamp (garder la plus récente)
+  const uniqueData = sortedData.reduce((acc, current) => {
+    const currentTime = 'periodStartUnix' in current ? current.periodStartUnix : current.date;
+    const existingIndex = acc.findIndex(item => {
+      const itemTime = 'periodStartUnix' in item ? item.periodStartUnix : item.date;
+      return itemTime === currentTime;
+    });
+
+    if (existingIndex === -1) {
+      acc.push(current);
+    } else {
+      // Remplacer par la version la plus récente (en gardant la même logique de tri)
+      acc[existingIndex] = current;
+    }
+
+    return acc;
+  }, [] as typeof sortedData);
 
   if (chartType === 'candlestick') {
-    return sortedData.map(item => ({
-      time: 'periodStartUnix' in item ? item.periodStartUnix : item.date,
-      open: parseFloat(item.open),
-      high: parseFloat(item.high),
-      low: parseFloat(item.low),
-      close: parseFloat(item.close),
-    })) as CandlestickPoint[];
+    // Utilisons les données OHLC réelles de Ponder
+    // Pour les pools, nous avons t0open/t0high/t0low/t0close et t1open/t1high/t1low/t1close
+    // Nous utiliserons t0close comme prix de base (token0)
+    return uniqueData.map(item => {
+      const t0open = parseFloat(item.t0open);
+      const t0high = parseFloat(item.t0high);
+      const t0low = parseFloat(item.t0low);
+      const t0close = parseFloat(item.t0close);
+
+      return {
+        time: 'periodStartUnix' in item ? item.periodStartUnix : item.date,
+        open: t0open,
+        high: t0high,
+        low: t0low,
+        close: t0close,
+      };
+    }) as CandlestickPoint[];
   }
 
-  return sortedData.map(item => {
+  return uniqueData.map(item => {
     let value = 0;
     switch (metric) {
       case 'tvl':
@@ -166,7 +361,7 @@ const processPoolData = (
         break;
       case 'price':
       default:
-        value = parseFloat(item.close);
+        value = parseFloat(item.token0Price);
         break;
     }
 
@@ -181,14 +376,40 @@ const processPoolData = (
 const processTokenData = (
   data: TokenDayData[] | TokenHourData[],
   metric: ChartMetric,
-  chartType: ChartType
+  chartType: ChartType,
+  interval: ChartInterval
 ): LineChartPoint[] | CandlestickPoint[] => {
   if (!data || data.length === 0) return [];
 
-  const sortedData = [...data].reverse(); // Trier par ordre chronologique
+  // Grouper les données selon l'intervalle
+  const groupedData = groupTokenDataByInterval(data, interval);
+  // Trier par ordre chronologique croissant (du plus ancien au plus récent)
+  const sortedData = [...groupedData].sort((a, b) => {
+    const timeA = 'periodStartUnix' in a ? a.periodStartUnix : a.date;
+    const timeB = 'periodStartUnix' in b ? b.periodStartUnix : b.date;
+    return timeA - timeB;
+  });
+
+  // Dédupliquer les données avec le même timestamp (garder la plus récente)
+  const uniqueData = sortedData.reduce((acc, current) => {
+    const currentTime = 'periodStartUnix' in current ? current.periodStartUnix : current.date;
+    const existingIndex = acc.findIndex(item => {
+      const itemTime = 'periodStartUnix' in item ? item.periodStartUnix : item.date;
+      return itemTime === currentTime;
+    });
+
+    if (existingIndex === -1) {
+      acc.push(current);
+    } else {
+      // Remplacer par la version la plus récente (en gardant la même logique de tri)
+      acc[existingIndex] = current;
+    }
+
+    return acc;
+  }, [] as typeof sortedData);
 
   if (chartType === 'candlestick') {
-    return sortedData.map(item => ({
+    return uniqueData.map(item => ({
       time: 'periodStartUnix' in item ? item.periodStartUnix : item.date,
       open: parseFloat(item.open),
       high: parseFloat(item.high),
@@ -197,7 +418,7 @@ const processTokenData = (
     })) as CandlestickPoint[];
   }
 
-  return sortedData.map(item => {
+  return uniqueData.map(item => {
     let value = 0;
     switch (metric) {
       case 'tvl':
@@ -298,8 +519,8 @@ export function usePonderChartData(
         : result.data.tokenDayDatas?.items || result.data.tokenHourDatas?.items || [];
 
       return isPoolData
-        ? processPoolData(data as PoolDayData[] | PoolHourData[], metric, chartType)
-        : processTokenData(data as TokenDayData[] | TokenHourData[], metric, chartType);
+        ? processPoolData(data as PoolDayData[] | PoolHourData[], metric, chartType, interval)
+        : processTokenData(data as TokenDayData[] | TokenHourData[], metric, chartType, interval);
     },
     staleTime: config.staleTime,
     refetchInterval: config.refetchInterval,

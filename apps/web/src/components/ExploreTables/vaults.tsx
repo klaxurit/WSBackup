@@ -111,7 +111,6 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
         return row?.apr || 0;
       },
       render: (row) => {
-        console.log(row)
         return (
           <span className="VaultsTable__AprCell">
             {row?.apr && row.apr !== 0

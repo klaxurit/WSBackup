@@ -25,9 +25,9 @@ export const PopularTokens: React.FC<PopularTokensProps> = ({
         Popular tokens
       </div>
       <div className="PopularTokens__List">
-        {popularTokens.map((token) => (
+        {popularTokens.map((token, index) => (
           <button
-            key={token.address || token.symbol}
+            key={`popular-${token.address || token.symbol}-${index}`}
             className={`PopularTokens__Button ${selectedToken?.address === token.address ? 'PopularTokens__Button--selected' : ''
               }`}
             onClick={() => onTokenSelect(token)}

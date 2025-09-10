@@ -1,6 +1,6 @@
 // Types pour les charts
 export type ChartType = 'area' | 'line' | 'candlestick';
-export type ChartInterval = '1H' | '4H' | '1D' | '1W' | '1M' | '1Y';
+export type ChartInterval = '1H' | '4H' | '1D' | '1W' | '1M';
 export type ChartMetric = 'price' | 'tvl' | 'volume' | 'fees';
 
 // Types pour les données de chart
@@ -51,10 +51,16 @@ export interface PoolDayData {
   tvlUSD: string;
   volumeUSD: string;
   feesUSD: string;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
+  token0Price: string;
+  token1Price: string;
+  t0open: string;
+  t0high: string;
+  t0low: string;
+  t0close: string;
+  t1open: string;
+  t1high: string;
+  t1low: string;
+  t1close: string;
 }
 
 export interface PoolHourData {
@@ -77,10 +83,16 @@ export interface PoolHourData {
   tvlUSD: string;
   volumeUSD: string;
   feesUSD: string;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
+  token0Price: string;
+  token1Price: string;
+  t0open: string;
+  t0high: string;
+  t0low: string;
+  t0close: string;
+  t1open: string;
+  t1high: string;
+  t1low: string;
+  t1close: string;
 }
 
 export interface TokenDayData {

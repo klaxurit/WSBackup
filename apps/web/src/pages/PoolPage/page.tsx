@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import LineChart from '../../components/Charts/LineChart';
+import { ChartWidget } from '../../components/Charts/ChartWidget';
+import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerChevronIcon, ExplorerIcon } from '../../components/SVGs';
 import { CopyIcon } from '../../components/SVGs/ProductSVGs';
@@ -72,6 +73,11 @@ interface GraphQLResponse {
 const PoolDetailPage: React.FC = () => {
   const { poolAddress } = useParams<{ poolAddress: string }>();
 
+  // États pour les contrôles du chart
+  const [chartType, setChartType] = React.useState<ChartType>('area');
+  const [interval, setInterval] = React.useState<ChartInterval>('1D');
+  const [metric, setMetric] = React.useState<ChartMetric>('price');
+
   const { data: poolsData, isLoading: poolsLoading } = useQuery({
     queryKey: ['topPools'],
     queryFn: async () => {
@@ -111,32 +117,20 @@ const PoolDetailPage: React.FC = () => {
     }
   }, [pools, poolAddress]);
 
-  const { data: chartData = [], isLoading: chartLoading } = useQuery({
-    queryKey: ['pool-chart', poolAddress],
-    enabled: false,
-    queryFn: async () => {
-      // TODO: Réactiver quand l'endpoint backend sera disponible
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/pool/${poolAddress}`);
-      // if (!res.ok) throw new Error('API error');
-      // const data = await res.json();
-      // return data.map((d: any) => ({
-      //   time: Math.floor(d.timestamp / 1000),
-      //   value: d.price,
-      // }));
+  // Handlers pour les contrôles du chart
+  const handleChartTypeChange = (newType: ChartType) => {
+    setChartType(newType);
+  };
 
-      return [
-        { time: (Math.floor(Date.now() / 1000) - 7 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.001 },
-        { time: (Math.floor(Date.now() / 1000) - 6 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0012 },
-        { time: (Math.floor(Date.now() / 1000) - 5 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0009 },
-        { time: (Math.floor(Date.now() / 1000) - 4 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0011 },
-        { time: (Math.floor(Date.now() / 1000) - 3 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0013 },
-        { time: (Math.floor(Date.now() / 1000) - 2 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.001 },
-        { time: (Math.floor(Date.now() / 1000) - 1 * 24 * 3600) as import('lightweight-charts').UTCTimestamp, value: 0.0014 },
-        { time: (Math.floor(Date.now() / 1000)) as import('lightweight-charts').UTCTimestamp, value: 0.0012 }
-      ];
-    },
-    staleTime: 60 * 1000,
-  });
+  const handleIntervalChange = (newInterval: ChartInterval) => {
+    setInterval(newInterval);
+  };
+
+  const handleMetricChange = (newMetric: ChartMetric) => {
+    setMetric(newMetric);
+  };
+
+  const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (poolsLoading) {
     return <div style={{ padding: 32 }}>Loading pool data...</div>;
@@ -215,15 +209,19 @@ const PoolDetailPage: React.FC = () => {
 
           {/* Chart Section */}
           <div className="Pool__Chart">
-            {chartLoading ? (
-              <div style={{ padding: 32 }}>Loading chart...</div>
-            ) : (
-              <LineChart
-                data={chartData}
-                height={400}
-                priceFormatter={(price: number) => `$${price.toFixed(6)}`}
-              />
-            )}
+            <ChartWidget
+              poolAddress={poolAddress}
+              chartType={chartType}
+              interval={interval}
+              metric={metric}
+              height={400}
+              showToolbar={true}
+              priceFormatter={priceFormatter}
+              onChartTypeChange={handleChartTypeChange}
+              onIntervalChange={handleIntervalChange}
+              onMetricChange={handleMetricChange}
+              dataType="pool"
+            />
           </div>
 
           {/* Statistics Section */}

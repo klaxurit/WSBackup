@@ -6,11 +6,17 @@ import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon 
 import { useCoingeckoTokenData } from '../../hooks/useCoingeckoData';
 import { formatNumber } from '../../utils/formatNumber';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
-import LineChart from '../../components/Charts/LineChart';
+import { ChartWidget } from '../../components/Charts/ChartWidget';
+import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import { formatUnits } from 'viem';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
+
+  // États pour les contrôles du chart
+  const [chartType, setChartType] = React.useState<ChartType>('area');
+  const [interval, setInterval] = React.useState<ChartInterval>('1D');
+  const [metric, setMetric] = React.useState<ChartMetric>('price');
   const { data: tokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
@@ -89,79 +95,22 @@ const TokenPage: React.FC = () => {
   const fdv = stat?.fdv || 0
 
   // 1D Volume: backend then fallback CoinGecko
-  const volume1d = stat?.volume ? parseFloat(formatUnits(stat.volume, token?.decimals || 18)) : 0
-  // Hook pour charger l'historique de prix d'un token (endpoint /stats/token/:address)
-  function useTokenLineChart(tokenAddress?: string | null) {
-    return useQuery({
-      queryKey: ['token-line-chart', tokenAddress],
-      enabled: !!tokenAddress,
-      queryFn: async () => {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/token/stats/${tokenAddress}`);
-        if (!res.ok) throw new Error('API error');
-        const data = await res.json();
-        return data.map((d: any) => ({
-          time: Math.floor(d.timestamp / 1000) as import('lightweight-charts').UTCTimestamp,
-          value: d.price,
-        }));
-      },
-      staleTime: 60 * 1000,
-    });
-  }
+  const volume1d = stat?.volume ? parseFloat(formatUnits(stat.volume, token?.decimals || 18)) : 0;
 
-  // Fonctions utilitaires pour nettoyer et normaliser les données (identiques à SwapPageLayout)
-  const cleanLineData = (data: { time: number, value: number }[]) => {
-    const sorted = [...data].sort((a, b) => a.time - b.time);
-    return sorted
-      .filter((point, i, arr) => i === 0 || point.time !== arr[i - 1].time)
-      .map(point => ({
-        time: point.time as import('lightweight-charts').UTCTimestamp,
-        value: point.value,
-      }));
+  // Handlers pour les contrôles du chart
+  const handleChartTypeChange = (newType: ChartType) => {
+    setChartType(newType);
   };
-  const filterOutliers = (data: { time: number, value: number }[]) => {
-    if (data.length < 3) return data;
-    const values = data.map(d => d.value).sort((a, b) => a - b);
-    const median = values[Math.floor(values.length / 2)];
-    return data
-      .filter(d => d.value < median * 1e6 && d.value > median / 1e6)
-      .map(point => ({
-        time: point.time as import('lightweight-charts').UTCTimestamp,
-        value: point.value,
-      }));
-  };
-  const shouldNormalize = (data: { value: number }[]) => {
-    if (!data.length) return false;
-    const sample = data.slice(0, 10);
-    const bigValues = sample.filter(d => Math.abs(d.value) > 1e6).length;
-    return bigValues > sample.length / 2;
-  };
-  const normalizeLineData = (data: { time: number, value: number }[], decimals?: number) => {
-    if (!decimals) return data;
-    return data.map(point => ({
-      time: point.time as import('lightweight-charts').UTCTimestamp,
-      value: point.value / Math.pow(10, decimals),
-    }));
-  };
-  const LWC_MIN = -90071992547409.91;
-  const LWC_MAX = 90071992547409.91;
-  const filterLWCBounds = (data: { time: number, value: number }[]) =>
-    data
-      .filter(d => d.value >= LWC_MIN && d.value <= LWC_MAX)
-      .map(point => ({
-        time: point.time as import('lightweight-charts').UTCTimestamp,
-        value: point.value,
-      }));
-  const priceFormatter = (price: number) => price.toFixed(2);
 
-  // --- Chart historique du token ---
-  const { data: lineData = [], isLoading: lineLoading, error: lineError } = useTokenLineChart(token?.address);
-  const fromTokenDecimals = token?.decimals;
-  const filteredData = filterOutliers(lineData);
-  const needNormalization = shouldNormalize(filteredData);
-  const normalizedData = needNormalization && fromTokenDecimals
-    ? normalizeLineData(filteredData, fromTokenDecimals)
-    : filteredData;
-  const chartData = filterLWCBounds(cleanLineData(normalizedData));
+  const handleIntervalChange = (newInterval: ChartInterval) => {
+    setInterval(newInterval);
+  };
+
+  const handleMetricChange = (newMetric: ChartMetric) => {
+    setMetric(newMetric);
+  };
+
+  const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (tokensLoading) {
     return <div style={{ padding: 32 }}>Loading token data...</div>;
@@ -229,21 +178,21 @@ const TokenPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Chart natif pool (future-proof, prêt à brancher backend) */}
+          {/* Chart natif token */}
           <div className="Token__Chart" style={{ minHeight: 340 }}>
-            {lineLoading ? (
-              <div style={{ padding: 32 }}>Loading chart…</div>
-            ) : lineError ? (
-              <div style={{ padding: 32, color: 'red' }}>Error loading chart</div>
-            ) : (
-              <LineChart
-                data={chartData.length === 0 ? [] : chartData}
-                height={340}
-                priceFormatter={priceFormatter}
-                showNoDataOverlay={chartData.length === 0}
-                noDataMessage="These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon."
-              />
-            )}
+            <ChartWidget
+              tokenAddress={tokenAddress}
+              chartType={chartType}
+              interval={interval}
+              metric={metric}
+              height={340}
+              showToolbar={true}
+              priceFormatter={priceFormatter}
+              onChartTypeChange={handleChartTypeChange}
+              onIntervalChange={handleIntervalChange}
+              onMetricChange={handleMetricChange}
+              dataType="token"
+            />
           </div>
 
           <div className="Token__DetailSection">

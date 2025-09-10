@@ -12,10 +12,7 @@ export function convertToCandlestickData(
   tokenDecimals?: number
 ): CandlestickPoint[] {
   if (!apiData || apiData.length === 0) return [];
-  if (interval === '1Y') {
-    // Pour MAX, on groupe par jour par défaut
-    return groupIntoCandlesticks(apiData, '1D', tokenDecimals);
-  }
+  // Pas de traitement spécial nécessaire
 
   return groupIntoCandlesticks(apiData, interval, tokenDecimals);
 }
@@ -110,8 +107,11 @@ function groupByInterval(
       case '1M':
         return `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
 
-      case '1Y':
-        return `${date.getUTCFullYear()}`;
+      case '4H':
+        // Pour 4H, grouper par tranches de 4 heures
+        const hour = date.getUTCHours();
+        const fourHourBlock = Math.floor(hour / 4) * 4;
+        return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}-${fourHourBlock}`;
 
       default:
         return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`;
