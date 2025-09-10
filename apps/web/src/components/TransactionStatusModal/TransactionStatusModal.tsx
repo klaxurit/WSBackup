@@ -16,7 +16,8 @@ interface TransactionStatusModalProps {
   outputToken: BerachainToken | null;
   inputAmount: bigint;
   outputAmount: bigint;
-  swap: ReturnType<typeof useSwap>
+  swap: ReturnType<typeof useSwap>;
+  onRefreshInputs: () => void;
 }
 
 export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
@@ -25,7 +26,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   inputToken,
   outputToken,
   inputAmount,
-  swap
+  swap,
+  onRefreshInputs
 }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [shouldRenderDetails, setShouldRenderDetails] = useState(false);
@@ -88,29 +90,43 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     }
   };
 
+  const isSuccess = swap.status === "success";
+  const isError = swap.status === "error";
   const isLoadingStep = [
     "loading-routes", "quoting", "approving", "confirming", "swapping"
   ].includes(swap.status);
-  const isSuccess = swap.status === "success";
-  const isError = swap.status === "error";
 
-  const shouldShowButton = !isSuccess || (isSuccess && open);
+  useEffect(() => {
+    if (open) {
+      setIsDetailsOpen(false);
+      setShouldRenderDetails(false);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (isSuccess && open) {
+
       const timer = setTimeout(() => {
-        handleCloseAndRefresh();
-      }, 4000);
+        onClose();
+        setTimeout(() => {
+          if (onRefreshInputs) {
+            onRefreshInputs();
+          }
+        }, 300);
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [isSuccess, open]);
+  }, [isSuccess, open, onClose, onRefreshInputs]);
 
   const handleCloseAndRefresh = () => {
     onClose();
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+
+    if (onRefreshInputs) {
+      setTimeout(() => {
+        onRefreshInputs();
+      }, 100);
+    }
   };
 
   const handleModalClose = isSuccess ? handleCloseAndRefresh : onClose;
@@ -211,15 +227,15 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               )}
             </div>
           </div>
-          {shouldShowButton && (
-            <button
-              className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
-              onClick={handleSwap}
-              disabled={isLoadingStep || !['ready'].includes(swap.status)}
-            >
-              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
-            </button>
-          )}
+            {!isError && (
+              <button
+                className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
+                onClick={handleSwap}
+                disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
+              >
+                {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? '🎉 Success!' : btnText}
+              </button>
+            )}
         </>
       )}
     </Modal>
