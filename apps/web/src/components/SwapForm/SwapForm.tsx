@@ -254,7 +254,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       isSticky ? 'Form--sticky' : '',
       customClassName || ''
     ].filter(Boolean).join(' ');
-    
+
 
     useEffect(() => {
       if (!paramOpen) return;

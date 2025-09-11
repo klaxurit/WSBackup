@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { useTokens, type BerachainToken } from './useBerachainTokenList';
@@ -135,8 +135,8 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     maxTokens: 25 // Augmenter la limite pour inclure plus de tokens
   });
 
-  // Fonction de tri des tokens
-  const sortTokens = (tokensToSort: BerachainToken[]): BerachainToken[] => {
+  // Fonction de tri des tokens (mémorisée pour éviter les re-renders)
+  const sortTokens = useCallback((tokensToSort: BerachainToken[]): BerachainToken[] => {
     if (!tokensToSort.length) return tokensToSort;
 
     const getBalanceUsd = (token: BerachainToken): number => {
@@ -223,7 +223,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     const result = [...tokensToSort].sort((a, b) => getMarketCap(b) - getMarketCap(a));
 
     return result;
-  };
+  }, [balances, tokensData, tokensStats, isConnected, marketCapByAddress]);
 
   // Tokens pour les tokens populaires
   const availableTokensForPopular = useMemo(() => {
@@ -273,7 +273,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
       return () => clearTimeout(timer);
     }
-  }, [tokensLoading, tokensStatsLoading, balancesLoading, tokensArray.length, filteredTokens, availableTokensForPopular, onlyPoolToken, isConnected, sortTokens]);
+  }, [tokensLoading, tokensStatsLoading, balancesLoading, tokensArray.length, onlyPoolToken, isConnected]);
 
   // Récupérer les tokens du cache ou calculer
   const getTokens = () => {
@@ -298,12 +298,12 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
   const { tokens: finalTokens, popularTokens } = getTokens();
 
-  // Fonction pour obtenir les informations d'un token
-  const getTokenInfo = (tokenAddress: string) => {
+  // Fonction pour obtenir les informations d'un token (mémorisée)
+  const getTokenInfo = useCallback((tokenAddress: string) => {
     return tokensArray.find(token =>
       token.address.toLowerCase() === tokenAddress.toLowerCase()
     );
-  };
+  }, [tokensArray]);
 
   return {
     tokens: finalTokens,
