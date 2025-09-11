@@ -59,23 +59,18 @@ export const useTokenBalancesOptimized = ({
   const limitedTokens = useMemo(() => {
     if (!tokens || tokens.length === 0) return [];
 
-    // Prioriser les tokens les plus importants (BERA, wBERA, etc.)
-    const priorityTokens = tokens.filter(t =>
+    // Prioriser uniquement les tokens essentiels (comme Uniswap)
+    const essentialTokens = tokens.filter(t =>
       t.symbol === 'BERA' ||
       t.symbol === 'wBERA' ||
       t.symbol === 'HONEY' ||
       t.symbol === 'iBERA' ||
       t.symbol === 'POLLEN' ||
-      t.symbol === 'WBTC' ||
-      t.status === 'IN_POOL'
+      t.symbol === 'WBTC'
     );
 
-    const otherTokens = tokens.filter(t =>
-      !priorityTokens.includes(t) &&
-      t.symbol !== 'BGT'
-    );
-
-    return [...priorityTokens, ...otherTokens].slice(0, maxTokens);
+    // Limiter strictement aux tokens essentiels
+    return essentialTokens.slice(0, maxTokens);
   }, [tokens, maxTokens]);
 
   // Préparer les tokens pour les appels blockchain

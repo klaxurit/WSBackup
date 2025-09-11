@@ -129,10 +129,10 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     return map;
   }, [tokensData, tokensStats]);
 
-  // Utilisation du hook optimisé pour les balances
+  // Utilisation du hook optimisé pour les balances (limité aux tokens prioritaires)
   const { balances, loading: balancesLoading } = useTokenBalancesOptimized({
-    tokens: filteredTokens,
-    maxTokens: 25 // Augmenter la limite pour inclure plus de tokens
+    tokens: tokensArray, // Utiliser la liste complète mais limiter dans le hook
+    maxTokens: 8 // Limiter drastiquement pour optimiser les performances
   });
 
   // Fonction de tri des tokens (mémorisée pour éviter les re-renders)
@@ -140,6 +140,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     if (!tokensToSort.length) return tokensToSort;
 
     const getBalanceUsd = (token: BerachainToken): number => {
+      // Seulement pour les tokens essentiels qui ont des balances
       const balanceStr = (balances as Record<string, string | undefined>)[token.symbol];
       if (!balanceStr) return 0;
 
@@ -148,7 +149,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
       let price = 0;
 
-      // Essayer d'abord GraphQL
+      // Priorité absolue à GraphQL (comme Kodiak)
       const tokenData = getTokenDataByAddress(tokensData?.tokens?.items, token.address);
       price = getTokenPrice(tokenData);
 
@@ -184,18 +185,6 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
       return usdValue;
     };
 
-    const getMarketCap = (token: BerachainToken): number => {
-      if (!token.address) return 0;
-
-      // Priorité aux données GraphQL
-      const tokenData = getTokenDataByAddress(tokensData?.tokens?.items, token.address);
-      if (tokenData) {
-        return getTokenMarketCap(tokenData);
-      }
-
-      // Fallback sur le cache
-      return marketCapByAddress.get(token.address.toLowerCase()) || 0;
-    };
 
     if (isConnected) {
       const withBalance: BerachainToken[] = [];
@@ -212,17 +201,20 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
 
 
+      // Tri par balance USD pour les tokens détenus
       withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a));
-      withoutBalance.sort((a, b) => getMarketCap(b) - getMarketCap(a));
+
+      // Pour les tokens non détenus, utiliser l'ordre GraphQL (déjà trié par TVL)
+      // Pas besoin de re-trier, l'ordre GraphQL est déjà optimal
 
       const result = [...withBalance, ...withoutBalance];
 
       return result;
     }
 
-    const result = [...tokensToSort].sort((a, b) => getMarketCap(b) - getMarketCap(a));
-
-    return result;
+    // Pour les utilisateurs non connectés, utiliser l'ordre GraphQL (déjà trié par TVL)
+    // Pas besoin de re-trier, l'ordre GraphQL est déjà optimal
+    return tokensToSort;
   }, [balances, tokensData, tokensStats, isConnected, marketCapByAddress]);
 
   // Tokens pour les tokens populaires
