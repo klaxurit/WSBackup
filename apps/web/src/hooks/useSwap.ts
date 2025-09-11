@@ -499,7 +499,7 @@ export const useSwap = (params: SwapParams) => {
         type: "single",
         totalQuote: bestSingleRoute.quote,
         totalGasEstimate: bestSingleRoute.gasEstimate,
-        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo.decimals),
+        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo?.decimals || 18),
         priceImpact: calculatePriceImpact(
           amountIn,
           bestSingleRoute.quote,
@@ -827,7 +827,7 @@ export const useSwap = (params: SwapParams) => {
       status: "idle",
       routes: [],
       optimizedRoute: null,
-      txHash: undefined 
+      txHash: undefined
     })
   }
 

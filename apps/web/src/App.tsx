@@ -36,6 +36,7 @@ function AppContent() {
 
   return (
     <div className="app">
+
       <Navbar />
       <main className="app-main">
         <PageTransition isLoading={isLoading} loadingText={loadingText}>

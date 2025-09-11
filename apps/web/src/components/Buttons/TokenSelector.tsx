@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from "../utils/FallbackImg";
-import { useTokens } from '../../hooks/useBerachainTokenList';
+import { useTokenCache } from '../../hooks/useTokenCache';
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -29,7 +29,11 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
-  const { isLoading: tokensLoading } = useTokens();
+
+  // Préchargement des tokens dès le montage du composant
+  const { isLoading: tokensLoading, isReady } = useTokenCache({
+    onlyPoolToken
+  });
 
   useEffect(() => {
     setSelectedToken(preSelected || null);
@@ -45,8 +49,8 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   }, [forceListOpen, onToggleNetworkList]);
 
   const handleNetworksListToggle = useCallback(() => {
-    // Ne pas ouvrir la liste si les tokens sont encore en cours de chargement
-    if (tokensLoading) {
+    // Ne pas ouvrir la liste si les tokens ne sont pas prêts
+    if (tokensLoading || !isReady) {
       return;
     }
 
@@ -58,7 +62,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
     if (onForceOpen && !isNetworksListOpen) {
       onForceOpen();
     }
-  }, [isNetworksListOpen, onToggleNetworkList, onForceOpen, tokensLoading]);
+  }, [isNetworksListOpen, onToggleNetworkList, onForceOpen, tokensLoading, isReady]);
 
   const handleTokenSelect = useCallback((token: BerachainToken) => {
     setSelectedToken(token);
@@ -73,9 +77,9 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
 
   const renderButton = (
     <button
-      className={`networkSelector${selectedToken ? ' has-token' : ''}${isNetworksListOpen ? ' open' : ''}${tokensLoading ? ' loading' : ''}`}
+      className={`networkSelector${selectedToken ? ' has-token' : ''}${isNetworksListOpen ? ' open' : ''}${tokensLoading || !isReady ? ' loading' : ''}`}
       onClick={handleNetworksListToggle}
-      disabled={tokensLoading}
+      disabled={tokensLoading || !isReady}
       style={{}}
     >
       {selectedToken ? (
@@ -94,7 +98,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
         </>
       ) : (
         <span className="networkSelector__symbol">
-          {tokensLoading ? 'Loading...' : 'Select'}
+          {tokensLoading ? 'Loading...' : !isReady ? 'Preparing...' : 'Select'}
         </span>
       )}
       <span className={`networkSelector__chevron${isNetworksListOpen ? ' open' : ''}`}>
