@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { useTokens, type BerachainToken } from './useBerachainTokenList';
 import { useTokenBalancesOptimized } from './useTokenBalancesOptimized';
-import { useTokenDataGraphQL, getTokenDataByAddress, getTokenPrice, getTokenMarketCap, getTokenTVL } from './useTokenDataGraphQL';
+import { useTokenDataGraphQL, getTokenDataByAddress, getTokenPrice, getTokenTVL } from './useTokenDataGraphQL';
 import { ensureArray } from '../utils/dataValidation';
 import { zeroAddress } from 'viem';
 
@@ -110,7 +110,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     // Essayer d'abord GraphQL
     const tokensArray = tokensData?.tokens?.items || [];
     for (const token of tokensArray) {
-      const marketCap = getTokenMarketCap(token);
+      const marketCap = getTokenTVL(token);
       if (marketCap > 0) {
         map.set(token.id.toLowerCase(), marketCap);
       }
@@ -135,6 +135,63 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     maxTokens: 8 // Limiter drastiquement pour optimiser les performances
   });
 
+  // Fonction pour obtenir le prix d'un token
+  const getTokenPriceValue = useCallback((token: BerachainToken): number => {
+    let price = 0;
+
+    // Priorité absolue à GraphQL (comme Kodiak)
+    const tokenData = getTokenDataByAddress(tokensData?.tokens?.items, token.address);
+    price = getTokenPrice(tokenData);
+
+    // Fallback pour BERA natif (utiliser wBERA)
+    if (price === 0 && token.address === zeroAddress) {
+      const wBeraData = getTokenDataByAddress(tokensData?.tokens?.items, '0x6969696969696969696969696969696969696969');
+      price = getTokenPrice(wBeraData);
+    }
+
+    // Fallback sur l'ancienne logique si GraphQL ne fonctionne pas
+    if (price === 0) {
+      let tokenStats = tokensStats?.find((t: any) =>
+        t.address?.toLowerCase() === token.address?.toLowerCase()
+      );
+
+      price = tokenStats?.TokenDailyStats?.[0]?.price || 0;
+
+      if (price === 0 && token.address === zeroAddress) {
+        const wBeraStats = tokensStats?.find((t: any) =>
+          t.symbol === 'wBERA' || t.address?.toLowerCase() === '0x6969696969696969696969696969696969696969'
+        );
+        price = wBeraStats?.TokenDailyStats?.[0]?.price || 0;
+      }
+
+      // Dernier fallback sur lastPrice
+      if (price === 0) {
+        price = token.lastPrice || 0;
+      }
+    }
+
+    return price;
+  }, [tokensData, tokensStats]);
+
+  // Fonction pour obtenir la market cap d'un token
+  const getTokenMarketCapValue = useCallback((token: BerachainToken): number => {
+    // Priorité à GraphQL
+    const tokenData = getTokenDataByAddress(tokensData?.tokens?.items, token.address);
+    if (tokenData) {
+      return getTokenTVL(tokenData);
+    }
+
+    // Fallback sur l'ancienne méthode
+    let fallbackValue = marketCapByAddress.get(token.address.toLowerCase()) || 0;
+
+    // Solution temporaire : donner une market cap élevée à WBERA s'il n'en a pas
+    if (token.symbol === 'WBERA' && fallbackValue === 0) {
+      fallbackValue = 1000000; // 1M de market cap par défaut pour WBERA
+    }
+
+    return fallbackValue;
+  }, [tokensData, marketCapByAddress]);
+
   // Fonction de tri des tokens (mémorisée pour éviter les re-renders)
   const sortTokens = useCallback((tokensToSort: BerachainToken[]): BerachainToken[] => {
     if (!tokensToSort.length) return tokensToSort;
@@ -147,44 +204,11 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
       const amount = parseFloat(balanceStr);
       if (!amount || !isFinite(amount) || amount <= 0) return 0;
 
-      let price = 0;
-
-      // Priorité absolue à GraphQL (comme Kodiak)
-      const tokenData = getTokenDataByAddress(tokensData?.tokens?.items, token.address);
-      price = getTokenPrice(tokenData);
-
-      // Fallback pour BERA natif (utiliser wBERA)
-      if (price === 0 && token.address === zeroAddress) {
-        const wBeraData = getTokenDataByAddress(tokensData?.tokens?.items, '0x6969696969696969696969696969696969696969');
-        price = getTokenPrice(wBeraData);
-      }
-
-      // Fallback sur l'ancienne logique si GraphQL ne fonctionne pas
-      if (price === 0) {
-        let tokenStats = tokensStats?.find((t: any) =>
-          t.address?.toLowerCase() === token.address?.toLowerCase()
-        );
-
-        price = tokenStats?.TokenDailyStats?.[0]?.price || 0;
-
-        if (price === 0 && token.address === zeroAddress) {
-          const wBeraStats = tokensStats?.find((t: any) =>
-            t.symbol === 'wBERA' || t.address?.toLowerCase() === '0x6969696969696969696969696969696969696969'
-          );
-          price = wBeraStats?.TokenDailyStats?.[0]?.price || 0;
-        }
-
-        // Dernier fallback sur lastPrice
-        if (price === 0) {
-          price = token.lastPrice || 0;
-        }
-      }
-
+      const price = getTokenPriceValue(token);
       const usdValue = amount * price;
 
       return usdValue;
     };
-
 
     if (isConnected) {
       const withBalance: BerachainToken[] = [];
@@ -199,23 +223,20 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
         }
       }
 
-
-
       // Tri par balance USD pour les tokens détenus
       withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a));
 
-      // Pour les tokens non détenus, utiliser l'ordre GraphQL (déjà trié par TVL)
-      // Pas besoin de re-trier, l'ordre GraphQL est déjà optimal
+      // Tri par market cap pour les tokens non détenus
+      withoutBalance.sort((a, b) => getTokenMarketCapValue(b) - getTokenMarketCapValue(a));
 
       const result = [...withBalance, ...withoutBalance];
 
       return result;
     }
 
-    // Pour les utilisateurs non connectés, utiliser l'ordre GraphQL (déjà trié par TVL)
-    // Pas besoin de re-trier, l'ordre GraphQL est déjà optimal
-    return tokensToSort;
-  }, [balances, tokensData, tokensStats, isConnected, marketCapByAddress]);
+    // Pour les utilisateurs non connectés, trier par market cap
+    return [...tokensToSort].sort((a, b) => getTokenMarketCapValue(b) - getTokenMarketCapValue(a));
+  }, [balances, getTokenPriceValue, getTokenMarketCapValue, isConnected]);
 
   // Tokens pour les tokens populaires
   const availableTokensForPopular = useMemo(() => {
