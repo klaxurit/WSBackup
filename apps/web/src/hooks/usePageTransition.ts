@@ -7,7 +7,7 @@ interface UsePageTransitionOptions {
 }
 
 export const usePageTransition = (options: UsePageTransitionOptions = {}) => {
-  const { loadingDelay = 0, minimumLoadingTime = 300 } = options;
+  const { loadingDelay = 0, minimumLoadingTime = 200 } = options;
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const location = useLocation();
@@ -16,7 +16,7 @@ export const usePageTransition = (options: UsePageTransitionOptions = {}) => {
   useEffect(() => {
     const startLoading = () => {
       setIsLoading(true);
-      
+
       // Set loading text based on page
       const getLoadingText = (pathname: string) => {
         if (pathname === '/') return 'Loading swap...';
@@ -31,6 +31,7 @@ export const usePageTransition = (options: UsePageTransitionOptions = {}) => {
     };
 
     const stopLoading = () => {
+      // Ensure loading stops after a reasonable time
       setTimeout(() => {
         setIsLoading(false);
       }, minimumLoadingTime);
@@ -38,7 +39,7 @@ export const usePageTransition = (options: UsePageTransitionOptions = {}) => {
 
     // Start loading with optional delay
     const timeoutId = setTimeout(startLoading, loadingDelay);
-    
+
     // Stop loading after minimum delay
     const stopTimeoutId = setTimeout(stopLoading, minimumLoadingTime);
 

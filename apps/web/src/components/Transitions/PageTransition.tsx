@@ -14,7 +14,7 @@ const pageVariants = {
   initial: {
     opacity: 0,
     y: 20,
-    scale: 0.98,
+    scale: 1,
   },
   in: {
     opacity: 1,
@@ -24,7 +24,7 @@ const pageVariants = {
   out: {
     opacity: 0,
     y: -20,
-    scale: 0.98,
+    scale: 1,
   },
 };
 
@@ -32,7 +32,7 @@ const pageVariants = {
 const loadingVariants = {
   initial: {
     opacity: 0,
-    scale: 0.8,
+    scale: 1,
   },
   in: {
     opacity: 1,
@@ -40,7 +40,7 @@ const loadingVariants = {
   },
   out: {
     opacity: 0,
-    scale: 0.8,
+    scale: 1,
   },
 };
 
