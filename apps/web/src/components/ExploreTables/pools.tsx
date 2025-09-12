@@ -127,7 +127,8 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       totalItems: filteredPools.length,
       hasNextPage: currentPage < totalPages,
       hasPreviousPage: currentPage > 1,
-      onPageChange: setCurrentPage
+      onPageChange: setCurrentPage,
+      dataname: "pools"
     };
   }, [data, searchValue, currentPage, itemsPerPage]);
 

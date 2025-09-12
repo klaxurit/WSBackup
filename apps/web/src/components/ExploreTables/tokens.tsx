@@ -111,7 +111,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       totalItems: filteredTokens.length,
       hasNextPage: currentPage < totalPages,
       hasPreviousPage: currentPage > 1,
-      onPageChange: setCurrentPage
+      onPageChange: setCurrentPage,
+      dataname: "tokens"
     };
   }, [data, searchValue, currentPage, itemsPerPage]);
 

@@ -155,7 +155,8 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
           totalItems: allTxs.length,
           hasNextPage: currentPage < Math.ceil(allTxs.length / itemsPerPage),
           hasPreviousPage: currentPage > 1,
-          onPageChange: setCurrentPage
+          onPageChange: setCurrentPage,
+          dataname: "transactions"
         },
         txs: paginatedTxs
       }

@@ -20,6 +20,7 @@ interface PaginationProps {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
   onPageChange: (page: number) => void;
+  dataname: string
 }
 
 interface TableProps<T = any> {
@@ -44,7 +45,8 @@ const Pagination: React.FC<PaginationProps> = ({
   itemsPerPage,
   totalItems,
   hasPreviousPage,
-  hasNextPage
+  hasNextPage,
+  dataname
 }) => {
   const getVisiblePages = () => {
     const delta = 2;
@@ -80,7 +82,7 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="Table__Pagination">
       <div className="Table__PaginationInfo">
-        Showing {startItem}-{endItem} of {totalItems} transactions
+        Showing {startItem}-{endItem} of {totalItems} {dataname}
       </div>
       <div className="Table__PaginationControls">
         {hasPreviousPage && (
