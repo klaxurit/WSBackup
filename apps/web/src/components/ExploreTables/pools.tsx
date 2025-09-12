@@ -11,6 +11,10 @@ interface PoolsTableProps {
   searchValue: string
 }
 
+const BL = [
+  "0xc06aD7fF55D1d53Ed9371C17eDC557C9E1A06B2E".toLowerCase() // WETH-USDC.e 0.05%
+]
+
 const GET_POOL_STATS = `
   query GetPoolsStats {
     pools {
@@ -83,11 +87,11 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
 
   const pools = useMemo(() => {
     if (!data?.items) return [];
-
+    const approvedpools = data.items.filter((p: any) => !BL.includes(p.id))
     // Filtrage par recherche
-    let filteredPools = data.items;
+    let filteredPools = approvedpools;
     if (searchValue && searchValue.trim() !== '') {
-      filteredPools = data.items.filter((pool: any) =>
+      filteredPools = approvedpools.filter((pool: any) =>
         (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
         (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
         (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
