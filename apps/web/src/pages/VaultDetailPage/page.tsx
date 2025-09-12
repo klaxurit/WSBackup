@@ -14,6 +14,7 @@ import { useAccount } from 'wagmi';
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "") {
     stickyVault(id: $id) {
+      name
       collectedFeesToken0
       collectedFeesToken1
       collectedFeesUSD
@@ -31,6 +32,24 @@ const GET_STICKYVAULT = `
       totalValueLockedToken1
       totalValueLockedUSD
       txCount
+      vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+        items {
+          apr
+          collectedFeesToken0
+          collectedFeesToken1
+          collectedFeesUSD
+          date
+          id
+          volumeUSD1D
+          volumeUSD30D
+          rebalanceCount
+          totalSupply
+          totalValueLockedToken0
+          totalValueLockedToken1
+          totalValueLockedUSD
+          txCount
+        }
+      }
       positions {
         items {
           currentValueToken0
@@ -161,7 +180,6 @@ export const VaultDetailPage = () => {
     );
   }
 
-  console.log(vaultManager)
   return (
     <div className="VaultDetailPage">
       {/* Header */}
@@ -208,25 +226,26 @@ export const VaultDetailPage = () => {
           {/* Stats Grid */}
           <div className="VaultDetailPage__StatsGrid">
             <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Pool TVL</span>
+              <span className="VaultDetailPage__StatLabel">Vault TVL</span>
               <span className="VaultDetailPage__StatValue">${formatNumber(vault.totalValueLockedUSD)}</span>
             </div>
             <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Pool APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.feesApr || "0"}%</span>
+              <span className="VaultDetailPage__StatLabel">Collected Fees</span>
+              <span className="VaultDetailPage__StatValue">${formatNumber(vault?.collectedFeesUSD)}</span>
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">BGT APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.rewardsApr || "0"}%</span>
+              {/* <span className="VaultDetailPage__StatValue">{vault?.rewardsApr || "0"}%</span> */}
+              <span className="VaultDetailPage__StatValue">-</span>
             </div>
             <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Fees (7D)</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault?.dayVolumeUSD * 7)}</span>
+              <span className="VaultDetailPage__StatLabel">Vault APR</span>
+              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items?.[0].apr || "0"}%</span>
             </div>
             <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
               <span className="VaultDetailPage__StatLabel">Total APR</span>
               <span className="VaultDetailPage__StatValue VaultDetailPage__StatValue--highlight">
-                {vault.apr ? `${vault.apr.toFixed(2)}%` : '-'}
+                {vault?.vaultDayData.items?.[0].apr || "0"}%
               </span>
             </div>
           </div>
@@ -249,7 +268,7 @@ export const VaultDetailPage = () => {
             <div className="VaultDetailPage__UserPosition">
               <div className="VaultDetailPage__PositionValue">
                 <span className="VaultDetailPage__PositionAmount">${userPosition?.valueUSD || "0"}</span>
-                <span className="VaultDetailPage__PositionShares">{userPosition?.shares || 0} WIN-{token0.symbol}-{token1.symbol}</span>
+                <span className="VaultDetailPage__PositionShares">{userPosition?.shares || 0} STICKY {token0.symbol}-{token1.symbol}</span>
               </div>
             </div>
           </div>
@@ -435,14 +454,16 @@ export const VaultDetailPage = () => {
               <div className="VaultDetailPage__Toggle">
                 <button
                   className={`VaultDetailPage__ToggleButton ${autoCompound ? 'active' : ''}`}
-                  onClick={() => setAutoCompound(!autoCompound)}
+                  // onClick={() => setAutoCompound(!autoCompound)}
+                  onClick={() => { }}
                 >
-                  {autoCompound ? 'ON' : 'OFF'}
+                  {/* {autoCompound ? 'ON' : 'OFF'} */}
+                  Soon
                 </button>
               </div>
             </div>
             <div className="VaultDetailPage__APY">
-              <span>111.84% APY</span>
+              {/* <span>111.84% APY</span> */}
             </div>
             <p>Auto-compounding automatically reinvests your rewards to grow your position over time.</p>
           </div>
