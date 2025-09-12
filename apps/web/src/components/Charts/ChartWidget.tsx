@@ -88,12 +88,9 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   // Données factices pour les cas où on n'a pas de données réelles
   const fakeData = useMemo(() => {
     const now = Math.floor(Date.now() / 1000);
-    // Utiliser une valeur fixe basée sur le timestamp pour éviter les changements aléatoires
-    const baseValue = 100;
-    const seed = Math.floor(now / 3600); // Changer toutes les heures
     return Array.from({ length: 30 }, (_, i) => ({
       time: (now - (30 - i) * 3600) as Time,
-      value: baseValue + Math.sin(i / 5) * 10 + (Math.sin(seed + i) * 2.5), // Valeur déterministe
+      value: 100 + Math.sin(i / 5) * 10 + Math.random() * 5,
     }));
   }, []);
 

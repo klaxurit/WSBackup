@@ -20,6 +20,7 @@ interface PaginationProps {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
   onPageChange: (page: number) => void;
+  itemLabel?: string;
 }
 
 interface TableProps<T = any> {
@@ -35,6 +36,7 @@ interface TableProps<T = any> {
   pagination?: PaginationProps;
   defaultSortKey?: string;
   defaultSortDirection?: SortDirection;
+  itemLabel?: string;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -44,7 +46,8 @@ const Pagination: React.FC<PaginationProps> = ({
   itemsPerPage,
   totalItems,
   hasPreviousPage,
-  hasNextPage
+  hasNextPage,
+  itemLabel = 'items'
 }) => {
   const getVisiblePages = () => {
     const delta = 2;
@@ -80,7 +83,7 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="Table__Pagination">
       <div className="Table__PaginationInfo">
-        Showing {startItem}-{endItem} of {totalItems} transactions
+        Showing {startItem}-{endItem} of {totalItems} {itemLabel}
       </div>
       <div className="Table__PaginationControls">
         {hasPreviousPage && (
@@ -131,6 +134,7 @@ export function Table<T = any>({
   pagination,
   defaultSortKey,
   defaultSortDirection = null,
+  itemLabel = 'items',
 }: TableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultSortDirection);
@@ -270,7 +274,7 @@ export function Table<T = any>({
           </tbody>
         </table>
       </div>
-      {pagination && <Pagination {...pagination} />}
+      {pagination && <Pagination {...pagination} itemLabel={itemLabel} />}
     </div>
   );
 }

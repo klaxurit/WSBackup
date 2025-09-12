@@ -8,30 +8,18 @@ interface TransactionsTableProps {
   searchValue: string | null;
 }
 
-const GET_TRANSACTIONS = `
-  query GetTransactions {
-    transactions(orderBy: "timestamp", orderDirection: "desc") {
+const GET_TRANSACTIONS_FAST = `
+  query GetTransactionsFast($limit: Int) {
+    transactions(
+      orderBy: "timestamp", 
+      orderDirection: "desc",
+      limit: $limit
+    ) {
       totalCount
-      pageInfo {
-        endCursor
-        hasNextPage
-        hasPreviousPage
-        startCursor
-      }
       items {
-        from
-        gasPrice
-        gasUsed
         id
         timestamp
-        burns {
-          totalCount
-        }
-        collects {
-          totalCount
-        }
         swaps {
-          totalCount
           items {
             amount1
             amount0
@@ -44,28 +32,15 @@ const GET_TRANSACTIONS = `
                 id
                 logoUri
                 decimals
-                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
-                  items {
-                    priceUSD
-                  }
-                }
               }
               token1Ref {
                 symbol
                 id
                 logoUri
                 decimals
-                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
-                  items {
-                    priceUSD
-                  }
-                }
               }
             }
           }
-        }
-        mints {
-          totalCount
         }
       }
     }
@@ -74,10 +49,36 @@ const GET_TRANSACTIONS = `
 
 export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1)
+  const [loadedTransactions, setLoadedTransactions] = useState(100) // ✅ Commence avec 100
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasReachedEnd, setHasReachedEnd] = useState(false)
   const itemsPerPage = 20;
 
+  const handlePageChange = (newPage: number) => {
+    const neededTransactions = newPage * itemsPerPage;
+    const buffer = 50; // Buffer de sécurité
+
+    // ✅ Si on a besoin de plus de données, les charger progressivement
+    if (neededTransactions > loadedTransactions - buffer && !hasReachedEnd) {
+      const newLimit = Math.min(neededTransactions + 200, 10000); // Charge par blocs de 200, max 10K
+      setLoadedTransactions(newLimit);
+      setIsLoadingMore(true);
+    }
+
+    setCurrentPage(newPage);
+  };
+
+  // ✅ Charger plus de données quand on approche de la fin
+  const loadMoreData = () => {
+    if (!isLoadingMore && !hasReachedEnd) {
+      const newLimit = Math.min(loadedTransactions + 500, 50000); // Charge par blocs de 500
+      setLoadedTransactions(newLimit);
+      setIsLoadingMore(true);
+    }
+  };
+
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['transactions', currentPage],
+    queryKey: ['transactions', loadedTransactions, searchValue],
     queryFn: async () => {
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
@@ -85,12 +86,15 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: GET_TRANSACTIONS
+          query: GET_TRANSACTIONS_FAST,
+          variables: {
+            limit: loadedTransactions // ✅ Charge progressivement
+          }
         }),
       });
 
       if (!resp.ok) {
-        return { pageInfo: {}, items: [] }
+        return { items: [], totalCount: 0 }
       }
 
       const data = await resp.json()
@@ -103,98 +107,108 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     },
     select: (data) => {
       const allTxs = data.items.map((s: any) => {
-        if (s.swaps?.items?.length > 0) { // C'est un swap
-          if (BigInt(s.swaps.items[0].amount0) > 0n) {
-            // A -> B
+        if (s.swaps?.items?.length > 0) {
+          const swap = s.swaps.items[0];
+          if (BigInt(swap.amount0) > 0n) {
             return {
               ...s,
-              ...s.swaps.items[0],
+              ...swap,
               tokenIn: {
-                ...s.swaps.items[0].pool.token0Ref,
-                priceUSD: s.swaps.items[0].pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+                ...swap.pool.token0Ref,
               },
               tokenOut: {
-                ...s.swaps.items[0].pool.token1Ref,
-                priceUSD: s.swaps.items[0].pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+                ...swap.pool.token1Ref,
               },
-              amountIn: BigInt(s.swaps.items[0].amount0),
-              amountOut: BigInt(s.swaps.items[0].amount1),
+              amountIn: BigInt(swap.amount0),
+              amountOut: BigInt(swap.amount1),
             }
           } else {
-            // B -> A
             return {
               ...s,
-              ...s.swaps.items[0],
+              ...swap,
               tokenIn: {
-                ...s.swaps.items[0].pool.token1Ref,
-                priceUSD: s.swaps.items[0].pool.token1Ref.tokenDayData.items[0]?.priceUSD,
+                ...swap.pool.token1Ref,
               },
               tokenOut: {
-                ...s.swaps.items[0].pool.token0Ref,
-                priceUSD: s.swaps.items[0].pool.token0Ref.tokenDayData.items[0]?.priceUSD,
+                ...swap.pool.token0Ref,
               },
-              amountIn: BigInt(s.swaps.items[0].amount1),
-              amountOut: BigInt(s.swaps.items[0].amount0),
+              amountIn: BigInt(swap.amount1),
+              amountOut: BigInt(swap.amount0),
             }
           }
         }
-
         return null
       }).filter(Boolean);
 
-      // Pagination côté client
+      // ✅ Vérifier si on a atteint la fin des données
+      const hasMoreData = data.totalCount > allTxs.length;
+      if (!hasMoreData && !hasReachedEnd) {
+        setHasReachedEnd(true);
+      }
+
+      // ✅ Arrêter le loading si on a chargé toutes les données
+      if (isLoadingMore && (hasReachedEnd || allTxs.length >= data.totalCount)) {
+        setIsLoadingMore(false);
+      }
+
+      // ✅ Pagination côté client
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const paginatedTxs = allTxs.slice(startIndex, endIndex);
 
+      const maxAvailablePages = Math.ceil(allTxs.length / itemsPerPage);
+      const totalPagesInDb = Math.ceil(data.totalCount / itemsPerPage);
+
       return {
         pagination: {
           currentPage,
-          totalPages: Math.ceil(allTxs.length / itemsPerPage),
+          totalPages: hasReachedEnd ? maxAvailablePages : Math.min(maxAvailablePages, totalPagesInDb),
           itemsPerPage,
-          totalItems: allTxs.length,
-          hasNextPage: currentPage < Math.ceil(allTxs.length / itemsPerPage),
+          totalItems: data.totalCount,
+          availableItems: allTxs.length,
+          hasNextPage: currentPage < maxAvailablePages,
           hasPreviousPage: currentPage > 1,
-          onPageChange: setCurrentPage
+          onPageChange: handlePageChange
         },
-        txs: paginatedTxs
+        txs: paginatedTxs,
+        totalInDb: data.totalCount,
+        isLoadingMore: isLoadingMore,
+        hasReachedEnd: hasReachedEnd,
+        loadMoreData: loadMoreData
       }
-    }
+    },
+    // ✅ Cache intelligent
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    // ✅ Garde les données précédentes pendant le rechargement
+    placeholderData: (previousData) => previousData,
   });
 
   useEffect(() => {
     refetch()
-  }, [currentPage, searchValue, refetch])
+  }, [searchValue, refetch])
 
   const txColumns: TableColumn[] = [
     {
       label: 'Time',
       key: 'time',
       render: (row) => {
-        let text
         const now = new Date();
-        // Corriger le timestamp : createdAt est en secondes, pas en millisecondes
         const txTime = new Date(Number(row.timestamp) * 1000);
         const diffMs = now.getTime() - txTime.getTime();
         const diffMin = Math.floor(diffMs / 60000);
-
         const diffH = Math.floor(diffMin / 60);
         const diffD = Math.floor(diffH / 24);
-        const diffM = Math.floor(diffD / 30);
-        const diffY = Math.floor(diffM / 12);
 
+        let text;
         if (diffMin < 1) {
           text = 'Just now'
         } else if (diffMin < 60) {
-          text = `${diffMin} min ago`
+          text = `${diffMin}m ago`
         } else if (diffH < 24) {
           text = `${diffH}h ago`
-        } else if (diffD < 30) {
-          text = `${diffD}d ago`
-        } else if (diffM < 12) {
-          text = `${diffM}m ago`
         } else {
-          text = `${diffY}y ago`
+          text = `${diffD}d ago`
         }
 
         return (
@@ -231,31 +245,9 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        // Calculer la valeur USD du token envoyé (tokenIn)
-        const tokenInAmount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18));
-        const tokenInPrice = parseFloat(row.tokenIn.priceUSD || '0');
-        const tokenInValueUSD = tokenInAmount * tokenInPrice;
-
-        // Si le prix n'est pas disponible, essayer avec le token reçu
-        if (tokenInPrice === 0) {
-          const tokenOutAmount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18));
-          const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
-          const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
-
-          if (tokenOutValueUSD < 0.01) return "<0.01$";
-          return (
-            <span>
-              ${tokenOutValueUSD.toFixed(2)}
-            </span>
-          );
-        }
-
-        if (tokenInValueUSD < 0.01) return "<0.01$";
-        return (
-          <span>
-            ${tokenInValueUSD.toFixed(2)}
-          </span>
-        );
+        const amountUSD = parseFloat(row.amountUSD || '0');
+        if (amountUSD < 0.01) return "<$0.01";
+        return <span>${amountUSD.toFixed(2)}</span>;
       },
     },
     {
@@ -289,13 +281,13 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       key: 'wallet',
       render: (row) => (
         <a
-          href={`https://berascan.com/address/${row.swaps.items[0].recipient}`}
+          href={`https://berascan.com/address/${row.recipient}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
-          title={row.swaps.items[0].recipient}
+          title={row.recipient}
         >
-          {row.swaps.items[0].recipient.slice(0, 6) + '...' + row.swaps.items[0].recipient.slice(-4)}
+          {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
         </a>
       ),
     },
@@ -305,11 +297,12 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
     <Table
       columns={txColumns}
       data={data?.txs || []}
-      isLoading={isLoading}
+      isLoading={isLoading && !data} // ✅ Seulement loading si pas de données
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
       pagination={data?.pagination}
+      itemLabel="transactions"
     />
   )
 }
