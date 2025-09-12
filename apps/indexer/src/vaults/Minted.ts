@@ -4,6 +4,7 @@ import { bundle, pool, stickyVault, token, vaultDeposit, vaultUserPosition } fro
 import { formatUnits } from "viem";
 import { getOrCreateTransaction } from "../v3/helpers";
 import { updateVaultStats } from "../stats/vault";
+import { calculatePositionValue, calculateWeightedAverageEntryPrice, createPositionSnapshot } from "../utils/positionCalculations";
 
 ponder.on("svVaults:Minted", async ({ event, context }) => {
   const ve = await context.db.find(stickyVault, { id: event.log.address })
@@ -47,10 +48,10 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   const depositedT1Bera = depositedToken1.mul(t1.derivedBERA)
   const totalDepositedBera = depositedT0Bera.plus(depositedT1Bera)
   const totalDepositeUSD = totalDepositedBera.mul(beraPriceUSD)
-  
+
   // FIXED: Add to deposit/withdraw volume, not trading volume
   vault.depositWithdrawVolumeUSD = new Decimal(vault.depositWithdrawVolumeUSD || "0").plus(totalDepositeUSD).toString()
-  
+
   // FIXED: Get real TVL from vault contract instead of accumulating
   try {
     const [amount0Current, amount1Current] = await context.client.readContract({
@@ -65,7 +66,7 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
     // Update with real balances from contract
     vault.totalValueLockedToken0 = amount0Decimal.toString()
     vault.totalValueLockedToken1 = amount1Decimal.toString()
-    
+
     const tvl0Bera = amount0Decimal.mul(t0.derivedBERA)
     const tvl1Bera = amount1Decimal.mul(t1.derivedBERA)
     vault.totalValueLockedBERA = tvl0Bera.plus(tvl1Bera).toString()
@@ -81,24 +82,83 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
 
   // Update user vault position
   let uPE = await context.db.find(vaultUserPosition, { id: userPosId })
+  const isNewPosition = !uPE;
+  
   if (!uPE) {
     uPE = await context.db.insert(vaultUserPosition).values({
       id: userPosId,
       user: event.args.receiver,
-      vault: event.log.address
+      vault: event.log.address,
+      firstDepositAt: event.block.timestamp,
+      lastUpdateAt: event.block.timestamp,
     })
   }
   const userPos = { ...uPE }
 
-  userPos.depositedToken0 = new Decimal(userPos.depositedToken0).plus(depositedToken0).toString()
-  userPos.depositedToken1 = new Decimal(userPos.depositedToken1).plus(depositedToken1).toString()
-  userPos.shares = new Decimal(userPos.shares).plus(shares).toString()
-  // currentValueToken0 = (user.shares / vault.totalSupply) * vault.totalAssets0
-  userPos.currentValueToken0 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken0).toString()
-  userPos.currentValueToken1 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken1).toString()
-  // // Calcul unrealized PnL
-  // unrealizedPnL = currentValueUSD - initialValueUSD
-  // unrealizedPnL = 10660 - 10000 = +660 USD (+6.6% gain)
+  // Update basic position info
+  const oldShares = new Decimal(userPos.shares);
+  const oldDepositedToken0 = new Decimal(userPos.depositedToken0);
+  const oldDepositedToken1 = new Decimal(userPos.depositedToken1);
+  
+  userPos.depositedToken0 = oldDepositedToken0.plus(depositedToken0).toString()
+  userPos.depositedToken1 = oldDepositedToken1.plus(depositedToken1).toString()
+  userPos.shares = oldShares.plus(shares).toString()
+  userPos.lastUpdateAt = event.block.timestamp;
+
+  // Calculate weighted average entry prices
+  const token0PriceAtDeposit = new Decimal(t0.derivedBERA).mul(beraPriceUSD);
+  const token1PriceAtDeposit = new Decimal(t1.derivedBERA).mul(beraPriceUSD);
+  
+  const oldAvgPriceToken0 = new Decimal(userPos.avgEntryPriceToken0 || "0");
+  const oldAvgPriceToken1 = new Decimal(userPos.avgEntryPriceToken1 || "0");
+  
+  userPos.avgEntryPriceToken0 = calculateWeightedAverageEntryPrice(
+    oldDepositedToken0, oldAvgPriceToken0, depositedToken0, token0PriceAtDeposit
+  ).toString();
+  
+  userPos.avgEntryPriceToken1 = calculateWeightedAverageEntryPrice(
+    oldDepositedToken1, oldAvgPriceToken1, depositedToken1, token1PriceAtDeposit
+  ).toString();
+
+  // Update initial investment values for new positions
+  if (isNewPosition) {
+    userPos.initialValueBERA = totalDepositedBera.toString();
+    userPos.initialValueUSD = totalDepositeUSD.toString();
+  } else {
+    userPos.initialValueBERA = new Decimal(userPos.initialValueBERA).plus(totalDepositedBera).toString();
+    userPos.initialValueUSD = new Decimal(userPos.initialValueUSD).plus(totalDepositeUSD).toString();
+  }
+
+  // Calculate current position value and performance metrics
+  try {
+    const positionMetrics = await calculatePositionValue(userPos, vault, beraPriceUSD, context);
+    
+    // Update position with calculated metrics
+    userPos.currentValueToken0 = positionMetrics.currentValueToken0;
+    userPos.currentValueToken1 = positionMetrics.currentValueToken1;
+    userPos.currentValueBERA = positionMetrics.currentValueBERA;
+    userPos.currentValueUSD = positionMetrics.currentValueUSD;
+    userPos.totalValue = positionMetrics.totalValue;
+    userPos.unrealizedPnLBERA = positionMetrics.unrealizedPnLBERA;
+    userPos.unrealizedPnLUSD = positionMetrics.unrealizedPnLUSD;
+    userPos.totalPnLUSD = positionMetrics.totalPnLUSD;
+    userPos.totalReturn = positionMetrics.totalReturn;
+    userPos.annualizedReturn = positionMetrics.annualizedReturn;
+    
+  } catch (error) {
+    console.warn(`Could not calculate position metrics for ${userPosId}:`, (error as Error).message);
+    // Fallback to basic calculations
+    userPos.currentValueToken0 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken0).toString()
+    userPos.currentValueToken1 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken1).toString()
+    
+    const currentValueBERA = new Decimal(userPos.currentValueToken0).mul(t0.derivedBERA)
+      .plus(new Decimal(userPos.currentValueToken1).mul(t1.derivedBERA));
+    const currentValueUSD = currentValueBERA.mul(beraPriceUSD);
+    
+    userPos.currentValueBERA = currentValueBERA.toString();
+    userPos.currentValueUSD = currentValueUSD.toString();
+    userPos.totalValue = currentValueUSD.toString();
+  }
 
   // Create transaction
   const tx = await getOrCreateTransaction(context, event)
@@ -118,6 +178,21 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
 
   await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
   await context.db.update(vaultUserPosition, { id: userPos.id }).set({ ...Object.fromEntries(Object.entries(userPos).filter(([key]) => key !== 'id')) })
+
+  // Create position snapshot for deposit event
+  try {
+    await createPositionSnapshot(
+      userPos,
+      vault,
+      "deposit",
+      event.transaction.hash,
+      event.block.timestamp,
+      event.block.number,
+      context
+    );
+  } catch (error) {
+    console.warn(`Could not create position snapshot for ${userPosId}:`, (error as Error).message);
+  }
 
   await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
 })

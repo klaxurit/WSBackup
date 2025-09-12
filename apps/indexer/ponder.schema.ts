@@ -248,10 +248,42 @@ export const vaultUserPosition = onchainTable(
     user: t.hex().notNull(),
     vault: t.hex().notNull(),
     shares: t.numeric().notNull().default("0"),
+    
+    // Token amounts tracking
     depositedToken0: t.numeric().notNull().default("0"),
     depositedToken1: t.numeric().notNull().default("0"),
     currentValueToken0: t.numeric().notNull().default("0"),
     currentValueToken1: t.numeric().notNull().default("0"),
+    
+    // Total value tracking (main metrics)
+    currentValueBERA: t.numeric().notNull().default("0"),
+    currentValueUSD: t.numeric().notNull().default("0"),
+    totalValue: t.numeric().notNull().default("0"), // Alias for currentValueUSD
+    
+    // Initial investment tracking
+    initialValueBERA: t.numeric().notNull().default("0"),
+    initialValueUSD: t.numeric().notNull().default("0"),
+    avgEntryPriceToken0: t.numeric().notNull().default("0"),
+    avgEntryPriceToken1: t.numeric().notNull().default("0"),
+    
+    // Performance tracking
+    realizedPnLBERA: t.numeric().notNull().default("0"),
+    realizedPnLUSD: t.numeric().notNull().default("0"),
+    unrealizedPnLBERA: t.numeric().notNull().default("0"),
+    unrealizedPnLUSD: t.numeric().notNull().default("0"),
+    totalPnLUSD: t.numeric().notNull().default("0"),
+    
+    // Performance metrics
+    totalReturn: t.numeric().notNull().default("0"), // ROI total en %
+    annualizedReturn: t.numeric().notNull().default("0"), // APR personnel
+    feesEarnedUSD: t.numeric().notNull().default("0"), // Fees earned by user
+    impermanentLoss: t.numeric().notNull().default("0"), // IL subi
+    
+    // Timestamps
+    firstDepositAt: t.bigint(),
+    lastUpdateAt: t.bigint().notNull().default(0n),
+    
+    // Legacy field (deprecated)
     unrealizedPnL: t.integer(),
   }),
   (table) => ({
@@ -400,6 +432,42 @@ export const vaultDeposit = onchainTable("vaultDeposit", (t) => ({
   shares: t.bigint().notNull(),
   liquidityMinted: t.bigint().notNull(),
 }));
+
+export const vaultPositionSnapshot = onchainTable(
+  "vault_position_snapshot",
+  (t) => ({
+    id: t.text().primaryKey(), // positionId-timestamp
+    vaultUserPosition: t.text().notNull(),
+    timestamp: t.bigint().notNull(),
+    blockNumber: t.bigint().notNull(),
+    
+    // Position state at snapshot time
+    shares: t.numeric().notNull().default("0"),
+    currentValueToken0: t.numeric().notNull().default("0"),
+    currentValueToken1: t.numeric().notNull().default("0"),
+    currentValueUSD: t.numeric().notNull().default("0"),
+    currentValueBERA: t.numeric().notNull().default("0"),
+    
+    // Performance at snapshot time
+    unrealizedPnLUSD: t.numeric().notNull().default("0"),
+    totalReturn: t.numeric().notNull().default("0"),
+    annualizedReturn: t.numeric().notNull().default("0"),
+    
+    // Vault context at snapshot time
+    vaultAPR: t.numeric().notNull().default("0"),
+    vaultTVL: t.numeric().notNull().default("0"),
+    
+    // Snapshot metadata
+    cause: t.text().notNull(), // "deposit", "withdraw", "rebalance", "fee_collection", "price_update"
+    triggerTxHash: t.hex(),
+  }),
+  (table) => ({
+    positionIndex: index().on(table.vaultUserPosition),
+    timestampIndex: index().on(table.timestamp),
+    causeIndex: index().on(table.cause),
+    compoundIndex: index().on(table.vaultUserPosition, table.timestamp),
+  }),
+);
 
 export const vaultWithdrawal = onchainTable("vaultWithdrawal", (t) => ({
   id: t.text().primaryKey(),

@@ -1,8 +1,9 @@
 import Decimal from "decimal.js";
 import { ponder } from "ponder:registry";
-import { bundle, pool, stickyVault, swap, token } from "ponder:schema";
+import { bundle, pool, stickyVault, swap, token, vaultUserPosition } from "ponder:schema";
 import { formatUnits } from "viem";
 import { updateVaultStats } from "../stats/vault";
+import { calculatePositionValue, createPositionSnapshot } from "../utils/positionCalculations";
 
 ponder.on("svVaults:Rebalance", async ({ event, context }) => {
   const ve = await context.db.find(stickyVault, { id: event.log.address })
@@ -60,9 +61,9 @@ ponder.on("svVaults:Rebalance", async ({ event, context }) => {
       // For simplicity, we track the USD difference between old and new position values
       const valueAfterUSD = amount0AfterDecimal.mul(t0.derivedBERA).mul(beraPriceUSD)
         .plus(amount1AfterDecimal.mul(t1.derivedBERA).mul(beraPriceUSD))
-      
+
       const valueBefore = new Decimal(vault.totalValueLockedUSD || "0")
-      
+
       if (valueBefore.gt(0)) {
         const ilChange = valueAfterUSD.minus(valueBefore).div(valueBefore).mul(100)
         // Accumulate IL over time (negative = loss, positive = gain)
@@ -82,5 +83,58 @@ ponder.on("svVaults:Rebalance", async ({ event, context }) => {
   }
 
   await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
+
+  // Update all user positions and create snapshots after rebalance
+  // Rebalancing affects all users' position values
+  // try {
+  //   const userPositions = await context.db
+  //     .select()
+  //     .from(vaultUserPosition)
+  //     .where(({ vault: posVault }) => posVault.equals(vault.id));
+
+  //   for (const userPos of userPositions) {
+  //     try {
+  //       // Skip positions with no shares
+  //       if (new Decimal(userPos.shares).eq(0)) {
+  //         continue;
+  //       }
+
+  //       // Calculate updated position metrics after rebalance
+  //       const positionMetrics = await calculatePositionValue(userPos, vault, beraPriceUSD, context);
+
+  //       // Update position with new values
+  //       await context.db.update(vaultUserPosition, { id: userPos.id }).set({
+  //         currentValueToken0: positionMetrics.currentValueToken0,
+  //         currentValueToken1: positionMetrics.currentValueToken1,
+  //         currentValueBERA: positionMetrics.currentValueBERA,
+  //         currentValueUSD: positionMetrics.currentValueUSD,
+  //         totalValue: positionMetrics.totalValue,
+  //         unrealizedPnLBERA: positionMetrics.unrealizedPnLBERA,
+  //         unrealizedPnLUSD: positionMetrics.unrealizedPnLUSD,
+  //         totalPnLUSD: positionMetrics.totalPnLUSD,
+  //         totalReturn: positionMetrics.totalReturn,
+  //         annualizedReturn: positionMetrics.annualizedReturn,
+  //         lastUpdateAt: event.block.timestamp,
+  //       });
+
+  //       // Create position snapshot after rebalance
+  //       await createPositionSnapshot(
+  //         { ...userPos, ...positionMetrics, lastUpdateAt: event.block.timestamp },
+  //         vault,
+  //         "rebalance",
+  //         event.transaction.hash,
+  //         event.block.timestamp,
+  //         event.block.number,
+  //         context
+  //       );
+
+  //     } catch (error) {
+  //       console.warn(`Could not update position ${userPos.id} after rebalance:`, (error as Error).message);
+  //     }
+  //   }
+  // } catch (error) {
+  //   console.warn(`Could not update user positions after rebalance for vault ${vault.id}:`, (error as Error).message);
+  // }
+
   await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
 })

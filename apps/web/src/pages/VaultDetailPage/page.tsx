@@ -12,7 +12,7 @@ import { formatUnits, type Address } from 'viem';
 import { useAccount } from 'wagmi';
 
 const GET_STICKYVAULT = `
-  query GetStickyVaults($id: String = "") {
+  query GetStickyVaults($id: String = "", $user: String = "") {
     stickyVault(id: $id) {
       name
       collectedFeesToken0
@@ -50,7 +50,7 @@ const GET_STICKYVAULT = `
           txCount
         }
       }
-      positions {
+      positions(where: {user: $user}) {
         items {
           currentValueToken0
           currentValueToken1
@@ -60,6 +60,11 @@ const GET_STICKYVAULT = `
           shares
           unrealizedPnL
           user
+          currentValueUSD
+          feesEarnedUSD
+          realizedPnLUSD
+          initialValueUSD
+          totalPnLUSD
         }
       }
       poolRef {
@@ -95,7 +100,7 @@ export const VaultDetailPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_STICKYVAULT, variables: { id: vaultAddress } }),
+        body: JSON.stringify({ query: GET_STICKYVAULT, variables: { id: vaultAddress, user: address } }),
       });
 
       const data = await response.json();
@@ -268,8 +273,8 @@ export const VaultDetailPage = () => {
             <h3>Your Deposits</h3>
             <div className="VaultDetailPage__UserPosition">
               <div className="VaultDetailPage__PositionValue">
-                <span className="VaultDetailPage__PositionAmount">${userPosition?.valueUSD || "0"}</span>
-                <span className="VaultDetailPage__PositionShares">{userPosition?.shares || 0} STICKY {token0.symbol}-{token1.symbol}</span>
+                <span className="VaultDetailPage__PositionAmount">${formatNumber(userPosition?.currentValueUSD || "0")}</span>
+                <span className="VaultDetailPage__PositionShares">{formatNumber(userPosition?.shares || 0)} STICKY {token0.symbol}-{token1.symbol}</span>
               </div>
             </div>
           </div>
