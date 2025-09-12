@@ -10,10 +10,16 @@ interface VaultsTableProps {
   searchValue: string
 }
 
+const BL = [
+  "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303" // Sticky Vault WETH-USDC.e-0.05%
+]
+
 export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
   const filteredVaults = useMemo(() => {
-    if (!searchValue) return vaults
-    return vaults.filter((vault: any) =>
+    const approvedVaults = vaults.filter((v: any) => !BL.includes(v.id))
+
+    if (!searchValue) return approvedVaults
+    return approvedVaults.filter((vault: any) =>
       (vault.id && vault.id.toLowerCase().includes(searchValue.toLowerCase())) ||
       (vault.poolRef.token0Ref.symbol && vault.poolRef.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
       (vault.poolRef.token1Ref.symbol && vault.poolRef.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
