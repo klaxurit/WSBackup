@@ -209,6 +209,9 @@ export const stickyVault = onchainTable("stickyVault", (t) => ({
   createdAtBlockNumber: t.bigint().notNull(),
   pool: t.hex().notNull(),
   manager: t.hex().notNull(),
+  // Fee structure
+  managementFee: t.integer().notNull().default(0), // Management fee percentage (basis points, e.g., 100 = 1%)
+  performanceFee: t.integer().notNull().default(0), // Performance fee percentage (basis points)
   // ERC20 vault state
   totalSupply: t.numeric().notNull().default("0"), // Total shares circulating
   totalValueLockedToken0: t.numeric().notNull().default("0"), // Total t0 in vault
@@ -220,14 +223,22 @@ export const stickyVault = onchainTable("stickyVault", (t) => ({
   liquidity: t.bigint().notNull().default(0n), // liquidity active in pool
   collectedFeesToken0: t.numeric().notNull().default("0"),
   collectedFeesToken1: t.numeric().notNull().default("0"),
-  // Stats
-  volumeUSD: t.numeric().notNull().default("0"),
+  // Management fees collected
+  managementFeesToken0: t.numeric().notNull().default("0"),
+  managementFeesToken1: t.numeric().notNull().default("0"),
+  managementFeesUSD: t.numeric().notNull().default("0"),
+  // Stats - separated volume types
+  tradingVolumeUSD: t.numeric().notNull().default("0"), // Volume from underlying Uniswap swaps
+  depositWithdrawVolumeUSD: t.numeric().notNull().default("0"), // Volume from user deposits/withdraws
   totalValueLockedBERA: t.numeric().notNull().default("0"),
   totalValueLockedUSD: t.numeric().notNull().default("0"),
   collectedFeesUSD: t.numeric().notNull().default("0"),
   rebalanceCount: t.integer().notNull().default(0),
   txCount: t.integer().notNull().default(0),
   apy: t.numeric().notNull().default("0"),
+  // Performance metrics
+  netAPR: t.numeric().notNull().default("0"), // APR after management fees
+  impermanentLoss: t.numeric().notNull().default("0"), // IL from rebalances
 }));
 
 export const vaultUserPosition = onchainTable(
@@ -611,7 +622,9 @@ export const vaultDayData = onchainTable(
     id: t.text().primaryKey(), // vault address + "-" + day id
     date: t.integer().notNull(),
     vault: t.hex().notNull(),
-    volumeUSD: t.numeric().notNull().default("0"),
+    // Separated volume types
+    tradingVolumeUSD: t.numeric().notNull().default("0"), // Trading volume
+    depositWithdrawVolumeUSD: t.numeric().notNull().default("0"), // Deposit/withdraw volume
     volumeUSD1D: t.numeric().notNull().default("0"),
     volumeUSD30D: t.numeric().notNull().default("0"),
     totalSupply: t.numeric().notNull().default("0"),
@@ -621,7 +634,14 @@ export const vaultDayData = onchainTable(
     collectedFeesToken0: t.numeric().notNull().default("0"),
     collectedFeesToken1: t.numeric().notNull().default("0"),
     collectedFeesUSD: t.numeric().notNull().default("0"),
-    apr: t.numeric().notNull().default("0"),
+    // Management fees
+    managementFeesToken0: t.numeric().notNull().default("0"),
+    managementFeesToken1: t.numeric().notNull().default("0"),
+    managementFeesUSD: t.numeric().notNull().default("0"),
+    // Performance metrics
+    apr: t.numeric().notNull().default("0"), // Gross APR
+    netAPR: t.numeric().notNull().default("0"), // Net APR after fees
+    impermanentLoss: t.numeric().notNull().default("0"),
     rebalanceCount: t.integer().notNull().default(0),
     txCount: t.integer().notNull().default(0),
   }),
@@ -638,7 +658,9 @@ export const vaultHourData = onchainTable(
     id: t.text().primaryKey(), // vault address + "-" + hour id
     periodStartUnix: t.integer().notNull(),
     vault: t.hex().notNull(),
-    volumeUSD: t.numeric().notNull().default("0"),
+    // Separated volume types
+    tradingVolumeUSD: t.numeric().notNull().default("0"), // Trading volume
+    depositWithdrawVolumeUSD: t.numeric().notNull().default("0"), // Deposit/withdraw volume
     totalSupply: t.numeric().notNull().default("0"),
     totalValueLockedToken0: t.numeric().notNull().default("0"),
     totalValueLockedToken1: t.numeric().notNull().default("0"),
@@ -646,7 +668,14 @@ export const vaultHourData = onchainTable(
     collectedFeesToken0: t.numeric().notNull().default("0"),
     collectedFeesToken1: t.numeric().notNull().default("0"),
     collectedFeesUSD: t.numeric().notNull().default("0"),
-    apr: t.numeric().notNull().default("0"),
+    // Management fees
+    managementFeesToken0: t.numeric().notNull().default("0"),
+    managementFeesToken1: t.numeric().notNull().default("0"),
+    managementFeesUSD: t.numeric().notNull().default("0"),
+    // Performance metrics
+    apr: t.numeric().notNull().default("0"), // Gross APR
+    netAPR: t.numeric().notNull().default("0"), // Net APR after fees
+    impermanentLoss: t.numeric().notNull().default("0"),
     rebalanceCount: t.integer().notNull().default(0),
     txCount: t.integer().notNull().default(0),
   }),

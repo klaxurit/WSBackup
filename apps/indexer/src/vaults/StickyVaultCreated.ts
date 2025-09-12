@@ -17,6 +17,40 @@ ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
     functionName: "name",
   });
 
+  // Fetch fee structure from the vault contract
+  let managementFee = 0;
+
+  try {
+    // Get management fee (in basis points)
+    const feeResult = await context.client.readContract({
+      address: event.args.stickyVault,
+      abi: context.contracts.svVaults.abi,
+      functionName: "managerFeeBPS",
+    });
+    const rawFee = Number(feeResult);
+    
+    // SAFETY: Cap management fees at reasonable maximum (5% = 500 BPS)
+    if (rawFee > 500) {
+      console.warn(`🚨 ABNORMAL managerFeeBPS for vault ${event.args.stickyVault}: ${rawFee} (${rawFee/100}%)`);
+      console.warn(`   Capping at 500 BPS (5%) to prevent calculation errors`);
+      managementFee = 500; // Cap at 5%
+    } else {
+      managementFee = rawFee;
+    }
+    
+    // DEBUG: Also check slippage settings to compare
+    const slippageResult = await context.client.readContract({
+      address: event.args.stickyVault,
+      abi: context.contracts.svVaults.abi,
+      functionName: "compounderSlippageBPS",
+    });
+    console.log(`🔍 DEBUG Vault ${event.args.stickyVault}:`);
+    console.log(`  - managerFeeBPS: ${feeResult} (${rawFee/100}%) → Using: ${managementFee} (${managementFee/100}%)`);
+    console.log(`  - compounderSlippageBPS: ${slippageResult} (${Number(slippageResult)/100}%)`);
+  } catch (error) {
+    console.log(`Could not fetch fees for vault ${event.args.stickyVault}:`, (error as Error).message);
+  }
+
   const sv = await context.db.insert(stickyVault).values({
     id: event.args.stickyVault,
     createdAtTimestamp: event.block.timestamp,
@@ -24,5 +58,7 @@ ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
     pool: event.args.uniPool,
     name,
     manager: event.args.manager,
+    managementFee: managementFee,
+    performanceFee: 0, // Arrakis V1 vaults don't have separate performance fees
   });
 });

@@ -25,17 +25,18 @@ export async function updateVaultStats(
   const hourVaultId = `${vault.id}-${hourId}`;
 
   const tvlUSD = await calculateTVL(vault, beraPriceUSD, context);
-  const apr = await calculateAPR(timestamp, vault, tvlUSD, context);
+  const aprResults = await calculateAPR(timestamp, vault, tvlUSD, context);
   const volumeUSD1D = await calculateVolumeForPeriod(vault, `${vault.id}-${hourId - 24}`, context)
   const volumeUSD30D = await calculateVolumeForPeriod(vault, `${vault.id}-${hourId - (24 * 30)}`, context)
 
-  await updateDayVaultData(vault, dayVaultId, dayStart, tvlUSD, apr, volumeUSD1D, volumeUSD30D, context);
+  await updateDayVaultData(vault, dayVaultId, dayStart, tvlUSD, aprResults.grossAPR, aprResults.netAPR, volumeUSD1D, volumeUSD30D, context);
   await updateHourVaultData(
     vault,
     hourVaultId,
     hourStart,
     tvlUSD,
-    apr,
+    aprResults.grossAPR,
+    aprResults.netAPR,
     context,
   );
 }
@@ -78,7 +79,7 @@ async function calculateAPR(
   vault: typeof stickyVault.$inferSelect,
   tvlUSD: string,
   context: Context,
-): Promise<string> {
+): Promise<{grossAPR: string, netAPR: string}> {
   const dayId = Math.floor(Number(timestamp) / 86400);
   const hourId = Math.floor(Number(timestamp) / 3600)
 
@@ -86,8 +87,8 @@ async function calculateAPR(
   let actualDaysBack = 0;
   let actualHoursBack = 0;
 
-  if (!tvlUSD || tvlUSD === "0") {
-    return "0";
+  if (!tvlUSD || new Decimal(tvlUSD).lte("0")) {
+    return {grossAPR: "0", netAPR: "0"};
   }
 
   for (let i = 7; i <= 14 && !fromVaultData; i++) {
@@ -125,13 +126,14 @@ async function calculateAPR(
   }
 
   if (!fromVaultData) {
-    return "0"
+    return {grossAPR: "0", netAPR: "0"};
   }
 
+  // Calculate gross fees for the period (fees collected by vault)
   const periodFees = new Decimal(vault.collectedFeesUSD).minus(
     fromVaultData.collectedFeesUSD,
   );
-  if (periodFees.lte(0)) return "0.00";
+  if (periodFees.lte(0)) return {grossAPR: "0.00", netAPR: "0.00"};
 
   let annualMultiplier: number
   if (actualDaysBack > 0) {
@@ -145,16 +147,34 @@ async function calculateAPR(
     annualMultiplier = 52
   }
 
-  const apr = periodFees
+  // Calculate gross APR (before management fees)
+  const grossAPR = periodFees
     .mul(annualMultiplier)
     .div(tvlUSD)
     .mul(100);
 
-  return apr.toFixed(2);
+  // Calculate management fees on the period fees
+  // Management fee is in basis points (e.g., 100 = 1%)
+  const managementFeeRate = new Decimal(vault.managementFee).div(10000); // Convert basis points to decimal
+  const managementFeesOnPeriod = periodFees.mul(managementFeeRate);
+  
+  // Net fees = gross fees - management fees
+  const netPeriodFees = periodFees.minus(managementFeesOnPeriod);
+  
+  // Calculate net APR (after management fees)
+  const netAPR = netPeriodFees.gt(0) 
+    ? netPeriodFees.mul(annualMultiplier).div(tvlUSD).mul(100)
+    : new Decimal(0);
+
+  return {
+    grossAPR: grossAPR.toFixed(2),
+    netAPR: netAPR.toFixed(2)
+  };
 }
 
 async function calculateVolumeForPeriod(vault: typeof stickyVault.$inferSelect, targetHourVaultId: string, context: Context) {
-  if (!vault.volumeUSD || vault.volumeUSD === "0") return "0"
+  const currentTotalVolume = new Decimal(vault.tradingVolumeUSD || "0").plus(vault.depositWithdrawVolumeUSD || "0")
+  if (currentTotalVolume.lte("0")) return "0"
 
   // Extract hour ID from target
   const targetHourMatch = targetHourVaultId.match(/-([0-9]+)$/)
@@ -181,7 +201,8 @@ async function calculateVolumeForPeriod(vault: typeof stickyVault.$inferSelect, 
 
   if (!fromVault) return "0"
 
-  const volumeDiff = new Decimal(vault.volumeUSD).minus(fromVault.volumeUSD)
+  const pastTotalVolume = new Decimal(fromVault.tradingVolumeUSD || "0").plus(fromVault.depositWithdrawVolumeUSD || "0")
+  const volumeDiff = currentTotalVolume.minus(pastTotalVolume)
   return volumeDiff.gt(0) ? volumeDiff.toString() : "0"
 }
 
@@ -190,8 +211,10 @@ async function updateDayVaultData(
   dayVaultId: string,
   startTS: number,
   tvlUSD: string,
-  apr: string,
-  volumeUSD1D: string, volumeUSD30D: string,
+  grossAPR: string,
+  netAPR: string,
+  volumeUSD1D: string, 
+  volumeUSD30D: string,
   context: Context,
 ) {
   const vaultData = await context.db.find(vaultDayData, { id: dayVaultId });
@@ -201,7 +224,8 @@ async function updateDayVaultData(
       id: dayVaultId,
       date: startTS,
       vault: vault.id,
-      volumeUSD: vault.volumeUSD,
+      tradingVolumeUSD: vault.tradingVolumeUSD || "0",
+      depositWithdrawVolumeUSD: vault.depositWithdrawVolumeUSD || "0",
       volumeUSD1D,
       volumeUSD30D,
       totalSupply: vault.totalSupply,
@@ -211,13 +235,19 @@ async function updateDayVaultData(
       collectedFeesToken0: vault.collectedFeesToken0,
       collectedFeesToken1: vault.collectedFeesToken1,
       collectedFeesUSD: vault.collectedFeesUSD,
-      apr,
+      managementFeesToken0: vault.managementFeesToken0 || "0",
+      managementFeesToken1: vault.managementFeesToken1 || "0",
+      managementFeesUSD: vault.managementFeesUSD || "0",
+      apr: grossAPR,
+      netAPR: netAPR,
+      impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
     });
   } else {
     await context.db.update(vaultDayData, { id: dayVaultId }).set({
-      volumeUSD: vault.volumeUSD,
+      tradingVolumeUSD: vault.tradingVolumeUSD || "0",
+      depositWithdrawVolumeUSD: vault.depositWithdrawVolumeUSD || "0",
       volumeUSD1D,
       volumeUSD30D,
       totalSupply: vault.totalSupply,
@@ -227,7 +257,12 @@ async function updateDayVaultData(
       collectedFeesToken0: vault.collectedFeesToken0,
       collectedFeesToken1: vault.collectedFeesToken1,
       collectedFeesUSD: vault.collectedFeesUSD,
-      apr,
+      managementFeesToken0: vault.managementFeesToken0 || "0",
+      managementFeesToken1: vault.managementFeesToken1 || "0",
+      managementFeesUSD: vault.managementFeesUSD || "0",
+      apr: grossAPR,
+      netAPR: netAPR,
+      impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
     });
@@ -239,7 +274,8 @@ async function updateHourVaultData(
   hourVaultId: string,
   startTS: number,
   tvlUSD: string,
-  apr: string,
+  grossAPR: string,
+  netAPR: string,
   context: Context,
 ) {
   const vaultData = await context.db.find(vaultHourData, { id: hourVaultId });
@@ -249,7 +285,8 @@ async function updateHourVaultData(
       id: hourVaultId,
       periodStartUnix: startTS,
       vault: vault.id,
-      volumeUSD: vault.volumeUSD,
+      tradingVolumeUSD: vault.tradingVolumeUSD || "0",
+      depositWithdrawVolumeUSD: vault.depositWithdrawVolumeUSD || "0",
       totalSupply: vault.totalSupply,
       totalValueLockedToken0: vault.totalValueLockedToken0,
       totalValueLockedToken1: vault.totalValueLockedToken1,
@@ -257,13 +294,19 @@ async function updateHourVaultData(
       collectedFeesToken0: vault.collectedFeesToken0,
       collectedFeesToken1: vault.collectedFeesToken1,
       collectedFeesUSD: vault.collectedFeesUSD,
-      apr,
+      managementFeesToken0: vault.managementFeesToken0 || "0",
+      managementFeesToken1: vault.managementFeesToken1 || "0",
+      managementFeesUSD: vault.managementFeesUSD || "0",
+      apr: grossAPR,
+      netAPR: netAPR,
+      impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
     });
   } else {
     await context.db.update(vaultHourData, { id: hourVaultId }).set({
-      volumeUSD: vault.volumeUSD,
+      tradingVolumeUSD: vault.tradingVolumeUSD || "0",
+      depositWithdrawVolumeUSD: vault.depositWithdrawVolumeUSD || "0",
       totalSupply: vault.totalSupply,
       totalValueLockedToken0: vault.totalValueLockedToken0,
       totalValueLockedToken1: vault.totalValueLockedToken1,
@@ -271,7 +314,12 @@ async function updateHourVaultData(
       collectedFeesToken0: vault.collectedFeesToken0,
       collectedFeesToken1: vault.collectedFeesToken1,
       collectedFeesUSD: vault.collectedFeesUSD,
-      apr,
+      managementFeesToken0: vault.managementFeesToken0 || "0",
+      managementFeesToken1: vault.managementFeesToken1 || "0",
+      managementFeesUSD: vault.managementFeesUSD || "0",
+      apr: grossAPR,
+      netAPR: netAPR,
+      impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
     });

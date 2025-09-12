@@ -48,17 +48,43 @@ ponder.on("svVaults:Burned", async ({ event, context }) => {
   // Update vault datas
   vault.txCount += 1
   vault.totalSupply = new Decimal(vault.totalSupply).minus(sharesBurned).toString()
-  vault.totalValueLockedToken0 = new Decimal(vault.totalValueLockedToken0).minus(burnedToken0).toString()
-  vault.totalValueLockedToken1 = new Decimal(vault.totalValueLockedToken1).minus(burnedToken1).toString()
   vault.liquidity -= event.args.liquidityBurned
 
   const depositedT0Bera = burnedToken0.mul(t0.derivedBERA)
   const depositedT1Bera = burnedToken1.mul(t1.derivedBERA)
   const totalBurnedBera = depositedT0Bera.plus(depositedT1Bera)
   const totalBurnedUSD = totalBurnedBera.mul(beraPriceUSD)
-  vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).minus(totalBurnedBera).toString()
-  vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
-  vault.volumeUSD = new Decimal(vault.volumeUSD).plus(totalBurnedUSD).toString()
+  
+  // FIXED: Add to deposit/withdraw volume, not trading volume
+  vault.depositWithdrawVolumeUSD = new Decimal(vault.depositWithdrawVolumeUSD || "0").plus(totalBurnedUSD).toString()
+  
+  // FIXED: Get real TVL from vault contract instead of accumulating
+  try {
+    const [amount0Current, amount1Current] = await context.client.readContract({
+      address: vault.id,
+      abi: context.contracts.svVaults.abi,
+      functionName: "getUnderlyingBalances",
+    });
+
+    const amount0Decimal = new Decimal(formatUnits(amount0Current, t0.decimals));
+    const amount1Decimal = new Decimal(formatUnits(amount1Current, t1.decimals));
+
+    // Update with real balances from contract
+    vault.totalValueLockedToken0 = amount0Decimal.toString()
+    vault.totalValueLockedToken1 = amount1Decimal.toString()
+    
+    const tvl0Bera = amount0Decimal.mul(t0.derivedBERA)
+    const tvl1Bera = amount1Decimal.mul(t1.derivedBERA)
+    vault.totalValueLockedBERA = tvl0Bera.plus(tvl1Bera).toString()
+    vault.totalValueLockedUSD = tvl0Bera.plus(tvl1Bera).mul(beraPriceUSD).toString()
+  } catch (error) {
+    console.warn(`Could not fetch real TVL for vault ${vault.id}:`, error.message);
+    // Fallback to accumulative calculation (deprecated)
+    vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).minus(totalBurnedBera).toString()
+    vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
+    vault.totalValueLockedToken0 = new Decimal(vault.totalValueLockedToken0).minus(burnedToken0).toString()
+    vault.totalValueLockedToken1 = new Decimal(vault.totalValueLockedToken1).minus(burnedToken1).toString()
+  }
 
   // Update user vault position
   userPos.depositedToken0 = new Decimal(userPos.depositedToken0).minus(burnedToken0).toString()

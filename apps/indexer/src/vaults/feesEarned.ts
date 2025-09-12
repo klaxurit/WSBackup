@@ -28,14 +28,24 @@ ponder.on('svVaults:FeesEarned', async ({ event, context }) => {
   const t0 = { ...t0e }
   const t1 = { ...t1e }
 
+  // Get fresh pricing data at time of fee collection
   const b = await context.db.find(bundle, { id: "1" })
   let beraPriceUSD = new Decimal(b?.beraPriceUSD || "0")
+
+  // Refresh token prices to ensure they're current
+  // In a production system, you might want to trigger a price update here
+  // For now, we'll use the latest prices from the database
+  const t0Fresh = await context.db.find(token, { id: vPool.token0 })
+  const t1Fresh = await context.db.find(token, { id: vPool.token1 })
+  const t0DerivedBERA = new Decimal(t0Fresh?.derivedBERA || t0.derivedBERA)
+  const t1DerivedBERA = new Decimal(t1Fresh?.derivedBERA || t1.derivedBERA)
 
   const amount0 = new Decimal(formatUnits(event.args.feesEarned0, t0.decimals))
   const amount1 = new Decimal(formatUnits(event.args.feesEarned1, t1.decimals))
 
-  const amount0USD = amount0.mul(new Decimal(t0.derivedBERA).mul(beraPriceUSD))
-  const amount1USD = amount1.mul(new Decimal(t1.derivedBERA).mul(beraPriceUSD))
+  // FIXED: Use fresh prices for USD conversion
+  const amount0USD = amount0.mul(t0DerivedBERA.mul(beraPriceUSD))
+  const amount1USD = amount1.mul(t1DerivedBERA.mul(beraPriceUSD))
   const totalUSD = amount0USD.plus(amount1USD)
 
   vault.collectedFeesToken0 = new Decimal(vault.collectedFeesToken0).plus(amount0).toString()
