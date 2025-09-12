@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
