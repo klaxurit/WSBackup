@@ -10,64 +10,92 @@ import SwapForm from '../../components/SwapForm/SwapForm';
 import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTable';
 import { formatNumber } from '../../utils/formatNumber';
 import { FallbackImg } from '../../components/utils/FallbackImg';
-import { formatUnits } from 'viem';
+import { formatUnits, type Address } from 'viem';
 import type { GraphQLPool, Pool } from '../../types/api';
 import { transformGraphQLPoolToPool } from '../../types/api';
 
-const GET_TOP_POOLS = `
-  query GetTopPools {
-    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 10) {
-      totalCount
-      pageInfo {
-        endCursor
-        hasNextPage
-        hasPreviousPage
-        startCursor
-      }
+const GET_POOL = `
+query GetTokensStats($id: String = "") {
+  pool(id: $id) {
+    collectedFeesUSD
+    feeTier
+    feesUSD
+    id
+    liquidity
+    liquidityProviderCount
+    sqrtPrice
+    tick
+    totalValueLockedUSD
+    txCount
+    volumeUSD
+    poolDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
       items {
-        feeTier
-        id
-        liquidity
-        poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
-          items {
-            tvlUSD
-            volumeUSD
-            apr
-            volumeUSD1D
-            volumeUSD30D
-          }
-        }
-        token0Ref {
-          name
-          id
-          symbol
-          logoUri
-        }
-        token1Ref {
-          id
-          name
-          symbol
-          logoUri
-        }
-        totalValueLockedBERA
-        totalValueLockedUSD
+        apr
+        date
+        feesUSD
+        tvlUSD
+        txCount
         volumeUSD
+        volumeUSD30D
+        volumeUSD1D
       }
     }
+    token0Ref {
+      decimals
+      id
+      logoUri
+      name
+      symbol
+    }
+    token1Ref {
+      id
+      logoUri
+      name
+      symbol
+      decimals
+    }
   }
+}
 `;
 
 interface GraphQLResponse {
-  pools: {
-    totalCount: number;
-    pageInfo: {
-      endCursor: string;
-      hasNextPage: boolean;
-      hasPreviousPage: boolean;
-      startCursor: string;
-    };
-    items: GraphQLPool[];
-  };
+  collectedFeesUSD: string
+  feeTier: number
+  feesUSD: string
+  id: string
+  liquidity: string
+  liquidityProviderCount: number
+  sqrtPrice: string
+  tick: number
+  poolDayData: {
+    items: {
+      apr: string
+      date: number
+      feesUSD: string
+      tvlUSD: string
+      txCount: number
+      volumeUSD: string
+      volumeUSD30D: string
+      volumeUSD1D: string
+    }[]
+  }
+  token0Ref: {
+    decimals: number
+    id: Address
+    logoUri: string
+    name: string
+    symbol: string
+  }
+  token1Ref: {
+    decimals: number
+    id: Address
+    logoUri: string
+    name: string
+    symbol: string
+  }
+  totalValueLockedUSD: string
+  txCount: number
+  volumeUSD: string
 }
 
 const PoolDetailPage: React.FC = () => {
@@ -78,15 +106,15 @@ const PoolDetailPage: React.FC = () => {
   const [interval, setInterval] = React.useState<ChartInterval>('1D');
   const [metric, setMetric] = React.useState<ChartMetric>('price');
 
-  const { data: poolsData, isLoading: poolsLoading } = useQuery({
-    queryKey: ['topPools'],
+  const { data: pool, isLoading: poolsLoading } = useQuery({
+    queryKey: ['pool', poolAddress],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_TOP_POOLS }),
+        body: JSON.stringify({ query: GET_POOL, variables: { id: poolAddress } }),
       });
 
       const data = await response.json();
@@ -95,27 +123,10 @@ const PoolDetailPage: React.FC = () => {
         throw new Error(data.errors[0].message);
       }
 
-      return data.data as GraphQLResponse;
+      return data.data.pool as GraphQLResponse;
     },
   });
-
-  const pools: Pool[] = useMemo(() => {
-    if (!poolsData?.pools?.items) return [];
-    return poolsData.pools.items.map(transformGraphQLPoolToPool);
-  }, [poolsData]);
-
-  const pool: Pool | null = useMemo(() => {
-    if (!pools || !poolAddress) return null;
-
-    try {
-      return pools.find((p: Pool) =>
-        p.address && p.address.toLowerCase() === poolAddress.toLowerCase()
-      ) || null;
-    } catch (error) {
-      console.error('Error finding pool:', error);
-      return null;
-    }
-  }, [pools, poolAddress]);
+  console.log(pool)
 
   // Handlers pour les contrôles du chart
   const handleChartTypeChange = (newType: ChartType) => {
@@ -140,15 +151,17 @@ const PoolDetailPage: React.FC = () => {
     return <div style={{ padding: 32 }}>Pool not found.</div>;
   }
 
-  const stat = pool.PoolStatistic?.[0];
-  const tvl = pool.tvlUSD || stat?.tvlUSD || null;
-  const volume1d = pool.dayVolumeUSD ? Number(pool.dayVolumeUSD) : (stat?.volOneDay ? Number(stat.volOneDay) : null);
-  const volume30d = pool.monthVolumeUSD ? Number(pool.monthVolumeUSD) : (stat?.volOneMonth ? Number(stat.volOneMonth) : null);
-  const apr = pool.apr || stat?.apr || null;
+  const stat = pool.poolDayData.items?.[0];
+  const tvl = Number(pool.totalValueLockedUSD) || null;
+  const volume1d = stat.volumeUSD1D ? Number(stat.volumeUSD1D) : null;
+  const volume30d = stat.volumeUSD30D ? Number(stat.volumeUSD30D) : null;
+  const apr = stat.apr ? Number(stat.apr) : null;
+  const t0 = pool.token0Ref
+  const t1 = pool.token1Ref
 
-  const liquidity = pool.token0 && pool.token1
-    ? Number(formatUnits(BigInt(pool.liquidity || "0"), (pool.token0.decimals + pool.token1.decimals) / 2))
-    : Number(pool.liquidity || "0");
+  // const liquidity = t0 && t1
+  //   ? Number(formatUnits(BigInt(pool.liquidity || "0"), (t0.decimals + t1.decimals) / 2))
+  //   : Number(pool.liquidity || "0");
 
   return (
     <div className="Pool">
@@ -159,15 +172,15 @@ const PoolDetailPage: React.FC = () => {
           <Link to="/explore?tab=pools" className="Pool__BreadcrumbsLink">Pools</Link>
           <ExplorerChevronIcon />
           <span className="Pool__BreadcrumbsLink__3">
-            {pool.token0Symbol}/{pool.token1Symbol}
+            {t0.symbol}/{t1.symbol}
           </span>
           <span className="Pool__BreadcrumbsAddress">
-            {pool.address.slice(0, 6) + '...' + pool.address.slice(-4)}
+            {pool.id.slice(0, 6) + '...' + pool.id.slice(-4)}
           </span>
         </div>
 
         <Link
-          to={`/pools/create?token0=${pool.token0Address}&token1=${pool.token1Address}&fee=${pool.fee}`}
+          to={`/pools/create?token0=${t0.id}&token1=${t1.id}&fee=${pool.feeTier}`}
           className="Pool__AddLiquidityBtn btn btn--small btn__accent"
         >
           + Add Liquidity
@@ -182,25 +195,15 @@ const PoolDetailPage: React.FC = () => {
                 <div className="Pool__SectionHeadTitle">
                   <div className="Pool__SectionHeadTitleLeft">
                     <TokenPairLogos
-                      token0={{
-                        id: pool.token0Address,
-                        address: pool.token0Address,
-                        symbol: pool.token0Symbol,
-                        logoUri: pool.token0LogoUri
-                      }}
-                      token1={{
-                        id: pool.token1Address,
-                        address: pool.token1Address,
-                        symbol: pool.token1Symbol,
-                        logoUri: pool.token1LogoUri
-                      }}
+                      token0={{ ...t0, address: t0.id }}
+                      token1={{ ...t1, address: t1.id }}
                       size={32}
                       separatorWidth={2}
                     />
-                    <span className="Pool__Name" title={`${pool.token0Symbol}/${pool.token1Symbol}`}>
-                      {pool.token0Symbol}/{pool.token1Symbol}
+                    <span className="Pool__Name" title={`${t0.symbol}/${t1.symbol}`}>
+                      {t0.symbol}/{t1.symbol}
                     </span>
-                    <span className="Pool__Fee">{(pool.fee / 10000)}%</span>
+                    <span className="Pool__Fee">{(pool.feeTier / 10000)}%</span>
                   </div>
                 </div>
               </div>
@@ -252,18 +255,18 @@ const PoolDetailPage: React.FC = () => {
                   {volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d)}
                 </p>
               </div>
-              <div className="Pool__StatCard">
+              {/* <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">Liquidity</h4>
                 <p className="Pool__StatCardLabel">
                   {liquidity > 0.01
                     ? formatNumber(liquidity)
                     : '<0.01'}
                 </p>
-              </div>
+              </div> */}
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">Fee Tier</h4>
                 <p className="Pool__StatCardLabel">
-                  {(pool.fee / 10000)}%
+                  {(pool.feeTier / 10000)}%
                 </p>
               </div>
             </div>
@@ -271,7 +274,7 @@ const PoolDetailPage: React.FC = () => {
 
           {/* Transactions Table */}
           <div className="Pool__Transactions">
-            <PoolTransactionsTable poolAddress={pool.address} />
+            <PoolTransactionsTable poolAddress={pool.id} />
           </div>
         </div>
 
@@ -280,17 +283,17 @@ const PoolDetailPage: React.FC = () => {
             <SwapForm
               toggleSidebar={() => { }}
               initialFromToken={{
-                address: pool.token0Address,
-                symbol: pool.token0Symbol,
-                name: pool.token0Symbol,
-                logoUri: pool.token0LogoUri,
+                address: t0.id,
+                symbol: t0.symbol,
+                name: t0.symbol,
+                logoUri: t0.logoUri,
                 decimals: 18
               } as any}
               initialToToken={{
-                address: pool.token1Address,
-                symbol: pool.token1Symbol,
-                name: pool.token1Symbol,
-                logoUri: pool.token1LogoUri,
+                address: t1.id,
+                symbol: t1.symbol,
+                name: t1.symbol,
+                logoUri: t1.logoUri,
                 decimals: 18
               } as any}
             />
@@ -303,7 +306,7 @@ const PoolDetailPage: React.FC = () => {
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href={pool.address ? `https://berascan.com/address/${pool.address}` : '#'}
+                href={pool.id ? `https://berascan.com/address/${pool.id}` : '#'}
                 className="Pool__InfoLink"
               >
                 <ExplorerIcon />
@@ -315,26 +318,26 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__InfoRow">
                 <span className="Pool__InfoValue">
                   <div className="Pool__TokenInfoDetailed">
-                    {pool.token0LogoUri ? (
-                      <img src={pool.token0LogoUri} />
+                    {t0.logoUri ? (
+                      <img src={t0.logoUri} />
                     ) : (
-                      <FallbackImg content={pool.token0Symbol} />
+                      <FallbackImg content={t0.symbol} />
                     )}
                     <div className="Pool__TokenDetails">
-                      <span className="Pool__TokenSymbol">{pool.token0Symbol}</span>
+                      <span className="Pool__TokenSymbol">{t0.symbol}</span>
                       <div className="Pool__TokenAddressContainer">
                         <span className="Pool__TokenAddress">
-                          {pool.token0Address.slice(0, 6) + '...' + pool.token0Address.slice(-4)}
+                          {t0.id.slice(0, 6) + '...' + t0.id.slice(-4)}
                         </span>
                         <button
                           className="Pool__CopyButton Pool__CopyButton--small"
-                          onClick={() => navigator.clipboard.writeText(pool.token0Address)}
+                          onClick={() => navigator.clipboard.writeText(t0.id)}
                           title="Copy token address"
                         >
                           <CopyIcon />
                         </button>
                         <a
-                          href={`https://berascan.com/address/${pool.token0Address}`}
+                          href={`https://berascan.com/address/${t0.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="Pool__ExplorerButton Pool__ExplorerButton--small"
@@ -350,26 +353,26 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__InfoRow">
                 <span className="Pool__InfoValue">
                   <div className="Pool__TokenInfoDetailed">
-                    {pool.token1LogoUri ? (
-                      <img src={pool.token1LogoUri} />
+                    {t1.logoUri ? (
+                      <img src={t1.logoUri} />
                     ) : (
-                      <FallbackImg content={pool.token1Symbol} />
+                      <FallbackImg content={t1.symbol} />
                     )}
                     <div className="Pool__TokenDetails">
-                      <span className="Pool__TokenSymbol">{pool.token1Symbol}</span>
+                      <span className="Pool__TokenSymbol">{t1.symbol}</span>
                       <div className="Pool__TokenAddressContainer">
                         <span className="Pool__TokenAddress">
-                          {pool.token1Address.slice(0, 6) + '...' + pool.token1Address.slice(-4)}
+                          {t1.id.slice(0, 6) + '...' + t1.id.slice(-4)}
                         </span>
                         <button
                           className="Pool__CopyButton Pool__CopyButton--small"
-                          onClick={() => navigator.clipboard.writeText(pool.token1Address)}
+                          onClick={() => navigator.clipboard.writeText(t1.id)}
                           title="Copy token address"
                         >
                           <CopyIcon />
                         </button>
                         <a
-                          href={`https://berascan.com/address/${pool.token1Address}`}
+                          href={`https://berascan.com/address/${t1.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="Pool__ExplorerButton Pool__ExplorerButton--small"
