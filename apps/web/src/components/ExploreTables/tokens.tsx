@@ -260,6 +260,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       defaultSortKey="volume"
       defaultSortDirection="desc"
       pagination={pagination}
+      itemLabel="tokens"
     />
   )
 }

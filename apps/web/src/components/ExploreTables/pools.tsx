@@ -61,6 +61,15 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
+  // Fonction utilitaire pour trier les pools par TVL
+  const sortPoolsByTvl = (pools: any[]) => {
+    return [...pools].sort((a, b) => {
+      const tvlA = parseFloat(a.totalValueLockedUSD || '0');
+      const tvlB = parseFloat(b.totalValueLockedUSD || '0');
+      return tvlB - tvlA; // Décroissant
+    });
+  };
+
   const { data, isLoading } = useQuery({
     queryKey: ['poolStats', currentPage, searchValue],
     queryFn: async () => {
@@ -98,11 +107,14 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       );
     }
 
+    // Tri par TVL (décroissant) avant la pagination
+    const sortedPools = sortPoolsByTvl(filteredPools);
+
     // Pagination côté client
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
-    return filteredPools.slice(startIndex, endIndex);
+    return sortedPools.slice(startIndex, endIndex);
   }, [data, searchValue, currentPage, itemsPerPage]);
 
   const pagination = useMemo(() => {
@@ -118,13 +130,16 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       );
     }
 
-    const totalPages = Math.ceil(filteredPools.length / itemsPerPage);
+    // Tri par TVL (décroissant) pour le calcul de pagination
+    const sortedPools = sortPoolsByTvl(filteredPools);
+
+    const totalPages = Math.ceil(sortedPools.length / itemsPerPage);
 
     return {
       currentPage,
       totalPages,
       itemsPerPage,
-      totalItems: filteredPools.length,
+      totalItems: sortedPools.length,
       hasNextPage: currentPage < totalPages,
       hasPreviousPage: currentPage > 1,
       onPageChange: setCurrentPage,
@@ -286,6 +301,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       defaultSortKey="tvl"
       defaultSortDirection="desc"
       pagination={pagination}
+      itemLabel="pools"
     />
   )
 }
