@@ -20,7 +20,7 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
 }) => {
   const { isConnected } = useAccount();
   const allowData = useMemo(() => {
-    if (vm.isWithdraw) return { handler: vm.burnAllowance.allow, text: "burn" }
+    if (vm.isWithdraw) return { handler: vm.burnAllowance.allow, text: "withdraw" }
     if (vm.isDeposite && vm.isOneSide) return { handler: vm.osAllowance.allow, text: "deposit" }
     if (vm.t0Allowance.isNeed) return { handler: vm.t0Allowance.allow, text: t0Symbol }
     if (vm.t1Allowance.isNeed) return { handler: vm.t1Allowance.allow, text: t1Symbol }

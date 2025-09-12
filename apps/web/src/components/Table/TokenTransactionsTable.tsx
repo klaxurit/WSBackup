@@ -148,7 +148,8 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
           totalItems: allTransactions.length,
           hasNextPage,
           hasPreviousPage,
-          onPageChange: setCurrentPage
+          onPageChange: setCurrentPage,
+          dataname: "transactions"
         },
         transactions: paginatedTransactions
       };

@@ -281,7 +281,8 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       totalItems: transactions.length,
       hasNextPage: currentPage < totalPages,
       hasPreviousPage: currentPage > 1,
-      onPageChange: setCurrentPage
+      onPageChange: setCurrentPage,
+      dataname: "transactions"
     };
   }, [transactions, currentPage, itemsPerPage]);
 

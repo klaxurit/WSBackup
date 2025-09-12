@@ -383,8 +383,8 @@ export const VaultDetailPage = () => {
                   <LiquidityInput
                     selectedToken={{
                       address: vault.address as `0x${string}`,
-                      symbol: `WIN-${token0.symbol}-${token1.symbol}`,
-                      name: `WIN-${token0.symbol}-${token1.symbol}`,
+                      symbol: `STICKY ${token0.symbol}-${token1.symbol}`,
+                      name: `STICKY ${token0.symbol}-${token1.symbol}`,
                       decimals: 18,
                       logoUri: '' // Chaîne vide au lieu d'undefined
                     }}
@@ -451,7 +451,7 @@ export const VaultDetailPage = () => {
           {/* Auto Compound Toggle */}
           <div className="VaultDetailPage__AutoCompound">
             <div className="VaultDetailPage__AutoCompoundHeader">
-              <h4>AUTO-COMPOUND</h4>
+              <h4>AUTO-WIN</h4>
               <div className="VaultDetailPage__Toggle">
                 <button
                   className={`VaultDetailPage__ToggleButton ${autoCompound ? 'active' : ''}`}
@@ -466,7 +466,7 @@ export const VaultDetailPage = () => {
             <div className="VaultDetailPage__APY">
               {/* <span>111.84% APY</span> */}
             </div>
-            <p>Auto-compounding automatically reinvests your rewards to grow your position over time.</p>
+            <p>Auto-Win compound automatically your rewards by reinvesting them frequently to grow your position over time and increase your APR</p>
           </div>
         </div>
       </div>

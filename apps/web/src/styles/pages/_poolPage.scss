@@ -41,6 +41,18 @@
     }
   }
 
+  &__BreadcrumbsButtons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+
   &__BreadcrumbsContainer {
     display: flex;
     justify-content: space-between;

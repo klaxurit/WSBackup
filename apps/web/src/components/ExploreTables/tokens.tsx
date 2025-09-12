@@ -111,7 +111,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       totalItems: filteredTokens.length,
       hasNextPage: currentPage < totalPages,
       hasPreviousPage: currentPage > 1,
-      onPageChange: setCurrentPage
+      onPageChange: setCurrentPage,
+      dataname: "tokens"
     };
   }, [data, searchValue, currentPage, itemsPerPage]);
 
@@ -241,8 +242,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
           : 0;
       },
       render: (row) => {
-        return row.tokenDayData?.items?.length > 0 && parseFloat(row.tokenDayData.items[0].volume24hUSD) !== 0
-          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].volume24hUSD))}`
+        return parseFloat(row.volumeUSD) !== 0
+          ? `$${formatNumber(parseFloat(row.volumeUSD))}`
           : '-'
       }
     },

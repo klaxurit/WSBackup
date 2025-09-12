@@ -79,11 +79,11 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
       key: 'strategy',
       className: 'VaultsTable__StrategyTd',
       sortable: true,
-      sortValue: (row) => row.strategy || 'Auto-Compound',
+      sortValue: (row) => row.strategy || 'Auto-Win',
       render: (row) => (
         <span className="VaultsTable__StrategyCell">
           <span className="VaultsTable__StrategyBadge">
-            {row.strategy || 'Auto-Compound'}
+            {row.strategy || 'Auto-Win'}
           </span>
         </span>
       )
