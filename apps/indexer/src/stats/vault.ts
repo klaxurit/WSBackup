@@ -29,12 +29,6 @@ export async function updateVaultStats(
   const volumeUSD1D = await calculateVolumeForPeriod(vault, `${vault.id}-${hourId - 24}`, context)
   const volumeUSD30D = await calculateVolumeForPeriod(vault, `${vault.id}-${hourId - (24 * 30)}`, context)
 
-
-  console.log("-----------------------------------------")
-  console.log("vault Id", dayVaultId)
-  console.log("TVL", tvlUSD)
-  console.log("APR", apr)
-
   await updateDayVaultData(vault, dayVaultId, dayStart, tvlUSD, apr, volumeUSD1D, volumeUSD30D, context);
   await updateHourVaultData(
     vault,
