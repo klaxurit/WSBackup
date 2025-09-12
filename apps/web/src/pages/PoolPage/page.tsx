@@ -10,9 +10,7 @@ import SwapForm from '../../components/SwapForm/SwapForm';
 import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTable';
 import { formatNumber } from '../../utils/formatNumber';
 import { FallbackImg } from '../../components/utils/FallbackImg';
-import { formatUnits, type Address } from 'viem';
-import type { GraphQLPool, Pool } from '../../types/api';
-import { transformGraphQLPoolToPool } from '../../types/api';
+import { type Address } from 'viem';
 
 const GET_POOL = `
 query GetTokensStats($id: String = "") {
@@ -54,11 +52,25 @@ query GetTokensStats($id: String = "") {
       symbol
       decimals
     }
+  },
+  stickyVaults(where: {pool: $id}) {
+    items {
+      collectedFeesUSD
+      id
+      name
+      totalValueLockedUSD
+      vaultDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+        items {
+          apr
+          volumeUSD1D
+        }
+      }
+    }
   }
 }
 `;
 
-interface GraphQLResponse {
+interface Pool {
   collectedFeesUSD: string
   feeTier: number
   feesUSD: string
@@ -106,7 +118,7 @@ const PoolDetailPage: React.FC = () => {
   const [interval, setInterval] = React.useState<ChartInterval>('1D');
   const [metric, setMetric] = React.useState<ChartMetric>('price');
 
-  const { data: pool, isLoading: poolsLoading } = useQuery({
+  const { data, isLoading: poolsLoading } = useQuery({
     queryKey: ['pool', poolAddress],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
@@ -123,10 +135,15 @@ const PoolDetailPage: React.FC = () => {
         throw new Error(data.errors[0].message);
       }
 
-      return data.data.pool as GraphQLResponse;
+      return {
+        pool: data.data.pool as Pool,
+        vault: data.data.stickyVaults.items[0]
+      }
     },
   });
-  console.log(pool)
+
+  const { pool, vault } = data ?? { pool: null, vault: null }
+  console.log(pool, vault)
 
   // Handlers pour les contrôles du chart
   const handleChartTypeChange = (newType: ChartType) => {
@@ -144,11 +161,23 @@ const PoolDetailPage: React.FC = () => {
   const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (poolsLoading) {
-    return <div style={{ padding: 32 }}>Loading pool data...</div>;
+    return (<div className="VaultDetailPage VaultDetailPage--error">
+      <h2>Loading...</h2>
+    </div>)
   }
 
   if (!pool) {
-    return <div style={{ padding: 32 }}>Pool not found.</div>;
+    return (
+      <div className="VaultDetailPage VaultDetailPage--error">
+        <div className="VaultDetailPage__Error">
+          <h2>Pool not found</h2>
+          <p>The requested pool does not exist or has been removed.</p>
+          <Link to="/explore?tab=pools" className="button button--primary">
+            Back to pools
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const stat = pool.poolDayData.items?.[0];
@@ -158,10 +187,6 @@ const PoolDetailPage: React.FC = () => {
   const apr = stat.apr ? Number(stat.apr) : null;
   const t0 = pool.token0Ref
   const t1 = pool.token1Ref
-
-  // const liquidity = t0 && t1
-  //   ? Number(formatUnits(BigInt(pool.liquidity || "0"), (t0.decimals + t1.decimals) / 2))
-  //   : Number(pool.liquidity || "0");
 
   return (
     <div className="Pool">
@@ -179,12 +204,20 @@ const PoolDetailPage: React.FC = () => {
           </span>
         </div>
 
-        <Link
-          to={`/pools/create?token0=${t0.id}&token1=${t1.id}&fee=${pool.feeTier}`}
-          className="Pool__AddLiquidityBtn btn btn--small btn__accent"
-        >
-          + Add Liquidity
-        </Link>
+        <div className='Pool__BreadcrumbsButtons'>
+          <Link
+            to={`/vaults/${vault.id}`}
+            className="Pool__AddLiquidityBtn btn btn--small btn__accent"
+          >
+            Add Vault Liquidity
+          </Link>
+          <Link
+            to={`/pools/create?token0=${t0.id}&token1=${t1.id}&fee=${pool.feeTier}`}
+            className="Pool__AddLiquidityBtn btn btn--small btn__accent"
+          >
+            Add Pool Liquidity
+          </Link>
+        </div>
       </div>
 
       <div className="Pool__Content">
@@ -255,18 +288,35 @@ const PoolDetailPage: React.FC = () => {
                   {volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d)}
                 </p>
               </div>
-              {/* <div className="Pool__StatCard">
-                <h4 className="Pool__StatCardTitle">Liquidity</h4>
-                <p className="Pool__StatCardLabel">
-                  {liquidity > 0.01
-                    ? formatNumber(liquidity)
-                    : '<0.01'}
-                </p>
-              </div> */}
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">Fee Tier</h4>
                 <p className="Pool__StatCardLabel">
                   {(pool.feeTier / 10000)}%
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Statistics Section */}
+          <div className="Pool__Statistics">
+            <h3 className="Pool__StatisticsTitle">Vault Statistics</h3>
+            <div className="Pool__StatCards">
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">TVL</h4>
+                <p className="Pool__StatCardLabel">
+                  {vault === null ? 'N/A' : formatNumber(vault.totalValueLockedUSD)}
+                </p>
+              </div>
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">APR</h4>
+                <p className="Pool__StatCardLabel">
+                  {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].apr}%`}
+                </p>
+              </div>
+              <div className="Pool__StatCard">
+                <h4 className="Pool__StatCardTitle">24h Volume</h4>
+                <p className="Pool__StatCardLabel">
+                  {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
                 </p>
               </div>
             </div>
