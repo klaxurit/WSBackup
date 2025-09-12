@@ -161,17 +161,20 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const btnText = useMemo(() => {
       if (!fromToken || !toToken) return "Select a token"
       if (!fromAmount || fromAmount === 0n) return "Enter Amount"
+
+      // Vérifier les cas de wrap/unwrap en priorité
+      if (swap.isWrap) return "Wrap"
+      if (swap.isUnWrap) return "Unwrap"
+
       if (swap.status === "ready") return "Preview"
       if (swap.status === "success" && showModal) return "Success! 🎉"
       if (swap.status === "error") {
-        if (swap.isWrap) return "Wrap"
-        if (swap.isUnWrap) return "Unwrap"
         return swap?.error || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return "Preview"
-    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal])
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap])
 
     const handleBtnClick = async () => {
       if (swap.isWrap) {
@@ -254,7 +257,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       isSticky ? 'Form--sticky' : '',
       customClassName || ''
     ].filter(Boolean).join(' ');
-    
+
 
     useEffect(() => {
       if (!paramOpen) return;

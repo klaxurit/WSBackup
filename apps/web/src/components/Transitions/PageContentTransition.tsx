@@ -16,16 +16,24 @@ export const PageContentTransition: React.FC<PageContentTransitionProps> = ({
     // Small delay to ensure page animation is complete
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, 50);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isVisible ? 1 : 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        y: isVisible ? 0 : 10
+      }}
+      transition={{
+        duration: 0.4,
+        ease: 'easeOut',
+        opacity: { duration: 0.3 },
+        y: { duration: 0.4 }
+      }}
       className={className}
     >
       {children}

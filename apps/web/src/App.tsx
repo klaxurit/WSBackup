@@ -22,8 +22,8 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const { reconnect } = useReconnect();
   const { isLoading, loadingText } = usePageTransition({
-    loadingDelay: 100,
-    minimumLoadingTime: 200,
+    loadingDelay: 50,
+    minimumLoadingTime: 150,
   });
 
   useEffect(() => {
@@ -36,6 +36,7 @@ function AppContent() {
 
   return (
     <div className="app">
+
       <Navbar />
       <main className="app-main">
         <PageTransition isLoading={isLoading} loadingText={loadingText}>

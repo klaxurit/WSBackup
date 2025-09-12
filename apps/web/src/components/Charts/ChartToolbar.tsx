@@ -84,15 +84,13 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   const [previousInterval, setPreviousInterval] = React.useState<ChartInterval | null>(null);
   const [isFromHover, setIsFromHover] = React.useState(false);
 
-  // États pour le dropdown des métriques
-  const [isMetricDropdownOpen, setIsMetricDropdownOpen] = useState(false);
-  const metricDropdownRef = useRef<HTMLDivElement>(null);
-
   // États pour les dropdowns mobile
   const [isChartTypeDropdownOpen, setIsChartTypeDropdownOpen] = useState(false);
   const [isIntervalDropdownOpen, setIsIntervalDropdownOpen] = useState(false);
+  const [isMetricDropdownOpen, setIsMetricDropdownOpen] = useState(false);
   const chartTypeDropdownRef = useRef<HTMLDivElement>(null);
   const intervalDropdownRef = useRef<HTMLDivElement>(null);
+  const metricDropdownRef = useRef<HTMLDivElement>(null);
 
   // Gérer le changement d'intervalle
   const handleIntervalChange = (newInterval: ChartInterval) => {
@@ -128,11 +126,11 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   // Fermer les dropdowns quand on clique ailleurs
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (metricDropdownRef.current && !metricDropdownRef.current.contains(event.target as Node)) {
-        setIsMetricDropdownOpen(false);
-      }
       if (chartTypeDropdownRef.current && !chartTypeDropdownRef.current.contains(event.target as Node)) {
         setIsChartTypeDropdownOpen(false);
+      }
+      if (metricDropdownRef.current && !metricDropdownRef.current.contains(event.target as Node)) {
+        setIsMetricDropdownOpen(false);
       }
       if (intervalDropdownRef.current && !intervalDropdownRef.current.contains(event.target as Node)) {
         setIsIntervalDropdownOpen(false);
@@ -189,6 +187,73 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                 </button>
               );
             })}
+          </div>
+
+          {/* Séparateur */}
+          <div className="chart-toolbar__separator" />
+
+          {/* Dropdown des métriques */}
+          <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
+            <button
+              className={`chart-toolbar__metrics-trigger ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger--open' : ''} ${isLoading ? 'chart-toolbar__metrics-trigger--disabled' : ''}`}
+              onClick={() => !isLoading && setIsMetricDropdownOpen(!isMetricDropdownOpen)}
+              disabled={isLoading}
+            >
+              <span className="chart-toolbar__metrics-trigger-icon">
+                {metricIcons[metric]}
+              </span>
+              <span className="chart-toolbar__metrics-trigger-label">
+                {metricLabels[metric]}
+              </span>
+              <svg
+                className={`chart-toolbar__metrics-trigger-arrow ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
+                width="12"
+                height="8"
+                viewBox="0 0 12 8"
+                fill="none"
+              >
+                <path
+                  d="M1 1.5L6 6.5L11 1.5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {isMetricDropdownOpen && (
+              <>
+                <div
+                  className="chart-toolbar__mobile-overlay"
+                  onClick={() => setIsMetricDropdownOpen(false)}
+                />
+                <div className="chart-toolbar__metrics-menu">
+                  {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
+                    const isActive = metric === metricOption;
+                    const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
+
+                    return (
+                      <button
+                        key={metricOption}
+                        className={`chart-toolbar__metrics-option ${isActive ? 'chart-toolbar__metrics-option--active' : ''
+                          } ${isDisabled ? 'chart-toolbar__metrics-option--disabled' : ''}`}
+                        onClick={() => !isDisabled && handleMetricSelect(metricOption)}
+                        disabled={isDisabled}
+                        title={isDisabled ? 'Candlestick only available for Price metric' : metricLabels[metricOption]}
+                      >
+                        <span className="chart-toolbar__metrics-option-icon">
+                          {metricIcons[metricOption]}
+                        </span>
+                        <span className="chart-toolbar__metrics-option-label">
+                          {metricLabels[metricOption]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Séparateur */}
@@ -306,6 +371,68 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
             )}
           </div>
 
+          {/* Dropdown Métriques */}
+          <div className="chart-toolbar__mobile-dropdown" ref={metricDropdownRef}>
+            <button
+              className={`chart-toolbar__mobile-trigger ${isMetricDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              onClick={() => !isLoading && setIsMetricDropdownOpen(!isMetricDropdownOpen)}
+              disabled={isLoading}
+            >
+              <span className="chart-toolbar__mobile-trigger-icon">
+                {metricIcons[metric]}
+              </span>
+              <span className="chart-toolbar__mobile-trigger-label">
+                {metricLabels[metric]}
+              </span>
+              <svg
+                className={`chart-toolbar__mobile-trigger-arrow ${isMetricDropdownOpen ? 'chart-toolbar__mobile-trigger-arrow--open' : ''}`}
+                width="12"
+                height="8"
+                viewBox="0 0 12 8"
+                fill="none"
+              >
+                <path
+                  d="M1 1.5L6 6.5L11 1.5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {isMetricDropdownOpen && (
+              <>
+                <div
+                  className="chart-toolbar__mobile-overlay"
+                  onClick={() => setIsMetricDropdownOpen(false)}
+                />
+                <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--open`}>
+                  {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
+                    const isActive = metric === metricOption;
+                    const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
+
+                    return (
+                      <button
+                        key={metricOption}
+                        className={`chart-toolbar__mobile-option ${isActive ? 'chart-toolbar__mobile-option--active' : ''} ${isDisabled ? 'chart-toolbar__mobile-option--disabled' : ''}`}
+                        onClick={() => !isDisabled && handleMetricSelect(metricOption)}
+                        disabled={isDisabled}
+                      >
+                        <span className="chart-toolbar__mobile-option-icon">
+                          {metricIcons[metricOption]}
+                        </span>
+                        <span className="chart-toolbar__mobile-option-label">
+                          {metricLabels[metricOption]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Dropdown Intervalle */}
           <div className="chart-toolbar__mobile-dropdown" ref={intervalDropdownRef}>
             <button
@@ -358,84 +485,6 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         </div>
       </div>
 
-      <div className="chart-toolbar__section chart-toolbar__section--right">
-        {/* Dropdown des métriques */}
-        <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
-          <button
-            className={`chart-toolbar__metrics-trigger ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger--open' : ''} ${isLoading ? 'chart-toolbar__metrics-trigger--disabled' : ''}`}
-            onClick={() => !isLoading && setIsMetricDropdownOpen(!isMetricDropdownOpen)}
-            disabled={isLoading}
-          >
-            <span className="chart-toolbar__metrics-trigger-icon">
-              {metricIcons[metric]}
-            </span>
-            <span className="chart-toolbar__metrics-trigger-label">
-              {metricLabels[metric]}
-            </span>
-            <svg
-              className={`chart-toolbar__metrics-trigger-arrow ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
-              width="12"
-              height="8"
-              viewBox="0 0 12 8"
-              fill="none"
-            >
-              <path
-                d="M1 1.5L6 6.5L11 1.5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          {isMetricDropdownOpen && (
-            <>
-              {/* Overlay pour mobile uniquement */}
-              <div
-                className="chart-toolbar__mobile-overlay"
-                onClick={() => setIsMetricDropdownOpen(false)}
-              />
-              {/* Menu desktop traditionnel */}
-              <div className="chart-toolbar__metrics-menu">
-                {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => (
-                  <button
-                    key={metricOption}
-                    className={`chart-toolbar__metrics-option ${metric === metricOption ? 'chart-toolbar__metrics-option--active' : ''
-                      }`}
-                    onClick={() => handleMetricSelect(metricOption)}
-                  >
-                    <span className="chart-toolbar__metrics-option-icon">
-                      {metricIcons[metricOption]}
-                    </span>
-                    <span className="chart-toolbar__metrics-option-label">
-                      {metricLabels[metricOption]}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {/* Menu mobile bottom sheet */}
-              <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--metrics chart-toolbar__mobile-menu--open`}>
-                {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => (
-                  <button
-                    key={metricOption}
-                    className={`chart-toolbar__mobile-option ${metric === metricOption ? 'chart-toolbar__mobile-option--active' : ''
-                      }`}
-                    onClick={() => handleMetricSelect(metricOption)}
-                  >
-                    <span className="chart-toolbar__mobile-option-icon">
-                      {metricIcons[metricOption]}
-                    </span>
-                    <span className="chart-toolbar__mobile-option-label">
-                      {metricLabels[metricOption]}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

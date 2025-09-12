@@ -111,7 +111,6 @@ export const useSwap = (params: SwapParams) => {
   const { address } = useAccount()
   const publicClient = usePublicClient()
   const { getTokenInfo } = useTokenCache()
-  const [processedSuccessHashes, setProcessedSuccessHashes] = useState<Set<string>>(new Set());
 
   const [state, setState] = useState<SwapState>({
     status: 'idle',
@@ -402,7 +401,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: "exactInputSingle",
           args: [params],
-          value: tokenIn === WBERA ? amountIn : 0n
+          value: tokenIn === zeroAddress ? amountIn : 0n
         }
       } else {
         // Multi-hop
@@ -424,7 +423,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: 'exactInput',
           args: [params],
-          value: tokenIn === WBERA ? amountIn : 0n
+          value: tokenIn === zeroAddress ? amountIn : 0n
         }
       }
     } else {
@@ -470,7 +469,7 @@ export const useSwap = (params: SwapParams) => {
           )
         }
 
-        if (tokenIn === WBERA) {
+        if (tokenIn === zeroAddress) {
           totalValue += splitRoute.amount
         }
       }
@@ -499,7 +498,7 @@ export const useSwap = (params: SwapParams) => {
         type: "single",
         totalQuote: bestSingleRoute.quote,
         totalGasEstimate: bestSingleRoute.gasEstimate,
-        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo.decimals),
+        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo?.decimals || 18),
         priceImpact: calculatePriceImpact(
           amountIn,
           bestSingleRoute.quote,
@@ -826,11 +825,10 @@ export const useSwap = (params: SwapParams) => {
     setState({
       status: "idle",
       routes: [],
-      optimizedRoute: null,
-      txHash: undefined 
+      optimizedRoute: null
     })
   }
-
+  // Load routes when inputes change
   useEffect(() => {
     loadRoutes()
   }, [loadRoutes])
@@ -844,16 +842,15 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({ ...prev, status: 'wrapping', tsHash: wrapTx }))
     } else if (isUnWrapping || isUnWrapTxPending) {
       setState(prev => ({ ...prev, status: 'unwrapping', tsHash: unWrapTx }))
-    } else if ((isSwapSuccess || isWrapSuccess || isUnWrapSuccess) && swapTx && !processedSuccessHashes.has(swapTx)) {
+    } else if (isSwapSuccess || isWrapSuccess || isUnWrapSuccess) {
       setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
       queryClient.invalidateQueries({ queryKey: ["balance"] })
-      setProcessedSuccessHashes(prev => new Set(prev).add(swapTx))
-    } else if (swapConfig?.request && state.status !== 'success') {
+    } else if (swapConfig?.request) {
       setState(prev => ({ ...prev, status: 'ready' }))
-    } else if (state.status !== 'success') {
+    } else {
       setState(prev => ({ ...prev, status: 'idle' }))
     }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending, isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess, processedSuccessHashes, state.status])
+  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending, isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess])
 
   return {
     status: state.status,

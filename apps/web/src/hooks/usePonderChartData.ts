@@ -330,19 +330,19 @@ const processPoolData = (
   if (chartType === 'candlestick') {
     // Utilisons les données OHLC réelles de Ponder
     // Pour les pools, nous avons t0open/t0high/t0low/t0close et t1open/t1high/t1low/t1close
-    // Nous utiliserons t0close comme prix de base (token0)
+    // Nous utiliserons t1close comme prix de base (token1 = HONEY) pour afficher le prix de HONEY en WBERA
     return uniqueData.map(item => {
-      const t0open = parseFloat(item.t0open);
-      const t0high = parseFloat(item.t0high);
-      const t0low = parseFloat(item.t0low);
-      const t0close = parseFloat(item.t0close);
+      const t1open = parseFloat(item.t1open);
+      const t1high = parseFloat(item.t1high);
+      const t1low = parseFloat(item.t1low);
+      const t1close = parseFloat(item.t1close);
 
       return {
         time: 'periodStartUnix' in item ? item.periodStartUnix : item.date,
-        open: t0open,
-        high: t0high,
-        low: t0low,
-        close: t0close,
+        open: t1open,
+        high: t1high,
+        low: t1low,
+        close: t1close,
       };
     }) as CandlestickPoint[];
   }
@@ -361,7 +361,9 @@ const processPoolData = (
         break;
       case 'price':
       default:
-        value = parseFloat(item.token0Price);
+        // Pour afficher le prix de HONEY en WBERA (combien de WBERA pour 1 HONEY)
+        // On utilise token1Price qui représente le prix de token1 (HONEY) en token0 (WBERA)
+        value = parseFloat(item.token1Price);
         break;
     }
 
