@@ -3,10 +3,9 @@ import { ponder } from "ponder:registry";
 import { bundle, pool, stickyVault, token, vaultUserPosition, vaultWithdrawal } from "ponder:schema";
 import { formatUnits } from "viem";
 import { getOrCreateTransaction } from "../v3/helpers";
+import { updateVaultStats } from "../stats/vault";
 
 ponder.on("svVaults:Burned", async ({ event, context }) => {
-  console.log("NEW BURNER", event)
-
   const ve = await context.db.find(stickyVault, { id: event.log.address })
   if (!ve) {
     console.warn(`No vault found for this svVaults:Burned (${event.transaction.hash})`)
@@ -56,8 +55,10 @@ ponder.on("svVaults:Burned", async ({ event, context }) => {
   const depositedT0Bera = burnedToken0.mul(t0.derivedBERA)
   const depositedT1Bera = burnedToken1.mul(t1.derivedBERA)
   const totalBurnedBera = depositedT0Bera.plus(depositedT1Bera)
+  const totalBurnedUSD = totalBurnedBera.mul(beraPriceUSD)
   vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).minus(totalBurnedBera).toString()
   vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
+  vault.volumeUSD = new Decimal(vault.volumeUSD).plus(totalBurnedUSD).toString()
 
   // Update user vault position
   userPos.depositedToken0 = new Decimal(userPos.depositedToken0).minus(burnedToken0).toString()
@@ -88,4 +89,6 @@ ponder.on("svVaults:Burned", async ({ event, context }) => {
 
   await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
   await context.db.update(vaultUserPosition, { id: userPos.id }).set({ ...Object.fromEntries(Object.entries(userPos).filter(([key]) => key !== 'id')) })
+
+  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
 })

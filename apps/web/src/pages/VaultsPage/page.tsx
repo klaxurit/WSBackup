@@ -10,23 +10,58 @@ const GET_STICKYVAULTS = `
   query GetStickyVaults {
   stickyVaults {
     items {
+      name
+      txCount
+      totalValueLockedUSD
+      totalValueLockedToken1
+      totalValueLockedToken0
+      totalValueLockedBERA
+      totalSupply
+      tickUpper
+      tickLower
+      rebalanceCount
+      pool
+      manager
+      liquidity
       id
-      poolRef {
-        token0Ref {
+      currentTick
+      createdAtTimestamp
+      createdAtBlockNumber
+      collectedFeesUSD
+      collectedFeesToken1
+      collectedFeesToken0
+      vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+        items {
+          apr
+          collectedFeesToken0
+          collectedFeesToken1
+          collectedFeesUSD
+          date
           id
+          volumeUSD1D
+          volumeUSD30D
+          rebalanceCount
+          totalSupply
+          totalValueLockedToken0
+          totalValueLockedToken1
+          totalValueLockedUSD
+          txCount
+        }
+      }
+      poolRef {
+        token1Ref {
+          id
+          logoUri
           name
           symbol
-          logoUri
         }
-        token1Ref {
-          name
+        token0Ref {
           id
           logoUri
+          name
           symbol
         }
       }
-      totalValueLockedUSD
-      collectedFeesUSD
     }
   }
 }

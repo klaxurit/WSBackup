@@ -79,4 +79,11 @@ export default createConfig({
       startBlock: 9742600
     }
   },
+  // blocks: {
+  //   autoStatsUpdate: {
+  //     chain: 'mainnet',
+  //     interval: 10,
+  //     startBlock: 9742600
+  //   }
+  // }
 });

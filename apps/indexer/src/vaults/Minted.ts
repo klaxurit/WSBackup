@@ -3,6 +3,7 @@ import { ponder } from "ponder:registry";
 import { bundle, pool, stickyVault, token, vaultDeposit, vaultUserPosition } from "ponder:schema";
 import { formatUnits } from "viem";
 import { getOrCreateTransaction } from "../v3/helpers";
+import { updateVaultStats } from "../stats/vault";
 
 ponder.on("svVaults:Minted", async ({ event, context }) => {
   const ve = await context.db.find(stickyVault, { id: event.log.address })
@@ -47,8 +48,10 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   const depositedT0Bera = depositedToken0.mul(t0.derivedBERA)
   const depositedT1Bera = depositedToken1.mul(t1.derivedBERA)
   const totalDepositedBera = depositedT0Bera.plus(depositedT1Bera)
+  const totalDepositeUSD = totalDepositedBera.mul(beraPriceUSD)
   vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).plus(totalDepositedBera).toString()
   vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
+  vault.volumeUSD = new Decimal(vault.volumeUSD).plus(totalDepositeUSD).toString()
 
   // Update user vault position
   let uPE = await context.db.find(vaultUserPosition, { id: userPosId })
@@ -89,4 +92,6 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
 
   await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
   await context.db.update(vaultUserPosition, { id: userPos.id }).set({ ...Object.fromEntries(Object.entries(userPos).filter(([key]) => key !== 'id')) })
+
+  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
 })
