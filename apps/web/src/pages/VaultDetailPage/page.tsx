@@ -116,7 +116,8 @@ export const VaultDetailPage = () => {
   const [singleTokenAmount, setSingleTokenAmount] = useState(0n);
   const [selectedToken, setSelectedToken] = useState<'token0' | 'token1'>('token0');
   const [withdrawAmount, setWithdrawAmount] = useState(0n);
-  const [autoCompound, setAutoCompound] = useState(true);
+  // const [autoCompound, setAutoCompound] = useState(true);
+  const autoCompound = false
 
   const vaultManager = useVault({
     vault,

@@ -11,7 +11,7 @@ import type { BerachainToken } from "./useBerachainTokenList";
 import { computePoolAddress, encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, Position, TICK_SPACINGS, TickMath } from "@uniswap/v3-sdk"
 import { Token } from "@uniswap/sdk-core"
 import JSBI from "jsbi";
-import { getInitialSqrtPriceX96, priceToTick } from "../utils/positionManager";
+import { priceToTick } from "../utils/positionManager";
 import { MultiCall2ABI } from "../config/abis/Multicall2ABI";
 import { currentChain } from "../config/wagmi";
 

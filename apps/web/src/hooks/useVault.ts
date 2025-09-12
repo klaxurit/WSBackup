@@ -361,7 +361,6 @@ export const useVault = (config: VaultConfig): VaultManager => {
       enabled: isOneSide && isReady && !!swapData && !!osQuote && isAllow
     }
   })
-  console.log("ICI", depositeOneSideConfig)
   const { data: depositeOneHash, writeContract: depositeone, isPending: waitDepositeOne } = useWriteContract()
   const handleDepositeOne = () => {
     if (!depositeOneSideConfig) return
