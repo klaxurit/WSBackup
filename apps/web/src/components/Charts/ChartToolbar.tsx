@@ -84,13 +84,17 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   const [previousInterval, setPreviousInterval] = React.useState<ChartInterval | null>(null);
   const [isFromHover, setIsFromHover] = React.useState(false);
 
+  // États pour les dropdowns desktop
+  const [isDesktopMetricDropdownOpen, setIsDesktopMetricDropdownOpen] = useState(false);
+
   // États pour les dropdowns mobile
   const [isChartTypeDropdownOpen, setIsChartTypeDropdownOpen] = useState(false);
   const [isIntervalDropdownOpen, setIsIntervalDropdownOpen] = useState(false);
-  const [isMetricDropdownOpen, setIsMetricDropdownOpen] = useState(false);
+  const [isMobileMetricDropdownOpen, setIsMobileMetricDropdownOpen] = useState(false);
   const chartTypeDropdownRef = useRef<HTMLDivElement>(null);
   const intervalDropdownRef = useRef<HTMLDivElement>(null);
   const metricDropdownRef = useRef<HTMLDivElement>(null);
+  const metricMobileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Gérer le changement d'intervalle
   const handleIntervalChange = (newInterval: ChartInterval) => {
@@ -130,7 +134,10 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         setIsChartTypeDropdownOpen(false);
       }
       if (metricDropdownRef.current && !metricDropdownRef.current.contains(event.target as Node)) {
-        setIsMetricDropdownOpen(false);
+        setIsDesktopMetricDropdownOpen(false);
+      }
+      if (metricMobileDropdownRef.current && !metricMobileDropdownRef.current.contains(event.target as Node)) {
+        setIsMobileMetricDropdownOpen(false);
       }
       if (intervalDropdownRef.current && !intervalDropdownRef.current.contains(event.target as Node)) {
         setIsIntervalDropdownOpen(false);
@@ -144,7 +151,8 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   // Gérer la sélection de métrique
   const handleMetricSelect = (newMetric: ChartMetric) => {
     onMetricChange(newMetric);
-    setIsMetricDropdownOpen(false);
+    setIsDesktopMetricDropdownOpen(false);
+    setIsMobileMetricDropdownOpen(false);
   };
 
   // Gérer la sélection de type de chart
@@ -195,8 +203,8 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           {/* Dropdown des métriques */}
           <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
             <button
-              className={`chart-toolbar__metrics-trigger ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger--open' : ''} ${isLoading ? 'chart-toolbar__metrics-trigger--disabled' : ''}`}
-              onClick={() => !isLoading && setIsMetricDropdownOpen(!isMetricDropdownOpen)}
+              className={`chart-toolbar__metrics-trigger ${isDesktopMetricDropdownOpen ? 'chart-toolbar__metrics-trigger--open' : ''} ${isLoading ? 'chart-toolbar__metrics-trigger--disabled' : ''}`}
+              onClick={() => !isLoading && setIsDesktopMetricDropdownOpen(!isDesktopMetricDropdownOpen)}
               disabled={isLoading}
             >
               <span className="chart-toolbar__metrics-trigger-icon">
@@ -206,7 +214,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                 {metricLabels[metric]}
               </span>
               <svg
-                className={`chart-toolbar__metrics-trigger-arrow ${isMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
+                className={`chart-toolbar__metrics-trigger-arrow ${isDesktopMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
                 width="12"
                 height="8"
                 viewBox="0 0 12 8"
@@ -222,11 +230,11 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
               </svg>
             </button>
 
-            {isMetricDropdownOpen && (
+            {isDesktopMetricDropdownOpen && (
               <>
                 <div
                   className="chart-toolbar__mobile-overlay"
-                  onClick={() => setIsMetricDropdownOpen(false)}
+                  onClick={() => setIsDesktopMetricDropdownOpen(false)}
                 />
                 <div className="chart-toolbar__metrics-menu">
                   {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
@@ -372,10 +380,10 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           </div>
 
           {/* Dropdown Métriques */}
-          <div className="chart-toolbar__mobile-dropdown" ref={metricDropdownRef}>
+          <div className="chart-toolbar__mobile-dropdown" ref={metricMobileDropdownRef}>
             <button
-              className={`chart-toolbar__mobile-trigger ${isMetricDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
-              onClick={() => !isLoading && setIsMetricDropdownOpen(!isMetricDropdownOpen)}
+              className={`chart-toolbar__mobile-trigger ${isMobileMetricDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              onClick={() => !isLoading && setIsMobileMetricDropdownOpen(!isMobileMetricDropdownOpen)}
               disabled={isLoading}
             >
               <span className="chart-toolbar__mobile-trigger-icon">
@@ -385,7 +393,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                 {metricLabels[metric]}
               </span>
               <svg
-                className={`chart-toolbar__mobile-trigger-arrow ${isMetricDropdownOpen ? 'chart-toolbar__mobile-trigger-arrow--open' : ''}`}
+                className={`chart-toolbar__mobile-trigger-arrow ${isMobileMetricDropdownOpen ? 'chart-toolbar__mobile-trigger-arrow--open' : ''}`}
                 width="12"
                 height="8"
                 viewBox="0 0 12 8"
@@ -401,11 +409,11 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
               </svg>
             </button>
 
-            {isMetricDropdownOpen && (
+            {isMobileMetricDropdownOpen && (
               <>
                 <div
                   className="chart-toolbar__mobile-overlay"
-                  onClick={() => setIsMetricDropdownOpen(false)}
+                  onClick={() => setIsMobileMetricDropdownOpen(false)}
                 />
                 <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--open`}>
                   {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {

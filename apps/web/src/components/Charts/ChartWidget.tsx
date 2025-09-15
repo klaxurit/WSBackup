@@ -254,6 +254,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
   // Mise à jour des données de la série
   useEffect(() => {
+
     if (seriesRef.current && chartData && Array.isArray(chartData)) {
       try {
         if (localChartType === 'candlestick') {
