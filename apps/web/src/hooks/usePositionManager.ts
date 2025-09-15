@@ -1,12 +1,61 @@
 import { useEffect, useMemo } from "react"
 import { erc20Abi, formatUnits, maxUint128, type Address } from "viem"
-import { Pool, Position } from "@uniswap/v3-sdk"
+import { Pool, Position, TickMath } from "@uniswap/v3-sdk"
 import { currentChain } from "../config/wagmi"
 import { Token } from "@uniswap/sdk-core"
-import type { PositionData } from "./usePositions"
 import { useAccount, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI"
+import JSBI from "jsbi"
+
+interface PoolToken {
+  id: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  logoUri?: string;
+  tokenDayData?: {
+    items: { priceUSD: string }[];
+  };
+}
+
+interface PoolData {
+  id: string;
+  feeTier: number;
+  liquidity: string;
+  sqrtPrice: string;
+  tick?: number;
+  token0Price: string;
+  token1Price: string;
+  totalValueLockedUSD: string;
+  feeGrowthGlobal0X128: string;
+  feeGrowthGlobal1X128: string;
+  token0Ref: PoolToken;
+  token1Ref: PoolToken;
+  poolDayData?: {
+    items: { apr: string }[];
+  };
+}
+
+export interface PositionData {
+  id: string;
+  tokenId: string;
+  owner: string;
+  liquidity: string;
+  tickLower: number;
+  tickUpper: number;
+  depositedToken0: string;
+  depositedToken1: string;
+  withdrawnToken0: string;
+  withdrawnToken1: string;
+  collectedFeesToken0: string;
+  collectedFeesToken1: string;
+  feeGrowthInside0LastX128: string;
+  feeGrowthInside1LastX128: string;
+  poolRef: PoolData;
+}
+
+
 
 export interface UsePositionManagerDatas {
   addLiquidity?: {
@@ -20,34 +69,46 @@ export interface UsePositionManagerDatas {
 
 export const usePositionManager = (positionData?: PositionData, datas?: UsePositionManagerDatas) => {
   const { address } = useAccount()
-  const pool = positionData?.pool || null
-  const position = positionData?.position || null
+  const pool = (positionData as PositionData)?.poolRef || null
+  const position = (positionData as PositionData)?.id ? (positionData as PositionData) : null
+  console.log("use", pool, position)
 
+  const poolTick = useMemo(() => {
+    if (!pool) return null
+    return TickMath.getTickAtSqrtRatio(JSBI.BigInt(pool.sqrtPrice))
+  }, [pool])
   /**
    * Datas calculate
    */
   const inRange = useMemo(() => {
-    if (!pool || !position) return false
-    return pool.tick >= position.tickLower && pool.tick < position.tickUpper
-  }, [pool, position])
+    if (!poolTick || !position) return false
+    return poolTick >= position.tickLower && poolTick < position.tickUpper
+  }, [poolTick, position])
 
   const sdkPool = useMemo(() => {
-    if (!pool) return null
+    if (!pool || !poolTick) return null
 
     try {
+      const poolData = pool as PoolData
+      const token0 = poolData.token0Ref || (pool as any).token0
+      const token1 = poolData.token1Ref || (pool as any).token1
+      const feeTier = poolData.feeTier || (pool as any).fee
+      const sqrtPrice = poolData.sqrtPrice || (pool as any).sqrtPriceX96
+      const liquidity = poolData.liquidity || (pool as any).liquidity
+
       return new Pool(
-        new Token(currentChain.id, pool.token0.address, pool.token0.decimals, pool.token0.symbol, pool.token0.name),
-        new Token(currentChain.id, pool.token1.address, pool.token1.decimals, pool.token1.symbol, pool.token1.name),
-        pool.fee,
-        pool.sqrtPriceX96 || "0",
-        pool.liquidity || "0",
-        pool.tick
+        new Token(currentChain.id, token0.id || (token0 as any).address, token0.decimals, token0.symbol, token0.name),
+        new Token(currentChain.id, token1.id || (token1 as any).address, token1.decimals, token1.symbol, token1.name),
+        feeTier,
+        sqrtPrice || "0",
+        liquidity || "0",
+        poolTick
       )
     } catch (error) {
       console.error('Error when formating pool:', error)
       return null
     }
-  }, [pool])
+  }, [pool, poolTick])
 
   const sdkPosition = useMemo(() => {
     if (!sdkPool || !position) return null
@@ -65,17 +126,37 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     }
   }, [sdkPool, position])
 
+  const { data: onChainPosition } = useReadContract({
+    address: CONTRACTS_ADDRESS.positionManager,
+    abi: POSITION_MANAGER_ABI,
+    functionName: "positions",
+    args: [BigInt(position?.tokenId || "0")],
+    query: {
+      enabled: !!position && !!position?.tokenId
+    }
+  })
+  console.log(onChainPosition)
+
   const positionDetails = useMemo(() => {
     if (!sdkPosition) return null
+
+    const t0Price = parseFloat(pool.token0Ref.tokenDayData?.items?.[0]?.priceUSD || "0")
+    const t0Usd = parseFloat(sdkPosition.amount0.toExact()) * t0Price
+    const t1Price = parseFloat(pool.token1Ref.tokenDayData?.items?.[0]?.priceUSD || "0")
+    const t1Usd = parseFloat(sdkPosition.amount1.toExact()) * t1Price
+    const posValueUSD = t0Usd + t1Usd
 
     try {
       return {
         token0Amount: sdkPosition.amount0.toExact(),
         token1Amount: sdkPosition.amount1.toExact(),
+        token0USD: t0Usd,
+        token1USD: t1Usd,
         totalTokens: +sdkPosition.amount0.toFixed(6) + +sdkPosition.amount1.toFixed(6),
-        currentPrice: sdkPosition.pool.token0Price.toSignificant(6),
-        liquidityShare: pool?.liquidity && position?.liquidity ?
-          ((Number(position.liquidity?.toString() || '0') / Number(pool.liquidity.toString())) * 100).toFixed(2) + '%' : '0%'
+        currentPrice: posValueUSD.toFixed(2),
+        liquidityShare: ((posValueUSD / parseFloat(pool.totalValueLockedUSD)) * 100).toFixed(2)
+        // liquidityShare: pool?.liquidity && position?.liquidity ?
+        //   ((Number(position.liquidity?.toString() || '0') / Number(pool.liquidity.toString())) * 100).toFixed(2) + '%' : '0%'
       }
     } catch (error) {
       console.error("Error when calculate position's datas:", error)
@@ -92,18 +173,67 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }
     }
 
+    // For new data structure, calculate fees if we have the data
+    const poolData = pool as PoolData
+    const positionData = onChainPosition
+      ? {
+        ...position,
+        liquidity: onChainPosition[7],
+        tickLower: onChainPosition[5],
+        tickUpper: onChainPosition[6],
+        feeGrowthInside0LastX128: onChainPosition[8],
+        feeGrowthInside1LastX128: onChainPosition[9],
+      }
+      : position as PositionData
+
+    if (poolData.feeGrowthGlobal0X128 && positionData.feeGrowthInside0LastX128) {
+      const feeGrowthGlobal0 = BigInt(poolData.feeGrowthGlobal0X128);
+      const feeGrowthGlobal1 = BigInt(poolData.feeGrowthGlobal1X128);
+      const feeGrowthInside0Last = BigInt(positionData.feeGrowthInside0LastX128);
+      const feeGrowthInside1Last = BigInt(positionData.feeGrowthInside1LastX128);
+
+      const feeGrowth0 = feeGrowthGlobal0 - feeGrowthInside0Last;
+      const feeGrowth1 = feeGrowthGlobal1 - feeGrowthInside1Last;
+
+      const liquidity = BigInt(position.liquidity);
+      const fees0 = (liquidity * feeGrowth0) >> 128n;
+      const fees1 = (liquidity * feeGrowth1) >> 128n;
+
+      const token0 = poolData.token0Ref || (pool as any).token0
+      const token1 = poolData.token1Ref || (pool as any).token1
+
+      return {
+        token0Amount: parseFloat(formatUnits(fees0, token0.decimals)).toFixed(6),
+        token1Amount: parseFloat(formatUnits(fees1, token1.decimals)).toFixed(6),
+        hasUnclaimed: fees0 > 0n || fees1 > 0n
+      }
+    }
+
+    // Fallback for old data structure or if fee calculation data is not available
+    const oldPosition = position as any
+    if (oldPosition.amount0 && oldPosition.amount1) {
+      const token0 = (pool as any).token0
+      const token1 = (pool as any).token1
+      return {
+        token0Amount: parseFloat(formatUnits(BigInt(oldPosition.amount0), token0.decimals)).toFixed(6),
+        token1Amount: parseFloat(formatUnits(BigInt(oldPosition.amount1), token1.decimals)).toFixed(6),
+        hasUnclaimed: BigInt(oldPosition.amount0) > 0n || BigInt(oldPosition.amount1) > 0n
+      }
+    }
+
     return {
-      token0Amount: parseFloat(formatUnits(BigInt(position.tokenOwed0), pool.token0.decimals)).toFixed(6),
-      token1Amount: parseFloat(formatUnits(BigInt(position.tokenOwed1), pool.token1.decimals)).toFixed(6),
-      hasUnclaimed: BigInt(position.tokenOwed0) > 0n || BigInt(position.tokenOwed1) > 0n
+      token0Amount: "0",
+      token1Amount: "0",
+      hasUnclaimed: false
     }
   }, [pool, position])
 
   /**
    * allowance
    */
+  const token0Address = ((pool as PoolData)?.token0Ref?.id || (pool as any)?.token0?.address) as Address
   const { data: token0Allowance = 0n, isLoading: isCheckingToken0Allowance, refetch: refetchT0Allowance } = useReadContract({
-    address: (pool?.token0.address as Address),
+    address: token0Address,
     abi: erc20Abi,
     functionName: "allowance",
     args: address ? [address, CONTRACTS_ADDRESS.positionManager] : undefined,
@@ -116,8 +246,9 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     return token0Allowance < datas?.addLiquidity.t0Amount * 105n / 100n
   }, [token0Allowance, datas])
 
+  const token1Address = ((pool as PoolData)?.token1Ref?.id || (pool as any)?.token1?.address) as Address
   const { data: token1Allowance = 0n, isLoading: isCheckingToken1Allowance, refetch: refetchT1Allowance } = useReadContract({
-    address: (pool?.token1?.address as Address),
+    address: token1Address,
     abi: erc20Abi,
     functionName: "allowance",
     args: address ? [address, CONTRACTS_ADDRESS.positionManager] : undefined,
@@ -134,7 +265,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
    * approval functions
    */
   const { data: approveToken0Config } = useSimulateContract({
-    address: (pool?.token0?.address as Address),
+    address: token0Address,
     abi: erc20Abi,
     functionName: 'approve',
     args: [CONTRACTS_ADDRESS.positionManager, (datas?.addLiquidity?.t0Amount || 0n) * 105n / 100n],
@@ -143,7 +274,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     }
   })
   const { data: approveToken1Config } = useSimulateContract({
-    address: (pool?.token1?.address as Address),
+    address: token1Address,
     abi: erc20Abi,
     functionName: 'approve',
     args: [CONTRACTS_ADDRESS.positionManager, (datas?.addLiquidity?.t1Amount || 0n) * 105n / 100n],
@@ -193,7 +324,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       if (!datas?.addLiquidity || !positionData) return undefined
 
       return [{
-        tokenId: BigInt(positionData.nftTokenId),
+        tokenId: BigInt(position!.tokenId),
         amount0Desired: datas.addLiquidity.t0Amount,
         amount1Desired: datas.addLiquidity.t1Amount,
         amount0Min: 0n,
@@ -202,7 +333,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }]
     })(),
     query: {
-      enabled: !!address && !!datas?.addLiquidity
+      enabled: !!address && !!datas?.addLiquidity && !!position
     }
   })
   const handleAddLiquidity = async () => {
@@ -223,7 +354,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       if (!datas?.withdraw || !positionData) return undefined
 
       return [{
-        tokenId: BigInt(positionData.nftTokenId),
+        tokenId: BigInt(position!.tokenId),
         liquidity: datas.withdraw.liquidity || 0n,
         amount0Min: 0n,
         amount1Min: 0n,
@@ -231,7 +362,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }]
     })(),
     query: {
-      enabled: !!address && !!datas?.withdraw
+      enabled: !!address && !!datas?.withdraw && !!position
     }
   })
   const handleWithdraw = async () => {
@@ -249,7 +380,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     abi: POSITION_MANAGER_ABI,
     functionName: "collect",
     args: [{
-      tokenId: BigInt(positionData?.nftTokenId || "0"),
+      tokenId: BigInt(position?.tokenId || "0"),
       recipient: address || "0x00",
       amount0Max: maxUint128,
       amount1Max: maxUint128,

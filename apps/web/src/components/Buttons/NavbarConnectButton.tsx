@@ -86,9 +86,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
         setError(err?.message || 'Connection error with WalletConnect');
       });
     } else {
-      connect('injected').catch((err: any) => {
-        setError(err?.message || 'Connection error with Injected wallet');
-      });
+      setConnectorMenuOpen(true);
     }
   }, [connect]);
 
@@ -136,17 +134,25 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
             beraname ? `${beraname}` : `⛓️ ${formatAddress(address)}`
           ) : isConnecting ? <Loader size="mini" /> : 'Connect'}
         </button>
-        {/* Menu de sélection du connecteur uniquement sur mobile */}
-        {!isConnected && connectorMenuOpen && isMobile() && (
-          <div className="Navbar__Dropdown" ref={connectorMenuRef} style={{ minWidth: 200 }}>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Select a wallet</div>
-            <button className="Navbar__DropdownButton" onClick={handleConnectInjected} style={{ width: '100%', marginBottom: 6 }}>
-              Metamask / Injected
+        {/* Wallet selection menu */}
+        {!isConnected && connectorMenuOpen && (
+          <div className="Navbar__Dropdown Navbar__ConnectorDropdown" ref={connectorMenuRef}>
+            <div className="Navbar__DropdownTitle">
+              Choose a wallet
+            </div>
+            <button
+              className="Navbar__DropdownButton"
+              onClick={handleConnectInjected}
+            >
+              MetaMask / Injected
             </button>
-            <button className="Navbar__DropdownButton" onClick={handleConnectWalletConnect} style={{ width: '100%' }}>
-              WalletConnect (Mobile)
+            <button
+              className="Navbar__DropdownButton"
+              onClick={handleConnectWalletConnect}
+            >
+              WalletConnect
             </button>
-            {error && <div style={{ color: 'red', marginTop: 8, fontSize: 13 }}>{error}</div>}
+            {error && <div className="Navbar__DropdownError">{error}</div>}
           </div>
         )}
         {isConnected && dropdownOpen && (

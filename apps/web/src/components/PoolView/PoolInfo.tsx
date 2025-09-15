@@ -1,6 +1,13 @@
 import React from 'react';
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import type { Token } from '../../hooks/usePositions';
+import type { Address } from 'viem';
+
+interface Token {
+  id: Address
+  address: Address;
+  logoUri?: string | null;
+  symbol: string;
+}
 
 interface PoolInfoProps {
   token0: Token;

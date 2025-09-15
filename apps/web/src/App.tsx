@@ -12,11 +12,19 @@ import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
 import PoolDetailPage from './pages/PoolPage/page'
+import VaultsPage from './pages/VaultsPage/page'
+import VaultDetailPage from './pages/VaultDetailPage/page'
 import { Footer } from './components/Footer/Footer'
+import { PageTransition } from './components/Transitions/PageTransition'
+import { usePageTransition } from './hooks/usePageTransition'
 
-function App() {
+function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const { reconnect } = useReconnect();
+  const { isLoading, loadingText } = usePageTransition({
+    loadingDelay: 50,
+    minimumLoadingTime: 150,
+  });
 
   useEffect(() => {
     reconnect();
@@ -27,10 +35,11 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="app-main">
+    <div className="app">
+
+      <Navbar />
+      <main className="app-main">
+        <PageTransition isLoading={isLoading} loadingText={loadingText}>
           <Routes>
             <Route path="/" element={
               <div className="swap-page">
@@ -41,6 +50,8 @@ function App() {
               </div>
             } />
             <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/vaults" element={<VaultsPage />} />
+            <Route path="/vaults/:vaultAddress" element={<VaultDetailPage />} />
             <Route path="/pools" element={<PoolPage />} />
             <Route path="/pools/create" element={<CreatePoolPage />} />
             <Route path="/pools/:tokenId" element={<PoolViewPage />} />
@@ -49,9 +60,17 @@ function App() {
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />
             <Route path="/pool/:poolAddress" element={<PoolDetailPage />} />
           </Routes>
-        </main>
-        <Footer />
-      </div>
+        </PageTransition>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   )
 }

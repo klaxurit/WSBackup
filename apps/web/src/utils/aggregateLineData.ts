@@ -8,18 +8,19 @@ export function aggregateLineData(
   data: LineChartPoint[],
   interval: ChartInterval
 ): LineChartPoint[] {
-  if (interval === 'MAX') return data;
+  // Pas de groupement nécessaire pour les intervalles simples
+  if (interval === '1H' || interval === '1D') return data;
   if (!data || data.length === 0) return [];
 
   const groupBy = (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
 
     switch (interval) {
-      case '1H':
-        return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}-${date.getUTCHours()}`;
-
-      case '1D':
-        return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`;
+      case '4H':
+        // Pour 4H, grouper par tranches de 4 heures
+        const hour = date.getUTCHours();
+        const fourHourBlock = Math.floor(hour / 4) * 4;
+        return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}-${fourHourBlock}`;
 
       case '1W': {
         // Calcul de la semaine ISO 8601
@@ -31,9 +32,6 @@ export function aggregateLineData(
 
       case '1M':
         return `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
-
-      case '1Y':
-        return `${date.getUTCFullYear()}`;
 
       default:
         return '';

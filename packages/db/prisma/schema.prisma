@@ -9,106 +9,136 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models
-model Pool {
-  id            String          @id @default(cuid())
-  address       String          @unique
-  token0Id      String
-  token0        Token           @relation("PoolToken0", fields: [token0Id], references: [id], onDelete: Cascade)
-  token1Id      String
-  token1        Token           @relation("PoolToken1", fields: [token1Id], references: [id], onDelete: Cascade)
-  fee           Int
-  liquidity     String?
-  tick          Int?
-  swaps         Swap[]
-  sqrtPriceX96  String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  PoolStatistic PoolStatistic[]
+enum TokenState {
+  DISCOVERED
+  ENRICHING
+  IN_POOL
+  VERIFIED
+  DEPRECATED
 
-  @@map("pools")
+  @@map("token_status")
 }
 
-model Swap {
-  id              String   @id @default(cuid())
-  sender          String
-  recipient       String
-  amount0         String
-  amount1         String
-  sqrtPriceX96    String
-  tick            Int
-  transactionHash String
-  logIndex        Int
-  poolAddress     String
-  poolId          String
-  pool            Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
-  gasUsed         Int
-  gasPrice        String
-  createdAt       DateTime @default(now())
+enum PriceSource {
+  POOL_CALCULATION
+  COINGECKO_FALLBACK
+  MANUAL_OVERRIDE
 
-  @@unique([transactionHash, logIndex])
-  @@index([poolAddress, createdAt(sort: Desc)])
-  @@index([createdAt(sort: Desc)])
-  @@map("swaps")
-}
-
-model IndexerState {
-  id         String   @id @default("singleton")
-  lastBlock  BigInt   @default(0)
-  lastUpdate DateTime @default(now())
-
-  @@map("indexer_state")
+  @@map("price_source")
 }
 
 model Token {
-  id                String           @id @default(cuid())
-  address           String           @unique()
-  symbol            String
-  name              String
-  decimals          Int
-  logoUri           String?
-  coingeckoId       String?
-  tags              String[]
-  totalSupply       String? // Total supply for FDV calculation
-  circulatingSupply String? // Circulating supply for Market Cap calculation
-  poolsAsToken0     Pool[]           @relation("PoolToken0")
-  poolsAsToken1     Pool[]           @relation("PoolToken1")
-  Statistic         TokenStatistic[]
-  website           String?
-  twitter           String?
-  description       String?
-  createdAt         DateTime         @default(now())
+  address String @id
+
+  symbol   String
+  name     String
+  decimals Int
+
+  logoUri     String?
+  website     String?
+  twitter     String?
+  description String?
+  coingeckoId String?
+  totalSupply String
+
+  status           TokenState @default(DISCOVERED)
+  discoveredAt     DateTime   @default(now())
+  lastEnrichmentAt DateTime?
+  lastActivityAt   DateTime?
+
+  isStableCoin       Boolean @default(false)
+  isVerifiedManually Boolean @default(false)
+  metadata           Json?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now())
+  TokenPrice      TokenPrice[]
+  TokenDailyStats TokenDailyStats[]
+
+  PoolStatsAsToken0 PoolStats[] @relation("PoolStatsAsToken0")
+  PoolStatsAsToken1 PoolStats[] @relation("PoolStatsAsToken1")
+
+  @@index([status])
+  @@index([symbol])
+  @@index([discoveredAt(sort: Desc)])
+  @@index([lastActivityAt(sort: Desc)])
+  @@map("tokens")
 }
 
-model TokenStatistic {
-  id               String   @id @default(cuid())
-  tokenId          String
-  token            Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
-  price            Float
-  oneHourEvolution Float
-  oneDayEvolution  Float
-  volume           Float    @default(0)
-  fdv              Float? // Fully Diluted Valuation
-  marketCap        Float? // Circulating supply * price (si disponible)
-  createdAt        DateTime @default(now())
+model TokenPrice {
+  tokenAddress String
+  price        Float
+  priceSource  PriceSource @default(POOL_CALCULATION)
+  confidence   Float       @default(1.0)
+  volumeUSD    Float       @default(0)
+  createdAt    DateTime    @default(now()) @db.Timestamptz()
 
-  @@index([tokenId, createdAt(sort: Desc)]) // Index composé pour ORDER BY optimisé
-  @@index([tokenId]) // Index simple pour les requêtes par token
+  token Token @relation(fields: [tokenAddress], references: [address], onDelete: Cascade)
+
+  @@id([tokenAddress, createdAt])
+  @@index([tokenAddress, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([priceSource])
+  @@map("token_prices")
 }
 
-model PoolStatistic {
-  id              String   @id @default(cuid())
-  poolId          String
-  pool            Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
-  apr             Float
-  tvlUSD          Float
-  volOneDay       String
-  volOneMonth     String
-  impermanentLoss Float
-  healthScore     Int
-  createdAt       DateTime @default(now())
+model TokenDailyStats {
+  tokenAddress String
 
-  @@index([poolId, createdAt(sort: Desc)]) // Index composé pour ORDER BY optimisé
-  @@index([poolId]) // Index simple pour les requêtes par pool
-  @@index([tvlUSD(sort: Desc)]) // Index pour tri par TVL
+  price          Float
+  priceChange1h  Float?
+  priceChange24h Float?
+
+  volume24h    String
+  volumeUSD24h Float
+
+  tvlInPools String
+  marketCap  Float?
+  fdv        Float?
+
+  swapCount24h Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  token Token @relation(fields: [tokenAddress], references: [address], onDelete: Cascade)
+
+  @@id([tokenAddress])
+  @@index([tvlInPools(sort: Desc)])
+  @@index([volumeUSD24h(sort: Desc)])
+  @@index([marketCap(sort: Desc)])
+  @@map("token_daily_stats")
+}
+
+model PoolStats {
+  address        String
+  tickSpacing    Int
+  fee            Int
+  createdAt      String
+  createdAtBlock String
+
+  token0Address String
+  token1Address String
+  token0Symbol  String
+  token1Symbol  String
+  token0LogoUri String?
+  token1LogoUri String?
+
+  sqrtPriceX96   String
+  liquidity      String
+  isValid        Boolean
+  dayVolumeUSD   Float
+  monthVolumeUSD Float
+  apr            Float
+  tvlUSD         Float
+
+  token0 Token @relation(name: "PoolStatsAsToken0", fields: [token0Address], references: [address])
+  token1 Token @relation(name: "PoolStatsAsToken1", fields: [token1Address], references: [address])
+
+  @@id([address])
+  @@index([createdAt, apr(sort: Desc)])
+  @@index([createdAt, dayVolumeUSD(sort: Desc)])
+  @@index([createdAt, monthVolumeUSD(sort: Desc)])
+  @@index([createdAt, tvlUSD(sort: Desc)])
+  @@map("pool_stats")
 }

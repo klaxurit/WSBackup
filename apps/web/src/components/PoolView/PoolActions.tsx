@@ -60,13 +60,13 @@ const PoolActions = (
       {mode === 'addLiquidity' && (
         <div className="PoolView__Form">
           <LiquidityInput
-            selectedToken={positionData.pool.token0}
+            selectedToken={positionData.pool.token0 || null}
             onAmountChange={(amount) => { updateConfig({ ...config, addLiquidity: { t0Amount: amount, t1Amount: config.addLiquidity?.t1Amount || 0n } }) }}
             value={config?.addLiquidity?.t0Amount || 0n}
             isOverBalance={false}
           />
           <LiquidityInput
-            selectedToken={positionData.pool.token1}
+            selectedToken={positionData.pool.token1 || null}
             onAmountChange={(amount) => { updateConfig({ ...config, addLiquidity: { t1Amount: amount, t0Amount: config.addLiquidity?.t0Amount || 0n } }) }}
             value={config?.addLiquidity?.t1Amount || 0n}
             isOverBalance={false}

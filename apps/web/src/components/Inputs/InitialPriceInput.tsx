@@ -110,8 +110,8 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
                   <div className={`toggleBtn`}>
                     {tokens.map(t => (
                       <button
-                        key={t.id}
-                        className={`toggleBtn__item ${selectedToken.id === t.id ? "active" : ""}`}
+                        key={t.address}
+                        className={`toggleBtn__item ${selectedToken.address === t.address ? "active" : ""}`}
                         onClick={() => handleTokenClick(t)}
                       >
                         <span className="networkSelector__logoWrapper">
@@ -133,7 +133,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
             </div>
             <div className="From__Details">
               <p className="From__Convertion">
-                1 {tokens.find(t => (t.id !== selectedToken.id))?.symbol || ""} = {inputValue} {selectedToken.symbol}
+                {selectedToken.symbol} = 1 {tokens.find(t => (t.address !== selectedToken.address))?.symbol || ""}
               </p>
             </div>
           </div>

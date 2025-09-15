@@ -1,0 +1,69 @@
+@use "../../utils" as *;
+
+// Styles pour améliorer la qualité des images dans TokenPairLogos
+.TokenPairLogos {
+
+  // Amélioration de la qualité d'image
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: auto;
+
+    // Pour les écrans haute résolution
+    @media (-webkit-min-device-pixel-ratio: 2),
+    (min-resolution: 192dpi) {
+      image-rendering: -webkit-optimize-contrast;
+    }
+
+    // Assurer que les images ne sont pas floues
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  // Styles pour les conteneurs d'images
+  .TokenPairLogos__ImageContainer {
+    position: relative;
+    overflow: hidden;
+
+    // Améliorer le rendu des images dans les conteneurs
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+}
+
+// Styles globaux pour améliorer la qualité des images de tokens
+.networkSelector__logoWrapper,
+.TokensTable__Logo,
+.PoolView__TokenLogo,
+.StatTokenLogo {
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: auto;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}
+
+// Amélioration spécifique pour les logos dans les tables
+.TokensTable__Logo {
+  img {
+    object-fit: contain !important;
+    object-position: center;
+  }
+}
+
+// Amélioration pour les logos dans les pools
+.PoolView__TokenLogo {
+  img {
+    object-fit: contain !important;
+    object-position: center;
+  }
+}
+

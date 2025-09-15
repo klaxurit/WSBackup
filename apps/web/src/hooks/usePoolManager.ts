@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { type Address, encodeFunctionData, erc20Abi, maxUint256, zeroAddress } from "viem"
+import { type Address, encodeFunctionData, erc20Abi, maxUint256, parseUnits, zeroAddress } from "viem"
 import { useAccount, useReadContract, useReadContracts, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { v3CoreFactoryContract } from "../config/abis/v3CoreFactoryContractABI";
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI";
@@ -11,7 +11,7 @@ import type { BerachainToken } from "./useBerachainTokenList";
 import { computePoolAddress, encodeSqrtRatioX96, FeeAmount, nearestUsableTick, Pool, Position, TICK_SPACINGS, TickMath } from "@uniswap/v3-sdk"
 import { Token } from "@uniswap/sdk-core"
 import JSBI from "jsbi";
-import { getInitialSqrtPriceX96, priceToTick } from "../utils/positionManager";
+import { priceToTick } from "../utils/positionManager";
 import { MultiCall2ABI } from "../config/abis/Multicall2ABI";
 import { currentChain } from "../config/wagmi";
 
@@ -24,6 +24,7 @@ interface usePositionManagerParams {
   minPrice: string
   maxPrice: string
   initialPrice: bigint
+  priceIsToken1PerToken0: boolean
 }
 
 const parseToken = (bt: BerachainToken | null): Token | null => {
@@ -33,6 +34,9 @@ const parseToken = (bt: BerachainToken | null): Token | null => {
   return new Token(currentChain.id, addr, bt.decimals, bt.symbol, bt.name)
 }
 
+// In Uniswap v3, the token with the lower address value is considered token0, and the other is token1.
+//  The price is always expressed as the amount of token1 per token0.
+
 export const usePoolManager = ({
   btoken0,
   btoken1,
@@ -41,7 +45,8 @@ export const usePoolManager = ({
   inputToken,
   minPrice,
   maxPrice,
-  initialPrice
+  initialPrice,
+  priceIsToken1PerToken0
 }: usePositionManagerParams) => {
 
 
@@ -111,6 +116,7 @@ export const usePoolManager = ({
     })
   }, [token0, token1, fee])
 
+
   /*
    * Create Uniswap SDK Pool
    */
@@ -134,11 +140,23 @@ export const usePoolManager = ({
       } else {
         if (!token0 || !token1 || initialPrice <= 0n) return null
 
-        const sqrtPriceX96 = getInitialSqrtPriceX96(token0, token1, initialPrice)
-        if (!sqrtPriceX96) return null
-        const tick = priceToTick(token0, token1, initialPrice)
+        let amount1: string
+        let amount0: string
 
-        return new Pool(
+        if (priceIsToken1PerToken0) {
+          amount1 = initialPrice.toString()
+          amount0 = parseUnits("1", token0.decimals).toString()
+        } else {
+          amount1 = BigInt(parseUnits("1", token1.decimals)).toString()
+          amount0 = initialPrice.toString()
+        }
+        const sqrtPriceX96 = encodeSqrtRatioX96(amount1, amount0)
+
+        if (!sqrtPriceX96) return null
+        const tick = priceToTick(sqrtPriceX96)
+        if (!tick) return null
+
+        const pool = new Pool(
           token0,
           token1,
           fee,
@@ -146,11 +164,13 @@ export const usePoolManager = ({
           "0",
           tick
         )
+        console.log("pool", sqrtPriceX96.toString(), tick, pool, pool.token0Price.toSignificant())
+        return pool
       }
     } catch (err) {
       return null
     }
-  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData])
+  }, [token0, token1, fee, initialPrice, poolAlreadyExist, poolData, priceIsToken1PerToken0])
 
 
 
@@ -244,6 +264,7 @@ export const usePoolManager = ({
       }
 
       let position: Position
+      console.log("inputAmount", inputAmount, inputToken)
       if (inputToken === 'token0') {
         position = Position.fromAmount0({
           pool,
@@ -260,14 +281,15 @@ export const usePoolManager = ({
           amount1: inputAmount.toString(),
         })
       }
+      console.log("position", position)
+      console.log("amount0", position.amount0.toExact(), position.amount0.toSignificant())
+      console.log("amount1", position.amount1.toExact(), position.amount1.toSignificant())
 
-      const result = {
-        amount0: BigInt(position.amount0.quotient.toString()),
-        amount1: BigInt(position.amount1.quotient.toString()),
+      return {
+        amount0: parseUnits(position.amount0.toSignificant(), position.pool.token0.decimals),
+        amount1: parseUnits(position.amount1.toSignificant(), position.pool.token1.decimals),
         position
       };
-
-      return result;
 
     } catch (err) {
       return {

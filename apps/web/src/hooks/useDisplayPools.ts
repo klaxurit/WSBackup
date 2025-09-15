@@ -62,7 +62,7 @@ export function useDisplayPools() {
     queryKey: ['pools'],
     queryFn: async (): Promise<RawPoolData[]> => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`)
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/pool`)
 
         if (!response.ok) {
           throw new Error(`Failed to fetch pools: ${response.statusText}`)

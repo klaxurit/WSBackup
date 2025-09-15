@@ -14,14 +14,25 @@ const fetchPrice = async (coingeckoId: string): Promise<CoingeckoResponse> => {
 }
 
 export const usePrice = (token?: BerachainToken | Token | null) => {
-  const hasValidToken = !!token?.coingeckoId
+  // Vérifier si le token a une propriété coingeckoId (Token) ou utiliser une autre approche pour BerachainToken
+  const hasValidToken = !!token && ('coingeckoId' in token ? !!token.coingeckoId : !!token.address)
 
   return useQuery({
-    queryKey: hasValidToken ? ['prices', token.coingeckoId] : ['prices', 'no-token'],
-    queryFn: hasValidToken ? () => fetchPrice(token.coingeckoId!) : () => Promise.resolve({}),
+    queryKey: hasValidToken ? ['prices', 'coingeckoId' in token ? token.coingeckoId : token.address] : ['prices', 'no-token'],
+    queryFn: hasValidToken ? () => {
+      if ('coingeckoId' in token && token.coingeckoId) {
+        return fetchPrice(token.coingeckoId)
+      }
+      // Pour BerachainToken, on pourrait utiliser une autre API ou retourner 0
+      return Promise.resolve({})
+    } : () => Promise.resolve({}),
     select: (data: CoingeckoResponse) => {
       if (!hasValidToken) return 0
-      return data[token.coingeckoId!]?.usd || 0
+      if ('coingeckoId' in token && token.coingeckoId) {
+        return data[token.coingeckoId]?.usd || 0
+      }
+      // Pour BerachainToken, retourner 0 ou une valeur par défaut
+      return 0
     },
     staleTime: Infinity,
     enabled: hasValidToken

@@ -6,17 +6,21 @@ import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon 
 import { useCoingeckoTokenData } from '../../hooks/useCoingeckoData';
 import { formatNumber } from '../../utils/formatNumber';
 import { TokenTransactionsTable } from '../../components/Table/TokenTransactionsTable';
-import LineChart from '../../components/Charts/LineChart';
+import { ChartWidget } from '../../components/Charts/ChartWidget';
+import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import { formatUnits } from 'viem';
-import { ensureArray } from '../../utils/dataValidation';
-import { Loader } from '../../components/Loader/Loader';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
+
+  // États pour les contrôles du chart
+  const [chartType, setChartType] = React.useState<ChartType>('area');
+  const [interval, setInterval] = React.useState<ChartInterval>('1D');
+  const [metric, setMetric] = React.useState<ChartMetric>('price');
   const { data: tokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`);
       if (!resp.ok) return [];
       return resp.json();
     },
@@ -24,44 +28,28 @@ const TokenPage: React.FC = () => {
 
   const { data: pools, isLoading: poolsLoading } = useQuery({
     queryKey: ['pools'],
+    enabled: false, // Désactivé temporairement en attendant que l'endpoint backend soit disponible
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
-      if (!resp.ok) return [];
-      return resp.json();
+      // TODO: Réactiver quand l'endpoint backend sera disponible
+      // const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
+      // if (!resp.ok) return [];
+      // return resp.json();
+
+      // Données mockées temporaires avec le bon type
+      return {
+        data: [] as Array<{
+          token0?: { address?: string };
+          token1?: { address?: string };
+          PoolStatistic?: Array<{ tvlUSD?: number }>;
+        }>
+      };
     },
   });
 
   // Compute token even if tokens are not yet loaded
   const token = useMemo(() => {
     if (!tokens || !tokenAddress) return null;
-
-    // 🔍 LOGS DE DIAGNOSTIC - Données des tokens
-    console.log('🔍 TokenPage - Raw tokens data:', tokens);
-    console.log('🔍 TokenPage - TokenAddress from URL:', tokenAddress);
-
-    // S'assurer que tokens est un tableau et extraire data si nécessaire
-    const tokensData = tokens?.data || tokens;
-    console.log('🔍 TokenPage - TokensData after extraction:', tokensData);
-
-    const tokensArray = ensureArray(tokensData) as any[];
-    console.log('🔍 TokenPage - TokensArray after ensureArray:', tokensArray);
-
-    // Filtrer sur les tokens qui sont dans des pools (comme dans tokens.tsx)
-    const inPoolTokens = tokensArray.filter((t: any) => t.inPool);
-    console.log('🔍 TokenPage - InPool tokens count:', inPoolTokens.length);
-    console.log('🔍 TokenPage - InPool tokens:', inPoolTokens.map(t => ({
-      symbol: t.symbol,
-      address: t.address,
-      inPool: t.inPool,
-      hasStatistic: !!(t.Statistic && t.Statistic.length > 0)
-    })));
-
-    const foundToken = inPoolTokens.find((t: any) => t?.address?.toLowerCase() === tokenAddress.toLowerCase());
-    console.log('🔍 TokenPage - Found token:', foundToken);
-    console.log('🔍 TokenPage - Token statistics:', foundToken?.Statistic);
-    console.log('🔍 TokenPage - Token has statistics:', !!(foundToken?.Statistic && foundToken.Statistic.length > 0));
-
-    return foundToken;
+    return tokens.find((t: any) => t.address?.toLowerCase() === tokenAddress.toLowerCase());
   }, [tokens, tokenAddress]);
 
   // Always call the hook, even if token is null
@@ -70,55 +58,20 @@ const TokenPage: React.FC = () => {
   // Always call the hook, even if pools/token are not yet loaded
   // Fallback TVL from Coingecko if missing in backend
   const tvl = useMemo(() => {
-    if (!pools || !token) return null;
-
-    // 🔍 LOGS DE DIAGNOSTIC - Données des pools
-    console.log('🔍 TokenPage - Raw pools data:', pools);
-    console.log('🔍 TokenPage - Current token for TVL calculation:', token);
-
-    // S'assurer que pools est itérable
-    const poolsArray = ensureArray(pools) as any[];
-    console.log('🔍 TokenPage - PoolsArray after ensureArray:', poolsArray);
-    console.log('🔍 TokenPage - Pools count:', poolsArray.length);
-
+    if (!pools || !token || !pools.data || !Array.isArray(pools.data)) return null;
     let total = 0;
-    let poolsWithToken = 0;
-    let poolsWithStats = 0;
-
-    for (const pool of poolsArray) {
+    for (const pool of pools.data) {
       if (
         pool && typeof pool === 'object' &&
         (pool.token0?.address?.toLowerCase() === token?.address?.toLowerCase() ||
-          pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase())
+          pool.token1?.address?.toLowerCase() === token?.address?.toLowerCase()) &&
+        pool.PoolStatistic && pool.PoolStatistic.length > 0 &&
+        pool.PoolStatistic[0] && pool.PoolStatistic[0].tvlUSD &&
+        !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
       ) {
-        poolsWithToken++;
-        console.log('🔍 TokenPage - Pool contains our token:', {
-          poolAddress: pool.address,
-          token0: pool.token0?.symbol,
-          token1: pool.token1?.symbol,
-          hasPoolStatistic: !!(pool.PoolStatistic && pool.PoolStatistic.length > 0),
-          poolStatisticLength: pool.PoolStatistic?.length || 0,
-          tvlUSD: pool.PoolStatistic?.[0]?.tvlUSD
-        });
-
-        if (
-          pool.PoolStatistic?.length > 0 &&
-          pool.PoolStatistic[0]?.tvlUSD &&
-          !isNaN(Number(pool.PoolStatistic[0].tvlUSD))
-        ) {
-          poolsWithStats++;
-          total += Number(pool.PoolStatistic[0].tvlUSD);
-        }
+        total += Number(pool.PoolStatistic[0].tvlUSD);
       }
     }
-
-    console.log('🔍 TokenPage - TVL calculation summary:', {
-      poolsWithToken,
-      poolsWithStats,
-      totalTVL: total,
-      fallbackToCoingecko: total === 0 && !!coingeckoTokenData?.market_data?.total_value_locked_usd
-    });
-
     // Fallback to Coingecko if backend TVL is missing or zero
     if (total === 0 && coingeckoTokenData?.market_data?.total_value_locked_usd) {
       return coingeckoTokenData.market_data.total_value_locked_usd;
@@ -142,94 +95,28 @@ const TokenPage: React.FC = () => {
   const fdv = stat?.fdv || 0
 
   // 1D Volume: backend then fallback CoinGecko
-  const volume1d = stat?.volume ? parseFloat(formatUnits(stat.volume, token?.decimals || 18)) : 0
-  // Hook pour charger l'historique de prix d'un token (endpoint /stats/token/:address)
-  function useTokenLineChart(tokenAddress?: string | null) {
-    return useQuery({
-      queryKey: ['token-line-chart', tokenAddress],
-      enabled: !!tokenAddress,
-      queryFn: async () => {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/stats/token/${tokenAddress}`);
-        if (!res.ok) throw new Error('API error');
-        const data = await res.json();
-        return data.map((d: any) => ({
-          time: Math.floor(d.timestamp / 1000) as import('lightweight-charts').UTCTimestamp,
-          value: d.price,
-        }));
-      },
-      staleTime: 60 * 1000,
-    });
-  }
+  const volume1d = stat?.volume ? parseFloat(formatUnits(stat.volume, token?.decimals || 18)) : 0;
 
-  // Fonctions utilitaires pour nettoyer et normaliser les données (identiques à SwapPageLayout)
-  const cleanLineData = (data: { time: number, value: number }[]) => {
-    const sorted = [...data].sort((a, b) => a.time - b.time);
-    return sorted
-      .filter((point, i, arr) => i === 0 || point.time !== arr[i - 1].time)
-      .map(point => ({
-        time: point.time as import('lightweight-charts').UTCTimestamp,
-        value: point.value,
-      }));
+  // Handlers pour les contrôles du chart
+  const handleChartTypeChange = (newType: ChartType) => {
+    setChartType(newType);
   };
-  const filterOutliers = (data: { time: number, value: number }[]) => {
-    if (data.length < 3) return data;
-    const values = data.map(d => d.value).sort((a, b) => a - b);
-    const median = values[Math.floor(values.length / 2)];
-    return data
-      .filter(d => d.value < median * 1e6 && d.value > median / 1e6)
-      .map(point => ({
-        time: point.time as import('lightweight-charts').UTCTimestamp,
-        value: point.value,
-      }));
-  };
-  const shouldNormalize = (data: { value: number }[]) => {
-    if (!data.length) return false;
-    const sample = data.slice(0, 10);
-    const bigValues = sample.filter(d => Math.abs(d.value) > 1e6).length;
-    return bigValues > sample.length / 2;
-  };
-  const normalizeLineData = (data: { time: number, value: number }[], decimals?: number) => {
-    if (!decimals) return data;
-    return data.map(point => ({
-      time: point.time as import('lightweight-charts').UTCTimestamp,
-      value: point.value / Math.pow(10, decimals),
-    }));
-  };
-  const LWC_MIN = -90071992547409.91;
-  const LWC_MAX = 90071992547409.91;
-  const filterLWCBounds = (data: { time: number, value: number }[]) =>
-    data
-      .filter(d => d.value >= LWC_MIN && d.value <= LWC_MAX)
-      .map(point => ({
-        time: point.time as import('lightweight-charts').UTCTimestamp,
-        value: point.value,
-      }));
-  const priceFormatter = (price: number) => price.toFixed(2);
 
-  // --- Chart historique du token ---
-  const { data: lineData = [], error: lineError } = useTokenLineChart(token?.address);
-  const fromTokenDecimals = token?.decimals;
-  const filteredData = filterOutliers(lineData);
-  const needNormalization = shouldNormalize(filteredData);
-  const normalizedData = needNormalization && fromTokenDecimals
-    ? normalizeLineData(filteredData, fromTokenDecimals)
-    : filteredData;
-  const chartData = filterLWCBounds(cleanLineData(normalizedData));
+  const handleIntervalChange = (newInterval: ChartInterval) => {
+    setInterval(newInterval);
+  };
+
+  const handleMetricChange = (newMetric: ChartMetric) => {
+    setMetric(newMetric);
+  };
+
+  const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (tokensLoading) {
-    return (
-      <div style={{ padding: 32, textAlign: 'center' }}>
-        <Loader size="desktop" />
-      </div>
-    );
+    return <div style={{ padding: 32 }}>Loading token data...</div>;
   }
   if (!token) {
-    return (
-      <div style={{ padding: 32, textAlign: 'center' }}>
-        <p style={{ color: '#FF4D4D', fontSize: 18 }}>Token not found</p>
-        <p style={{ color: '#888', marginTop: 8 }}>The requested token could not be found in our database.</p>
-      </div>
-    );
+    return <div style={{ padding: 32 }}>Token not found.</div>;
   }
 
   return (
@@ -291,22 +178,21 @@ const TokenPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Chart natif pool (future-proof, prêt à brancher backend) */}
+          {/* Chart natif token */}
           <div className="Token__Chart" style={{ minHeight: 340 }}>
-            {lineError ? (
-              <div style={{ padding: 32, textAlign: 'center', color: '#FF4D4D' }}>
-                <p style={{ fontSize: 16 }}>Error loading chart</p>
-                <p style={{ fontSize: 14, color: '#888', marginTop: 8 }}>Please try refreshing the page</p>
-              </div>
-            ) : (
-              <LineChart
-                data={chartData.length === 0 ? [] : chartData}
-                height={340}
-                priceFormatter={priceFormatter}
-                showNoDataOverlay={chartData.length === 0}
-                noDataMessage="These chart numbers aren't real—just a placeholder flex for now. No on‑chain juice yet… stay locked in, we're gonna pump in live data soon."
-              />
-            )}
+            <ChartWidget
+              tokenAddress={tokenAddress}
+              chartType={chartType}
+              interval={interval}
+              metric={metric}
+              height={340}
+              showToolbar={true}
+              priceFormatter={priceFormatter}
+              onChartTypeChange={handleChartTypeChange}
+              onIntervalChange={handleIntervalChange}
+              onMetricChange={handleMetricChange}
+              dataType="token"
+            />
           </div>
 
           <div className="Token__DetailSection">
@@ -315,11 +201,7 @@ const TokenPage: React.FC = () => {
               <div className="Token__StatCard">
                 <h4 className="Token__StatCardTitle">TVL</h4>
                 <p className="Token__StatCardLabel">
-                  {poolsLoading ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                      <Loader size="small" />
-                    </span>
-                  ) : (tvl === null || tvl === 0 || isNaN(tvl)) ? 'N/A' : formatNumber(tvl)}
+                  {poolsLoading ? 'Loading…' : (tvl === null || tvl === 0 || isNaN(tvl)) ? 'N/A' : formatNumber(tvl)}
                 </p>
               </div>
               <div className="Token__StatCard">

@@ -7,12 +7,11 @@ import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
-import { formatUnits, parseUnits, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
 import { Loader } from '../Loader/Loader';
-import { useTokenStats } from "../../hooks/useTokenStats";
 import { ensureArray } from '../../utils/dataValidation';
 
 interface FormProps {
@@ -27,7 +26,7 @@ interface FormProps {
   initialToToken?: BerachainToken | null;
 }
 
-const SwapForm: React.FC<FormProps> = React.memo(
+export const SwapForm: React.FC<FormProps> = React.memo(
   ({
     dominantColor,
     secondaryColor,
@@ -53,27 +52,25 @@ const SwapForm: React.FC<FormProps> = React.memo(
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
-    const { data: fromTokenStats } = useTokenStats(fromToken?.address || null);
-    const { data: toTokenStats } = useTokenStats(toToken?.address || null);
-    const priceFrom = fromTokenStats?.price || 0;
-    const priceTo = toTokenStats?.price || 0;
     const { data: tokens } = useTokens();
 
+    // État pour forcer le refresh des inputs
+    const [refreshKey, setRefreshKey] = useState(0);
+
     const swap = useSwap({
-      tokenIn: fromToken?.address || zeroAddress,
-      tokenOut: toToken?.address || zeroAddress,
+      tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
+      tokenOut: (toToken?.address as `0x${string}`) || zeroAddress,
       amountIn: fromAmount,
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
     })
 
     const { poolAddress } = usePoolAddress(
-      fromToken?.address,
-      toToken?.address
+      fromToken?.address as `0x${string}` | undefined,
+      toToken?.address as `0x${string}` | undefined
     );
 
     const handleFromTokenSelect = useCallback((token: BerachainToken) => {
-      // Vérifier si le token sélectionné est déjà le token "to"
       setToToken(prevTo => {
         if (prevTo?.address === token.address) {
           return null;
@@ -81,10 +78,9 @@ const SwapForm: React.FC<FormProps> = React.memo(
         return prevTo;
       });
       setFromToken(token);
-    }, []); // Pas de dépendances externes
+    }, []);
 
     const handleToTokenSelect = useCallback((token: BerachainToken) => {
-      // Vérifier si le token sélectionné est déjà le token "from"
       setFromToken(prevFrom => {
         if (prevFrom?.address === token.address) {
           return null;
@@ -96,10 +92,19 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     const handleCloseModal = () => {
       setShowModal(false);
-      if (swap.status === 'error') {
-        swap.reset();
-      }
     };
+
+
+    const handleRefreshInputs = useCallback(() => {
+      setFromAmount(0n);
+      setToAmount(0n);
+      setEditing(null);
+      setTimeout(() => {
+        swap.reset();
+      }, 100);
+      setRefreshKey(prev => prev + 1);
+    }, [swap]);
+
     const handleSwitchTokens = useCallback(() => {
       const currentFromToken = fromToken;
       const currentToToken = toToken;
@@ -141,23 +146,35 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleClickParams = () => {
       setParamOpen(!paramOpen)
     }
-    const btnText = useMemo(() => {
-      if (swap.status === "ready") return "Preview"
-      if (swap.status === "idle" && (!fromToken || !toToken)) return "Select a token"
-      if (swap.status === "idle" && (toAmount === 0n)) return "Enter Amount"
-      if (swap.status === "error") {
-        if (fromToken && toToken && fromAmount > 0n && toAmount > 0n) {
-          return "Preview"
-        }
-        if (swap.isWrap) return "Wrap"
-        if (swap.isUnWrap) return "Unwrap"
+    const isButtonEnabled = useMemo(() => {
+      const hasValidTokens = !!(fromToken && toToken);
+      const hasValidAmount = fromAmount > 0n;
 
+      // Bloquer seulement si le swap est en cours de chargement
+      const isNotLoading = !["loading-routes", "quoting"].includes(swap.status);
+
+      const enabled = hasValidTokens && hasValidAmount && isNotLoading;
+
+      return enabled;
+    }, [fromToken, toToken, fromAmount, swap.status]);
+
+    const btnText = useMemo(() => {
+      if (!fromToken || !toToken) return "Select a token"
+      if (!fromAmount || fromAmount === 0n) return "Enter Amount"
+
+      // Vérifier les cas de wrap/unwrap en priorité
+      if (swap.isWrap) return "Wrap"
+      if (swap.isUnWrap) return "Unwrap"
+
+      if (swap.status === "ready") return "Preview"
+      if (swap.status === "success" && showModal) return "Success! 🎉"
+      if (swap.status === "error") {
         return swap?.error || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
-      return swap.status.replace(/^./, swap.status[0].toUpperCase())
-    }, [swap.status, fromToken, toToken, fromAmount, toAmount])
+      return "Preview"
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap])
 
     const handleBtnClick = async () => {
       if (swap.isWrap) {
@@ -171,53 +188,47 @@ const SwapForm: React.FC<FormProps> = React.memo(
 
     useWatchBlockNumber({
       onBlockNumber() {
-        if (swap.status === "ready") {
+        if (swap.status === "ready" && fromAmount > 0n && toAmount > 0n) {
           swap?.refresh()
         }
       }
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut && editing !== 'to') {
+      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken && fromAmount > 0n) {
         setToAmount(swap.quote.amountOut)
+      } else if (fromAmount === 0n && editing !== 'to') {
+        setToAmount(0n);
       }
-    }, [swap.quote, editing])
-
-    useEffect(() => {
-      let timeoutId: NodeJS.Timeout
-
-      if (swap.status === "success") {
-        timeoutId = setTimeout(() => {
-          swap.reset()
-          setShowModal(false)
-          setFromAmount(0n)
-          setToAmount(0n)
-        }, 3000)
-      }
-
-      return () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId)
-        }
-      }
-    }, [swap.status, swap.reset])
+    }, [swap.quote, editing, fromToken, toToken, fromAmount])
 
     useEffect(() => {
       if (onPoolChange) {
-        // Use the pool address retrieved by usePoolAddress
         const poolAddressStr = poolAddress ? poolAddress : null;
         onPoolChange(poolAddressStr, fromToken, toToken);
       }
     }, [poolAddress, fromToken, toToken, onPoolChange]);
 
     useEffect(() => {
-      if (!fromToken && tokens) {
-        // S'assurer que tokens est un tableau
+      if (!fromToken && tokens && tokens.length > 0) {
         const tokensArray = ensureArray(tokens) as BerachainToken[];
         const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
-        if (bera) setFromToken(bera);
+        if (bera) {
+          setFromToken(bera);
+        }
       }
     }, [tokens, fromToken]);
+
+    // Effet supplémentaire pour s'assurer que BERA est sélectionné même si fromToken est null
+    useEffect(() => {
+      if (tokens && tokens.length > 0 && !fromToken && !initialFromToken) {
+        const tokensArray = ensureArray(tokens) as BerachainToken[];
+        const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+        if (bera) {
+          setFromToken(bera);
+        }
+      }
+    }, [tokens, fromToken, initialFromToken]);
 
     useEffect(() => {
       if (initialFromToken && initialFromToken.address !== fromToken?.address) {
@@ -239,23 +250,15 @@ const SwapForm: React.FC<FormProps> = React.memo(
     const handleToAmountChange = useCallback((amount: bigint) => {
       setEditing('to');
       setToAmount(amount);
-      // Synchronization: recalculate fromAmount so that the USD value is identical
-      if (priceFrom && priceTo && toToken && fromToken) {
-        const toAmountFloat = parseFloat(formatUnits(amount, toToken?.decimals || 18));
-        const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
-        const fromAmountWei = parseUnits(fromAmountFloat.toFixed(fromToken.decimals), fromToken?.decimals || 18);
-        setFromAmount(fromAmountWei);
-      }
-    }, [priceFrom, priceTo, toToken, fromToken]);
+    }, []);
 
-    // Conditional classes for sticky mode
     const formClasses = [
       'Form',
       isSticky ? 'Form--sticky' : '',
       customClassName || ''
     ].filter(Boolean).join(' ');
 
-    // Fermer le panneau settings si clic en dehors
+
     useEffect(() => {
       if (!paramOpen) return;
       function handleClickOutside(event: MouseEvent) {
@@ -304,11 +307,13 @@ const SwapForm: React.FC<FormProps> = React.memo(
                   <p>&nbsp;minutes</p>
                 </div>
               </div>
+
             </div>
           </div>
 
           <div className="Inputs">
             <FromInput
+              key={`from-${refreshKey}`}
               selectedToken={fromToken}
               onTokenSelect={handleFromTokenSelect}
               onAmountChange={handleFromAmountChange}
@@ -325,6 +330,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
               onClick={handleSwitchTokens}
             />
             <SwapToInput
+              key={`to-${refreshKey}`}
               steps={{ totalRatio: 0, steps: [] }}
               preSelected={toToken}
               onSelect={handleToTokenSelect}
@@ -348,13 +354,12 @@ const SwapForm: React.FC<FormProps> = React.memo(
             ) : (
               <div className="Form__ConnectBtn">
                 <button
-                  className={`btn btn--large btn__${swap.status !== "ready" && swap.status !== "error" ? "disabled" : "main"}`}
+                  className={`btn btn--large btn__${isButtonEnabled ? "main" : "disabled"}`}
                   onClick={handleBtnClick}
-                  disabled={swap.status !== "ready" && swap.status !== "error"}
+                  disabled={!isButtonEnabled}
                 >
                   {btnText === null ? <Loader size="small" /> : btnText}
                 </button>
-
               </div>
             )}
           </div>
@@ -367,6 +372,7 @@ const SwapForm: React.FC<FormProps> = React.memo(
           inputAmount={fromAmount}
           outputAmount={toAmount}
           swap={swap}
+          onRefreshInputs={handleRefreshInputs}
         />
       </div >
     );

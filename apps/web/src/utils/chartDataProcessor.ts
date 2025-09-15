@@ -3,8 +3,7 @@ import type {
   ChartInterval,
   LineChartPoint,
   CandlestickPoint,
-  ApiDataPoint,
-  ProcessedChartData
+  ApiDataPoint
 } from '../types/chart';
 import {
   cleanLineData,
@@ -24,26 +23,26 @@ export class ChartDataProcessor {
   /**
    * Point d'entrée principal - traite les données selon le type de chart
    */
-  static processForChart<T extends keyof ProcessedChartData>(
+  static processForChart(
     rawData: ApiDataPoint[],
-    chartType: T,
+    chartType: ChartType,
     interval: ChartInterval,
     tokenDecimals?: number
-  ): ProcessedChartData[T] {
+  ): LineChartPoint[] | CandlestickPoint[] {
     if (!rawData || rawData.length === 0) {
-      return [] as ProcessedChartData[T];
+      return [];
     }
 
     switch (chartType) {
       case 'area':
       case 'line':
-        return this.processForLineChart(rawData, interval, tokenDecimals) as ProcessedChartData[T];
+        return this.processForLineChart(rawData, interval, tokenDecimals);
 
       case 'candlestick':
-        return this.processForCandlestickChart(rawData, interval, tokenDecimals) as ProcessedChartData[T];
+        return this.processForCandlestickChart(rawData, interval, tokenDecimals);
 
       default:
-        throw new Error(`Unsupported chart type: ${chartType}`);
+        throw new Error(`Unsupported chart type: ${String(chartType)}`);
     }
   }
 
@@ -58,8 +57,8 @@ export class ChartDataProcessor {
   ): LineChartPoint[] {
     // Convertir les données API en format compatible pour les utilitaires existants
     const compatibleData = rawData.map(d => ({
-      time: Math.floor(d.timestamp / 1000),
-      value: d.price,
+      time: Math.floor((d.timestamp || d.time * 1000) / 1000),
+      value: d.price || d.value,
     }));
 
     // Appliquer la pipeline de traitement existante
@@ -199,16 +198,16 @@ export class ChartDataProcessor {
   private static filterOutliersForCandlesticks(data: ApiDataPoint[]): ApiDataPoint[] {
     if (data.length < 3) return data;
 
-    const prices = data.map(d => d.price).sort((a, b) => a - b);
+    const prices = data.map(d => d.price || d.value).sort((a, b) => a - b);
     const median = prices[Math.floor(prices.length / 2)];
 
-    return data.filter(d => d.price < median * 1e6 && d.price > median / 1e6);
+    return data.filter(d => (d.price || d.value) < median * 1e6 && (d.price || d.value) > median / 1e6);
   }
 
   private static shouldNormalizeApiData(data: ApiDataPoint[]): boolean {
     if (!data.length) return false;
     const sample = data.slice(0, 10);
-    const bigValues = sample.filter(d => Math.abs(d.price) > 1e6).length;
+    const bigValues = sample.filter(d => Math.abs(d.price || d.value) > 1e6).length;
     return bigValues > sample.length / 2;
   }
 
@@ -216,7 +215,7 @@ export class ChartDataProcessor {
     const divisor = Math.pow(10, decimals);
     return data.map(d => ({
       ...d,
-      price: d.price / divisor,
+      price: (d.price || d.value) / divisor,
       open: d.open ? d.open / divisor : undefined,
       high: d.high ? d.high / divisor : undefined,
       low: d.low ? d.low / divisor : undefined,
@@ -249,11 +248,13 @@ export function createTestChartData(
   const intervalSeconds = getIntervalSeconds(interval);
 
   const testApiData: ApiDataPoint[] = Array.from({ length: count }, (_, i) => ({
+    time: now - (count - i) * intervalSeconds,
+    value: 100 + Math.sin(i / 10) * 20 + (Math.random() - 0.5) * 10,
     timestamp: (now - (count - i) * intervalSeconds) * 1000,
     price: 100 + Math.sin(i / 10) * 20 + (Math.random() - 0.5) * 10,
   }));
 
-  return ChartDataProcessor.processForChart(testApiData, chartType, interval);
+  return ChartDataProcessor.processForChart(testApiData, chartType, interval) as LineChartPoint[] | CandlestickPoint[];
 }
 
 function getIntervalSeconds(interval: ChartInterval): number {
@@ -262,8 +263,7 @@ function getIntervalSeconds(interval: ChartInterval): number {
     case '1D': return 86400;
     case '1W': return 604800;
     case '1M': return 2629746;
-    case '1Y': return 31556952;
-    case 'MAX': return 86400; // Fallback à 1 jour
+    case '4H': return 14400; // 4 heures
     default: return 3600;
   }
 }

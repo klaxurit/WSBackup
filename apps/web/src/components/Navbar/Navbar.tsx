@@ -4,9 +4,10 @@ import { Menu } from "./Menu";
 import { NavbarConnectButton } from "../Buttons/NavbarConnectButton";
 import { MobileMenuModal } from './MobileMenuModal';
 import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
-import { useQuery } from '@tanstack/react-query';
+import { usePools, type Pool } from '../../hooks/usePools';
 import { Link } from 'react-router-dom';
 import { FallbackImg } from '../utils/FallbackImg';
+import { SafeImage } from '../utils/SafeImage';
 import { ensureArray } from '../../utils/dataValidation';
 
 const Navbar = () => {
@@ -14,21 +15,12 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // --- Recherche globale ---
-  const { data: tokens = [] } = useTokens();
-  const { data: pools = [] } = useQuery({
-    queryKey: ['pools'],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/pools`);
-      if (!resp.ok) return [];
-      return resp.json();
-    },
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
-  });
+  const { data: tokens } = useTokens();
+  const { data: pools = [] } = usePools();
 
   // S'assurer que tokens et pools sont des tableaux
   const tokensArray = ensureArray(tokens) as BerachainToken[];
-  const poolsArray = ensureArray(pools);
+  const poolsArray = ensureArray(pools) as Pool[];
 
   const filteredTokens = searchValue.length > 0 ? tokensArray.filter((token: BerachainToken) =>
     token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
@@ -36,11 +28,10 @@ const Navbar = () => {
     token.address.toLowerCase().includes(searchValue.toLowerCase())
   ) : [];
 
-  const filteredPools = searchValue.length > 0 ? poolsArray.filter((pool: any) =>
-    (pool.pool && pool.pool.toLowerCase().includes(searchValue.toLowerCase())) ||
-    (pool.address && pool.address.toLowerCase().includes(searchValue.toLowerCase())) ||
-    (pool.token0?.symbol && pool.token0.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-    (pool.token1?.symbol && pool.token1.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+  const filteredPools = searchValue.length > 0 ? poolsArray.filter((pool: Pool) =>
+    (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+    (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+    (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
   ) : [];
 
   const showDropdown = searchValue.length > 0 && (filteredTokens.length > 0 || filteredPools.length > 0);
@@ -66,72 +57,78 @@ const Navbar = () => {
               mode="expanded"
             />
             {showDropdown && (
-              <div className="GlobalSearch__Dropdown" style={{
-                position: 'absolute',
-                top: 48,
-                left: 0,
-                right: 0,
-                background: '#232323',
-                borderRadius: 12,
-                boxShadow: '0 2px 16px rgba(0,0,0,0.18)',
-                padding: 8,
-                maxHeight: 340,
-                overflowY: 'auto',
-                border: '1px solid #363636',
-              }}>
+              <div className="GlobalSearch__Dropdown">
                 {filteredTokens.length > 0 && (
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{ fontWeight: 600, color: '#e39229', fontSize: 13, margin: '4px 0 4px 8px' }}>Tokens</div>
+                  <div className="GlobalSearch__Section">
+                    <div className="GlobalSearch__SectionTitle">Tokens</div>
                     {filteredTokens.map(token => (
                       <Link
                         key={token.address}
                         to={`/tokens/${token.address}`}
                         className="GlobalSearch__DropdownItem"
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 8,
-                          color: '#fff', textDecoration: 'none', fontSize: 15, cursor: 'pointer',
-                        }}
                         onClick={() => setSearchValue("")}
                       >
-                        {token.logoUri
-                          ? <img src={token.logoUri} alt={token.symbol} style={{ width: 22, height: 22, borderRadius: '50%' }} />
-                          : <FallbackImg content={token.symbol} width={22} height={22} />}
-                        <span style={{ fontWeight: 600 }}>{token.symbol}</span>
-                        <span style={{ color: '#aaa', fontSize: 13 }}>{token.name}</span>
+                        <div className="GlobalSearch__TokenInfo">
+                          <div className="GlobalSearch__TokenLogo">
+                            {token.logoUri
+                              ? <SafeImage
+                                src={token.logoUri}
+                                alt={token.symbol}
+                                fallbackContent={token.symbol}
+                                width={22}
+                                height={22}
+                              />
+                              : <FallbackImg content={token.symbol} width={22} height={22} />}
+                          </div>
+                          <span className="GlobalSearch__TokenSymbol">{token.symbol}</span>
+                          <span className="GlobalSearch__TokenName">{token.name}</span>
+                        </div>
                       </Link>
                     ))}
                   </div>
                 )}
                 {filteredPools.length > 0 && (
-                  <div>
-                    <div style={{ fontWeight: 600, color: '#e39229', fontSize: 13, margin: '4px 0 4px 8px' }}>Pools</div>
-                    {filteredPools.map((pool: any) => (
+                  <div className="GlobalSearch__Section">
+                    <div className="GlobalSearch__SectionTitle">Pools</div>
+                    {filteredPools.map((pool: Pool) => (
                       <Link
-                        key={pool.address}
-                        to={`/pools/${pool.address}`}
+                        key={pool.id}
+                        to={`/pools/${pool.id}`}
                         className="GlobalSearch__DropdownItem"
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 8,
-                          color: '#fff', textDecoration: 'none', fontSize: 15, cursor: 'pointer',
-                        }}
                         onClick={() => setSearchValue("")}
                       >
-                        <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 36, height: 28, marginRight: 4 }}>
-                          {pool.token0?.logoUri
-                            ? <img src={pool.token0.logoUri} alt={pool.token0.symbol} style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 0, zIndex: 2 }} />
-                            : <FallbackImg content={pool.token0?.symbol || '?'} width={22} height={22} style={{ position: 'absolute', left: 0, zIndex: 2, border: '2px solid #232323', background: '#fff', borderRadius: '50%' }} />}
-                          {pool.token1?.logoUri
-                            ? <img src={pool.token1.logoUri} alt={pool.token1.symbol} style={{ width: 22, height: 22, borderRadius: '50%', border: '2px solid #232323', background: '#fff', position: 'absolute', left: 14, zIndex: 1 }} />
-                            : <FallbackImg content={pool.token1?.symbol || '?'} width={22} height={22} style={{ position: 'absolute', left: 14, zIndex: 1, border: '2px solid #232323', background: '#fff', borderRadius: '50%' }} />}
-                        </span>
-                        <span style={{ fontWeight: 600 }}>{pool.token0?.symbol}/{pool.token1?.symbol}</span>
-                        <span style={{ color: '#aaa', fontSize: 13 }}>{pool.pool}</span>
+                        <div className="GlobalSearch__PoolLogos">
+                          <div className="GlobalSearch__PoolLogo GlobalSearch__PoolLogo--token0">
+                            {pool.token0Ref?.logoUri
+                              ? <SafeImage
+                                src={pool.token0Ref.logoUri}
+                                alt={pool.token0Ref.symbol}
+                                fallbackContent={pool.token0Ref.symbol}
+                                width={22}
+                                height={22}
+                              />
+                              : <FallbackImg content={pool.token0Ref?.symbol || '?'} width={22} height={22} />}
+                          </div>
+                          <div className="GlobalSearch__PoolLogo GlobalSearch__PoolLogo--token1">
+                            {pool.token1Ref?.logoUri
+                              ? <SafeImage
+                                src={pool.token1Ref.logoUri}
+                                alt={pool.token1Ref.symbol}
+                                fallbackContent={pool.token1Ref.symbol}
+                                width={22}
+                                height={22}
+                              />
+                              : <FallbackImg content={pool.token1Ref?.symbol || '?'} width={22} height={22} />}
+                          </div>
+                        </div>
+                        <span className="GlobalSearch__TokenSymbol">{pool.token0Ref?.symbol}/{pool.token1Ref?.symbol}</span>
+                        <span className="GlobalSearch__PoolFee">{pool.feeTier / 10000}%</span>
                       </Link>
                     ))}
                   </div>
                 )}
                 {filteredTokens.length === 0 && filteredPools.length === 0 && (
-                  <div style={{ color: '#aaa', padding: '8px 0', textAlign: 'center' }}>No results found</div>
+                  <div className="GlobalSearch__NoResults">No results found</div>
                 )}
               </div>
             )}

@@ -22,9 +22,10 @@
 @use 'components/footer/footer';
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';
+
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
-
+@use 'components/chart/chart-toolbar';
 
 @use 'components/common/link';
 @use 'components/common/iconLink';
@@ -35,6 +36,10 @@
 @use 'components/common/networkItem';
 @use 'components/common/modal';
 @use 'components/common/newBanner';
+@use 'components/common/tokenPairLogos';
+@use 'components/common/globalSearch';
+@use 'components/vaults/vault';
+@use 'components/transitions/pageTransition';
 
 @use 'components/tables/table';
 @use 'components/tables/pagination';
@@ -45,6 +50,7 @@
 @use 'pages/positionPage';
 @use 'pages/poolViewPage';
 @use 'pages/poolPage';
+@use 'pages/vaults';
 
 
 // @import 'themes/dark';

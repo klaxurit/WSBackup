@@ -8,25 +8,106 @@ import '../../../styles/pages/_positionPage.scss';
 import '../../../styles/pages/_poolViewPage.scss';
 import { Loader } from '../../../components/Loader/Loader';
 import { usePositionManager, type UsePositionManagerDatas } from '../../../hooks/usePositionManager';
-import { usePositions } from '../../../hooks/usePositions';
 import { PositionFees } from '../../../components/PoolView/PositionFees';
 import { Modal } from '../../../components/Common/Modal';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import { ClaimInput } from '../../../components/Inputs/ClaimInput';
+import { useQuery } from '@tanstack/react-query';
+import { transformGraphQLTokenToLegacyToken } from '../../../types/api';
+
+const GET_POSITION = `
+query GetPosition($id: String!) {
+  position(id: $id) {
+    id
+    tokenId
+    owner
+    liquidity
+    tickLower
+    tickUpper
+    depositedToken0
+    depositedToken1
+    withdrawnToken0
+    withdrawnToken1
+    collectedFeesToken0
+    collectedFeesToken1
+    feeGrowthInside0LastX128
+    feeGrowthInside1LastX128
+    poolRef {
+      id
+      feeTier
+      liquidity
+      sqrtPrice
+      tick
+      token0Price
+      token1Price
+      totalValueLockedUSD
+      feeGrowthGlobal0X128
+      feeGrowthGlobal1X128
+      token0Ref {
+        id
+        name
+        symbol
+        decimals
+        logoUri
+        tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            priceUSD
+          }
+        }
+      }
+      token1Ref {
+        id
+        name
+        symbol
+        decimals
+        logoUri
+        tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            priceUSD
+          }
+        }
+      }
+      poolDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+        items {
+          apr
+        }
+      }
+    }
+  }
+}
+`
 
 const PoolViewPage: React.FC = () => {
   const [config, setConfig] = useState<UsePositionManagerDatas>({})
   const { tokenId } = useParams<{ tokenId: string }>();
-  const { getPosition, isLoading, refetch: refetchPosition } = usePositions()
   const [modalType, setModalType] = useState<null | 'add' | 'remove' | 'success'>(null);
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
+  const { data: posData, isLoading, refetch: refetchPosition } = useQuery({
+    queryKey: ["position", tokenId],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_POSITION, variables: { id: tokenId?.toString() || "0" } }),
+      });
 
-  const posData = useMemo(() => {
-    if (!tokenId) return
-    return getPosition(tokenId)
-  }, [getPosition, tokenId])
-  const pool = posData?.pool
-  const position = posData?.position
+      if (!response.ok) return null
+      const data = await response.json();
+
+      return data.data.position
+    },
+    enabled: !!tokenId
+  })
+
+
+  const pool = posData?.poolRef
+  const position = posData
+
+  // Transform tokens to match expected interface
+  const token0 = pool?.token0Ref ? transformGraphQLTokenToLegacyToken(pool.token0Ref) : null
+  const token1 = pool?.token1Ref ? transformGraphQLTokenToLegacyToken(pool.token1Ref) : null
 
   const pm = usePositionManager(posData, config)
   const { inRange, positionDetails } = pm
@@ -55,14 +136,14 @@ const PoolViewPage: React.FC = () => {
       return {
         isDisabled: false,
         onClick: () => pm.approveToken0(),
-        text: `Approve ${pool?.token0.symbol}`
+        text: `Approve ${token0?.symbol}`
       }
     }
     if (pm.token1NeedApproval) {
       return {
         isDisabled: false,
         onClick: () => pm.approveToken1(),
-        text: `Approve ${pool?.token1.symbol}`
+        text: `Approve ${token1?.symbol}`
       }
     }
     if (pm.canAddLiquidity) {
@@ -87,7 +168,8 @@ const PoolViewPage: React.FC = () => {
       </div>
     );
   }
-  if (!pool || !position || !positionDetails) {
+
+  if (!pool || !position || !positionDetails || !token0 || !token1) {
     return (
       <div className="PoolView__Container">
         <div className="PoolView__Card">
@@ -96,17 +178,18 @@ const PoolViewPage: React.FC = () => {
       </div>
     );
   }
+  console.log(positionDetails)
   return (
     <div className="PoolView__Container">
       <div className="PoolView__Card">
         <PoolHeader
-          address={`#${posData.nftTokenId} ${pool.address}`}
-          usdValue={"$2222"}
+          address={`#${position.tokenId} ${pool.id}`}
+          usdValue={positionDetails?.totalTokens ? `$${positionDetails.totalTokens.toFixed(2)}` : "Loading..."}
         />
 
         <PoolInfo
-          token0={pool.token0}
-          token1={pool.token1}
+          token0={token0!}
+          token1={token1!}
           inRange={inRange}
         />
 
@@ -121,19 +204,19 @@ const PoolViewPage: React.FC = () => {
         />
 
         <PoolStats
-          positionValue={"n/a"}
+          positionValue={positionDetails?.currentPrice}
           totalPoolTokens={positionDetails?.totalTokens}
           depositedToken0={positionDetails?.token0Amount}
           depositedToken1={positionDetails?.token1Amount}
           share={positionDetails?.liquidityShare}
-          token0={pool?.token0}
-          token1={pool?.token1}
+          token0={token0}
+          token1={token1}
         />
 
         <PositionFees
           pm={pm}
-          token0={pool.token0}
-          token1={pool.token1}
+          token0={token0!}
+          token1={token1!}
         />
 
       </div>
@@ -152,13 +235,13 @@ const PoolViewPage: React.FC = () => {
             <>
               <div className="PoolView__Form">
                 <LiquidityInput
-                  selectedToken={pool.token0}
+                  selectedToken={token0!}
                   onAmountChange={(amount: bigint) => setConfig({ ...config, addLiquidity: { t0Amount: amount, t1Amount: config.addLiquidity?.t1Amount || 0n } })}
                   value={config?.addLiquidity?.t0Amount || 0n}
                   isOverBalance={false}
                 />
                 <LiquidityInput
-                  selectedToken={pool.token1}
+                  selectedToken={token1!}
                   onAmountChange={(amount: bigint) => setConfig({ ...config, addLiquidity: { t1Amount: amount, t0Amount: config.addLiquidity?.t0Amount || 0n } })}
                   value={config?.addLiquidity?.t1Amount || 0n}
                   isOverBalance={false}

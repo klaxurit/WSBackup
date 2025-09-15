@@ -401,7 +401,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: "exactInputSingle",
           args: [params],
-          value: tokenIn === WBERA ? amountIn : 0n
+          value: tokenIn === zeroAddress ? amountIn : 0n
         }
       } else {
         // Multi-hop
@@ -423,7 +423,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: 'exactInput',
           args: [params],
-          value: tokenIn === WBERA ? amountIn : 0n
+          value: tokenIn === zeroAddress ? amountIn : 0n
         }
       }
     } else {
@@ -469,7 +469,7 @@ export const useSwap = (params: SwapParams) => {
           )
         }
 
-        if (tokenIn === WBERA) {
+        if (tokenIn === zeroAddress) {
           totalValue += splitRoute.amount
         }
       }
@@ -498,7 +498,7 @@ export const useSwap = (params: SwapParams) => {
         type: "single",
         totalQuote: bestSingleRoute.quote,
         totalGasEstimate: bestSingleRoute.gasEstimate,
-        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo.decimals),
+        quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo?.decimals || 18),
         priceImpact: calculatePriceImpact(
           amountIn,
           bestSingleRoute.quote,

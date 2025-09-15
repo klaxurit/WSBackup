@@ -2,31 +2,119 @@ import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
-import { formatUnits } from "viem";
+
+const GET_TOKENS_STATS = `
+  query GetTokensStats {
+    tokens {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        feesUSD
+        id
+        name
+        totalSupply
+        volumeUSD
+        symbol
+        logoUri
+        tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+          items {
+            priceUSD
+            close
+            high
+            low
+            open
+            oneDayEvo
+            oneMonthEvo
+            marketCap
+            fdv
+            volume24hUSD
+          }
+        }
+      }
+    }
+  }
+`
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
-  const { data, isLoading: isLoading } = useQuery({
-    queryKey: ['tokensStats'],
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['tokensStats', currentPage, searchValue],
     queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/stats/tokens`);
-      if (!resp.ok) return [];
-      return resp.json();
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: GET_TOKENS_STATS
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.tokens;
     }
   });
 
   const tokens = useMemo(() => {
-    if (!data) return []
-    const inPoolTokens = data.data.filter((t: any) => t.inPool)
-    if (!searchValue || searchValue === '') return inPoolTokens
+    if (!data?.items) return [];
 
-    return inPoolTokens.filter((token: any) =>
-      token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.address.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [searchValue, data]);
+    // Filtrage par recherche
+    let filteredTokens = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredTokens = data.items.filter((token: any) =>
+        token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.id.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+
+    // Pagination côté client
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    return filteredTokens.slice(startIndex, endIndex);
+  }, [data, searchValue, currentPage, itemsPerPage]);
+
+  const pagination = useMemo(() => {
+    if (!data) return undefined;
+
+    // Filtrage pour calculer le total
+    let filteredTokens = data.items;
+    if (searchValue && searchValue.trim() !== '') {
+      filteredTokens = data.items.filter((token: any) =>
+        token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
+        token.id.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+
+    const totalPages = Math.ceil(filteredTokens.length / itemsPerPage);
+
+    return {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems: filteredTokens.length,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+      onPageChange: setCurrentPage,
+      dataname: "tokens"
+    };
+  }, [data, searchValue, currentPage, itemsPerPage]);
 
   const columns: TableColumn[] = [
     {
@@ -34,13 +122,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'index',
       render: (row) => (
         <a
-          href={`https://berascan.com/address/${row.address}`}
+          href={`https://berascan.com/address/${row.id || ''}`}
           target="_blank"
           rel="noopener noreferrer"
           className="Table__Address"
-          title={row.address}
+          title={row.id || ''}
         >
-          {row.address.slice(0, 4) + '...' + row.address.slice(-4)}
+          {row.id ? row.id.slice(0, 4) + '...' + row.id.slice(-4) : 'N/A'}
         </a>
       )
     },
@@ -58,9 +146,9 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
               : <FallbackImg content={row.symbol} className="TokensTable__Logo" />}
           </span>
           <Link
-            to={`/tokens/${row.address}`}
+            to={`/tokens/${row.id || ''}`}
             className="TokensTable__NameLink"
-            title={`View ${row.name} details`}
+            title={`View ${row.name || 'Unknown'} details`}
           >
             {row.symbol} - {row.name}
           </Link>
@@ -72,13 +160,12 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'price',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 ? row.Statistic[0].price : 0;
+        return row.tokenDayData?.items?.length > 0 ? row.tokenDayData.items[0].priceUSD : 0;
       },
       render: (row) => {
-        if (!row.Statistic || row.Statistic.length === 0) {
-          return <span style={{ color: '#888', fontStyle: 'italic' }}>No data</span>;
-        }
-        return `$${formatNumber(row.Statistic[0].price)}`;
+        return row.tokenDayData?.items?.length > 0
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].priceUSD))}`
+          : '-'
       }
     },
     {
@@ -86,11 +173,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1h',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 ? row.Statistic[0].oneHourEvolution : 0;
+        return row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
       },
       render: (row) => {
-        const evolution = row.Statistic?.length > 0 ? row.Statistic[0].oneHourEvolution : 0;
-        if (evolution === 0) return '-';
+        const evolution = row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneDayEvo) : 0;
+        if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
           <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
@@ -104,11 +191,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: '1d',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 ? row.Statistic[0].oneDayEvolution : 0;
+        return row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
       },
       render: (row) => {
-        const evolution = row.Statistic?.length > 0 ? row.Statistic[0].oneDayEvolution : 0;
-        if (evolution === 0) return '-';
+        const evolution = row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneMonthEvo) : 0;
+        if (!evolution || evolution === 0) return '-';
         const isPositive = evolution > 0;
         return (
           <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
@@ -122,11 +209,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'fdv',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].fdv ? row.Statistic[0].fdv : 0;
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].fdv
+          ? parseFloat(row.tokenDayData.items[0].fdv)
+          : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].fdv !== 0 && row.Statistic[0].fdv
-          ? `$${formatNumber(row.Statistic[0].fdv)}`
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].fdv !== "0"
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].fdv))}`
           : '-'
       }
     },
@@ -135,11 +224,11 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'mcap',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].marketCap ? row.Statistic[0].marketCap : 0;
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].marketCap ? row.tokenDayData.items[0].marketCap : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].marketCap !== 0 && row.Statistic[0].marketCap
-          ? `$${formatNumber(row.Statistic[0].marketCap)}`
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].marketCap !== 0
+          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].marketCap))}`
           : '-'
       }
     },
@@ -148,13 +237,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       key: 'volume',
       sortable: true,
       sortValue: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].volume
-          ? parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimal))
+        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].volume24hUSD
+          ? parseFloat(row.tokenDayData.items[0].volume24hUSD)
           : 0;
       },
       render: (row) => {
-        return row.Statistic?.length > 0 && row.Statistic[0].volume !== 0
-          ? `$${formatNumber(parseFloat(formatUnits(BigInt(row.Statistic[0].volume || 0n), row.decimals)))}`
+        return parseFloat(row.volumeUSD) !== 0
+          ? `$${formatNumber(parseFloat(row.volumeUSD))}`
           : '-'
       }
     },
@@ -170,6 +259,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       scrollClassName="Table__Scroll"
       defaultSortKey="volume"
       defaultSortDirection="desc"
+      pagination={pagination}
+      itemLabel="tokens"
     />
   )
 }

@@ -34,18 +34,20 @@
     align-items: center;
     color: white;
     border: none;
+
     button {
       background-image: url('/src/assets/bear_button.svg');
       background-size: 100%;
       background-position: center;
       background-repeat: no-repeat;
+
       &:hover {
         background-image: url('/src/assets/bear_btn_hover.svg');
         background-size: 100%;
         background-position: center;
         background-repeat: no-repeat;
       }
-    
+
       &:active {
         background-image: url('/src/assets/bear_btn_click.svg');
         background-size: 100%;
@@ -166,6 +168,29 @@
   justify-content: flex-end;
 }
 
+// Styles spécifiques pour la SearchBar dans la Navbar
+.Navbar__SearchBar {
+  position: relative;
+  z-index: 30;
+
+  .SearchBar {
+    width: auto;
+    min-width: 200px;
+    max-width: 400px;
+
+    &.expanded {
+      width: 300px;
+      min-width: 300px;
+      max-width: 400px;
+    }
+
+    .SearchBar__input {
+      width: 100%;
+      min-width: 150px;
+    }
+  }
+}
+
 @media (max-width: 767px) {
   .Navbar__Left {
     flex: 0 0 auto;
@@ -208,12 +233,12 @@
   top: 110%;
   right: 0;
   min-width: 240px;
-  background: #232323;
+  background: #180E00;
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
   z-index: 100;
   padding: 14px;
-  border: 1.5px solid #393939;
+  border: 1px solid $white-008;
 }
 
 .Navbar__CopyButton {
@@ -270,7 +295,7 @@
 
 .Navbar__DisconnectButton {
   width: 100%;
-  background: #282828;
+  background: $white-008;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -302,6 +327,72 @@
     background-position: center;
     background-repeat: no-repeat;
   }
+}
+
+.Navbar__DropdownButton {
+  width: 100%;
+  background: none;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  transition: background-color 0.15s ease;
+  margin-bottom: 6px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $beryl-pure;
+    outline-offset: 2px;
+  }
+}
+
+.Navbar__DropdownTitle {
+  font-weight: 600;
+  font-size: 15px;
+  color: $beryl-pure;
+  margin-bottom: 10px;
+  padding: 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.Navbar__ConnectorDropdown {
+  min-width: 200px;
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+}
+
+.Navbar__ConnectorDropdown--left {
+  left: 0;
+  right: auto;
+}
+
+.Navbar__DropdownError {
+  color: #ff6b6b;
+  margin-top: 8px;
+  font-size: 13px;
+  padding: 0 4px 8px;
 }
 
 .Navbar__BalanceButtonWrapper {

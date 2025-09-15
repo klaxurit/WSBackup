@@ -123,27 +123,27 @@
     width: 100%;
     display: flex;
 
-button {
-    width: 100%;
-    background-image: url('/src/assets/paw_background_large.svg');
-    background-size: 140%;
-    background-repeat: no-repeat;
-    background-position: center;
-
-    &:hover {
-      background-image: url('/src/assets/paw_bg_large_hover.svg');
+    button {
+      width: 100%;
+      background-image: url('/src/assets/paw_background_large.svg');
       background-size: 140%;
       background-repeat: no-repeat;
       background-position: center;
-    }
 
-    &:active {
-      background-image: url('/src/assets/paw_bg_large_click.svg');
-      background-size: 140%;
-      background-repeat: no-repeat;
-      background-position: center;
+      &:hover {
+        background-image: url('/src/assets/paw_bg_large_hover.svg');
+        background-size: 140%;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      &:active {
+        background-image: url('/src/assets/paw_bg_large_click.svg');
+        background-size: 140%;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
     }
-  }
   }
 }
 
@@ -153,14 +153,13 @@ button {
   right: 0;
   padding: 16px 16px 16px 16px;
   border-radius: 24px;
-  // border: 1px solid rgba(27, 26, 23);
-  background: rgba(27, 26, 23);
+  background: #180E00;
   z-index: 1;
   width: 300px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid #504F4C;
+  border: 1px solid $white-008;
 
   &__param {
     display: flex;
@@ -174,21 +173,22 @@ button {
     gap: 2px;
     align-items: center;
     justify-content: space-between;
-    border: 1px solid #504F4C;
-    background: #191816;
+    border: 1px solid $white-008;
+    background: $white-008;
     padding: 2px 5px;
     border-radius: 15px;
     min-height: 28px;
 
 
     button {
-      color: #8a8984;
+      color: $onyx-pure;
       padding: 2px 5px;
       left: 2px;
       border-radius: 12px;
-      border: 1px solid #504F4C;
+      border: 1px solid $white-008;
 
       &.active {
+        background: $white-008;
         color: #E39229;
       }
     }

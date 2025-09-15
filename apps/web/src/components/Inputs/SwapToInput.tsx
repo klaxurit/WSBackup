@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
@@ -39,6 +39,9 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     onBlur,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
+    const isInputting = useRef(false);
+    const [inputDisplayValue, setInputDisplayValue] = useState('');
+
     const { address } = useAccount()
     const { data: balance, isLoading: loading } = useBalance({
       address,
@@ -48,6 +51,28 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
       }
     })
     const { data: usdValue = 0 } = usePrice(preSelected)
+
+    // Réinitialiser l'état interne quand le composant est remonté (key change)
+    useEffect(() => {
+      setInputDisplayValue('');
+      isInputting.current = false;
+    }, []);
+
+    // Synchroniser l'affichage avec la valeur externe
+    useEffect(() => {
+      if (!isInputting.current) {
+        const formattedValue = inputValue === 0n ? '' : formatUnits(inputValue, preSelected?.decimals || 18);
+        setInputDisplayValue(formattedValue);
+      }
+    }, [inputValue, preSelected?.decimals]);
+
+    // Forcer le nettoyage quand inputValue devient 0n
+    useEffect(() => {
+      if (inputValue === 0n) {
+        setInputDisplayValue('');
+        isInputting.current = false;
+      }
+    }, [inputValue]);
 
     const usdAmount = useMemo(() => {
       if (inputValue === 0n) return 0
@@ -64,13 +89,36 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
             <input
               ref={textareaRef}
               className="From__Input"
-              value={formatUnits(inputValue, preSelected?.decimals || 18)}
-              type="number"
+              value={inputDisplayValue}
+              type="text"
+              inputMode="decimal"
               placeholder="0"
-              onChange={e => onInputChange(parseUnits(e.target.value, preSelected?.decimals || 18))}
+              onChange={e => {
+                const val = e.target.value;
+                setInputDisplayValue(val);
+                isInputting.current = true;
+
+                // Validation améliorée
+                if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
+                  try {
+                    const parsedAmount = parseUnits(val, preSelected?.decimals || 18);
+                    if (parsedAmount >= 0n) {
+                      onInputChange(parsedAmount);
+                    }
+                  } catch (error) {
+                    console.warn('Invalid input amount:', val);
+                  }
+                } else if (val === '') {
+                  onInputChange(0n);
+                }
+              }}
               readOnly={disabled}
               onClick={disabled ? onInputClick : undefined}
-              onBlur={onBlur}
+              onBlur={() => {
+                isInputting.current = false;
+                setInputDisplayValue(inputValue === 0n ? '' : formatUnits(inputValue, preSelected?.decimals || 18));
+                if (onBlur) onBlur();
+              }}
             />
           </div>
           <div className="From__LogosAndBalance">

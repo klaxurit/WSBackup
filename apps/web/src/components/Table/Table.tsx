@@ -20,6 +20,7 @@ interface PaginationProps {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
   onPageChange: (page: number) => void;
+  itemLabel?: string;
 }
 
 interface TableProps<T = any> {
@@ -35,6 +36,7 @@ interface TableProps<T = any> {
   pagination?: PaginationProps;
   defaultSortKey?: string;
   defaultSortDirection?: SortDirection;
+  itemLabel?: string;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -44,7 +46,8 @@ const Pagination: React.FC<PaginationProps> = ({
   itemsPerPage,
   totalItems,
   hasPreviousPage,
-  hasNextPage
+  hasNextPage,
+  itemLabel = 'items'
 }) => {
   const getVisiblePages = () => {
     const delta = 2;
@@ -80,7 +83,7 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="Table__Pagination">
       <div className="Table__PaginationInfo">
-        Showing {startItem}-{endItem} of {totalItems} transactions
+        Showing {startItem}-{endItem} of {totalItems} {itemLabel}
       </div>
       <div className="Table__PaginationControls">
         {hasPreviousPage && (
@@ -123,14 +126,15 @@ export function Table<T = any>({
   data,
   className = '',
   emptyMessage = 'No data',
-  tableClassName = 'TokenTxTable',
-  wrapperClassName = 'TokenTxTable__Wrapper',
-  scrollClassName = 'TokenTxTable__Scroll',
+  tableClassName = 'Table',
+  wrapperClassName = 'Table__Wrapper',
+  scrollClassName = 'Table__Scroll',
   getRowClassName,
   isLoading = false,
   pagination,
   defaultSortKey,
   defaultSortDirection = null,
+  itemLabel = 'items',
 }: TableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultSortDirection);
@@ -250,11 +254,11 @@ export function Table<T = any>({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={columns.length} className="TokenTxTable__Empty">Loading...</td>
+                <td colSpan={columns.length} className="Table__Empty">Loading...</td>
               </tr>
             ) : sortedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="TokenTxTable__Empty">{emptyMessage}</td>
+                <td colSpan={columns.length} className="Table__Empty">{emptyMessage}</td>
               </tr>
             ) : (
               sortedData.map((row, rowIndex) => (
@@ -270,7 +274,7 @@ export function Table<T = any>({
           </tbody>
         </table>
       </div>
-      {pagination && <Pagination {...pagination} />}
+      {pagination && <Pagination {...pagination} itemLabel={itemLabel} />}
     </div>
   );
 }
