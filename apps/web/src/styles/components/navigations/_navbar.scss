@@ -329,6 +329,72 @@
   }
 }
 
+.Navbar__DropdownButton {
+  width: 100%;
+  background: none;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  transition: background-color 0.15s ease;
+  margin-bottom: 6px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $beryl-pure;
+    outline-offset: 2px;
+  }
+}
+
+.Navbar__DropdownTitle {
+  font-weight: 600;
+  font-size: 15px;
+  color: $beryl-pure;
+  margin-bottom: 10px;
+  padding: 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.Navbar__ConnectorDropdown {
+  min-width: 200px;
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+}
+
+.Navbar__ConnectorDropdown--left {
+  left: 0;
+  right: auto;
+}
+
+.Navbar__DropdownError {
+  color: #ff6b6b;
+  margin-top: 8px;
+  font-size: 13px;
+  padding: 0 4px 8px;
+}
+
 .Navbar__BalanceButtonWrapper {
   position: relative;
   display: inline-flex;
