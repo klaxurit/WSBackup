@@ -45,9 +45,6 @@ ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
       abi: context.contracts.svVaults.abi,
       functionName: "compounderSlippageBPS",
     });
-    console.log(`🔍 DEBUG Vault ${event.args.stickyVault}:`);
-    console.log(`  - managerFeeBPS: ${feeResult} (${rawFee / 100}%) → Using: ${managementFee} (${managementFee / 100}%)`);
-    console.log(`  - compounderSlippageBPS: ${slippageResult} (${Number(slippageResult) / 100}%)`);
   } catch (error) {
     console.log(`Could not fetch fees for vault ${event.args.stickyVault}:`, (error as Error).message);
   }

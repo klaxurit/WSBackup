@@ -29,13 +29,13 @@ const vaultBalancesCache = new Map<string, BalanceCache>();
 export function setVaultForPool(poolId: string, vaultId: string): void {
   const normalizedPoolId = poolId.toLowerCase();
   const normalizedVaultId = vaultId.toLowerCase();
-  
+
   // Check if pool already has a vault (should not happen)
   if (poolToVaultMap.has(normalizedPoolId)) {
     const existingVault = poolToVaultMap.get(normalizedPoolId);
     console.warn(`⚠️  Pool ${poolId} already has vault ${existingVault}, replacing with ${vaultId}`);
   }
-  
+
   poolToVaultMap.set(normalizedPoolId, normalizedVaultId);
 }
 
@@ -102,14 +102,11 @@ export async function getCachedUnderlyingBalances(
 
   if (cached && cached.blockNumber === currentBlock) {
     // Cache hit - return cached balances
-    console.log(`🎯 Cache HIT for vault ${vaultId} at block ${currentBlock}`);
     return [cached.amount0, cached.amount1];
   }
 
   // Cache miss - need to fetch from contract
   try {
-    console.log(`📡 Cache MISS - Fetching balances for vault ${vaultId} at block ${currentBlock}`);
-
     const balances = await context.client.readContract({
       address: vaultId as `0x${string}`,
       abi: context.contracts.svVaults.abi,
@@ -158,10 +155,6 @@ function cleanOldCacheEntries(currentBlock: bigint, currentTime: number): void {
       vaultBalancesCache.delete(vaultId);
       cleanedCount++;
     }
-  }
-
-  if (cleanedCount > 0) {
-    console.log(`🧹 Cleaned ${cleanedCount} old cache entries. Cache size: ${vaultBalancesCache.size}`);
   }
 }
 
