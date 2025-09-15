@@ -34,6 +34,7 @@ const GET_POOL_STATS = `
           tvlUSD
           volumeUSD
           apr
+          activeRangeAPR
           volumeUSD1D
           volumeUSD30D
         }
@@ -227,8 +228,26 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       }
     },
     {
-      label: 'Pool APR',
-      key: 'apr',
+      label: 'Active APR',
+      key: 'apr_active',
+      className: 'PoolsTable__AprTd',
+      sortable: true,
+      sortValue: (row) => {
+        return row.poolDayData?.items?.[0]?.activeRangeAPR || "0";
+      },
+      render: (row) => {
+        return (
+          <span className="PoolsTable__AprCell">
+            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].activeRangeAPR) > 0
+              ? `${row.poolDayData.items[0].activeRangeAPR}%`
+              : "-"}
+          </span>
+        )
+      }
+    },
+    {
+      label: 'Global APR',
+      key: 'apr_global',
       className: 'PoolsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
@@ -242,14 +261,6 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
               : "-"}
           </span>
         )
-      }
-    },
-    {
-      label: 'BGT APR',
-      key: 'bgtApr',
-      className: 'PoolsTable__BgtAprTd',
-      render: () => {
-        return <span className="PoolsTable__BgtAprCell">-</span>
       }
     },
     {

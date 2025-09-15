@@ -124,42 +124,6 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
         )
       }
     },
-    // {
-    //   label: 'Fees APR',
-    //   key: 'feesApr',
-    //   className: 'VaultsTable__FeesAprTd',
-    //   sortable: true,
-    //   sortValue: (row) => {
-    //     return row?.feesApr || 0;
-    //   },
-    //   render: (row) => {
-    //     return (
-    //       <span className="VaultsTable__FeesAprCell">
-    //         {row?.feesApr && row.feesApr !== 0
-    //           ? `${row.feesApr.toFixed(2)}%`
-    //           : "-"}
-    //       </span>
-    //     )
-    //   }
-    // },
-    // {
-    //   label: 'Rewards APR',
-    //   key: 'rewardsApr',
-    //   className: 'VaultsTable__RewardsAprTd',
-    //   sortable: true,
-    //   sortValue: (row) => {
-    //     return row?.rewardsApr || 0;
-    //   },
-    //   render: (row) => {
-    //     return (
-    //       <span className="VaultsTable__RewardsAprCell">
-    //         {row?.rewardsApr && row.rewardsApr !== 0
-    //           ? `${row.rewardsApr.toFixed(2)}%`
-    //           : "-"}
-    //       </span>
-    //     )
-    //   }
-    // },
     {
       label: 'Vol. 1d',
       key: 'vol1d',
