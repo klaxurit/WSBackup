@@ -489,13 +489,16 @@ export function usePonderChartData(
     queryFn: async () => {
       if (!address) throw new Error('Address is required');
 
-      const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:42069/graphql';
+      const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:42069/';
+      // S'assurer que l'URL se termine par /graphql
+      const finalUrl = graphqlUrl.endsWith('/graphql') ? graphqlUrl : `${graphqlUrl.replace(/\/$/, '')}/graphql`;
 
       const graphqlQuery = isPoolData
         ? buildPoolQuery(address, metric, interval, config.limit)
         : buildTokenQuery(address, metric, interval, config.limit);
 
-      const response = await fetch(graphqlUrl, {
+
+      const response = await fetch(finalUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -515,6 +518,7 @@ export function usePonderChartData(
         console.error('GraphQL Errors:', result.errors);
         throw new Error(result.errors[0].message);
       }
+
 
       const data = isPoolData
         ? result.data.poolDayDatas?.items || result.data.poolHourDatas?.items || []
@@ -572,6 +576,9 @@ export function usePoolByTokens(
     queryFn: async () => {
       if (!token0Address || !token1Address) return null;
 
+      const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:42069/';
+      const finalUrl = graphqlUrl.endsWith('/graphql') ? graphqlUrl : `${graphqlUrl.replace(/\/$/, '')}/graphql`;
+
       const query = `
         query GetPoolByTokens {
           pools(
@@ -603,7 +610,7 @@ export function usePoolByTokens(
         }
       `;
 
-      const response = await fetch(import.meta.env.VITE_GRAPHQL_URL, {
+      const response = await fetch(finalUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
