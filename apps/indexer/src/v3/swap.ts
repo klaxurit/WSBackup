@@ -1,13 +1,15 @@
 import { ponder } from "ponder:registry";
-import { bundle, factory as sFactory, pool as sPool, swap as sSwap, token as sToken } from "ponder:schema";
+import { bundle, factory as sFactory, pool as sPool, swap as sSwap, token as sToken, stickyVault } from "ponder:schema";
 import { getOrCreateTransaction } from "./helpers";
 import { CONTRACTS } from "../utils/abi";
 import { Decimal } from "decimal.js";
-import { formatUnits } from "viem";
+import { Address, formatUnits } from "viem";
 import { findBeraPerToken, getBeraPriceInUSD, sqrtPriceX96ToTokenPrices } from "../utils/pricing";
 import { updateProtocolDayData } from "../stats/porotocolDay";
 import { updatePoolStats } from "../stats/pool";
 import { updateTokenStats } from "../stats/token";
+import { updateVaultStats } from "../stats/vault";
+import { getVaultForPool, getCacheSize } from "../utils/vaultCache";
 
 ponder.on("v3Pool:Swap", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
@@ -236,45 +238,37 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   await context.db.update(sToken, { id: token0.id }).set({ ...Object.fromEntries(Object.entries(token0).filter(([key]) => key !== 'id')) })
   await context.db.update(sToken, { id: token1.id }).set({ ...Object.fromEntries(Object.entries(token1).filter(([key]) => key !== 'id')) })
 
+  // Update vault trading volume if this pool belongs to a vault
+  const vaultId = getVaultForPool(pool.id);
+  if (vaultId) {
+    const vaultEntity = await context.db.find(stickyVault, { id: vaultId as Address });
+    if (vaultEntity) {
+      const vault = { ...vaultEntity };
+      // Add trading volume to vault
+      vault.tradingVolumeUSD = new Decimal(vault.tradingVolumeUSD || "0").plus(totalAmountUSD).toString();
+      vault.txCount += 1;
+
+      await context.db.update(stickyVault, { id: vault.id }).set({
+        ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id'))
+      });
+
+      // Update vault stats with the new trading volume
+      await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context, event.block.number);
+
+      if (debug) {
+        console.log(`📈 Updated vault ${vault.id} trading volume: +${totalAmountUSD.toString()} USD`);
+      }
+    } else {
+      console.warn(`⚠️  Vault ${vaultId} found in cache but not in DB for pool ${pool.id}`);
+    }
+  } else if (debug) {
+    // Optional debug: show when swaps happen in non-vault pools
+    console.log(`💱 Swap in regular pool ${pool.id} (no vault) - Cache size: ${getCacheSize()}`);
+  }
+
+
   await updateProtocolDayData(event.block.timestamp, context)
   await updatePoolStats(event.block.timestamp, pool, context)
   await updateTokenStats(event.block.timestamp, token0, context)
   await updateTokenStats(event.block.timestamp, token1, context)
-
-  if (debug) {
-    console.log(`Après update - TVLUSD: ${pool.totalValueLockedUSD}`)
-    console.log(`Différence: ${new Decimal(pool.totalValueLockedUSD).minus(oldTVLUSD)}`)
-  }
-
-  // logSwap(logContext, {
-  //   swapId,
-  //   amounts: {
-  //     amount0: amount0.toString(),
-  //     amount1: amount1.toString(),
-  //     amountUSD: amountTotalUSDTracked.toString()
-  //   },
-  //   prices: {
-  //     beraPriceUSD: beraPriceUSD.toString(),
-  //     token0Price: pool.token0Price,
-  //     token1Price: pool.token1Price,
-  //     sqrtPriceX96: pool.sqrtPrice.toString()
-  //   },
-  //   liquidity: pool.liquidity.toString(),
-  //   tick: pool.tick,
-  //   fees: {
-  //     feeBera: feeBera.toString(),
-  //     feeUSD: feeUSD.toString(),
-  //     feeTier: pool.feeTier
-  //   },
-  //   volume: {
-  //     totalUSDTracked: amountTotalUSDTracked.toString(),
-  //     totalBeraTracked: amountTotalBeraTracked.toString(),
-  //     totalUSDUntracked: amountTotalUSDUntracked.toString()
-  //   },
-  //   participants: {
-  //     sender: event.args.sender,
-  //     recipient: event.args.recipient,
-  //     origin: event.transaction.from
-  //   }
-  // })
 });

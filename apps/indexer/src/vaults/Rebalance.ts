@@ -4,6 +4,7 @@ import { bundle, pool, stickyVault, swap, token, vaultUserPosition } from "ponde
 import { formatUnits } from "viem";
 import { updateVaultStats } from "../stats/vault";
 import { calculatePositionValue, createPositionSnapshot } from "../utils/positionCalculations";
+import { getCachedUnderlyingBalances } from "../utils/vaultCache.js";
 
 ponder.on("svVaults:Rebalance", async ({ event, context }) => {
   const ve = await context.db.find(stickyVault, { id: event.log.address })
@@ -47,11 +48,12 @@ ponder.on("svVaults:Rebalance", async ({ event, context }) => {
   // Calculate impermanent loss from this rebalance
   if (liquidityBefore && liquidityBefore > 0) {
     try {
-      const [amount0After, amount1After] = await context.client.readContract({
-        address: vault.id,
-        abi: context.contracts.svVaults.abi,
-        functionName: "getUnderlyingBalances",
-      });
+      const balances = await getCachedUnderlyingBalances(vault.id, event.block.number, context);
+      if (!balances) {
+        console.warn(`💾 Failed to get balances for vault ${vault.id} after rebalance`);
+        return;
+      }
+      const [amount0After, amount1After] = balances;
 
       const amount0AfterDecimal = new Decimal(formatUnits(amount0After, t0.decimals));
       const amount1AfterDecimal = new Decimal(formatUnits(amount1After, t1.decimals));
@@ -77,8 +79,8 @@ ponder.on("svVaults:Rebalance", async ({ event, context }) => {
       vault.totalValueLockedBERA = tvlBera.toString()
       vault.totalValueLockedUSD = tvlBera.mul(beraPriceUSD).toString()
 
-    } catch (error) {
-      console.warn(`Could not calculate IL for rebalance ${vault.id}:`, error.message);
+    } catch (error: any) {
+      console.warn(`Could not calculate IL for rebalance ${vault.id}:`, error?.message);
     }
   }
 
@@ -136,5 +138,5 @@ ponder.on("svVaults:Rebalance", async ({ event, context }) => {
   //   console.warn(`Could not update user positions after rebalance for vault ${vault.id}:`, (error as Error).message);
   // }
 
-  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
+  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context, event.block.number)
 })

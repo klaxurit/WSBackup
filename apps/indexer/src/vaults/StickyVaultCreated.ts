@@ -1,5 +1,6 @@
 import { ponder } from "ponder:registry";
 import { pool, stickyVault } from "ponder:schema";
+import { setVaultForPool } from "../utils/vaultCache";
 
 ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
   // Ajouter une factory pour tracker le nombre de vault et les TVL ?
@@ -27,17 +28,17 @@ ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
       abi: context.contracts.svVaults.abi,
       functionName: "managerFeeBPS",
     });
-    const rawFee = Number(feeResult);
-    
+    managementFee = Number(feeResult);
+
     // SAFETY: Cap management fees at reasonable maximum (5% = 500 BPS)
-    if (rawFee > 500) {
-      console.warn(`🚨 ABNORMAL managerFeeBPS for vault ${event.args.stickyVault}: ${rawFee} (${rawFee/100}%)`);
-      console.warn(`   Capping at 500 BPS (5%) to prevent calculation errors`);
-      managementFee = 500; // Cap at 5%
-    } else {
-      managementFee = rawFee;
-    }
-    
+    // if (rawFee > 500) {
+    //   console.warn(`🚨 ABNORMAL managerFeeBPS for vault ${event.args.stickyVault}: ${rawFee} (${rawFee / 100}%)`);
+    //   console.warn(`   Capping at 500 BPS (5%) to prevent calculation errors`);
+    //   managementFee = 500; // Cap at 5%
+    // } else {
+    //   managementFee = rawFee;
+    // }
+
     // DEBUG: Also check slippage settings to compare
     const slippageResult = await context.client.readContract({
       address: event.args.stickyVault,
@@ -45,8 +46,8 @@ ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
       functionName: "compounderSlippageBPS",
     });
     console.log(`🔍 DEBUG Vault ${event.args.stickyVault}:`);
-    console.log(`  - managerFeeBPS: ${feeResult} (${rawFee/100}%) → Using: ${managementFee} (${managementFee/100}%)`);
-    console.log(`  - compounderSlippageBPS: ${slippageResult} (${Number(slippageResult)/100}%)`);
+    console.log(`  - managerFeeBPS: ${feeResult} (${rawFee / 100}%) → Using: ${managementFee} (${managementFee / 100}%)`);
+    console.log(`  - compounderSlippageBPS: ${slippageResult} (${Number(slippageResult) / 100}%)`);
   } catch (error) {
     console.log(`Could not fetch fees for vault ${event.args.stickyVault}:`, (error as Error).message);
   }
@@ -61,4 +62,7 @@ ponder.on("svFactory:StickyVaultCreated", async ({ event, context }) => {
     managementFee: managementFee,
     performanceFee: 0, // Arrakis V1 vaults don't have separate performance fees
   });
+
+  // Add the pool → vault mapping to our cache for fast lookup
+  setVaultForPool(event.args.uniPool, event.args.stickyVault);
 });

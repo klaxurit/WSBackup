@@ -14,19 +14,20 @@ export async function updatePoolStats(timestamp: bigint, pool: typeof sPool.$inf
   const hourStartUnix = hourId * 3600
   const hourPoolID = `${pool.id}-${hourId}`
 
-  const apr = await calculateAPR(pool, timestamp, context)
+  const aprResults = await calculateAPR(pool, timestamp, context)
   const volumeUSD1D = await calculateVolumeForPeriod(pool, `${pool.id}-${hourId - 24}`, context)
   const volumeUSD30D = await calculateVolumeForPeriod(pool, `${pool.id}-${hourId - (24 * 30)}`, context)
 
-  await updateDayPoolData(pool, dayPoolId, dayStartTimestamp, apr, volumeUSD1D, volumeUSD30D, context)
-  await updateHourPoolData(pool, hourPoolID, hourStartUnix, context)
+  await updateDayPoolData(pool, dayPoolId, dayStartTimestamp, aprResults.globalAPR, aprResults.activeAPR, volumeUSD1D, volumeUSD30D, context)
+  await updateHourPoolData(pool, hourPoolID, hourStartUnix, aprResults.globalAPR, aprResults.activeAPR, context)
 }
 
 export async function updateDayPoolData(
   pool: typeof sPool.$inferSelect,
   dayPoolId: string,
   startTS: number,
-  apr: string,
+  globalAPR: string,
+  activeAPR: string,
   volumeUSD1D: string,
   volumeUSD30D: string,
   context: Context
@@ -58,7 +59,8 @@ export async function updateDayPoolData(
       t1high: pool.token1Price,
       t1low: pool.token1Price,
       t1close: pool.token1Price,
-      apr,
+      apr: globalAPR,
+      activeRangeAPR: activeAPR,
       volumeUSD1D,
       volumeUSD30D
     })
@@ -86,7 +88,8 @@ export async function updateDayPoolData(
       ...(parseFloat(r.t1high) < parseFloat(pool.token1Price) && { t1high: pool.token1Price }),
       ...(parseFloat(r.t1low) > parseFloat(pool.token1Price) && { t1low: pool.token1Price }),
       t1close: pool.token1Price,
-      apr,
+      apr: globalAPR,
+      activeRangeAPR: activeAPR,
       volumeUSD1D,
       volumeUSD30D
     }))
@@ -97,6 +100,8 @@ async function updateHourPoolData(
   pool: typeof sPool.$inferSelect,
   hourPoolID: string,
   startTS: number,
+  globalAPR: string,
+  activeAPR: string,
   context: Context
 ) {
   const poolData = await context.db.find(poolHourData, { id: hourPoolID })
@@ -127,6 +132,8 @@ async function updateHourPoolData(
       t1high: pool.token1Price,
       t1low: pool.token1Price,
       t1close: pool.token1Price,
+      apr: globalAPR,
+      activeRangeAPR: activeAPR,
     })
   } else {
     await context.db.update(poolHourData, { id: hourPoolID }).set((r) => ({
@@ -151,11 +158,48 @@ async function updateHourPoolData(
       ...(parseFloat(r.t1high) < parseFloat(pool.token1Price) && { t1high: pool.token1Price }),
       ...(parseFloat(r.t1low) > parseFloat(pool.token1Price) && { t1low: pool.token1Price }),
       t1close: pool.token1Price,
+      apr: globalAPR,
+      activeRangeAPR: activeAPR,
     }))
   }
 }
 
-async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, context: Context) {
+/**
+ * Calculate TVL of only the active liquidity in the current price range
+ * This gives a more accurate representation of earning liquidity vs total pool TVL
+ * Uses a heuristic approach: assume active liquidity is concentrated and represents
+ * a fraction of total TVL based on typical Uniswap V3 concentration patterns
+ */
+async function calculateActiveTVL(pool: typeof sPool.$inferSelect, context: Context): Promise<string> {
+  // If no active liquidity, return 0
+  if (!pool.liquidity || pool.liquidity === 0n) {
+    return "0";
+  }
+
+  const totalTVL = new Decimal(pool.totalValueLockedUSD || "0");
+
+  if (totalTVL.eq(0)) {
+    return "0";
+  }
+
+  try {
+    // Heuristic: In typical Uniswap V3 pools, active liquidity in the current tick range
+    // represents roughly 10-30% of total TVL, depending on pool characteristics
+    // We'll use a conservative estimate of 20% as a starting point
+    // This can be refined based on empirical analysis of pools
+
+    const ACTIVE_LIQUIDITY_RATIO = 0.20; // 20% of total TVL is typically active
+
+    const estimatedActiveTVL = totalTVL.mul(ACTIVE_LIQUIDITY_RATIO);
+
+    return estimatedActiveTVL.toString();
+  } catch (error) {
+    console.warn(`Error calculating active TVL for pool ${pool.id}:`, (error as Error).message);
+    return totalTVL.mul(0.20).toString(); // Fallback to 20% of total TVL
+  }
+}
+
+async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, context: Context): Promise<{ globalAPR: string, activeAPR: string }> {
   const dayId = Math.floor(Number(timestamp) / 86400)
   const hourId = Math.floor(Number(timestamp) / 3600)
   let fromPool: typeof poolDayData.$inferSelect | typeof poolHourData.$inferSelect | null = null
@@ -163,7 +207,7 @@ async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, 
   let actualHoursBack = 0
 
   if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") {
-    return "0.00"
+    return { globalAPR: "0.00", activeAPR: "0.00" }
   }
 
   // Try to find the most recent week data (search backwards up to 14 days)
@@ -200,11 +244,11 @@ async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, 
 
   if (!fromPool) {
     // console.warn(`No historical data to calculate APR for pool: ${pool.id}`)
-    return "0.00"
+    return { globalAPR: "0.00", activeAPR: "0.00" }
   }
 
   const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD)
-  if (periodFees.lte(0)) return "0.00"
+  if (periodFees.lte(0)) return { globalAPR: "0.00", activeAPR: "0.00" }
 
   // Calculate APR based on actual time period found
   let annualMultiplier: number
@@ -212,15 +256,30 @@ async function calculateAPR(pool: typeof sPool.$inferSelect, timestamp: bigint, 
     // Day-based calculation
     annualMultiplier = 365 / actualDaysBack
   } else if (actualHoursBack > 0) {
-    // Hour-based calculation  
+    // Hour-based calculation
     annualMultiplier = (365 * 24) / actualHoursBack
   } else {
     // Fallback to weekly calculation
     annualMultiplier = 52
   }
 
-  const apr = periodFees.mul(annualMultiplier).div(pool.totalValueLockedUSD).mul(100)
-  return apr.toFixed(2)
+  // Calculate global APR (original calculation using total TVL)
+  const globalAPR = periodFees.mul(annualMultiplier).div(pool.totalValueLockedUSD).mul(100)
+
+  // Calculate active APR using estimated active TVL
+  const activeTVL = await calculateActiveTVL(pool, context)
+  let activeAPR = new Decimal(0)
+
+  if (activeTVL !== "0") {
+    activeAPR = periodFees.mul(annualMultiplier).div(activeTVL).mul(100)
+  }
+
+  const result = {
+    globalAPR: globalAPR.toFixed(2),
+    activeAPR: activeAPR.toFixed(2)
+  }
+
+  return result
 }
 
 async function calculateVolumeForPeriod(pool: typeof sPool.$inferSelect, targetHourPoolId: string, context: Context) {

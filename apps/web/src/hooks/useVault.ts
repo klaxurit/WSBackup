@@ -3,7 +3,7 @@ import { useAccount, useReadContract, useSimulateContract, useWaitForTransaction
 import { CONTRACTS_ADDRESS } from '../config/contractsAddress';
 import { StickyVaultRouter } from '../config/abis/StickyVaultRouter';
 import { currentChain } from '../config/wagmi';
-import { encodeAbiParameters, erc20Abi, type Address, type Hex } from 'viem';
+import { encodeFunctionData, erc20Abi, type Address, type Hex } from 'viem';
 import { StickyVaultWithRouter } from '../config/abis/StickyVaultWithRouter';
 import { useSwap } from './useSwap';
 
@@ -78,6 +78,7 @@ export interface VaultManager {
     depose: () => void
     isPending: boolean
     hash?: Hex
+    error: any
   },
   withdraw: {
     burn: () => void
@@ -310,49 +311,78 @@ export const useVault = (config: VaultConfig): VaultManager => {
     depositeTwo(depositeTwoSideConfig.request)
   }
 
+  console.log("---------------------------------")
+  console.log("Etape 1 - Config")
+  console.log("Token in", oneSideTokenIn)
+  console.log("Token out", oneSideTokenOut)
+  console.log("TotalAmount in", config.amountOneSide)
+  console.log("moitié pour swap", config.amountOneSide / 2n)
   // Deposite One side
   const swap = useSwap({
     tokenIn: oneSideTokenIn,
     tokenOut: oneSideTokenOut,
     amountIn: config.amountOneSide / 2n,
   })
+  console.log("---------------------------------")
+  console.log("Etape 2 - swap quote")
+  console.log("amountOut", swap?.quote?.amountOut)
+  console.log("amountOut Min", swap?.quote?.amountOutMinimum)
   const swapData = useMemo(() => {
-    if (swap.status !== "ready" || !swap?.quote?.amountOutMinimum || !swap.optimizedRoute?.transactionData?.args) return null
+    if (swap.status !== "ready" || !swap?.quote?.amountOut || !swap.optimizedRoute?.transactionData?.args) return null
 
     const functionName = swap.optimizedRoute?.transactionData?.functionName
     const to = swap.optimizedRoute?.transactionData?.to
     if (!functionName || !to) return null
+
     const abi = swap.optimizedRoute?.transactionData?.abi.filter((a: any) => a.name === functionName)
     if (!abi[0].inputs) return null
+    console.log("args routeData", swap.optimizedRoute.transactionData.args)
+    const routeDataCalldata = encodeFunctionData({
+      abi: abi,
+      functionName: functionName,
+      args: swap.optimizedRoute.transactionData.args
+    })
 
     return {
       router: to,
-      amountIn: config.amountOneSide,
-      minAmountOut: swap.quote.amountOutMinimum,
+      amountIn: config.amountOneSide / 2n,
+      // minAmountOut: swap.quote.amountOutMinimum,
+      minAmountOut: bpsDown(swap.quote.amountOutMinimum, 100),
       zeroForOne: config.tokenOneSide === "token0",
-      routeData: encodeAbiParameters(
-        abi[0].inputs,
-        swap.optimizedRoute.transactionData.args
-      )
+      routeData: routeDataCalldata
     }
   }, [swap])
+
   const { data: osQuote } = useReadContract({
     address: vaultAddr,
     abi: StickyVaultWithRouter,
     functionName: "getMintAmounts",
-    args: [config.amountOneSide / 2n, (swap.quote?.amountOut || 0n)],
+    args: [config.amountOneSide / 2n, swap.quote?.amountOut ?? 0n],
     query: {
       enabled: isReady && isOneSide && isAllow && !!swap.quote
     }
   })
-  const { data: depositeOneSideConfig } = useSimulateContract({
+  console.log("---------------------------------")
+  console.log("Etape 3 - Get Mint amount")
+  console.log("swapData", swapData)
+  console.log("shares", osQuote?.[2])
+  console.log("quote", osQuote)
+  console.log("Args de la simulation (tx)", [
+    vaultAddr,
+    config.amountOneSide,
+    bpsDown(osQuote?.[2] ?? 0n, config.slippageBps),
+    BigInt(config.slippageBps),
+    swapData!,
+    address!
+  ])
+  const { data: depositeOneSideConfig, error: osSimErr } = useSimulateContract({
     address: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
     abi: StickyVaultRouter,
     functionName: "addLiquiditySingle",
     args: [
       vaultAddr,
       config.amountOneSide,
-      bpsDown((osQuote?.[2] || 0n), config.slippageBps),
+      bpsDown(osQuote?.[2] ?? 0n, config.slippageBps),
       BigInt(config.slippageBps),
       swapData!,
       address!
@@ -361,7 +391,10 @@ export const useVault = (config: VaultConfig): VaultManager => {
       enabled: isOneSide && isReady && !!swapData && !!osQuote && isAllow
     }
   })
-  const { data: depositeOneHash, writeContract: depositeone, isPending: waitDepositeOne } = useWriteContract()
+  console.log("Etape 4 - Simulate")
+  console.log("Sim config", depositeOneSideConfig)
+  console.log("Sim error", osSimErr)
+  const { data: depositeOneHash, writeContract: depositeone, isPending: waitDepositeOne, error: osWriteErr } = useWriteContract()
   const handleDepositeOne = () => {
     if (!depositeOneSideConfig) return
     depositeone(depositeOneSideConfig.request)
@@ -449,7 +482,8 @@ export const useVault = (config: VaultConfig): VaultManager => {
     depositeOneSide: {
       depose: handleDepositeOne,
       isPending: waitDepositeOne,
-      hash: depositeOneHash
+      hash: depositeOneHash,
+      error: osSimErr || osWriteErr
     },
     withdraw: {
       burn: handleBurn,
@@ -457,107 +491,4 @@ export const useVault = (config: VaultConfig): VaultManager => {
       hash: burnHash
     }
   }
-  // const depositTwoSided = useCallback(async (params: DepositParams) => {
-  //   if (!address) throw new Error('Wallet not connected');
-
-  //   setIsLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     // Simulation d'un délai
-  //     await new Promise(resolve => setTimeout(resolve, 2000));
-  //     console.log('Mock depositTwoSided:', params);
-  //     return { hash: '0x123...' };
-  //   } catch (err: any) {
-  //     setError(err.message);
-  //     throw err;
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [address, config]);
-
-  // // Dépôt single-sided (version mockée)
-  // const depositSingleSided = useCallback(async (params: SingleDepositParams) => {
-  //   if (!address) throw new Error('Wallet not connected');
-
-  //   setIsLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     // Simulation d'un délai
-  //     await new Promise(resolve => setTimeout(resolve, 2000));
-  //     console.log('Mock depositSingleSided:', params);
-  //     return { hash: '0x456...' };
-  //   } catch (err: any) {
-  //     setError(err.message);
-  //     throw err;
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [address, config]);
-
-  // // Retrait (version mockée)
-  // const withdraw = useCallback(async (params: WithdrawParams) => {
-  //   if (!address) throw new Error('Wallet not connected');
-
-  //   setIsLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     // Simulation d'un délai
-  //     await new Promise(resolve => setTimeout(resolve, 2000));
-  //     console.log('Mock withdraw:', params);
-  //     return { hash: '0x789...' };
-  //   } catch (err: any) {
-  //     setError(err.message);
-  //     throw err;
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [address, config]);
-
-  // // Obtenir les informations du vault (version mockée)
-  // const getVaultInfo = useCallback(async () => {
-  //   try {
-  //     // Retourner des données mockées
-  //     return {
-  //       token0Address: '0x1234567890123456789012345678901234567890',
-  //       token1Address: '0x0987654321098765432109876543210987654321',
-  //       symbol0: 'WBERA',
-  //       symbol1: 'HONEY',
-  //       decimals0: 18,
-  //       decimals1: 18,
-  //       totalSupply: '1000000000000000000000000'
-  //     };
-  //   } catch (err: any) {
-  //     setError(err.message);
-  //     throw err;
-  //   }
-  // }, []);
-
-  // // Obtenir la position utilisateur (version mockée)
-  // const getUserPosition = useCallback(async () => {
-  //   if (!address) throw new Error('Wallet not connected');
-
-  //   try {
-  //     // Retourner des données mockées
-  //     return {
-  //       shares: '1234.56',
-  //       valueUSD: 1500.00
-  //     };
-  //   } catch (err: any) {
-  //     setError(err.message);
-  //     throw err;
-  //   }
-  // }, [address, config]);
-
-  // return {
-  //   depositTwoSided,
-  //   depositSingleSided,
-  //   withdraw,
-  //   getVaultInfo,
-  //   getUserPosition,
-  //   isLoading,
-  //   error
-  // };
 };
