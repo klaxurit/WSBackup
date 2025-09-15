@@ -541,6 +541,7 @@ export const poolDayData = onchainTable(
     t0close: t.numeric().notNull().default("0"),
     t1close: t.numeric().notNull().default("0"),
     apr: t.numeric().notNull().default("0"),
+    activeRangeAPR: t.numeric().notNull().default("0"),
     volumeUSD1D: t.numeric().notNull().default("0"),
     volumeUSD30D: t.numeric().notNull().default("0"),
   }),
@@ -578,6 +579,8 @@ export const poolHourData = onchainTable(
     t1low: t.numeric().notNull().default("0"),
     t0close: t.numeric().notNull().default("0"),
     t1close: t.numeric().notNull().default("0"),
+    apr: t.numeric().notNull().default("0"),
+    activeRangeAPR: t.numeric().notNull().default("0"),
   }),
   (table) => ({
     periodIndex: index().on(table.periodStartUnix),
