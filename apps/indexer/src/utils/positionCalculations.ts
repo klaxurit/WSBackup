@@ -1,7 +1,8 @@
 import Decimal from "decimal.js";
 import { Context } from "ponder:registry";
-import { stickyVault, vaultUserPosition, vaultPositionSnapshot, token, bundle } from "ponder:schema";
+import { stickyVault, vaultUserPosition, vaultPositionSnapshot, token, pool as sPool, bundle } from "ponder:schema";
 import { formatUnits } from "viem";
+import { getCachedUnderlyingBalances } from "./vaultCache.js";
 
 export interface PositionMetrics {
   currentValueToken0: string;
@@ -23,39 +24,49 @@ export async function calculatePositionValue(
   userPosition: typeof vaultUserPosition.$inferSelect,
   vault: typeof stickyVault.$inferSelect,
   beraPriceUSD: Decimal,
-  context: Context
+  context: Context,
+  blockNumber?: bigint
 ): Promise<PositionMetrics> {
   // Get real-time vault balances
   let amount0Current = new Decimal(vault.totalValueLockedToken0);
   let amount1Current = new Decimal(vault.totalValueLockedToken1);
 
-  try {
-    // Fetch fresh balances from contract
-    const [amount0Raw, amount1Raw] = await context.client.readContract({
-      address: vault.id,
-      abi: context.contracts.svVaults.abi,
-      functionName: "getUnderlyingBalances",
-    });
+  // Get token info first (local DB calls)
+  const pool = await context.db.find(sPool, { id: vault.pool });
+  if (!pool) {
+    throw new Error(`Pool not found for vault ${vault.id}`);
+  }
 
-    // Get token info for decimals
-    const pool = await context.db.find(pool, { id: vault.pool });
-    if (pool) {
-      const token0 = await context.db.find(token, { id: pool.token0 });
-      const token1 = await context.db.find(token, { id: pool.token1 });
-      
-      if (token0 && token1) {
+  const token0 = await context.db.find(token, { id: pool.token0 });
+  const token1 = await context.db.find(token, { id: pool.token1 });
+
+  if (!token0 || !token1) {
+    throw new Error(`Tokens not found for pool ${pool.id}`);
+  }
+
+  // Try to get fresh balances from contract using cache to avoid repeated calls
+  if (blockNumber) {
+    const balances = await getCachedUnderlyingBalances(vault.id, blockNumber, context);
+
+    if (balances) {
+      try {
+        const [amount0Raw, amount1Raw] = balances;
         amount0Current = new Decimal(formatUnits(amount0Raw, token0.decimals));
         amount1Current = new Decimal(formatUnits(amount1Raw, token1.decimals));
+      } catch (error) {
+        console.warn(`🔄 Using cached balances for vault ${vault.id} due to processing error:`, (error as Error).message);
       }
+    } else {
+      console.warn(`💾 Using cached balances for vault ${vault.id} due to RPC failure`);
     }
-  } catch (error) {
-    console.warn(`Using cached balances for vault ${vault.id}:`, (error as Error).message);
+  } else {
+    console.warn(`⏭️  No blockNumber provided, using stored vault balances for ${vault.id}`);
   }
 
   // Calculate user's share of vault assets
   const userShares = new Decimal(userPosition.shares);
   const totalShares = new Decimal(vault.totalSupply);
-  
+
   let shareRatio = new Decimal(0);
   if (totalShares.gt(0)) {
     shareRatio = userShares.div(totalShares);
@@ -64,19 +75,6 @@ export async function calculatePositionValue(
   // User's current token amounts
   const currentValueToken0 = shareRatio.mul(amount0Current);
   const currentValueToken1 = shareRatio.mul(amount1Current);
-
-  // Get current token prices for USD conversion
-  const pool = await context.db.find(pool, { id: vault.pool });
-  if (!pool) {
-    throw new Error(`Pool not found for vault ${vault.id}`);
-  }
-
-  const token0 = await context.db.find(token, { id: pool.token0 });
-  const token1 = await context.db.find(token, { id: pool.token1 });
-  
-  if (!token0 || !token1) {
-    throw new Error(`Tokens not found for pool ${pool.id}`);
-  }
 
   const token0PriceBERA = new Decimal(token0.derivedBERA);
   const token1PriceBERA = new Decimal(token1.derivedBERA);
@@ -91,7 +89,7 @@ export async function calculatePositionValue(
   const initialValueUSD = new Decimal(userPosition.initialValueUSD || "0");
   const unrealizedPnLUSD = currentValueUSD.minus(initialValueUSD);
   const unrealizedPnLBERA = unrealizedPnLUSD.div(beraPriceUSD.gt(0) ? beraPriceUSD : new Decimal(1));
-  
+
   // Calculate total PnL (realized + unrealized)
   const realizedPnLUSD = new Decimal(userPosition.realizedPnLUSD);
   const totalPnLUSD = realizedPnLUSD.plus(unrealizedPnLUSD);
@@ -102,13 +100,13 @@ export async function calculatePositionValue(
 
   if (initialValueUSD.gt(0)) {
     totalReturn = totalPnLUSD.div(initialValueUSD).mul(100);
-    
+
     // Calculate annualized return based on holding period
     const firstDepositAt = userPosition.firstDepositAt;
     if (firstDepositAt) {
       const holdingPeriodSeconds = Date.now() / 1000 - Number(firstDepositAt);
       const holdingPeriodYears = holdingPeriodSeconds / (365 * 24 * 3600);
-      
+
       if (holdingPeriodYears > 0) {
         // Simple annualization: (total return / holding period in years)
         annualizedReturn = totalReturn.div(holdingPeriodYears);
@@ -145,7 +143,7 @@ export function calculateWeightedAverageEntryPrice(
 
   const totalValue = oldDeposits.mul(oldAvgPrice).plus(newDeposit.mul(newPrice));
   const totalAmount = oldDeposits.plus(newDeposit);
-  
+
   return totalValue.div(totalAmount);
 }
 
@@ -171,23 +169,23 @@ export async function createPositionSnapshot(
     vaultUserPosition: userPosition.id,
     timestamp,
     blockNumber,
-    
+
     // Position state
     shares: userPosition.shares,
     currentValueToken0: userPosition.currentValueToken0,
     currentValueToken1: userPosition.currentValueToken1,
     currentValueUSD: userPosition.currentValueUSD,
     currentValueBERA: userPosition.currentValueBERA,
-    
+
     // Performance metrics
     unrealizedPnLUSD: userPosition.unrealizedPnLUSD,
     totalReturn: userPosition.totalReturn,
     annualizedReturn: userPosition.annualizedReturn,
-    
+
     // Vault context
     vaultAPR: vaultAPR,
     vaultTVL: vault.totalValueLockedUSD,
-    
+
     // Metadata
     cause,
     triggerTxHash: triggerTxHash as `0x${string}` | undefined,

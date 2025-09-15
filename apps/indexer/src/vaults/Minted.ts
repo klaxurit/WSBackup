@@ -52,38 +52,16 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   // FIXED: Add to deposit/withdraw volume, not trading volume
   vault.depositWithdrawVolumeUSD = new Decimal(vault.depositWithdrawVolumeUSD || "0").plus(totalDepositeUSD).toString()
 
-  // FIXED: Get real TVL from vault contract instead of accumulating
-  try {
-    const [amount0Current, amount1Current] = await context.client.readContract({
-      address: vault.id,
-      abi: context.contracts.svVaults.abi,
-      functionName: "getUnderlyingBalances",
-    });
-
-    const amount0Decimal = new Decimal(formatUnits(amount0Current, t0.decimals));
-    const amount1Decimal = new Decimal(formatUnits(amount1Current, t1.decimals));
-
-    // Update with real balances from contract
-    vault.totalValueLockedToken0 = amount0Decimal.toString()
-    vault.totalValueLockedToken1 = amount1Decimal.toString()
-
-    const tvl0Bera = amount0Decimal.mul(t0.derivedBERA)
-    const tvl1Bera = amount1Decimal.mul(t1.derivedBERA)
-    vault.totalValueLockedBERA = tvl0Bera.plus(tvl1Bera).toString()
-    vault.totalValueLockedUSD = tvl0Bera.plus(tvl1Bera).mul(beraPriceUSD).toString()
-  } catch (error) {
-    console.warn(`Could not fetch real TVL for vault ${vault.id}:`, error.message);
-    // Fallback to accumulative calculation (deprecated)
-    vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).plus(totalDepositedBera).toString()
-    vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
-    vault.totalValueLockedToken0 = new Decimal(vault.totalValueLockedToken0).plus(depositedToken0).toString()
-    vault.totalValueLockedToken1 = new Decimal(vault.totalValueLockedToken1).plus(depositedToken1).toString()
-  }
+  // Use event data for precise TVL calculation (no RPC call during mint)
+  vault.totalValueLockedToken0 = new Decimal(vault.totalValueLockedToken0).plus(depositedToken0).toString()
+  vault.totalValueLockedToken1 = new Decimal(vault.totalValueLockedToken1).plus(depositedToken1).toString()
+  vault.totalValueLockedBERA = new Decimal(vault.totalValueLockedBERA).plus(totalDepositedBera).toString()
+  vault.totalValueLockedUSD = new Decimal(vault.totalValueLockedBERA).mul(beraPriceUSD).toString()
 
   // Update user vault position
   let uPE = await context.db.find(vaultUserPosition, { id: userPosId })
   const isNewPosition = !uPE;
-  
+
   if (!uPE) {
     uPE = await context.db.insert(vaultUserPosition).values({
       id: userPosId,
@@ -99,7 +77,7 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   const oldShares = new Decimal(userPos.shares);
   const oldDepositedToken0 = new Decimal(userPos.depositedToken0);
   const oldDepositedToken1 = new Decimal(userPos.depositedToken1);
-  
+
   userPos.depositedToken0 = oldDepositedToken0.plus(depositedToken0).toString()
   userPos.depositedToken1 = oldDepositedToken1.plus(depositedToken1).toString()
   userPos.shares = oldShares.plus(shares).toString()
@@ -108,14 +86,14 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
   // Calculate weighted average entry prices
   const token0PriceAtDeposit = new Decimal(t0.derivedBERA).mul(beraPriceUSD);
   const token1PriceAtDeposit = new Decimal(t1.derivedBERA).mul(beraPriceUSD);
-  
+
   const oldAvgPriceToken0 = new Decimal(userPos.avgEntryPriceToken0 || "0");
   const oldAvgPriceToken1 = new Decimal(userPos.avgEntryPriceToken1 || "0");
-  
+
   userPos.avgEntryPriceToken0 = calculateWeightedAverageEntryPrice(
     oldDepositedToken0, oldAvgPriceToken0, depositedToken0, token0PriceAtDeposit
   ).toString();
-  
+
   userPos.avgEntryPriceToken1 = calculateWeightedAverageEntryPrice(
     oldDepositedToken1, oldAvgPriceToken1, depositedToken1, token1PriceAtDeposit
   ).toString();
@@ -131,8 +109,8 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
 
   // Calculate current position value and performance metrics
   try {
-    const positionMetrics = await calculatePositionValue(userPos, vault, beraPriceUSD, context);
-    
+    const positionMetrics = await calculatePositionValue(userPos, vault, beraPriceUSD, context, event.block.number);
+
     // Update position with calculated metrics
     userPos.currentValueToken0 = positionMetrics.currentValueToken0;
     userPos.currentValueToken1 = positionMetrics.currentValueToken1;
@@ -144,17 +122,17 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
     userPos.totalPnLUSD = positionMetrics.totalPnLUSD;
     userPos.totalReturn = positionMetrics.totalReturn;
     userPos.annualizedReturn = positionMetrics.annualizedReturn;
-    
+
   } catch (error) {
     console.warn(`Could not calculate position metrics for ${userPosId}:`, (error as Error).message);
     // Fallback to basic calculations
     userPos.currentValueToken0 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken0).toString()
     userPos.currentValueToken1 = (new Decimal(userPos.shares).div(vault.totalSupply)).mul(vault.totalValueLockedToken1).toString()
-    
+
     const currentValueBERA = new Decimal(userPos.currentValueToken0).mul(t0.derivedBERA)
       .plus(new Decimal(userPos.currentValueToken1).mul(t1.derivedBERA));
     const currentValueUSD = currentValueBERA.mul(beraPriceUSD);
-    
+
     userPos.currentValueBERA = currentValueBERA.toString();
     userPos.currentValueUSD = currentValueUSD.toString();
     userPos.totalValue = currentValueUSD.toString();
@@ -194,5 +172,5 @@ ponder.on("svVaults:Minted", async ({ event, context }) => {
     console.warn(`Could not create position snapshot for ${userPosId}:`, (error as Error).message);
   }
 
-  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
+  // await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context, { skipRpcCalls: true })
 })

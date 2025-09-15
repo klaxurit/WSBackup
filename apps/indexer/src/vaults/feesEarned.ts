@@ -54,5 +54,5 @@ ponder.on('svVaults:FeesEarned', async ({ event, context }) => {
 
   await context.db.update(stickyVault, { id: vault.id }).set({ ...Object.fromEntries(Object.entries(vault).filter(([key]) => key !== 'id')) })
 
-  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context)
+  await updateVaultStats(event.block.timestamp, vault, beraPriceUSD, context, event.block.number)
 })
