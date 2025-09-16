@@ -1,16 +1,18 @@
 import { useCallback, useEffect } from 'react';
 import { useAppDispatch } from '../store/hooks';
 import { setWalletConnected, setWalletDisconnected, setError, setBalance } from '../store/slices/walletSlice';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { injected, walletConnect } from 'wagmi/connectors';
+import { useAccount, useDisconnect } from 'wagmi';
 import { createPublicClient, http, formatEther } from 'viem';
-import { berachain, berachainBepolia } from 'viem/chains';
+import { berachain } from 'viem/chains';
+import { useBerachainForce } from './useBerachainForce';
+import { useAppKit } from '@reown/appkit/react';
 
 export const useWallet = () => {
   const dispatch = useAppDispatch();
   const { address, isConnected, chainId } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { isCorrectNetwork } = useBerachainForce();
+  const { open } = useAppKit();
 
   // Synchroniser l'état Wagmi avec Redux à chaque changement
   useEffect(() => {
@@ -33,26 +35,14 @@ export const useWallet = () => {
     }
   }, [isConnected, address, chainId, dispatch]);
 
-  const connectWallet = useCallback(async (connectorId: 'injected' | 'walletConnect') => {
+  const connectWallet = useCallback(() => {
     try {
-      const connector = connectorId === 'injected' ? injected() : walletConnect({
-        projectId: 'f5f6f0d2a4bb55b22ce05e9e92a4e95e'
-      });
-      connect(
-        { connector, chainId: berachainBepolia.id },
-        {
-          onSuccess: () => {
-            // Redux sera synchronisé automatiquement par le useEffect
-          },
-          onError: (error) => {
-            dispatch(setError(error instanceof Error ? error.message : 'Connection error'));
-          }
-        }
-      );
+      // Ouvrir la modal de connexion AppKit
+      open();
     } catch (err) {
       dispatch(setError(err instanceof Error ? err.message : 'Connection error'));
     }
-  }, [connect, dispatch]);
+  }, [open, dispatch]);
 
   const disconnectWallet = useCallback(() => {
     try {
@@ -68,7 +58,8 @@ export const useWallet = () => {
     address,
     chainId,
     isConnected,
-    isConnecting: isPending,
-    connectors
+    isConnecting: false, // AppKit gère l'état de connexion
+    connectors: [], // AppKit gère les connecteurs
+    isCorrectNetwork,
   };
 };

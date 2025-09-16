@@ -1,0 +1,213 @@
+@use '../../utils' as *;
+
+// Personnalisation d'AppKit pour coller avec le design WinnieSwap
+:root {
+  // Variables de base AppKit
+  --w3m-color-mix: #FFD056;
+  --w3m-color-mix-strength: 40;
+  --w3m-accent: #FFD056;
+  --w3m-font-family: inherit;
+  --w3m-border-radius-master: 16px;
+  --w3m-font-size-master: 14px;
+  --w3m-z-index: 2000;
+
+  // Couleurs personnalisées
+  --w3m-color-fg-1: #FFFFFF;
+  --w3m-color-fg-2: #B8B8B8;
+  --w3m-color-fg-3: #8A8A8A;
+  --w3m-color-bg-1: #180E00;
+  --w3m-color-bg-2: #2A1A00;
+  --w3m-color-bg-3: #3D2A00;
+  --w3m-color-overlay: rgba(0, 0, 0, 0.6);
+}
+
+// Overlay personnalisé
+w3m-modal {
+  --w3m-background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+// Container principal
+w3m-modal .w3m-modal {
+  background: #180E00 !important;
+  border: 1px solid $white-008 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+  font-family: inherit !important;
+}
+
+// Header de la modal
+w3m-modal .w3m-modal-header {
+  background: linear-gradient(135deg, rgba(255, 145, 0, 0.05) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+  border-bottom: 1px solid $white-008 !important;
+  border-radius: 16px 16px 0 0 !important;
+  padding: 20px 24px 16px 24px !important;
+}
+
+// Titre
+w3m-modal .w3m-modal-title {
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+}
+
+// Bouton de fermeture
+w3m-modal .w3m-modal-close {
+  color: #FFFFFF !important;
+  transition: color 0.15s ease !important;
+
+  &:hover {
+    color: $beryl-pure !important;
+  }
+}
+
+// Liste des wallets
+w3m-modal .w3m-modal-content {
+  background: transparent !important;
+  padding: 0 24px 24px 24px !important;
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+}
+
+// Items de wallet
+w3m-modal .w3m-wallet-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0.2, 0.2, 1) !important;
+  margin: 6px 0 !important;
+  padding: 12px 16px !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 208, 86, 0.3) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+// Texte des wallets
+w3m-modal .w3m-wallet-button .w3m-wallet-button-text {
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+}
+
+// Icônes des wallets
+w3m-modal .w3m-wallet-button .w3m-wallet-button-icon {
+  border-radius: 8px !important;
+}
+
+// Section des wallets populaires
+w3m-modal .w3m-wallets-section {
+  margin: 20px 0 !important;
+}
+
+// Titre des sections
+w3m-modal .w3m-wallets-section-title {
+  color: $beryl-pure !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 12px !important;
+  padding: 0 4px !important;
+}
+
+// Barre de recherche
+w3m-modal .w3m-search-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  color: #FFFFFF !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+
+  &::placeholder {
+    color: #8A8A8A !important;
+  }
+
+  &:focus {
+    border-color: #FFD056 !important;
+    box-shadow: 0 0 0 2px rgba(255, 208, 86, 0.2) !important;
+    outline: none !important;
+  }
+}
+
+// Footer
+w3m-modal .w3m-modal-footer {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-top: 1px solid $white-008 !important;
+  border-radius: 0 0 16px 16px !important;
+  padding: 16px 24px 20px 24px !important;
+}
+
+// Liens du footer
+w3m-modal .w3m-modal-footer a {
+  color: $beryl-pure !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  transition: color 0.15s ease !important;
+
+  &:hover {
+    color: #FFFFFF !important;
+  }
+}
+
+// Masquer les éléments de connexion sociale
+w3m-modal .w3m-social-login,
+w3m-modal .w3m-email-login,
+w3m-modal .w3m-onramp,
+w3m-modal [data-testid="social-login"],
+w3m-modal [data-testid="email-login"],
+w3m-modal .w3m-connect-button[data-testid="social-login"],
+w3m-modal .w3m-connect-button[data-testid="email-login"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+// Animations personnalisées
+w3m-modal .w3m-modal {
+  animation: modalSlideIn 0.25s cubic-bezier(0.4, 0.2, 0.2, 1) !important;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Scrollbar personnalisé
+w3m-modal .w3m-modal-content::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+w3m-modal .w3m-modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 2px !important;
+}
+
+w3m-modal .w3m-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 208, 86, 0.3) !important;
+  border-radius: 2px !important;
+}
+
+w3m-modal .w3m-modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 208, 86, 0.5) !important;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  w3m-modal .w3m-modal {
+    margin: 16px !important;
+    max-height: calc(100vh - 32px) !important;
+  }
+}
