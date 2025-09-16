@@ -1,21 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { formatUnits } from "viem";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
-interface TransactionsTableProps {
-  searchValue: string | null;
-}
+interface TransactionsTableProps {}
 
 const GET_TRANSACTIONS_FAST = `
-  query GetTransactionsFast($limit: Int) {
+  query GetTransactionsFast($limit: Int!, $after: String) {
     transactions(
-      orderBy: "timestamp", 
+      orderBy: "timestamp",
       orderDirection: "desc",
-      limit: $limit
+      limit: $limit,
+      after: $after
     ) {
       totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
       items {
         id
         timestamp
@@ -47,39 +52,18 @@ const GET_TRANSACTIONS_FAST = `
   }
 `
 
-export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [loadedTransactions, setLoadedTransactions] = useState(100) // ✅ Commence avec 100
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [hasReachedEnd, setHasReachedEnd] = useState(false)
-  const itemsPerPage = 20;
+export const TransactionsTable = ({ }: TransactionsTableProps) => {
+  const itemsPerPage = 50; // Plus d'éléments par page pour les transactions
 
-  const handlePageChange = (newPage: number) => {
-    const neededTransactions = newPage * itemsPerPage;
-    const buffer = 50; // Buffer de sécurité
-
-    // ✅ Si on a besoin de plus de données, les charger progressivement
-    if (neededTransactions > loadedTransactions - buffer && !hasReachedEnd) {
-      const newLimit = Math.min(neededTransactions + 200, 10000); // Charge par blocs de 200, max 10K
-      setLoadedTransactions(newLimit);
-      setIsLoadingMore(true);
-    }
-
-    setCurrentPage(newPage);
-  };
-
-  // ✅ Charger plus de données quand on approche de la fin
-  const loadMoreData = () => {
-    if (!isLoadingMore && !hasReachedEnd) {
-      const newLimit = Math.min(loadedTransactions + 500, 50000); // Charge par blocs de 500
-      setLoadedTransactions(newLimit);
-      setIsLoadingMore(true);
-    }
-  };
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['transactions', loadedTransactions, searchValue],
-    queryFn: async () => {
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useInfiniteQuery({
+    queryKey: ['transactions'],
+    queryFn: async ({ pageParam }) => {
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
@@ -88,25 +72,37 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
         body: JSON.stringify({
           query: GET_TRANSACTIONS_FAST,
           variables: {
-            limit: loadedTransactions // ✅ Charge progressivement
+            limit: itemsPerPage,
+            after: pageParam || null
           }
         }),
       });
 
       if (!resp.ok) {
-        return { items: [], totalCount: 0 }
+        return { items: [], totalCount: 0, pageInfo: { hasNextPage: false, endCursor: null } }
       }
 
-      const data = await resp.json()
+      const result = await resp.json()
 
-      if (data.errors) {
-        throw new Error(data.errors[0].message);
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
       }
 
-      return data.data.transactions
+      return result.data.transactions;
     },
-    select: (data) => {
-      const allTxs = data.items.map((s: any) => {
+    getNextPageParam: (lastPage) => {
+      return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
+    },
+    initialPageParam: null,
+    staleTime: 30000, // 30 seconds
+  });
+
+  const transactions = useMemo(() => {
+    if (!data?.pages) return [];
+
+    // Combine all pages into a single array and transform data
+    const allTxs = data.pages.flatMap(page =>
+      page.items.map((s: any) => {
         if (s.swaps?.items?.length > 0) {
           const swap = s.swaps.items[0];
           if (BigInt(swap.amount0) > 0n) {
@@ -138,55 +134,26 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
           }
         }
         return null
-      }).filter(Boolean);
+      }).filter(Boolean)
+    );
 
-      // ✅ Vérifier si on a atteint la fin des données
-      const hasMoreData = data.totalCount > allTxs.length;
-      if (!hasMoreData && !hasReachedEnd) {
-        setHasReachedEnd(true);
-      }
+    return allTxs;
+  }, [data]);
 
-      // ✅ Arrêter le loading si on a chargé toutes les données
-      if (isLoadingMore && (hasReachedEnd || allTxs.length >= data.totalCount)) {
-        setIsLoadingMore(false);
-      }
+  const infiniteLoadProps = useMemo(() => {
+    if (!data?.pages?.length) return undefined;
 
-      // ✅ Pagination côté client
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedTxs = allTxs.slice(startIndex, endIndex);
+    const firstPage = data.pages[0];
 
-      const maxAvailablePages = Math.ceil(allTxs.length / itemsPerPage);
-      const totalPagesInDb = Math.ceil(data.totalCount / itemsPerPage);
-
-      return {
-        pagination: {
-          currentPage,
-          totalPages: hasReachedEnd ? maxAvailablePages : Math.min(maxAvailablePages, totalPagesInDb),
-          itemsPerPage,
-          totalItems: data.totalCount,
-          availableItems: allTxs.length,
-          hasNextPage: currentPage < maxAvailablePages,
-          hasPreviousPage: currentPage > 1,
-          onPageChange: handlePageChange
-        },
-        txs: paginatedTxs,
-        totalInDb: data.totalCount,
-        isLoadingMore: isLoadingMore,
-        hasReachedEnd: hasReachedEnd,
-        loadMoreData: loadMoreData
-      }
-    },
-    // ✅ Cache intelligent
-    staleTime: 10 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-    // ✅ Garde les données précédentes pendant le rechargement
-    placeholderData: (previousData) => previousData,
-  });
-
-  useEffect(() => {
-    refetch()
-  }, [searchValue, refetch])
+    return {
+      hasNextPage: !!hasNextPage,
+      isFetchingNextPage,
+      onLoadMore: fetchNextPage,
+      totalItems: firstPage?.totalCount || 0,
+      currentItems: transactions.length,
+      itemLabel: "transactions"
+    };
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, transactions.length]);
 
   const txColumns: TableColumn[] = [
     {
@@ -296,12 +263,12 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   return (
     <Table
       columns={txColumns}
-      data={data?.txs || []}
-      isLoading={isLoading && !data} // ✅ Seulement loading si pas de données
+      data={transactions}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
-      pagination={data?.pagination}
+      infiniteLoad={infiniteLoadProps}
       itemLabel="transactions"
     />
   )

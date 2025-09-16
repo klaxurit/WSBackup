@@ -1,13 +1,51 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
 import { Link } from 'react-router-dom';
 import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
 
+// Configuration des champs triables pour les tokens
+const TOKEN_SORT_CONFIG = {
+  // Champs triables côté serveur (champs directs de la table token)
+  SERVER_SORTABLE: {
+    'name': 'name',
+    'symbol': 'symbol',
+    'volume': 'volumeUSD',
+  },
+  // Champs nécessitant un tri côté client (champs de relations)
+  CLIENT_SORTABLE: {
+    'price': (token: any) => {
+      const dayData = token.tokenDayData?.items?.[0];
+      return parseFloat(dayData?.priceUSD || '0');
+    },
+    '1h': (token: any) => {
+      const dayData = token.tokenDayData?.items?.[0];
+      return parseFloat(dayData?.oneDayEvo || '0');
+    },
+    '1d': (token: any) => {
+      const dayData = token.tokenDayData?.items?.[0];
+      return parseFloat(dayData?.oneMonthEvo || '0');
+    },
+    'fdv': (token: any) => {
+      const dayData = token.tokenDayData?.items?.[0];
+      return parseFloat(dayData?.fdv || '0');
+    },
+    'mcap': (token: any) => {
+      const dayData = token.tokenDayData?.items?.[0];
+      return parseFloat(dayData?.marketCap || '0');
+    }
+  }
+};
+
 const GET_TOKENS_STATS = `
-  query GetTokensStats {
-    tokens {
+  query GetTokensStats($limit: Int!, $after: String, $orderBy: String!, $orderDirection: String!) {
+    tokens(
+      limit: $limit
+      after: $after
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+    ) {
       totalCount
       pageInfo {
         endCursor
@@ -43,78 +81,192 @@ const GET_TOKENS_STATS = `
 `
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['tokensStats', currentPage, searchValue],
-    queryFn: async () => {
+  // État pour gérer le mode de tri
+  const [sortMode, setSortMode] = useState<'server' | 'client'>('server');
+
+  // État pour gérer le tri côté serveur
+  const [serverSort, setServerSort] = useState({
+    field: 'volumeUSD',
+    direction: 'desc' as 'asc' | 'desc'
+  });
+
+  // État pour gérer le tri côté client
+  const [clientSort, setClientSort] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+    sortFn: (token: any) => number;
+  } | null>(null);
+
+  // Clé correspondante dans le Table pour le tri par défaut
+  const defaultSortKey = 'volume';
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useInfiniteQuery({
+    queryKey: ['tokensStats', searchValue, sortMode, serverSort.field, serverSort.direction, clientSort?.key, clientSort?.direction],
+    queryFn: async ({ pageParam }) => {
+      // Pour le tri côté client, récupérer plus de données d'un coup
+      const limit = sortMode === 'client' ? 1000 : itemsPerPage;
+      // Pour le tri côté client, ignorer la pagination (pas de pageParam)
+      const after = sortMode === 'client' ? null : (pageParam || null);
+
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: GET_TOKENS_STATS
+          query: GET_TOKENS_STATS,
+          variables: {
+            limit,
+            after,
+            orderBy: serverSort.field,
+            orderDirection: serverSort.direction
+          }
         }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.errors) {
-        throw new Error(data.errors[0].message);
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
       }
 
-      return data.data.tokens;
-    }
+      return result.data.tokens;
+    },
+    getNextPageParam: (lastPage) => {
+      // Désactiver la pagination pour le tri côté client
+      if (sortMode === 'client') return undefined;
+
+      return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
+    },
+    initialPageParam: null,
+    staleTime: 30000, // 30 seconds
   });
 
   const tokens = useMemo(() => {
-    if (!data?.items) return [];
+    if (!data?.pages) return [];
 
-    // Filtrage par recherche
-    let filteredTokens = data.items;
+    // Combine all pages into a single array
+    let allTokens = data.pages.flatMap(page => page.items || []);
+
+    // Apply search filter if search value exists
     if (searchValue && searchValue.trim() !== '') {
-      filteredTokens = data.items.filter((token: any) =>
+      allTokens = allTokens.filter((token: any) =>
         token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
         token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
         token.id.toLowerCase().includes(searchValue.toLowerCase())
       );
     }
 
-    // Pagination côté client
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    // Apply client-side sorting if in client mode
+    if (sortMode === 'client' && clientSort) {
+      allTokens = [...allTokens].sort((a, b) => {
+        const aValue = clientSort.sortFn(a);
+        const bValue = clientSort.sortFn(b);
 
-    return filteredTokens.slice(startIndex, endIndex);
-  }, [data, searchValue, currentPage, itemsPerPage]);
+        if (clientSort.direction === 'asc') {
+          return aValue - bValue;
+        } else {
+          return bValue - aValue;
+        }
+      });
 
-  const pagination = useMemo(() => {
-    if (!data) return undefined;
-
-    // Filtrage pour calculer le total
-    let filteredTokens = data.items;
-    if (searchValue && searchValue.trim() !== '') {
-      filteredTokens = data.items.filter((token: any) =>
-        token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
-        token.id.toLowerCase().includes(searchValue.toLowerCase())
-      );
+      // Apply client-side pagination
+      const startIndex = 0; // Pour l'instant, on affiche tous les résultats
+      const endIndex = sortMode === 'client' ? allTokens.length : itemsPerPage;
+      return allTokens.slice(startIndex, endIndex);
     }
 
-    const totalPages = Math.ceil(filteredTokens.length / itemsPerPage);
+    return allTokens;
+  }, [data, searchValue, sortMode, clientSort]);
+
+  // Fonction pour obtenir la clé de tri actuelle selon le mode
+  const getCurrentSortKey = (): string => {
+    if (sortMode === 'client' && clientSort) {
+      return clientSort.key;
+    }
+
+    // Mode serveur : trouver la clé correspondant au champ GraphQL
+    for (const [tableKey, gqlField] of Object.entries(TOKEN_SORT_CONFIG.SERVER_SORTABLE)) {
+      if (gqlField === serverSort.field) return tableKey;
+    }
+    return 'volume'; // Par défaut
+  };
+
+  const getCurrentSortDirection = (): 'asc' | 'desc' => {
+    if (sortMode === 'client' && clientSort) {
+      return clientSort.direction;
+    }
+    return serverSort.direction;
+  };
+
+  // Fonction pour gérer le changement de tri
+  const handleSort = (columnKey: string, direction: 'asc' | 'desc' | null) => {
+    const sortDirection = direction || 'desc';
+
+    // Vérifier si le champ est triable côté serveur
+    const serverField = TOKEN_SORT_CONFIG.SERVER_SORTABLE[columnKey as keyof typeof TOKEN_SORT_CONFIG.SERVER_SORTABLE];
+    if (serverField) {
+      // Mode serveur
+      setSortMode('server');
+      setClientSort(null);
+      setServerSort({
+        field: serverField,
+        direction: sortDirection
+      });
+    }
+    // Vérifier si le champ nécessite un tri côté client
+    else {
+      const clientSortFn = TOKEN_SORT_CONFIG.CLIENT_SORTABLE[columnKey as keyof typeof TOKEN_SORT_CONFIG.CLIENT_SORTABLE];
+      if (clientSortFn) {
+        // Mode client
+        setSortMode('client');
+        setClientSort({
+          key: columnKey,
+          direction: sortDirection,
+          sortFn: clientSortFn
+        });
+        // Garder un ordre par défaut côté serveur pour récupérer les données
+        setServerSort({
+          field: 'volumeUSD',
+          direction: 'desc'
+        });
+      } else {
+        // Fallback vers le mode serveur avec volume par défaut
+        setSortMode('server');
+        setClientSort(null);
+        setServerSort({
+          field: 'volumeUSD',
+          direction: sortDirection
+        });
+      }
+    }
+  };
+
+  const infiniteLoadProps = useMemo(() => {
+    if (!data?.pages?.length) return undefined;
+
+    const firstPage = data.pages[0];
 
     return {
-      currentPage,
-      totalPages,
-      itemsPerPage,
-      totalItems: filteredTokens.length,
-      hasNextPage: currentPage < totalPages,
-      hasPreviousPage: currentPage > 1,
-      onPageChange: setCurrentPage,
-      dataname: "tokens"
+      hasNextPage: sortMode === 'server' ? !!hasNextPage : false, // Désactiver "Load More" en mode client
+      isFetchingNextPage: sortMode === 'server' ? isFetchingNextPage : false,
+      onLoadMore: sortMode === 'server' ? fetchNextPage : () => {},
+      totalItems: firstPage?.totalCount || 0,
+      currentItems: tokens.length,
+      itemLabel: "tokens",
+      onSort: handleSort,
+      currentSortKey: getCurrentSortKey(),
+      currentSortDirection: getCurrentSortDirection()
     };
-  }, [data, searchValue, currentPage, itemsPerPage]);
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, tokens.length, sortMode, serverSort, clientSort]);
 
   const columns: TableColumn[] = [
     {
@@ -257,9 +409,9 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
-      defaultSortKey="volume"
+      defaultSortKey={defaultSortKey}
       defaultSortDirection="desc"
-      pagination={pagination}
+      infiniteLoad={infiniteLoadProps}
       itemLabel="tokens"
     />
   )

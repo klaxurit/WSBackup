@@ -53,7 +53,7 @@ const ExplorePage: React.FC = () => {
 
       {activeTab === 'tokens' && <TokensTable searchValue={search} />}
       {activeTab === 'pools' && <PoolsTable searchValue={search} />}
-      {activeTab === 'transactions' && <TransactionsTable searchValue={search} />}
+      {activeTab === 'transactions' && <TransactionsTable />}
     </PageContentTransition>
   );
 };

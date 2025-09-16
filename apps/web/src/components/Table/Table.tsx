@@ -23,6 +23,18 @@ interface PaginationProps {
   itemLabel?: string;
 }
 
+interface InfiniteLoadProps {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+  totalItems: number;
+  currentItems: number;
+  itemLabel?: string;
+  onSort?: (columnKey: string, direction: 'asc' | 'desc' | null) => void;
+  currentSortKey?: string;
+  currentSortDirection?: 'asc' | 'desc';
+}
+
 interface TableProps<T = any> {
   columns: TableColumn<T>[];
   data: T[];
@@ -34,6 +46,7 @@ interface TableProps<T = any> {
   getRowClassName?: (row: T, rowIndex: number) => string;
   isLoading?: boolean;
   pagination?: PaginationProps;
+  infiniteLoad?: InfiniteLoadProps;
   defaultSortKey?: string;
   defaultSortDirection?: SortDirection;
   itemLabel?: string;
@@ -121,6 +134,36 @@ const Pagination: React.FC<PaginationProps> = ({
   );
 };
 
+const InfiniteLoad: React.FC<InfiniteLoadProps> = ({
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
+  totalItems,
+  currentItems,
+  itemLabel = 'items'
+}) => {
+  if (!hasNextPage && currentItems === 0) return null;
+
+  return (
+    <div className="Table__InfiniteLoad">
+      {/* <div className="Table__InfiniteLoadInfo">
+        Showing {currentItems} of {totalItems} {itemLabel}
+      </div> */}
+      {hasNextPage && (
+        <div className="Table__InfiniteLoadControls">
+          <button
+            className="Table__LoadMoreBtn"
+            onClick={onLoadMore}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? 'Loading...' : 'Load More'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function Table<T = any>({
   columns,
   data,
@@ -132,6 +175,7 @@ export function Table<T = any>({
   getRowClassName,
   isLoading = false,
   pagination,
+  infiniteLoad,
   defaultSortKey,
   defaultSortDirection = null,
   itemLabel = 'items',
@@ -139,10 +183,34 @@ export function Table<T = any>({
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultSortDirection);
 
+  // Utiliser le tri côté serveur si disponible, sinon le tri local
+  const effectiveSortKey = infiniteLoad?.currentSortKey || sortKey;
+  const effectiveSortDirection = infiniteLoad?.currentSortDirection || sortDirection;
+
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return;
 
+    // Si on a une fonction de tri côté serveur (infinite loading), l'utiliser
+    if (infiniteLoad?.onSort) {
+      let newDirection: 'asc' | 'desc' | null = 'asc';
+
+      if (effectiveSortKey === columnKey) {
+        // Cycle through: asc -> desc -> null -> asc
+        if (effectiveSortDirection === 'asc') {
+          newDirection = 'desc';
+        } else if (effectiveSortDirection === 'desc') {
+          newDirection = null;
+        } else {
+          newDirection = 'asc';
+        }
+      }
+
+      infiniteLoad.onSort(columnKey, newDirection);
+      return;
+    }
+
+    // Sinon, utiliser le tri côté client (logique originale)
     if (sortKey === columnKey) {
       // Cycle through: asc -> desc -> null -> asc
       if (sortDirection === 'asc') {
@@ -160,6 +228,9 @@ export function Table<T = any>({
   };
 
   const sortedData = useMemo(() => {
+    // Si on utilise l'infinite loading avec tri côté serveur, pas de tri côté client
+    if (infiniteLoad?.onSort) return data;
+
     if (!sortKey || !sortDirection) return data;
 
     const column = columns.find(col => col.key === sortKey);
@@ -200,19 +271,19 @@ export function Table<T = any>({
         return bStr.localeCompare(aStr);
       }
     });
-  }, [data, sortKey, sortDirection, columns]);
+  }, [data, sortKey, sortDirection, columns, infiniteLoad]);
 
   const getSortIcon = (columnKey: string): React.ReactNode => {
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return null;
 
-    if (sortKey !== columnKey) {
+    if (effectiveSortKey !== columnKey) {
       return <span className="Table__SortIcon Table__SortIcon--inactive">↕</span>;
     }
 
-    if (sortDirection === 'asc') {
+    if (effectiveSortDirection === 'asc') {
       return <span className="Table__SortIcon Table__SortIcon--asc">↑</span>;
-    } else if (sortDirection === 'desc') {
+    } else if (effectiveSortDirection === 'desc') {
       return <span className="Table__SortIcon Table__SortIcon--desc">↓</span>;
     }
 
@@ -222,7 +293,8 @@ export function Table<T = any>({
   const wrapperClasses = [
     wrapperClassName,
     className,
-    pagination ? 'Table__Wrapper--with-pagination' : ''
+    pagination ? 'Table__Wrapper--with-pagination' : '',
+    infiniteLoad ? 'Table__Wrapper--with-infinite-load' : ''
   ].filter(Boolean).join(' ');
 
   return (
@@ -274,7 +346,8 @@ export function Table<T = any>({
           </tbody>
         </table>
       </div>
-      {pagination && <Pagination {...pagination} itemLabel={itemLabel} />}
+      {/* {pagination && <Pagination {...pagination} itemLabel={itemLabel} />} */}
+      {infiniteLoad && <InfiniteLoad {...infiniteLoad} itemLabel={itemLabel} />}
     </div>
   );
 }

@@ -23,6 +23,22 @@
   gap: 8px;
 }
 
+.Table__InfiniteLoadControls {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Table__LoadMoreBtn {
+  cursor: pointer;
+  border: none;
+  color: #FFD056;
+  font-size: 16px;
+  font-weight: 500;
+  background: none;
+}
+
 .Table__PaginationBtn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
