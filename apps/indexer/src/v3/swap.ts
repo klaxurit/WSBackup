@@ -28,21 +28,6 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   const token0 = { ...token0Entity }
   const token1 = { ...token1Entity }
 
-  // const logContext = {
-  //   event: 'swap',
-  //   pool: pool.id,
-  //   token0: token0.symbol,
-  //   token1: token1.symbol,
-  //   txHash: event.transaction.hash,
-  //   blockNumber: event.block.number
-  // }
-
-  // logDebug(logContext, "Processing Swap event", {
-  //   token0Symbol: token0.symbol,
-  //   token1Symbol: token1.symbol,
-  //   poolId: pool.id
-  // })
-
   const swapId = `${event.transaction.hash}#${event.log.logIndex}`;
 
   const b = await context.db.find(bundle, { id: "1" })
@@ -60,35 +45,12 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
 
   const amount0USD = amount0Bera.mul(beraPriceUSD)
   const amount1USD = amount1Bera.mul(beraPriceUSD)
-  const totalAmountUSD = amount0USD.plus(amount1USD)
+  const totalAmountUSD = amount0USD // Only take 1 amount
 
   // Les frais sont calculés sur la moitié du volume (un seul côté du swap)
   const volumeForFees = totalAmountBera.div(2) // On prend la moitié puisque on a amount0 + amount1
   const feeBera = volumeForFees.mul(pool.feeTier).div(1000000) // feeTier en ppm (parts per million)
   const feeUSD = volumeForFees.mul(beraPriceUSD).mul(pool.feeTier).div(1000000)
-
-  // logDebug(logContext, "Swap calculations completed", {
-  //   beraPriceUSD: beraPriceUSD.toString(),
-  //   amounts: { amount0: amount0.toString(), amount1: amount1.toString() },
-  //   amountsAbs: { amount0Abs: amount0Abs.toString(), amount1Abs: amount1Abs.toString() },
-  //   amountsBera: { amount0Bera: amount0Bera.toString(), amount1Bera: amount1Bera.toString() },
-  //   amountsUSD: { amount0USD: amount0USD.toString(), amount1USD: amount1USD.toString() },
-  //   totalTracked: {
-  //     usd: amountTotalUSDTracked.toString(),
-  //     bera: amountTotalBeraTracked.toString(),
-  //     untracked: amountTotalUSDUntracked.toString()
-  //   },
-  //   fees: { feeBera: feeBera.toString(), feeUSD: feeUSD.toString() }
-  // })
-
-  const oldTVLUSD = pool.totalValueLockedUSD
-  if (debug) {
-    console.log("-------------------------------")
-    console.log(`pool: ${token0.symbol} / ${token1.symbol}`)
-    console.log(`Avant update - TVLUSD: ${oldTVLUSD}`)
-    console.log(`derivedBERA - token0: ${token0.derivedBERA}, token1: ${token1.derivedBERA}`)
-    console.log(`beraPriceUSD: ${beraPriceUSD}`)
-  }
 
   // Create TX
   const txEntity = await getOrCreateTransaction(context, event);
@@ -113,10 +75,7 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   pool.liquidity = event.args.liquidity
   pool.tick = event.args.tick
   pool.sqrtPrice = event.args.sqrtPriceX96
-  if (debug) {
-    console.log(`TVLT0 + amount0 = ${pool.totalValueLockedToken0} + ${amount0}`)
-    console.log(`TVLT1 + amount1 = ${pool.totalValueLockedToken1} + ${amount1}`)
-  }
+
   // CRITICAL: Validate TVL operations to prevent negative values
   const oldTVLT0 = pool.totalValueLockedToken0
   const oldTVLT1 = pool.totalValueLockedToken1
@@ -132,10 +91,6 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   if (new Decimal(pool.totalValueLockedToken1).lt(0)) {
     console.error(`🚨 NEGATIVE TVL1 in swap: ${pool.id} - ${oldTVLT1} + ${amount1} = ${pool.totalValueLockedToken1}`)
     pool.totalValueLockedToken1 = "0"
-  }
-  if (debug) {
-    console.log(`TVLT0 = ${pool.totalValueLockedToken0}`)
-    console.log(`TVLT1 = ${pool.totalValueLockedToken1}`)
   }
 
   // update token0
@@ -157,11 +112,6 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
   pool.token0Price = price0Ratio.toString()
   pool.token1Price = price1Ratio.toString()
   await context.db.update(sPool, { id: pool.id }).set({ ...Object.fromEntries(Object.entries(pool).filter(([key]) => key !== 'id')) })
-
-  if (debug) {
-    console.log(`token0Price => ${price0Ratio}`)
-    console.log(`token1Price => ${price1Ratio}`)
-  }
 
   // update USD pricing
   beraPriceUSD = await getBeraPriceInUSD(context)
@@ -198,13 +148,6 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
     if (poolFeesGrowth[1].status === "success") {
       pool.feeGrowthGlobal1X128 = poolFeesGrowth[1].result
     }
-  }
-
-  if (debug) {
-    console.log(`poolTVLt0Bera => tvlT0 * t0.derived => ${pool.totalValueLockedToken0} * ${token0.derivedBERA} = ${poolTVLt0Bera}`)
-    console.log(`poolTVLt1Bera => tvlT1 * t1.derived => ${pool.totalValueLockedToken1} * ${token1.derivedBERA} = ${poolTVLt1Bera}`)
-    console.log(`poolTVLBERA => poolTVLt0Bera + poolTVLt1Bera => ${poolTVLt0Bera} + ${poolTVLt1Bera} = ${pool.totalValueLockedBERA}`)
-    console.log(`TVLUSD => poolTVLBERA * beraPriceUSD => ${pool.totalValueLockedBERA} * ${beraPriceUSD} = ${pool.totalValueLockedUSD}`)
   }
 
   factory.totalValueLockedBERA = new Decimal(factory.totalValueLockedBERA).plus(pool.totalValueLockedBERA).toString()
