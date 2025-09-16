@@ -16,15 +16,10 @@ interface NavbarConnectButtonProps {
   showRightEar?: boolean;
 }
 
-function isMobile() {
-  if (typeof navigator === 'undefined') return false;
-  return /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-}
-
 function getWalletName() {
-  if (window.ethereum?.isMetaMask) return 'MetaMask';
-  if (window.ethereum?.isRabby) return 'Rabby';
-  if (window.ethereum?.isCoinbaseWallet) return 'Coinbase Wallet';
+  if (typeof window !== 'undefined' && (window as any).ethereum?.isMetaMask) return 'MetaMask';
+  if (typeof window !== 'undefined' && (window as any).ethereum?.isRabby) return 'Rabby';
+  if (typeof window !== 'undefined' && (window as any).ethereum?.isCoinbaseWallet) return 'Coinbase Wallet';
   return 'Wallet';
 }
 
@@ -51,27 +46,21 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   const { data: balance, isLoading } = useBalance({ address });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [connectorMenuOpen, setConnectorMenuOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const connectorMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
-      if (connectorMenuRef.current && !connectorMenuRef.current.contains(event.target as Node)) {
-        setConnectorMenuOpen(false);
-      }
     }
-    if (dropdownOpen || connectorMenuOpen) {
+    if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen, connectorMenuOpen]);
+  }, [dropdownOpen]);
 
   const formatAddress = (addr: string) => {
     if (!addr) return '';
@@ -81,36 +70,9 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   };
 
   const handleConnect = useCallback(() => {
-    if (isMobile()) {
-      connect('walletConnect').catch((err: any) => {
-        setError(err?.message || 'Connection error with WalletConnect');
-      });
-    } else {
-      setConnectorMenuOpen(true);
-    }
+    // Utiliser Web3Modal pour tous les appareils
+    connect();
   }, [connect]);
-
-  const handleConnectInjected = useCallback(async () => {
-    setError(null);
-    try {
-      await connect('injected');
-      setConnectorMenuOpen(false);
-      if (onClick) onClick();
-    } catch (err: any) {
-      setError(err?.message || 'Connection error with Injected wallet');
-    }
-  }, [connect, onClick]);
-
-  const handleConnectWalletConnect = useCallback(async () => {
-    setError(null);
-    try {
-      await connect('walletConnect');
-      setConnectorMenuOpen(false);
-      if (onClick) onClick();
-    } catch (err: any) {
-      setError(err?.message || 'Connection error with WalletConnect');
-    }
-  }, [connect, onClick]);
 
   const handleDisconnect = useCallback(() => {
     disconnect();
@@ -134,27 +96,6 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
             beraname ? `${beraname}` : `⛓️ ${formatAddress(address)}`
           ) : isConnecting ? <Loader size="mini" /> : 'Connect'}
         </button>
-        {/* Wallet selection menu */}
-        {!isConnected && connectorMenuOpen && (
-          <div className="Navbar__Dropdown Navbar__ConnectorDropdown" ref={connectorMenuRef}>
-            <div className="Navbar__DropdownTitle">
-              Choose a wallet
-            </div>
-            <button
-              className="Navbar__DropdownButton"
-              onClick={handleConnectInjected}
-            >
-              MetaMask / Injected
-            </button>
-            <button
-              className="Navbar__DropdownButton"
-              onClick={handleConnectWalletConnect}
-            >
-              WalletConnect
-            </button>
-            {error && <div className="Navbar__DropdownError">{error}</div>}
-          </div>
-        )}
         {isConnected && dropdownOpen && (
           <div className="Navbar__Dropdown">
             <div className="Navbar__DropdownHeader">

@@ -127,6 +127,8 @@ export const useSwap = (params: SwapParams) => {
     tokenB: Address,
     fee: number
   ): Promise<Address | null> => {
+    if (!publicClient) return null
+
     try {
       const poolAddress = await publicClient.readContract({
         address: CONTRACTS_ADDRESS.v3CoreFactory,
@@ -142,6 +144,8 @@ export const useSwap = (params: SwapParams) => {
   }, [publicClient])
 
   const getPoolInfo = useCallback(async (poolAddress: Address, fee: number): Promise<PoolInfo | null> => {
+    if (!publicClient) return null
+
     try {
       const [slot0Result, liquidity, token0, token1] = await Promise.all([
         publicClient.readContract({
@@ -259,6 +263,8 @@ export const useSwap = (params: SwapParams) => {
     fees: number[],
     amountInWei: bigint
   ): Promise<{ quote: bigint, gasEstimate: bigint } | null> => {
+    if (!publicClient) return null
+
     try {
       if (tokens.length === 2) {
         // Single Hop

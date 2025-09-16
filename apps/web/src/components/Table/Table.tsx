@@ -52,95 +52,94 @@ interface TableProps<T = any> {
   itemLabel?: string;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-  itemsPerPage,
-  totalItems,
-  hasPreviousPage,
-  hasNextPage,
-  itemLabel = 'items'
-}) => {
-  const getVisiblePages = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+// Pagination component - currently unused but kept for future use
+// const Pagination: React.FC<PaginationProps> = ({
+//   currentPage,
+//   totalPages,
+//   onPageChange,
+//   itemsPerPage,
+//   totalItems,
+//   hasPreviousPage,
+//   hasNextPage,
+//   itemLabel = 'items'
+// }) => {
+//   const getVisiblePages = () => {
+//     const delta = 2;
+//     const range = [];
+//     const rangeWithDots = [];
 
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i);
-    }
+//     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+//       range.push(i);
+//     }
 
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
+//     if (currentPage - delta > 2) {
+//       rangeWithDots.push(1, '...');
+//     } else {
+//       rangeWithDots.push(1);
+//     }
 
-    rangeWithDots.push(...range);
+//     rangeWithDots.push(...range);
 
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
+//     if (currentPage + delta < totalPages - 1) {
+//       rangeWithDots.push('...', totalPages);
+//     } else if (totalPages > 1) {
+//       rangeWithDots.push(totalPages);
+//     }
 
-    return rangeWithDots;
-  };
+//     return rangeWithDots;
+//   };
 
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+//   const startItem = (currentPage - 1) * itemsPerPage + 1;
+//   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
-  if (totalPages <= 1) return null;
+//   if (totalPages <= 1) return null;
 
-  return (
-    <div className="Table__Pagination">
-      <div className="Table__PaginationInfo">
-        Showing {startItem}-{endItem} of {totalItems} {itemLabel}
-      </div>
-      <div className="Table__PaginationControls">
-        {hasPreviousPage && (
-          <button
-            className="Table__PaginationBtn"
-            onClick={() => onPageChange(currentPage - 1)}
-          >
-            Previous
-          </button>
-        )}
+//   return (
+//     <div className="Table__Pagination">
+//       <div className="Table__PaginationInfo">
+//         Showing {startItem}-{endItem} of {totalItems} {itemLabel}
+//       </div>
+//       <div className="Table__PaginationControls">
+//         {hasPreviousPage && (
+//           <button
+//             className="Table__PaginationBtn"
+//             onClick={() => onPageChange(currentPage - 1)}
+//           >
+//             Previous
+//           </button>
+//         )}
 
-        {getVisiblePages().map((page, index) => (
-          <button
-            key={index}
-            className={`Table__PaginationBtn ${page === currentPage ?
-              'Table__PaginationBtn--active' : ''
-              } ${page === '...' ? 'Table__PaginationBtn--dots' : ''}`}
-            onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
-            disabled={page === '...'}
-          >
-            {page}
-          </button>
-        ))}
+//         {getVisiblePages().map((page, index) => (
+//           <button
+//             key={index}
+//             className={`Table__PaginationBtn ${page === currentPage ?
+//               'Table__PaginationBtn--active' : ''
+//               } ${page === '...' ? 'Table__PaginationBtn--dots' : ''}`}
+//             onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
+//             disabled={page === '...'}
+//           >
+//             {page}
+//           </button>
+//         ))}
 
-        {hasNextPage && (
-          <button
-            className="Table__PaginationBtn"
-            onClick={() => onPageChange(currentPage + 1)}
-          >
-            Next
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
+//         {hasNextPage && (
+//           <button
+//             className="Table__PaginationBtn"
+//             onClick={() => onPageChange(currentPage + 1)}
+//           >
+//             Next
+//           </button>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
 
 const InfiniteLoad: React.FC<InfiniteLoadProps> = ({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
-  totalItems,
-  currentItems,
-  itemLabel = 'items'
+  currentItems
 }) => {
   if (!hasNextPage && currentItems === 0) return null;
 
