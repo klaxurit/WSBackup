@@ -42,3 +42,4 @@ packages/db/generated/client/index.js
 
 # Claude Context (local only)
 context.md
+.claude/

@@ -10,6 +10,10 @@
 
   .SearchBar {
     width: 42px;
+
+    &.expanded {
+      width: 220px;
+    }
   }
 
   @media (min-width: 600px) {
@@ -144,6 +148,9 @@
       width: 220px;
       border-color: var(--accent1, #e39229);
       box-shadow: 0px 0px 0px 4px rgba(227, 146, 41, 0.08);
+      .iconSearch {
+        left: 0;
+      }
     }
 
     &__iconWrapper {

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
@@ -15,138 +15,270 @@ const BL = [
   "0xc06aD7fF55D1d53Ed9371C17eDC557C9E1A06B2E".toLowerCase() // WETH-USDC.e 0.05%
 ]
 
-const GET_POOL_STATS = `
-  query GetPoolsStats {
-    pools {
-    totalCount
-    pageInfo {
-      endCursor
-      hasNextPage
-      hasPreviousPage
-      startCursor
-    }
-    items {
-      feeTier
-      id
-      liquidity
-      poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
-        items {
-          tvlUSD
-          volumeUSD
-          apr
-          activeRangeAPR
-          volumeUSD1D
-          volumeUSD30D
+const GET_POOLS_STATS = `
+  query GetPoolsStats($limit: Int!, $after: String, $orderBy: String!, $orderDirection: String!) {
+    pools(
+      limit: $limit
+      after: $after
+      orderBy: $orderBy
+      orderDirection: $orderDirection
+    ) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      items {
+        feeTier
+        id
+        liquidity
+        poolDayData(limit: 30, orderBy: "date", orderDirection: "desc") {
+          items {
+            tvlUSD
+            volumeUSD
+            apr
+            activeRangeAPR
+            volumeUSD1D
+            volumeUSD30D
+          }
         }
+        token0Ref {
+          name
+          id
+          symbol
+          logoUri
+        }
+        token1Ref {
+          id
+          name
+          symbol
+          logoUri
+        }
+        totalValueLockedBERA
+        totalValueLockedUSD
+        volumeUSD
       }
-      token0Ref {
-        name
-        id
-        symbol
-        logoUri
-      }
-      token1Ref {
-        id
-        name
-        symbol
-        logoUri
-      }
-      totalValueLockedBERA
-      totalValueLockedUSD
-      volumeUSD
     }
-  }
   }`
 
+// Configuration des champs triables
+const SORT_CONFIG = {
+  // Champs triables côté serveur (champs directs de la table pool)
+  SERVER_SORTABLE: {
+    'tvl': 'totalValueLockedUSD',
+    'fee': 'feeTier',
+    'pool': 'totalValueLockedUSD',
+    // Ajout d'autres champs directs si nécessaire
+  },
+  // Champs nécessitant un tri côté client (champs de relations)
+  CLIENT_SORTABLE: {
+    'apr_global': (pool: any) => {
+      const latestDayData = pool.poolDayData?.items?.[0];
+      return parseFloat(latestDayData?.apr || '0');
+    },
+    'vol1d': (pool: any) => {
+      const latestDayData = pool.poolDayData?.items?.[0];
+      return parseFloat(latestDayData?.volumeUSD1D || '0');
+    },
+    'vol30d': (pool: any) => {
+      const latestDayData = pool.poolDayData?.items?.[0];
+      return parseFloat(latestDayData?.volumeUSD30D || '0');
+    }
+  }
+};
+
 export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  // Fonction utilitaire pour trier les pools par TVL
-  const sortPoolsByTvl = (pools: any[]) => {
-    return [...pools].sort((a, b) => {
-      const tvlA = parseFloat(a.totalValueLockedUSD || '0');
-      const tvlB = parseFloat(b.totalValueLockedUSD || '0');
-      return tvlB - tvlA; // Décroissant
-    });
-  };
+  // État pour gérer le mode de tri
+  const [sortMode, setSortMode] = useState<'server' | 'client'>('server');
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['poolStats', currentPage, searchValue],
-    queryFn: async () => {
+  // État pour gérer le tri côté serveur
+  const [serverSort, setServerSort] = useState({
+    field: 'totalValueLockedUSD',
+    direction: 'desc' as 'asc' | 'desc'
+  });
+
+  // État pour gérer le tri côté client
+  const [clientSort, setClientSort] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+    sortFn: (pool: any) => number;
+  } | null>(null);
+
+  // Clé correspondante dans le Table pour le tri par défaut
+  const defaultSortKey = 'tvl';
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useInfiniteQuery({
+    queryKey: ['poolStats', searchValue, sortMode, serverSort.field, serverSort.direction, clientSort?.key, clientSort?.direction],
+    queryFn: async ({ pageParam }) => {
+      // Pour le tri côté client, récupérer plus de données d'un coup
+      const limit = sortMode === 'client' ? 1000 : itemsPerPage;
+      // Pour le tri côté client, ignorer la pagination (pas de pageParam)
+      const after = sortMode === 'client' ? null : (pageParam || null);
+
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: GET_POOL_STATS
+          query: GET_POOLS_STATS,
+          variables: {
+            limit,
+            after,
+            orderBy: serverSort.field,
+            orderDirection: serverSort.direction
+          }
         }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.errors) {
-        throw new Error(data.errors[0].message);
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
       }
 
-      return data.data.pools;
-    }
+      return result.data.pools;
+    },
+    getNextPageParam: (lastPage) => {
+      // Désactiver la pagination pour le tri côté client
+      if (sortMode === 'client') return undefined;
 
+      return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
+    },
+    initialPageParam: null,
+    staleTime: 30000, // 30 seconds
   });
 
   const pools = useMemo(() => {
-    if (!data?.items) return [];
-    const approvedpools = data.items.filter((p: any) => !BL.includes(p.id))
-    // Filtrage par recherche
-    let filteredPools = approvedpools;
+    if (!data?.pages) return [];
+
+    // Combine all pages into a single array
+    let allPools = data.pages.flatMap(page => page.items || []);
+
+    // Filter out blacklisted pools
+    allPools = allPools.filter((p: any) => !BL.includes(p.id.toLowerCase()));
+
+    // Apply search filter if search value exists
     if (searchValue && searchValue.trim() !== '') {
-      filteredPools = approvedpools.filter((pool: any) =>
+      allPools = allPools.filter((pool: any) =>
         (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
         (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
         (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
       );
     }
 
-    // Tri par TVL (décroissant) avant la pagination
-    const sortedPools = sortPoolsByTvl(filteredPools);
+    // Apply client-side sorting if in client mode
+    if (sortMode === 'client' && clientSort) {
+      allPools = [...allPools].sort((a, b) => {
+        const aValue = clientSort.sortFn(a);
+        const bValue = clientSort.sortFn(b);
 
-    // Pagination côté client
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+        if (clientSort.direction === 'asc') {
+          return aValue - bValue;
+        } else {
+          return bValue - aValue;
+        }
+      });
 
-    return sortedPools.slice(startIndex, endIndex);
-  }, [data, searchValue, currentPage, itemsPerPage]);
-
-  const pagination = useMemo(() => {
-    if (!data) return undefined;
-
-    // Filtrage pour calculer le total
-    let filteredPools = data.items;
-    if (searchValue && searchValue.trim() !== '') {
-      filteredPools = data.items.filter((pool: any) =>
-        (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
-        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
-      );
+      // Apply client-side pagination
+      const startIndex = 0; // Pour l'instant, on affiche tous les résultats
+      const endIndex = sortMode === 'client' ? allPools.length : itemsPerPage;
+      return allPools.slice(startIndex, endIndex);
     }
 
-    // Tri par TVL (décroissant) pour le calcul de pagination
-    const sortedPools = sortPoolsByTvl(filteredPools);
+    return allPools;
+  }, [data, searchValue, sortMode, clientSort]);
 
-    const totalPages = Math.ceil(sortedPools.length / itemsPerPage);
+  // Fonction pour obtenir la clé de tri actuelle selon le mode
+  const getCurrentSortKey = (): string => {
+    if (sortMode === 'client' && clientSort) {
+      return clientSort.key;
+    }
+
+    // Mode serveur : trouver la clé correspondant au champ GraphQL
+    for (const [tableKey, gqlField] of Object.entries(SORT_CONFIG.SERVER_SORTABLE)) {
+      if (gqlField === serverSort.field) return tableKey;
+    }
+    return 'tvl'; // Par défaut
+  };
+
+  const getCurrentSortDirection = (): 'asc' | 'desc' => {
+    if (sortMode === 'client' && clientSort) {
+      return clientSort.direction;
+    }
+    return serverSort.direction;
+  };
+
+  // Fonction pour gérer le changement de tri
+  const handleSort = (columnKey: string, direction: 'asc' | 'desc' | null) => {
+    const sortDirection = direction || 'desc';
+
+    // Vérifier si le champ est triable côté serveur
+    const serverField = SORT_CONFIG.SERVER_SORTABLE[columnKey as keyof typeof SORT_CONFIG.SERVER_SORTABLE];
+    if (serverField) {
+      // Mode serveur
+      setSortMode('server');
+      setClientSort(null);
+      setServerSort({
+        field: serverField,
+        direction: sortDirection
+      });
+    }
+    // Vérifier si le champ nécessite un tri côté client
+    else {
+      const clientSortFn = SORT_CONFIG.CLIENT_SORTABLE[columnKey as keyof typeof SORT_CONFIG.CLIENT_SORTABLE];
+      if (clientSortFn) {
+        // Mode client
+        setSortMode('client');
+        setClientSort({
+          key: columnKey,
+          direction: sortDirection,
+          sortFn: clientSortFn
+        });
+        // Garder un ordre par défaut côté serveur pour récupérer les données
+        setServerSort({
+          field: 'totalValueLockedUSD',
+          direction: 'desc'
+        });
+      } else {
+        // Fallback vers le mode serveur avec TVL par défaut
+        setSortMode('server');
+        setClientSort(null);
+        setServerSort({
+          field: 'totalValueLockedUSD',
+          direction: sortDirection
+        });
+      }
+    }
+  };
+
+  const infiniteLoadProps = useMemo(() => {
+    if (!data?.pages?.length) return undefined;
+
+    const firstPage = data.pages[0];
 
     return {
-      currentPage,
-      totalPages,
-      itemsPerPage,
-      totalItems: sortedPools.length,
-      hasNextPage: currentPage < totalPages,
-      hasPreviousPage: currentPage > 1,
-      onPageChange: setCurrentPage,
-      dataname: "pools"
+      hasNextPage: sortMode === 'server' ? !!hasNextPage : false, // Désactiver "Load More" en mode client
+      isFetchingNextPage: sortMode === 'server' ? isFetchingNextPage : false,
+      onLoadMore: sortMode === 'server' ? fetchNextPage : () => { },
+      totalItems: firstPage?.totalCount || 0,
+      currentItems: pools.length,
+      itemLabel: "pools",
+      onSort: handleSort,
+      currentSortKey: getCurrentSortKey(),
+      currentSortDirection: getCurrentSortDirection()
     };
-  }, [data, searchValue, currentPage, itemsPerPage]);
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, pools.length, sortMode, serverSort, clientSort]);
 
   const columns: TableColumn[] = [
     {
@@ -309,9 +441,9 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
-      defaultSortKey="tvl"
+      defaultSortKey={defaultSortKey}
       defaultSortDirection="desc"
-      pagination={pagination}
+      infiniteLoad={infiniteLoadProps}
       itemLabel="pools"
     />
   )

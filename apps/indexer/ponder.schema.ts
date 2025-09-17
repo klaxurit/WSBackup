@@ -712,6 +712,7 @@ export const vaultDayData = onchainTable(
     // Performance metrics
     apr: t.numeric().notNull().default("0"), // Gross APR
     netAPR: t.numeric().notNull().default("0"), // Net APR after fees
+    maxPotentialAPR: t.numeric().notNull().default("0"), // Max potential APR with optimal positioning
     impermanentLoss: t.numeric().notNull().default("0"),
     rebalanceCount: t.integer().notNull().default(0),
     txCount: t.integer().notNull().default(0),
@@ -746,6 +747,7 @@ export const vaultHourData = onchainTable(
     // Performance metrics
     apr: t.numeric().notNull().default("0"), // Gross APR
     netAPR: t.numeric().notNull().default("0"), // Net APR after fees
+    maxPotentialAPR: t.numeric().notNull().default("0"), // Max potential APR with optimal positioning
     impermanentLoss: t.numeric().notNull().default("0"),
     rebalanceCount: t.integer().notNull().default(0),
     txCount: t.integer().notNull().default(0),

@@ -33,6 +33,7 @@ const GET_STICKYVAULTS = `
       vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
         items {
           apr
+          maxPotentialAPR
           collectedFeesToken0
           collectedFeesToken1
           collectedFeesUSD
