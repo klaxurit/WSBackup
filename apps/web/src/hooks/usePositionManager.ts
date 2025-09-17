@@ -152,7 +152,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
         token1Amount: sdkPosition.amount1.toExact(),
         token0USD: t0Usd,
         token1USD: t1Usd,
-        totalTokens: +sdkPosition.amount0.toFixed(6) + +sdkPosition.amount1.toFixed(6),
+        totalValueUSD: posValueUSD,  // Valeur totale en USD
         currentPrice: posValueUSD.toFixed(2),
         liquidityShare: ((posValueUSD / parseFloat(pool.totalValueLockedUSD)) * 100).toFixed(2)
         // liquidityShare: pool?.liquidity && position?.liquidity ?
@@ -167,13 +167,17 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   const unclaimedFees = useMemo(() => {
     if (!position || !pool) {
       return {
-        token0Amount: 0,
-        token1Amount: 0,
+        token0Amount: "0",
+        token1Amount: "0",
         hasUnclaimed: false
       }
     }
 
-    // For new data structure, calculate fees if we have the data
+    // Pour un calcul précis des frais, nous utilisons les données on-chain
+    // Note: Le calcul simplifié actuel peut être imprécis car il ne prend pas en compte
+    // les feeGrowthOutside des ticks. Pour une précision maximale, il faudrait :
+    // 1. Récupérer feeGrowthOutside0X128 et feeGrowthOutside1X128 pour tickLower et tickUpper
+    // 2. Calculer feeGrowthInside en fonction de la position actuelle du prix
     const poolData = pool as PoolData
     const positionData = onChainPosition
       ? {
@@ -192,8 +196,14 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       const feeGrowthInside0Last = BigInt(positionData.feeGrowthInside0LastX128);
       const feeGrowthInside1Last = BigInt(positionData.feeGrowthInside1LastX128);
 
-      const feeGrowth0 = feeGrowthGlobal0 - feeGrowthInside0Last;
-      const feeGrowth1 = feeGrowthGlobal1 - feeGrowthInside1Last;
+      // Calcul simplifié - peut surestimer les frais si la position est hors range
+      // TODO: Implémenter le calcul complet avec feeGrowthOutside pour plus de précision
+      const feeGrowth0 = feeGrowthGlobal0 >= feeGrowthInside0Last
+        ? feeGrowthGlobal0 - feeGrowthInside0Last
+        : 0n;
+      const feeGrowth1 = feeGrowthGlobal1 >= feeGrowthInside1Last
+        ? feeGrowthGlobal1 - feeGrowthInside1Last
+        : 0n;
 
       const liquidity = BigInt(position.liquidity);
       const fees0 = (liquidity * feeGrowth0) >> 128n;

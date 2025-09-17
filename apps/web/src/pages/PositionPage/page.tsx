@@ -12,6 +12,10 @@ import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { PageContentTransition, StaggerTransition, HoverScale } from '../../components/Transitions';
 import type { Address } from 'viem';
+import { Pool, Position, TickMath } from '@uniswap/v3-sdk';
+import { Token } from '@uniswap/sdk-core';
+import { currentChain } from '../../config/wagmi';
+import JSBI from 'jsbi';
 
 const GET_TOP_POOLS = `
   query GetTopPools {
@@ -61,11 +65,16 @@ query GetTransactions($owner: String) {
     items {
       id
       poolRef {
+        id
+        sqrtPrice
+        tick
+        liquidity
         token0Ref {
           logoUri
           id
           name
           symbol
+          decimals
           tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
             items {
               priceUSD
@@ -77,6 +86,7 @@ query GetTransactions($owner: String) {
           logoUri
           name
           symbol
+          decimals
           tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
             items {
               priceUSD
@@ -91,6 +101,8 @@ query GetTransactions($owner: String) {
         }
       }
       tokenId
+      tickLower
+      tickUpper
       withdrawnToken1
       withdrawnToken0
       depositedToken0
@@ -179,23 +191,67 @@ const transformGraphQLPoolToFormattedPool = (graphqlPool: GraphQLPool): Formatte
 };
 
 const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
-  // Les montants sont déjà des chaînes décimales depuis Ponder
-  const amount0 = (parseFloat(row.depositedToken0) - parseFloat(row.withdrawnToken0)).toFixed(2)
-  const amount1 = (parseFloat(row.depositedToken1) - parseFloat(row.withdrawnToken1)).toFixed(2)
+  // Calculer les montants actuels basés sur la liquidité et la position dans le range
+  const amounts = useMemo(() => {
+    try {
+      const pool = row.poolRef;
+      const position = row;
 
-  // Vérifier si les prix sont disponibles
-  const token0Price = row.poolRef.token0Ref.tokenDayData.items?.[0]?.priceUSD;
-  const token1Price = row.poolRef.token1Ref.tokenDayData.items?.[0]?.priceUSD;
+      // Si pas de liquidité, la position est fermée
+      if (position.liquidity === "0" || !pool.sqrtPrice) {
+        return { amount0: "0.00", amount1: "0.00", totalValue: "0.00" };
+      }
 
-  const value0 = token0Price ? (Number(amount0) * token0Price) : 0;
-  const value1 = token1Price ? (Number(amount1) * token1Price) : 0;
-  const totalValue = (value0 + value1).toFixed(2);
+      // Calculer le tick actuel depuis sqrtPrice
+      const currentTick = pool.tick ? Number(pool.tick) : TickMath.getTickAtSqrtRatio(JSBI.BigInt(pool.sqrtPrice));
+
+      // Créer le SDK pool
+      const sdkPool = new Pool(
+        new Token(currentChain.id, pool.token0Ref.id, pool.token0Ref.decimals || 18, pool.token0Ref.symbol, pool.token0Ref.name),
+        new Token(currentChain.id, pool.token1Ref.id, pool.token1Ref.decimals || 18, pool.token1Ref.symbol, pool.token1Ref.name),
+        pool.feeTier,
+        pool.sqrtPrice,
+        pool.liquidity,
+        currentTick
+      );
+
+      // Créer la SDK position
+      const sdkPosition = new Position({
+        pool: sdkPool,
+        tickLower: position.tickLower,
+        tickUpper: position.tickUpper,
+        liquidity: position.liquidity
+      });
+
+      // Obtenir les montants depuis le SDK
+      const amount0 = parseFloat(sdkPosition.amount0.toExact()).toFixed(2);
+      const amount1 = parseFloat(sdkPosition.amount1.toExact()).toFixed(2);
+
+      // Calculer la valeur totale
+      const token0Price = pool.token0Ref.tokenDayData?.items?.[0]?.priceUSD || 0;
+      const token1Price = pool.token1Ref.tokenDayData?.items?.[0]?.priceUSD || 0;
+      const value0 = parseFloat(amount0) * parseFloat(token0Price);
+      const value1 = parseFloat(amount1) * parseFloat(token1Price);
+      const totalValue = (value0 + value1).toFixed(2);
+
+      return { amount0, amount1, totalValue };
+    } catch (error) {
+      console.error('Error calculating position amounts:', error);
+      // Fallback aux valeurs deposited - withdrawn
+      const amount0 = (parseFloat(row.depositedToken0 || 0) - parseFloat(row.withdrawnToken0 || 0)).toFixed(2);
+      const amount1 = (parseFloat(row.depositedToken1 || 0) - parseFloat(row.withdrawnToken1 || 0)).toFixed(2);
+      const token0Price = row.poolRef.token0Ref.tokenDayData?.items?.[0]?.priceUSD || 0;
+      const token1Price = row.poolRef.token1Ref.tokenDayData?.items?.[0]?.priceUSD || 0;
+      const totalValue = (parseFloat(amount0) * parseFloat(token0Price) + parseFloat(amount1) * parseFloat(token1Price)).toFixed(2);
+      return { amount0, amount1, totalValue };
+    }
+  }, [row]);
 
   return (
     <div>
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {amount0}
+          {amounts.amount0}
           {row.poolRef.token0Ref.logoUri ? (
             <img src={row.poolRef.token0Ref.logoUri} alt={row.poolRef.token0Ref.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           ) : (
@@ -204,7 +260,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
         </span>
         <span style={{ opacity: 0.6 }}>·</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {amount1}
+          {amounts.amount1}
           {row.poolRef.token1Ref.logoUri ? (
             <img src={row.poolRef.token1Ref.logoUri} alt={row.poolRef.token1Ref.symbol} style={{ width: 16, height: 16, borderRadius: 999 }} />
           ) : (
@@ -213,7 +269,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
         </span>
       </div>
       <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-        {token0Price && token1Price ? `$${totalValue}` : ''}
+        {parseFloat(amounts.totalValue) > 0 ? `$${amounts.totalValue}` : ''}
       </div>
     </div>
   );

@@ -184,7 +184,7 @@ const PoolViewPage: React.FC = () => {
       <div className="PoolView__Card">
         <PoolHeader
           address={`#${position.tokenId} ${pool.id}`}
-          usdValue={positionDetails?.totalTokens ? `$${positionDetails.totalTokens.toFixed(2)}` : "Loading..."}
+          usdValue={positionDetails?.totalValueUSD ? `$${positionDetails.totalValueUSD.toFixed(2)}` : "Loading..."}
         />
 
         <PoolInfo
@@ -205,7 +205,7 @@ const PoolViewPage: React.FC = () => {
 
         <PoolStats
           positionValue={positionDetails?.currentPrice}
-          totalPoolTokens={positionDetails?.totalTokens}
+          totalValueUSD={positionDetails?.totalValueUSD}
           depositedToken0={positionDetails?.token0Amount}
           depositedToken1={positionDetails?.token1Amount}
           share={positionDetails?.liquidityShare}
