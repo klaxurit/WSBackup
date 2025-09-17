@@ -37,6 +37,7 @@ const GET_STICKYVAULT = `
       vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
         items {
           apr
+          maxPotentialAPR
           collectedFeesToken0
           collectedFeesToken1
           collectedFeesUSD
@@ -248,12 +249,12 @@ export const VaultDetailPage = () => {
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">Vault APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items?.[0].apr || "0"}%</span>
+              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items?.[0].maxPotentialAPR || "0"}%</span>
             </div>
             <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
               <span className="VaultDetailPage__StatLabel">Total APR</span>
               <span className="VaultDetailPage__StatValue VaultDetailPage__StatValue--highlight">
-                {vault?.vaultDayData.items?.[0].apr || "0"}%
+                {vault?.vaultDayData.items?.[0].maxPotentialAPR || "0"}%
               </span>
             </div>
           </div>

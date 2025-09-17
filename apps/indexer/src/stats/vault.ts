@@ -6,6 +6,8 @@ import {
   vaultHourData,
   pool as sPool,
   token as sToken,
+  poolHourData,
+  poolDayData,
 } from "ponder:schema";
 import { formatUnits } from "viem";
 import { getCachedUnderlyingBalances } from "../utils/vaultCache.js";
@@ -29,10 +31,11 @@ export async function updateVaultStats(
   try {
     const tvlUSD = await calculateTVL(vault, beraPriceUSD, context, blockNumber);
     const aprResults = await calculateAPR(timestamp, vault, tvlUSD, context);
+    const maxPotentialAPR = await calculateMaxPotentialAPR(timestamp, vault, tvlUSD, context);
     const volumeUSD1D = await calculateVolumeForPeriod(vault, `${vault.id}-${dayId - 1}`, context, "day")
     const volumeUSD30D = await calculateVolumeForPeriod(vault, `${vault.id}-${dayId - 30}`, context, "day")
 
-    await updateDayVaultData(vault, dayVaultId, dayStart, tvlUSD, aprResults.grossAPR, aprResults.netAPR, volumeUSD1D, volumeUSD30D, context);
+    await updateDayVaultData(vault, dayVaultId, dayStart, tvlUSD, aprResults.grossAPR, aprResults.netAPR, maxPotentialAPR, volumeUSD1D, volumeUSD30D, context);
     await updateHourVaultData(
       vault,
       hourVaultId,
@@ -40,6 +43,7 @@ export async function updateVaultStats(
       tvlUSD,
       aprResults.grossAPR,
       aprResults.netAPR,
+      maxPotentialAPR,
       context,
     );
   } catch (error: any) {
@@ -200,6 +204,118 @@ async function calculateAPR(
   };
 }
 
+async function calculateMaxPotentialAPR(
+  timestamp: bigint,
+  vault: typeof stickyVault.$inferSelect,
+  tvlUSD: string,
+  context: Context,
+): Promise<string> {
+  if (!vault || !tvlUSD || new Decimal(tvlUSD).lte("0")) {
+    return "0";
+  }
+
+  try {
+    const pool = await context.db.find(sPool, { id: vault.pool });
+    if (!pool) {
+      console.warn(`Pool ${vault.pool} not found for vault ${vault.id}`);
+      return "0";
+    }
+
+    // Calculate pool APR using existing logic (reuse pool calculation)
+    const poolAPRResults = await calculatePoolAPR(pool, timestamp, context);
+    const poolGlobalAPR = new Decimal(poolAPRResults.globalAPR || "0");
+
+    if (poolGlobalAPR.lte("0")) {
+      return "0";
+    }
+
+    // Vault captures 99% of pool fees (since it holds most liquidity)
+    const VAULT_CAPTURE_RATE = 0.99;
+    const vaultBaseAPR = poolGlobalAPR.mul(VAULT_CAPTURE_RATE);
+
+    // Management fees are reinvested back into the vault
+    const managementFeeBPS = new Decimal(vault.managementFee || "0");
+    const managementFeeRate = managementFeeBPS.div(10000); // Convert basis points to decimal
+
+    // Management fees taken from captured fees and reinvested
+    const managementFeesReinvested = vaultBaseAPR.mul(managementFeeRate);
+
+    // Total vault APR = captured pool fees + reinvested management fees
+    const vaultMaxAPR = vaultBaseAPR.plus(managementFeesReinvested);
+
+    // Reasonable cap to prevent edge cases
+    const cappedAPR = Decimal.min(vaultMaxAPR, new Decimal(300));
+
+    return cappedAPR.toFixed(2);
+
+  } catch (error: any) {
+    console.warn(`Error calculating max potential APR for vault ${vault.id}:`, error?.message);
+    return "0";
+  }
+}
+
+// Helper function to calculate pool APR - reuses existing pool logic
+async function calculatePoolAPR(
+  pool: typeof sPool.$inferSelect,
+  timestamp: bigint,
+  context: Context
+): Promise<{ globalAPR: string, activeAPR: string }> {
+  const dayId = Math.floor(Number(timestamp) / 86400);
+  const hourId = Math.floor(Number(timestamp) / 3600);
+  let fromPool: any = null;
+  let actualDaysBack = 0;
+  let actualHoursBack = 0;
+
+  if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") {
+    return { globalAPR: "0.00", activeAPR: "0.00" };
+  }
+
+  // Find historical data (same logic as pool stats)
+  for (let i = 7; i <= 14 && !fromPool; i++) {
+    fromPool = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - i}` });
+    if (fromPool) {
+      actualDaysBack = i;
+      break;
+    }
+  }
+
+  if (!fromPool) {
+    for (let i = 24; i <= 24 * 7 && !fromPool; i += 24) {
+      fromPool = await context.db.find(poolHourData, { id: `${pool.id}-${hourId - i}` });
+      if (fromPool) {
+        actualHoursBack = i;
+        break;
+      }
+    }
+  }
+
+  if (!fromPool) {
+    return { globalAPR: "0.00", activeAPR: "0.00" };
+  }
+
+  const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD);
+  if (periodFees.lte(0)) return { globalAPR: "0.00", activeAPR: "0.00" };
+
+  // Calculate annual multiplier
+  let annualMultiplier: number;
+  if (actualDaysBack > 0) {
+    annualMultiplier = 365 / actualDaysBack;
+  } else if (actualHoursBack > 0) {
+    annualMultiplier = (365 * 24) / actualHoursBack;
+  } else {
+    annualMultiplier = 52;
+  }
+
+  // Calculate global APR using total pool TVL
+  const globalAPR = periodFees.mul(annualMultiplier).div(pool.totalValueLockedUSD).mul(100);
+
+  return {
+    globalAPR: globalAPR.toFixed(2),
+    activeAPR: globalAPR.toFixed(2) // For simplicity, use same value
+  };
+}
+
+
 async function calculateVolumeForPeriod(
   vault: typeof stickyVault.$inferSelect,
   targetVaultId: string,
@@ -262,6 +378,7 @@ async function updateDayVaultData(
   tvlUSD: string,
   grossAPR: string,
   netAPR: string,
+  maxPotentialAPR: string,
   volumeUSD1D: string,
   volumeUSD30D: string,
   context: Context,
@@ -289,6 +406,7 @@ async function updateDayVaultData(
       managementFeesUSD: vault.managementFeesUSD || "0",
       apr: grossAPR,
       netAPR: netAPR,
+      maxPotentialAPR: maxPotentialAPR,
       impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
@@ -311,6 +429,7 @@ async function updateDayVaultData(
       managementFeesUSD: vault.managementFeesUSD || "0",
       apr: grossAPR,
       netAPR: netAPR,
+      maxPotentialAPR: maxPotentialAPR,
       impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
@@ -325,6 +444,7 @@ async function updateHourVaultData(
   tvlUSD: string,
   grossAPR: string,
   netAPR: string,
+  maxPotentialAPR: string,
   context: Context,
 ) {
   const vaultData = await context.db.find(vaultHourData, { id: hourVaultId });
@@ -348,6 +468,7 @@ async function updateHourVaultData(
       managementFeesUSD: vault.managementFeesUSD || "0",
       apr: grossAPR,
       netAPR: netAPR,
+      maxPotentialAPR: maxPotentialAPR,
       impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,
@@ -368,6 +489,7 @@ async function updateHourVaultData(
       managementFeesUSD: vault.managementFeesUSD || "0",
       apr: grossAPR,
       netAPR: netAPR,
+      maxPotentialAPR: maxPotentialAPR,
       impermanentLoss: vault.impermanentLoss || "0",
       rebalanceCount: vault.rebalanceCount,
       txCount: vault.txCount,

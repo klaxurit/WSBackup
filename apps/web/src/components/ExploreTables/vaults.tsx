@@ -115,10 +115,18 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
         return row?.apr || 0;
       },
       render: (row) => {
+        const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;
+        const currentAPR = dayData?.apr || 0;
+        const maxPotentialAPR = dayData?.maxPotentialAPR || 0;
+
         return (
           <span className="VaultsTable__AprCell">
-            {row?.vaultDayData.items && row.vaultDayData.items.length > 0 && row.vaultDayData.items[0].apr !== 0
-              ? `${row.vaultDayData.items[0].apr}%`
+            {dayData && (maxPotentialAPR !== 0 || currentAPR !== 0)
+              ? (
+                <div className="VaultsTable__AprWrapper">
+                  <div className="VaultsTable__CurrentApr">{maxPotentialAPR ?? currentAPR}%</div>
+                </div>
+              )
               : "-"}
           </span>
         )

@@ -62,6 +62,7 @@ query GetTokensStats($id: String = "") {
       vaultDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
         items {
           apr
+          maxPotentialAPR
           volumeUSD1D
         }
       }
@@ -205,12 +206,14 @@ const PoolDetailPage: React.FC = () => {
         </div>
 
         <div className='Pool__BreadcrumbsButtons'>
-          <Link
-            to={`/vaults/${vault.id}`}
-            className="Pool__AddLiquidityBtn btn btn--small btn__accent"
-          >
-            Add Vault Liquidity
-          </Link>
+          {vault?.id && (
+            <Link
+              to={`/vaults/${vault.id}`}
+              className="Pool__AddLiquidityBtn btn btn--small btn__accent"
+            >
+              Add Vault Liquidity
+            </Link>
+          )}
           <Link
             to={`/pools/create?token0=${t0.id}&token1=${t1.id}&fee=${pool.feeTier}`}
             className="Pool__AddLiquidityBtn btn btn--small btn__accent"
@@ -298,29 +301,31 @@ const PoolDetailPage: React.FC = () => {
           </div>
 
           {/* Statistics Section */}
-          <div className="Pool__Statistics">
-            <h3 className="Pool__StatisticsTitle">Vault Statistics</h3>
-            <div className="Pool__StatCards">
-              <div className="Pool__StatCard">
-                <h4 className="Pool__StatCardTitle">TVL</h4>
-                <p className="Pool__StatCardLabel">
-                  {vault === null ? 'N/A' : formatNumber(vault.totalValueLockedUSD)}
-                </p>
-              </div>
-              <div className="Pool__StatCard">
-                <h4 className="Pool__StatCardTitle">APR</h4>
-                <p className="Pool__StatCardLabel">
-                  {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].apr}%`}
-                </p>
-              </div>
-              <div className="Pool__StatCard">
-                <h4 className="Pool__StatCardTitle">24h Volume</h4>
-                <p className="Pool__StatCardLabel">
-                  {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
-                </p>
+          {!!vault && (
+            <div className="Pool__Statistics">
+              <h3 className="Pool__StatisticsTitle">Vault Statistics</h3>
+              <div className="Pool__StatCards">
+                <div className="Pool__StatCard">
+                  <h4 className="Pool__StatCardTitle">TVL</h4>
+                  <p className="Pool__StatCardLabel">
+                    {vault === null ? 'N/A' : formatNumber(vault.totalValueLockedUSD)}
+                  </p>
+                </div>
+                <div className="Pool__StatCard">
+                  <h4 className="Pool__StatCardTitle">APR</h4>
+                  <p className="Pool__StatCardLabel">
+                    {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].maxPotentialAPR}%`}
+                  </p>
+                </div>
+                <div className="Pool__StatCard">
+                  <h4 className="Pool__StatCardTitle">24h Volume</h4>
+                  <p className="Pool__StatCardLabel">
+                    {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Transactions Table */}
           <div className="Pool__Transactions">

@@ -270,7 +270,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     return {
       hasNextPage: sortMode === 'server' ? !!hasNextPage : false, // Désactiver "Load More" en mode client
       isFetchingNextPage: sortMode === 'server' ? isFetchingNextPage : false,
-      onLoadMore: sortMode === 'server' ? fetchNextPage : () => {},
+      onLoadMore: sortMode === 'server' ? fetchNextPage : () => { },
       totalItems: firstPage?.totalCount || 0,
       currentItems: pools.length,
       itemLabel: "pools",
@@ -359,26 +359,26 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         )
       }
     },
+    // {
+    //   label: 'Active APR',
+    //   key: 'apr_active',
+    //   className: 'PoolsTable__AprTd',
+    //   sortable: true,
+    //   sortValue: (row) => {
+    //     return row.poolDayData?.items?.[0]?.activeRangeAPR || "0";
+    //   },
+    //   render: (row) => {
+    //     return (
+    //       <span className="PoolsTable__AprCell">
+    //         {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].activeRangeAPR) > 0
+    //           ? `${row.poolDayData.items[0].activeRangeAPR}%`
+    //           : "-"}
+    //       </span>
+    //     )
+    //   }
+    // },
     {
-      label: 'Active APR',
-      key: 'apr_active',
-      className: 'PoolsTable__AprTd',
-      sortable: true,
-      sortValue: (row) => {
-        return row.poolDayData?.items?.[0]?.activeRangeAPR || "0";
-      },
-      render: (row) => {
-        return (
-          <span className="PoolsTable__AprCell">
-            {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].activeRangeAPR) > 0
-              ? `${row.poolDayData.items[0].activeRangeAPR}%`
-              : "-"}
-          </span>
-        )
-      }
-    },
-    {
-      label: 'Global APR',
+      label: 'APR',
       key: 'apr_global',
       className: 'PoolsTable__AprTd',
       sortable: true,
