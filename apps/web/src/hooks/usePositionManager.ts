@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from "react"
-import { erc20Abi, formatUnits, maxUint128, type Address } from "viem"
+import { erc20Abi, formatUnits, maxUint128, parseUnits, zeroAddress, type Address } from "viem"
 import { Pool, Position, TickMath } from "@uniswap/v3-sdk"
 import { currentChain } from "../config/wagmi"
 import { Token } from "@uniswap/sdk-core"
-import { useAccount, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { useAccount, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract, useBalance } from "wagmi"
 import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
 import { POSITION_MANAGER_ABI } from "../config/abis/positionManagerABI"
 import JSBI from "jsbi"
@@ -55,8 +55,6 @@ export interface PositionData {
   poolRef: PoolData;
 }
 
-
-
 export interface UsePositionManagerDatas {
   addLiquidity?: {
     t0Amount: bigint,
@@ -71,12 +69,101 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   const { address } = useAccount()
   const pool = (positionData as PositionData)?.poolRef || null
   const position = (positionData as PositionData)?.id ? (positionData as PositionData) : null
-  console.log("use", pool, position)
 
   const poolTick = useMemo(() => {
     if (!pool) return null
     return TickMath.getTickAtSqrtRatio(JSBI.BigInt(pool.sqrtPrice))
   }, [pool])
+
+
+
+
+  // Récupération des balances pour validation
+  const { data: ethBalance } = useBalance({
+    address,
+    query: { enabled: !!address }
+  })
+
+  const { data: token0Balance, refetch: refetchToken0Balance } = useReadContract({
+    address: pool?.token0Ref.id as Address || zeroAddress,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address && !!pool?.token0Ref.id }
+  })
+
+  const { data: token1Balance, refetch: refetchToken1Balance } = useReadContract({
+    address: pool?.token1Ref.id as Address || zeroAddress,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address && !!pool?.token1Ref.id }
+  })
+
+  // Fonction de validation avant transaction
+  const validateTransaction = useMemo(() => {
+    return (type: 'add' | 'withdraw' | 'claim') => {
+      const errors: string[] = [];
+
+      if (type === 'add' && datas?.addLiquidity) {
+        // Vérifier que les montants sont saisis
+        if (!datas.addLiquidity.t0Amount || datas.addLiquidity.t0Amount === 0n) {
+          errors.push(`Enter ${pool?.token0Ref?.symbol || 'token0'} amount`);
+        }
+        if (!datas.addLiquidity.t1Amount || datas.addLiquidity.t1Amount === 0n) {
+          errors.push(`Enter ${pool?.token1Ref?.symbol || 'token1'} amount`);
+        }
+
+        // Vérifier les balances de tokens
+        if (token0Balance && datas.addLiquidity.t0Amount > token0Balance) {
+          errors.push(`Insufficient ${pool?.token0Ref?.symbol || 'token0'} balance`);
+        }
+        if (token1Balance && datas.addLiquidity.t1Amount > token1Balance) {
+          errors.push(`Insufficient ${pool?.token1Ref?.symbol || 'token1'} balance`);
+        }
+      }
+
+      if (type === 'withdraw' && datas?.withdraw) {
+        // Vérifier que la quantité de liquidité est saisie
+        if (!datas.withdraw.liquidity || datas.withdraw.liquidity === 0n) {
+          errors.push('Enter liquidity amount to remove');
+        }
+
+        // Vérifier que la position a assez de liquidité
+        if (position && datas.withdraw.liquidity > BigInt(position.liquidity)) {
+          errors.push('Amount exceeds position liquidity');
+        }
+      }
+
+      // Vérifier le balance ETH pour le gas (estimation approximative)
+      if (ethBalance && ethBalance.value < parseUnits("0.001", 18)) {
+        errors.push('Insufficient ETH for gas fees');
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors
+      };
+    };
+  }, [token0Balance, token1Balance, ethBalance, datas, pool, position]);
+
+  // Fonctions pour déterminer si les boutons doivent être activés
+  const canAttemptAddLiquidity = useMemo(() => {
+    return !!address &&
+      !!datas?.addLiquidity &&
+      !!datas.addLiquidity.t0Amount &&
+      !!datas.addLiquidity.t1Amount &&
+      datas.addLiquidity.t0Amount > 0n &&
+      datas.addLiquidity.t1Amount > 0n;
+  }, [address, datas]);
+
+  const canAttemptWithdraw = useMemo(() => {
+    return !!address &&
+      !!datas?.withdraw &&
+      !!datas.withdraw.liquidity &&
+      datas.withdraw.liquidity > 0n;
+  }, [address, datas]);
+
   /**
    * Datas calculate
    */
@@ -135,7 +222,30 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       enabled: !!position && !!position?.tokenId
     }
   })
-  console.log(onChainPosition)
+
+  // Fonctions de formatage pour l'affichage
+  const formatTokenAmount = useMemo(() => {
+    return (amount: string): string => {
+      const num = parseFloat(amount);
+      if (num === 0) return "0";
+
+      // Si très petit nombre, afficher plus de décimales
+      if (num < 0.01) return num.toFixed(6);
+      if (num < 1) return num.toFixed(4);
+      if (num < 100) return num.toFixed(2);
+      return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    };
+  }, []);
+
+  const formatLiquidity = useMemo(() => {
+    return (liquidity: string): string => {
+      try {
+        return BigInt(liquidity).toLocaleString('en-US');
+      } catch (error) {
+        return "0";
+      }
+    };
+  }, []);
 
   const positionDetails = useMemo(() => {
     if (!sdkPosition) return null
@@ -148,21 +258,20 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
 
     try {
       return {
-        token0Amount: sdkPosition.amount0.toExact(),
-        token1Amount: sdkPosition.amount1.toExact(),
+        token0Amount: formatTokenAmount(sdkPosition.amount0.toExact()),
+        token1Amount: formatTokenAmount(sdkPosition.amount1.toExact()),
         token0USD: t0Usd,
         token1USD: t1Usd,
-        totalValueUSD: posValueUSD,  // Valeur totale en USD
-        currentPrice: posValueUSD.toFixed(2),
+        positionValueUSD: posValueUSD,  // Valeur totale de la position en USD
+        liquidityAmount: formatLiquidity(position?.liquidity || "0"),  // Quantité de liquidité formatée
         liquidityShare: ((posValueUSD / parseFloat(pool.totalValueLockedUSD)) * 100).toFixed(2)
-        // liquidityShare: pool?.liquidity && position?.liquidity ?
-        //   ((Number(position.liquidity?.toString() || '0') / Number(pool.liquidity.toString())) * 100).toFixed(2) + '%' : '0%'
       }
     } catch (error) {
       console.error("Error when calculate position's datas:", error)
       return null
     }
-  }, [position, pool, sdkPosition])
+  }, [position, pool, sdkPosition, formatTokenAmount, formatLiquidity])
+
 
   const unclaimedFees = useMemo(() => {
     if (!position || !pool) {
@@ -213,8 +322,8 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       const token1 = poolData.token1Ref || (pool as any).token1
 
       return {
-        token0Amount: parseFloat(formatUnits(fees0, token0.decimals)).toFixed(6),
-        token1Amount: parseFloat(formatUnits(fees1, token1.decimals)).toFixed(6),
+        token0Amount: formatTokenAmount(formatUnits(fees0, token0.decimals)),
+        token1Amount: formatTokenAmount(formatUnits(fees1, token1.decimals)),
         hasUnclaimed: fees0 > 0n || fees1 > 0n
       }
     }
@@ -225,8 +334,8 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       const token0 = (pool as any).token0
       const token1 = (pool as any).token1
       return {
-        token0Amount: parseFloat(formatUnits(BigInt(oldPosition.amount0), token0.decimals)).toFixed(6),
-        token1Amount: parseFloat(formatUnits(BigInt(oldPosition.amount1), token1.decimals)).toFixed(6),
+        token0Amount: formatTokenAmount(formatUnits(BigInt(oldPosition.amount0), token0.decimals)),
+        token1Amount: formatTokenAmount(formatUnits(BigInt(oldPosition.amount1), token1.decimals)),
         hasUnclaimed: BigInt(oldPosition.amount0) > 0n || BigInt(oldPosition.amount1) > 0n
       }
     }
@@ -236,7 +345,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       token1Amount: "0",
       hasUnclaimed: false
     }
-  }, [pool, position])
+  }, [pool, position, formatTokenAmount])
 
   /**
    * allowance
@@ -293,8 +402,8 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     }
   })
 
-  const { data: approveToken0txHash, writeContract: approveToken0, isPending: isApprovingToken0 } = useWriteContract()
-  const { data: approveToken1TxHash, writeContract: approveToken1, isPending: isApprovingToken1 } = useWriteContract()
+  const { data: approveToken0txHash, writeContract: approveToken0, isPending: isApprovingToken0, error: approveToken0Error, isError: hasApproveToken0Error } = useWriteContract()
+  const { data: approveToken1TxHash, writeContract: approveToken1, isPending: isApprovingToken1, error: approveToken1Error, isError: hasApproveToken1Error } = useWriteContract()
 
   const handleApproveToken0 = () => {
     if (!approveToken0Config?.request) return
@@ -325,54 +434,118 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
    */
 
   // Deposite
-  const { data: addLiquidityTxHash, writeContract: addLiquidity, isPending: waitAddLiquidity, reset: addLiquidityReset } = useWriteContract()
-  const { data: addLiquidityConfig } = useSimulateContract({
+  const { data: addLiquidityTxHash, writeContract: addLiquidity, isPending: waitAddLiquidity, reset: addLiquidityReset, error: addLiquidityError, isError: hasAddLiquidityError } = useWriteContract()
+  const { data: addLiquidityConfig, isLoading: isSimulatingAddLiquidity, error: simulateAddLiquidityError } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
     functionName: "increaseLiquidity",
     args: (() => {
-      if (!datas?.addLiquidity || !positionData) return undefined
+      if (!datas?.addLiquidity || !position) return undefined
+
+      // Vérifier que les montants sont valides avant de simuler
+      if (!datas.addLiquidity.t0Amount || !datas.addLiquidity.t1Amount) return undefined
+
+      // ⚠️ TEMPORARY SOLUTION - DANGEROUS IN PRODUCTION ⚠️
+      // Setting amount0Min and amount1Min to 0 bypasses slippage protection entirely.
+      // This is only a temporary fix to make transactions work while we implement
+      // the correct calculation based on Uniswap V3's getLiquidityForAmounts logic.
+      // TODO: Implement proper slippage calculation that:
+      // 1. Uses getLiquidityForAmounts to determine actual amounts that will be used
+      // 2. Applies slippage tolerance to those calculated amounts, not desired amounts
+      // 3. Handles in-range vs out-of-range positions correctly
+      const amount0Min = 0n
+      const amount1Min = 0n
+
+      console.log('Add Liquidity Simulation Args:', {
+        tokenId: position.tokenId,
+        amount0Desired: datas.addLiquidity.t0Amount.toString(),
+        amount1Desired: datas.addLiquidity.t1Amount.toString(),
+        amount0Min: amount0Min.toString(),
+        amount1Min: amount1Min.toString(),
+        deadline: Math.floor(Date.now() / 1000) + 1200
+      })
 
       return [{
-        tokenId: BigInt(position!.tokenId),
+        tokenId: BigInt(position.tokenId),
         amount0Desired: datas.addLiquidity.t0Amount,
         amount1Desired: datas.addLiquidity.t1Amount,
-        amount0Min: 0n,
-        amount1Min: 0n,
+        amount0Min,
+        amount1Min,
         deadline: BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
       }]
     })(),
     query: {
-      enabled: !!address && !!datas?.addLiquidity && !!position
+      enabled: !!address &&
+        !!datas?.addLiquidity &&
+        !!position &&
+        !!datas.addLiquidity.t0Amount &&
+        !!datas.addLiquidity.t1Amount &&
+        datas.addLiquidity.t0Amount > 0n &&
+        datas.addLiquidity.t1Amount > 0n &&
+        position.owner?.toLowerCase() === address?.toLowerCase()
     }
   })
   const handleAddLiquidity = async () => {
     if (!addLiquidityConfig?.request) return
+
+    // Validation avant transaction
+    const validation = validateTransaction('add');
+    if (!validation.isValid) {
+      console.error('Transaction validation failed:', validation.errors);
+      return;
+    }
+
     addLiquidity(addLiquidityConfig.request)
   }
   const { data: addLiquidityReceipt, isLoading: waitingAddLiquidityReceipt } = useWaitForTransactionReceipt({
     hash: addLiquidityTxHash
   })
+  console.log("deposite config", addLiquidityConfig, simulateAddLiquidityError)
 
   // Withdraw
-  const { data: withdrawTxHash, writeContract: withdraw, isPending: waitWithdraw, reset: withdrawReset } = useWriteContract()
-  const { data: withdrawConfig } = useSimulateContract({
+  const { data: withdrawTxHash, writeContract: withdraw, isPending: waitWithdraw, reset: withdrawReset, error: withdrawError, isError: hasWithdrawError } = useWriteContract()
+  const { data: withdrawConfig, isLoading: isSimulatingWithdraw, error: simulateWithdrawError } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
     functionName: "decreaseLiquidity",
     args: (() => {
-      if (!datas?.withdraw || !positionData) return undefined
+      if (!datas?.withdraw || !position) return undefined
+
+      // Vérifier que la quantité de liquidité est valide
+      if (!datas.withdraw.liquidity || datas.withdraw.liquidity === 0n) return undefined
+
+      console.log('Withdraw Simulation Args:', {
+        tokenId: position.tokenId,
+        liquidity: datas.withdraw.liquidity.toString(),
+        amount0Min: 0n.toString(),
+        amount1Min: 0n.toString(),
+        deadline: Math.floor(Date.now() / 1000) + 1200
+      })
+
+      // ⚠️ TEMPORARY SOLUTION - DANGEROUS IN PRODUCTION ⚠️
+      // Setting amount0Min and amount1Min to 0 bypasses slippage protection entirely.
+      // TODO: Implement proper slippage calculation for decreaseLiquidity that:
+      // 1. Uses getAmountsForLiquidity to determine actual amounts that will be returned
+      // 2. Applies slippage tolerance to those calculated amounts
+      // 3. Accounts for current pool price and position state
+      const amount0Min = 0n
+      const amount1Min = 0n
 
       return [{
-        tokenId: BigInt(position!.tokenId),
-        liquidity: datas.withdraw.liquidity || 0n,
-        amount0Min: 0n,
-        amount1Min: 0n,
+        tokenId: BigInt(position.tokenId),
+        liquidity: datas.withdraw.liquidity,
+        amount0Min,
+        amount1Min,
         deadline: BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
       }]
     })(),
     query: {
-      enabled: !!address && !!datas?.withdraw && !!position
+      enabled: !!address &&
+        !!datas?.withdraw &&
+        !!position &&
+        !!datas.withdraw.liquidity &&
+        datas.withdraw.liquidity > 0n &&
+        position.owner?.toLowerCase() === address?.toLowerCase()
     }
   })
   const handleWithdraw = async () => {
@@ -384,7 +557,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   })
 
   // Claim
-  const { data: claimTxHash, writeContract: claim, isPending: waitClaim, reset: claimReset } = useWriteContract()
+  const { data: claimTxHash, writeContract: claim, isPending: waitClaim, reset: claimReset, error: claimError, isError: hasClaimError } = useWriteContract()
   const { data: claimConfig } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
@@ -446,6 +619,7 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     inRange,
     positionDetails,
     unclaimedFees,
+    poolTick,
 
     approveToken0: handleApproveToken0,
     approveToken1: handleApproveToken1,
@@ -456,6 +630,38 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     canAddLiquidity: !!addLiquidityConfig?.request,
     canWithdraw: !!withdrawConfig?.request,
     canClaim: !!claimConfig?.request,
+
+    // État des simulations
+    isSimulatingAddLiquidity,
+    isSimulatingWithdraw,
+
+    // Capacités d'activation des boutons (indépendamment des simulations)
+    canAttemptAddLiquidity,
+    canAttemptWithdraw,
+
+    // Gestion des erreurs
+    errors: {
+      addLiquidity: addLiquidityError,
+      withdraw: withdrawError,
+      claim: claimError,
+      approveToken0: approveToken0Error,
+      approveToken1: approveToken1Error,
+      simulateAddLiquidity: simulateAddLiquidityError,
+      simulateWithdraw: simulateWithdrawError,
+    },
+    hasError: hasAddLiquidityError || hasWithdrawError || hasClaimError || hasApproveToken0Error || hasApproveToken1Error,
+
+    // Validations et balances
+    validateTransaction,
+    balances: {
+      token0: token0Balance || 0n,
+      token1: token1Balance || 0n,
+      eth: ethBalance?.value || 0n
+    },
+    refetchBalances: () => {
+      refetchToken0Balance();
+      refetchToken1Balance();
+    },
 
     reset: () => {
       addLiquidityReset()

@@ -14,6 +14,8 @@ import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import { ClaimInput } from '../../../components/Inputs/ClaimInput';
 import { useQuery } from '@tanstack/react-query';
 import { transformGraphQLTokenToLegacyToken } from '../../../types/api';
+import { ErrorMessage } from '../../../components/Common/ErrorMessage';
+import { TransactionStatus, useTransactionStatus } from '../../../components/Common/TransactionStatus';
 
 const GET_POSITION = `
 query GetPosition($id: String!) {
@@ -112,54 +114,212 @@ const PoolViewPage: React.FC = () => {
   const pm = usePositionManager(posData, config)
   const { inRange, positionDetails } = pm
 
-  // Gestion succès transaction
+
+  console.log(pm)
+
+  // Gestion succès et erreurs de transaction
   useEffect(() => {
     if (pm.addLiquidityReceipt) {
       setModalType('success');
       setLastTxHash(pm.addLiquidityTxHash || null);
+      // Reset config après succès
+      setConfig({});
     } else if (pm.withdrawReceipt) {
       setModalType('success');
       setLastTxHash(pm.withdrawTxHash || null);
+      // Reset config après succès
+      setConfig({});
+    } else if (pm.claimReceipt) {
+      setModalType('success');
+      setLastTxHash(pm.claimTxHash || null);
     }
-  }, [pm.addLiquidityReceipt, pm.withdrawReceipt]);
+  }, [pm.addLiquidityReceipt, pm.withdrawReceipt, pm.claimReceipt]);
+
+  // Status de transaction pour Add Liquidity
+  const addLiquidityStatus = useTransactionStatus(
+    pm.addLiquidityTxHash,
+    pm.addLiquidityReceipt,
+    pm.errors.addLiquidity,
+    pm.status === 'waitMainUserSign' || pm.status === 'waitMainReceipt'
+  );
+
+  // Status de transaction pour Withdraw
+  const withdrawStatus = useTransactionStatus(
+    pm.withdrawTxHash,
+    pm.withdrawReceipt,
+    pm.errors.withdraw,
+    pm.status === 'waitMainUserSign' || pm.status === 'waitMainReceipt'
+  );
 
   const reset = () => {
     pm.reset()
     refetchPosition()
+    // Recharger les balances après transaction
+    pm.refetchBalances()
   }
 
   const openModal = (type: 'add' | 'remove') => setModalType(type);
   const closeModal = () => setModalType(null);
 
   const addLiquidityBtn = useMemo(() => {
+    // Vérifier d'abord les approbations
     if (pm.token0NeedApproval) {
       return {
         isDisabled: false,
         onClick: () => pm.approveToken0(),
-        text: `Approve ${token0?.symbol}`
+        text: `Approve ${token0?.symbol}`,
+        validationErrors: [],
+        isLoading: false
       }
     }
     if (pm.token1NeedApproval) {
       return {
         isDisabled: false,
         onClick: () => pm.approveToken1(),
-        text: `Approve ${token1?.symbol}`
-      }
-    }
-    if (pm.canAddLiquidity) {
-      return {
-        isDisabled: false,
-        onClick: () => pm.addLiquidity(),
-        text: "Add liquidity"
+        text: `Approve ${token1?.symbol}`,
+        validationErrors: [],
+        isLoading: false
       }
     }
 
+    // Validation pour Add Liquidity
+    const validation = pm.validateTransaction('add');
+
+    // Si nous pouvons tenter d'ajouter de la liquidité (montants saisis)
+    if (pm.canAttemptAddLiquidity) {
+      // Si la simulation a une erreur
+      if (pm.errors.simulateAddLiquidity) {
+        return {
+          isDisabled: true,
+          onClick: () => { },
+          text: "Transaction simulation failed",
+          validationErrors: ["Contract simulation failed - check allowances and balances"],
+          isLoading: false
+        }
+      }
+
+      // Si la simulation est en cours
+      if (pm.isSimulatingAddLiquidity) {
+        return {
+          isDisabled: true,
+          onClick: () => { },
+          text: "Preparing transaction...",
+          validationErrors: [],
+          isLoading: true
+        }
+      }
+
+      // Si la simulation est prête et la validation passe
+      if (pm.canAddLiquidity && validation.isValid) {
+        return {
+          isDisabled: false,
+          onClick: () => pm.addLiquidity(),
+          text: "Add liquidity",
+          validationErrors: [],
+          isLoading: false
+        }
+      }
+
+      // Si la validation échoue
+      if (!validation.isValid) {
+        return {
+          isDisabled: true,
+          onClick: () => { },
+          text: validation.errors[0] || "Cannot add liquidity",
+          validationErrors: validation.errors,
+          isLoading: false
+        }
+      }
+
+      // Si on peut tenter mais la simulation n'est pas prête
+      return {
+        isDisabled: true,
+        onClick: () => { },
+        text: "Preparing transaction...",
+        validationErrors: [],
+        isLoading: true
+      }
+    }
+
+    // État par défaut
     return {
       isDisabled: true,
       onClick: () => { },
-      text: "Wait amount"
+      text: "Enter amounts",
+      validationErrors: [],
+      isLoading: false
     }
-  }, [pm, pool])
+  }, [pm, token0, token1])
+
+  const withdrawBtn = useMemo(() => {
+    // Validation pour Remove Liquidity
+    const validation = pm.validateTransaction('withdraw');
+
+    // Si nous pouvons tenter de retirer de la liquidité
+    if (pm.canAttemptWithdraw) {
+      // Si la simulation a une erreur
+      if (pm.errors.simulateWithdraw) {
+        return {
+          isDisabled: true,
+          onClick: () => { },
+          text: "Transaction simulation failed",
+          validationErrors: ["Contract simulation failed - check position liquidity"],
+          isLoading: false
+        }
+      }
+
+      // Si la simulation est en cours
+      if (pm.isSimulatingWithdraw) {
+        return {
+          isDisabled: true,
+          onClick: () => { },
+          text: "Preparing transaction...",
+          validationErrors: [],
+          isLoading: true
+        }
+      }
+
+      // Si la simulation est prête et la validation passe
+      if (pm.canWithdraw && validation.isValid) {
+        return {
+          isDisabled: false,
+          onClick: () => pm.withdraw(),
+          text: "Remove liquidity",
+          validationErrors: [],
+          isLoading: false
+        }
+      }
+
+      // Si la validation échoue
+      if (!validation.isValid) {
+        return {
+          isDisabled: true,
+          onClick: () => { },
+          text: validation.errors[0] || "Cannot remove liquidity",
+          validationErrors: validation.errors,
+          isLoading: false
+        }
+      }
+
+      // Si on peut tenter mais la simulation n'est pas prête
+      return {
+        isDisabled: true,
+        onClick: () => { },
+        text: "Preparing transaction...",
+        validationErrors: [],
+        isLoading: true
+      }
+    }
+
+    // État par défaut
+    return {
+      isDisabled: true,
+      onClick: () => { },
+      text: "Enter amount",
+      validationErrors: [],
+      isLoading: false
+    }
+  }, [pm])
 
   if (isLoading) {
     return (
@@ -178,13 +338,13 @@ const PoolViewPage: React.FC = () => {
       </div>
     );
   }
-  console.log(positionDetails)
+
   return (
     <div className="PoolView__Container">
       <div className="PoolView__Card">
         <PoolHeader
           address={`#${position.tokenId} ${pool.id}`}
-          usdValue={positionDetails?.totalValueUSD ? `$${positionDetails.totalValueUSD.toFixed(2)}` : "Loading..."}
+          usdValue={positionDetails?.positionValueUSD ? `$${positionDetails.positionValueUSD.toFixed(2)}` : "Loading..."}
         />
 
         <PoolInfo
@@ -204,8 +364,8 @@ const PoolViewPage: React.FC = () => {
         />
 
         <PoolStats
-          positionValue={positionDetails?.currentPrice}
-          totalValueUSD={positionDetails?.totalValueUSD}
+          positionValueUSD={positionDetails?.positionValueUSD}
+          liquidityAmount={positionDetails?.liquidityAmount}
           depositedToken0={positionDetails?.token0Amount}
           depositedToken1={positionDetails?.token1Amount}
           share={positionDetails?.liquidityShare}
@@ -246,13 +406,51 @@ const PoolViewPage: React.FC = () => {
                   value={config?.addLiquidity?.t1Amount || 0n}
                   isOverBalance={false}
                 />
+
+                {/* Affichage du statut de transaction */}
+                {addLiquidityStatus !== 'idle' && (
+                  <TransactionStatus
+                    status={addLiquidityStatus}
+                    hash={pm.addLiquidityTxHash}
+                    error={pm.errors.addLiquidity}
+                    onRetry={() => pm.reset()}
+                    title={
+                      addLiquidityStatus === 'pending' ? 'Adding Liquidity...' :
+                        addLiquidityStatus === 'success' ? 'Liquidity Added!' :
+                          'Add Liquidity Failed'
+                    }
+                  />
+                )}
+
+                {/* Affichage des erreurs d'approbation */}
+                {(pm.errors.approveToken0 || pm.errors.approveToken1) && (
+                  <ErrorMessage
+                    error={pm.errors.approveToken0 || pm.errors.approveToken1}
+                    className="compact"
+                  />
+                )}
+
+                {/* Affichage des erreurs de validation */}
+                {addLiquidityBtn.validationErrors.length > 0 && (
+                  <div className="validation-errors">
+                    {addLiquidityBtn.validationErrors.map((error, index) => (
+                      <div key={index} className="validation-error">
+                        ⚠️ {error}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <button
                   className={`btn btn__main btn--large${addLiquidityBtn.isDisabled ? ' btn__disabled' : ''}`}
                   type="button"
-                  disabled={addLiquidityBtn.isDisabled}
+                  disabled={addLiquidityBtn.isDisabled || addLiquidityStatus === 'pending'}
                   onClick={addLiquidityBtn.onClick}
                 >
-                  {addLiquidityBtn.text}
+                  {addLiquidityBtn.isLoading && (
+                    <span className="btn-spinner" style={{ marginRight: '8px' }}>⏳</span>
+                  )}
+                  {addLiquidityStatus === 'pending' ? 'Processing...' : addLiquidityBtn.text}
                 </button>
               </div>
             </>
@@ -266,13 +464,43 @@ const PoolViewPage: React.FC = () => {
                   onAmountChange={(amount: bigint) => setConfig({ ...config, withdraw: { liquidity: amount } })}
                   decimals={18}
                 />
+
+                {/* Affichage du statut de transaction */}
+                {withdrawStatus !== 'idle' && (
+                  <TransactionStatus
+                    status={withdrawStatus}
+                    hash={pm.withdrawTxHash}
+                    error={pm.errors.withdraw}
+                    onRetry={() => pm.reset()}
+                    title={
+                      withdrawStatus === 'pending' ? 'Removing Liquidity...' :
+                        withdrawStatus === 'success' ? 'Liquidity Removed!' :
+                          'Remove Liquidity Failed'
+                    }
+                  />
+                )}
+
+                {/* Affichage des erreurs de validation pour le retrait */}
+                {withdrawBtn.validationErrors.length > 0 && (
+                  <div className="validation-errors">
+                    {withdrawBtn.validationErrors.map((error, index) => (
+                      <div key={index} className="validation-error">
+                        ⚠️ {error}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <button
-                  className={`btn btn__main btn--large${!pm.canWithdraw ? ' btn__disabled' : ''}`}
+                  className={`btn btn__main btn--large${withdrawBtn.isDisabled ? ' btn__disabled' : ''}`}
                   type="button"
-                  disabled={!pm.canWithdraw}
-                  onClick={() => { pm.withdraw() }}
+                  disabled={withdrawBtn.isDisabled || withdrawStatus === 'pending'}
+                  onClick={withdrawBtn.onClick}
                 >
-                  Remove liquidity
+                  {withdrawBtn.isLoading && (
+                    <span className="btn-spinner" style={{ marginRight: '8px' }}>⏳</span>
+                  )}
+                  {withdrawStatus === 'pending' ? 'Processing...' : withdrawBtn.text}
                 </button>
               </div>
             </>

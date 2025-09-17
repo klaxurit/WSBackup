@@ -570,3 +570,51 @@
     }
   }
 }
+
+// Validation errors styling
+.validation-errors {
+  margin: 12px 0;
+
+  .validation-error {
+    background-color: #fef3cd;
+    border: 1px solid #fecba1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Styles pour les spinners de boutons
+.btn-spinner {
+  display: inline-block;
+  animation: btn-spin 1s linear infinite;
+}
+
+@keyframes btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Dark theme
+@media (prefers-color-scheme: dark) {
+  .validation-errors {
+    .validation-error {
+      background-color: rgba(251, 191, 36, 0.1);
+      border-color: rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+    }
+  }
+}

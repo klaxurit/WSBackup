@@ -10,8 +10,8 @@ interface Token {
 }
 
 interface PoolStatsProps {
-  positionValue: string;
-  totalValueUSD?: number;
+  positionValueUSD?: number;
+  liquidityAmount?: string;
   depositedToken0?: string;
   depositedToken1?: string;
   share?: string;
@@ -20,8 +20,8 @@ interface PoolStatsProps {
 }
 
 const PoolStats: React.FC<PoolStatsProps> = ({
-  positionValue,
-  totalValueUSD,
+  positionValueUSD,
+  liquidityAmount,
   depositedToken0,
   depositedToken1,
   share,
@@ -30,13 +30,13 @@ const PoolStats: React.FC<PoolStatsProps> = ({
 }) => (
   <div className="PoolView__Stats">
     <div className="PoolView__StatRow">
-      <div className="PoolView__StatLabel">Current position value</div>
-      <div className="PoolView__StatValue">${positionValue}</div>
+      <div className="PoolView__StatLabel">Position value (USD)</div>
+      <div className="PoolView__StatValue">${positionValueUSD?.toFixed(2)}</div>
     </div>
 
     <div className="PoolView__StatRow">
-      <span className="PoolView__StatLabel">Total position value (USD)</span>
-      <span className="PoolView__StatValue">${totalValueUSD?.toFixed(2)}</span>
+      <span className="PoolView__StatLabel">Position liquidity</span>
+      <span className="PoolView__StatValue">{liquidityAmount}</span>
     </div>
 
     <div className="PoolView__StatRow">
