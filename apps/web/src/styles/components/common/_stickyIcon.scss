@@ -1,0 +1,28 @@
+@use "../../utils" as *;
+
+.StickyIcon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+  border-radius: 4px;
+  filter: brightness(1.1);
+
+  // Animation subtile au hover
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// Styles spécifiques pour différents contextes
+.VaultDetailPage__PositionShares .StickyIcon {
+  margin-right: 6px;
+  margin-left: 2px;
+}
+
+// Pour les inputs de token
+.LiquidityInput .StickyIcon {
+  margin-right: 8px;
+  margin-left: 4px;
+}

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon } from '../../components/SVGs';
+import { StickyIcon } from '../../components/Common/StickyIcon';
 import { formatNumber } from '../../utils/formatNumber';
 import { LiquidityInput } from '../../components/Inputs/LiquidityInput';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
@@ -10,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useVault } from '../../hooks/useVault';
 import { formatUnits, type Address } from 'viem';
 import { useAccount } from 'wagmi';
+import stickyVaultIcon from '../../assets/sticky_vault.png';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -274,7 +276,9 @@ export const VaultDetailPage = () => {
             <div className="VaultDetailPage__UserPosition">
               <div className="VaultDetailPage__PositionValue">
                 <span className="VaultDetailPage__PositionAmount">${formatNumber(userPosition?.currentValueUSD || "0")}</span>
-                <span className="VaultDetailPage__PositionShares">{formatNumber(userPosition?.shares || 0)} STICKY {token0.symbol}-{token1.symbol}</span>
+                <span className="VaultDetailPage__PositionShares">
+                  {formatNumber(userPosition?.shares || 0)} <StickyIcon size={14} /> {token0.symbol}-{token1.symbol}
+                </span>
               </div>
             </div>
           </div>
@@ -388,10 +392,10 @@ export const VaultDetailPage = () => {
                   <LiquidityInput
                     selectedToken={{
                       address: vault.address as `0x${string}`,
-                      symbol: `STICKY ${token0.symbol}-${token1.symbol}`,
-                      name: `STICKY ${token0.symbol}-${token1.symbol}`,
+                      symbol: `${token0.symbol}-${token1.symbol}`,
+                      name: `${token0.symbol}-${token1.symbol}`,
                       decimals: 18,
-                      logoUri: '' // Chaîne vide au lieu d'undefined
+                      logoUri: stickyVaultIcon
                     }}
                     onAmountChange={setWithdrawAmount}
                     value={withdrawAmount}
