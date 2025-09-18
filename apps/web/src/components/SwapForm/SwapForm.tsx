@@ -5,6 +5,7 @@ import { SwapToInput } from '../Inputs/SwapToInput';
 import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
+import { SwapDetails } from '../SwapDetails/SwapDetails';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
@@ -343,6 +344,16 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               onBlur={() => setEditing(null)}
             />
           </div>
+
+          {/* SwapDetails component - show only when we have valid quote data */}
+          {fromToken && toToken && fromAmount > 0n && swap.quote && (
+            <SwapDetails
+              swap={swap}
+              fromToken={fromToken}
+              toToken={toToken}
+              fromAmount={fromAmount}
+            />
+          )}
 
           <div className="Form__ConnectBtnWrapper">
             {!isConnected ? (
