@@ -202,6 +202,20 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       }
     }, [swap.quote, editing, fromToken, toToken, fromAmount])
 
+    // Effet pour attendre que les routes soient recalculées après un changement
+    useEffect(() => {
+      if (editing === 'from' && fromAmount > 0n && fromToken && toToken && swap.status === 'ready' && swap.quote?.amountOut) {
+        setToAmount(swap.quote.amountOut);
+      }
+    }, [editing, fromAmount, fromToken, toToken, swap.status, swap.quote?.amountOut])
+
+    // Effet supplémentaire pour s'assurer que l'état editing est réinitialisé après un swap
+    useEffect(() => {
+      if (swap.status === 'success') {
+        setEditing(null);
+      }
+    }, [swap.status])
+
     useEffect(() => {
       if (onPoolChange) {
         const poolAddressStr = poolAddress ? poolAddress : null;

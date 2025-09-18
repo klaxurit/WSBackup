@@ -111,6 +111,7 @@ export const useSwap = (params: SwapParams) => {
   const { address } = useAccount()
   const publicClient = usePublicClient()
   const { getTokenInfo } = useTokenCache()
+  const [processedSuccessHashes, setProcessedSuccessHashes] = useState<Set<string>>(new Set());
 
   const [state, setState] = useState<SwapState>({
     status: 'idle',
@@ -407,7 +408,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: "exactInputSingle",
           args: [params],
-          value: tokenIn === zeroAddress ? amountIn : 0n
+          value: tokenIn === WBERA ? amountIn : 0n
         }
       } else {
         // Multi-hop
@@ -429,7 +430,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: 'exactInput',
           args: [params],
-          value: tokenIn === zeroAddress ? amountIn : 0n
+          value: tokenIn === WBERA ? amountIn : 0n
         }
       }
     } else {
@@ -475,7 +476,7 @@ export const useSwap = (params: SwapParams) => {
           )
         }
 
-        if (tokenIn === zeroAddress) {
+        if (tokenIn === WBERA) {
           totalValue += splitRoute.amount
         }
       }
@@ -831,10 +832,11 @@ export const useSwap = (params: SwapParams) => {
     setState({
       status: "idle",
       routes: [],
-      optimizedRoute: null
+      optimizedRoute: null,
+      txHash: undefined
     })
   }
-  // Load routes when inputes change
+
   useEffect(() => {
     loadRoutes()
   }, [loadRoutes])
@@ -848,15 +850,16 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({ ...prev, status: 'wrapping', tsHash: wrapTx }))
     } else if (isUnWrapping || isUnWrapTxPending) {
       setState(prev => ({ ...prev, status: 'unwrapping', tsHash: unWrapTx }))
-    } else if (isSwapSuccess || isWrapSuccess || isUnWrapSuccess) {
+    } else if ((isSwapSuccess || isWrapSuccess || isUnWrapSuccess) && swapTx && !processedSuccessHashes.has(swapTx)) {
       setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
       queryClient.invalidateQueries({ queryKey: ["balance"] })
-    } else if (swapConfig?.request) {
+      setProcessedSuccessHashes(prev => new Set(prev).add(swapTx))
+    } else if (swapConfig?.request && state.status !== 'success') {
       setState(prev => ({ ...prev, status: 'ready' }))
-    } else {
+    } else if (state.status !== 'success') {
       setState(prev => ({ ...prev, status: 'idle' }))
     }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending, isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess])
+  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending, isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess, processedSuccessHashes, state.status])
 
   return {
     status: state.status,
