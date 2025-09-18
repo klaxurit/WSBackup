@@ -6,6 +6,7 @@ import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { SwapDetails } from '../SwapDetails/SwapDetails';
+import { RouteDisplay } from '../RouteDisplay';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
@@ -64,6 +65,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       amountIn: fromAmount,
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
+      enableDebounce: true, // Enable debounce for optimal performance
     })
 
     const { poolAddress } = usePoolAddress(
@@ -95,6 +97,10 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       setShowModal(false);
     };
 
+
+    const handleAdjustSettings = useCallback(() => {
+      setParamOpen(true);
+    }, []);
 
     const handleRefreshInputs = useCallback(() => {
       setFromAmount(0n);
@@ -170,12 +176,12 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.status === "ready") return "Preview"
       if (swap.status === "success" && showModal) return "Success! 🎉"
       if (swap.status === "error") {
-        return swap?.error || "Error"
+        return swap?.error?.message || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return "Preview"
-    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap])
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap, swap.error])
 
     const handleBtnClick = async () => {
       if (swap.isWrap) {
@@ -355,6 +361,15 @@ export const SwapForm: React.FC<FormProps> = React.memo(
             />
           )}
 
+          {/* RouteDisplay component - show optimal route visualization */}
+          {fromToken && toToken && fromAmount > 0n && swap.optimizedRoute && (
+            <RouteDisplay
+              optimizedRoute={swap.optimizedRoute}
+              fromToken={fromToken}
+              toToken={toToken}
+            />
+          )}
+
           <div className="Form__ConnectBtnWrapper">
             {!isConnected ? (
               <ConnectButton
@@ -384,6 +399,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
           outputAmount={toAmount}
           swap={swap}
           onRefreshInputs={handleRefreshInputs}
+          onAdjustSettings={handleAdjustSettings}
         />
       </div >
     );
