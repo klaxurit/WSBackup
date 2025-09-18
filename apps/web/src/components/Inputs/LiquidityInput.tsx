@@ -22,6 +22,8 @@ interface LiquidityInputProps {
   value: bigint;
   isOverBalance: boolean;
   disabled?: boolean;
+  showMaxButton?: boolean;
+  customUsdValue?: number;
 }
 
 export interface LiquidityInputRef {
@@ -34,6 +36,8 @@ export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>
   value,
   isOverBalance,
   disabled = false,
+  showMaxButton = true,
+  customUsdValue,
 }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isInputting = useRef(false);
@@ -53,8 +57,11 @@ export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>
 
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0
+    if (customUsdValue !== undefined) {
+      return (customUsdValue * +formatUnits(value, selectedToken?.decimals || 18)).toFixed(2)
+    }
     return (usdValue * +formatUnits(value, selectedToken?.decimals || 18)).toFixed(2)
-  }, [usdValue, value])
+  }, [usdValue, value, customUsdValue, selectedToken?.decimals])
 
 
   useEffect(() => {
@@ -169,17 +176,21 @@ export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>
               <div className="From__Balance">
                 {selectedToken && (
                   <>
-                    <button
-                      type="button"
-                      className="From__Max"
-                      onClick={setMax}
-                      tabIndex={-1}
-                    >
-                      Max
-                    </button>
-                    <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
-                      {loading ? "..." : formatTokenAmount(formatUnits(balance?.value || 0n, selectedToken?.decimals || 18))}
-                    </p>
+                    {showMaxButton && (
+                      <>
+                        <button
+                          type="button"
+                          className="From__Max"
+                          onClick={setMax}
+                          tabIndex={-1}
+                        >
+                          Max
+                        </button>
+                        <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
+                          {loading ? "..." : formatTokenAmount(formatUnits(balance?.value || 0n, selectedToken?.decimals || 18))}
+                        </p>
+                      </>
+                    )}
                   </>
                 )}
               </div>

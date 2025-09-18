@@ -167,6 +167,14 @@ export const VaultDetailPage = () => {
 
   }, [vault])
 
+  // Calculer le prix par share basé sur la position de l'utilisateur
+  const vaultPricePerShare = useMemo(() => {
+    if (!userPosition?.currentValueUSD || !userPosition?.shares) return 0
+    const userShares = parseFloat(userPosition.shares) // shares est déjà en format décimal
+    const userValueUSD = parseFloat(userPosition.currentValueUSD)
+    return userShares > 0 ? userValueUSD / userShares : 0
+  }, [userPosition?.currentValueUSD, userPosition?.shares])
+
   if (isLoading) {
     return (
       <div className="VaultDetailPage VaultDetailPage--error">
@@ -401,6 +409,8 @@ export const VaultDetailPage = () => {
                     onAmountChange={setWithdrawAmount}
                     value={withdrawAmount}
                     isOverBalance={false}
+                    showMaxButton={false}
+                    customUsdValue={vaultPricePerShare}
                   />
                 </div>
 
