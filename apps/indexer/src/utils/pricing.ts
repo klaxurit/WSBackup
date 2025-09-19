@@ -9,6 +9,11 @@ const STABLE_COINS: string[] = [
   "0x549943e04f40284185054145c6E4e9568C1D3241".toLowerCase(), // USDC.e
   "0x1cE0a25D13CE4d52071aE7e02Cf1F6606F4C79d3".toLocaleLowerCase(), // NECT
 ]
+const BREAKERS: string[] = [
+  REFERENCE_TOKEN,
+  "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce".toLowerCase()
+]
+
 export const STABLE_TOKEN_POOL = "0x3b9dba6dacf92eea27dff0a1f9c646e12d739df2" // wBera/Honey
 const WHITELIST_TOKENS: `0x${string}`[] = [
   REFERENCE_TOKEN,
@@ -75,6 +80,7 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
               largestLiquidityBERA = beraLocked
               priceSoFar = Decimal(pool.token1Price).mul(token1.derivedBERA)
               logs && console.log(`C'est plus grand on save et priceSoFar = (${pool.token1Price} * ${token1.derivedBERA}) ${priceSoFar}`)
+              if (BREAKERS.includes(token1.id)) break; // Always use wBera or Honey has the best reference.
             }
           }
         }
@@ -89,6 +95,7 @@ export async function findBeraPerToken(token: typeof sToken.$inferSelect, contex
               largestLiquidityBERA = beraLocked
               priceSoFar = Decimal(pool.token0Price).mul(token0.derivedBERA)
               logs && console.log(`C'est plus grand on save et priceSoFar = (${pool.token0Price} * ${token0.derivedBERA}) ${priceSoFar}`)
+              if (BREAKERS.includes(token0.id)) break; // Always use wBera or Honey has the best reference.
             }
           }
         }
