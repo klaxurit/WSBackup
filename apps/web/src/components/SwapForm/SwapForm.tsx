@@ -54,6 +54,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
     const [lastEditedField, setLastEditedField] = useState<'from' | 'to' | null>(null);
+    const [editing, setEditing] = useState<'from' | 'to' | null>(null);
     const isUpdatingFromQuote = useRef<boolean>(false);
     const { data: tokens } = useTokens();
 
