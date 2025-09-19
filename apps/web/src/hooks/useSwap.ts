@@ -137,6 +137,7 @@ export const useSwap = (params: SwapParams) => {
   const { address } = useAccount()
   const publicClient = usePublicClient()
   const { getTokenInfo } = useTokenCache()
+  const [processedSuccessHashes, setProcessedSuccessHashes] = useState<Set<string>>(new Set());
 
   // Debounce amountIn with 500ms delay if enabled
   const debouncedAmountIn = useDebounce(amountIn, 500)
@@ -973,7 +974,8 @@ export const useSwap = (params: SwapParams) => {
       status: "idle",
       routes: [],
       optimizedRoute: null,
-      error: undefined
+      error: undefined,
+      txHash: undefined
     })
 
     if (enableRouteCache) {
@@ -994,7 +996,8 @@ export const useSwap = (params: SwapParams) => {
     // Cache désactivé, fonction vide pour compatibilité
     return Promise.resolve()
   }, [])
-  // Consolidated state updates - optimized to prevent unnecessary re-renders
+
+  // Consolidated state updates - optimized to prevent unnecessary re-renders with processedSuccessHashes integration
   useEffect(() => {
     setState(prev => {
       let newStatus: SwapState['status'] = prev.status
@@ -1027,7 +1030,7 @@ export const useSwap = (params: SwapParams) => {
         }
       }
 
-      // Transaction state handling - check in priority order
+      // Transaction state handling - check in priority order with processedSuccessHashes logic
       if (isApproving || isApprovingTxPending) {
         newStatus = 'approving'
       } else if (isSwapping || isSwapTxPending) {
@@ -1039,13 +1042,17 @@ export const useSwap = (params: SwapParams) => {
       } else if (isUnWrapping || isUnWrapTxPending) {
         newStatus = 'unwrapping'
         txHash = unWrapTx
-      } else if (isSwapSuccess || isWrapSuccess || isUnWrapSuccess) {
-        newStatus = 'success'
-        txHash = swapTx || wrapTx || unWrapTx
-        queryClient.invalidateQueries({ queryKey: ["balance"] })
-      } else if (swapConfig?.request && !enableRouteCache) {
+      } else if ((isSwapSuccess || isWrapSuccess || isUnWrapSuccess) && (swapTx || wrapTx || unWrapTx)) {
+        const currentTxHash = swapTx || wrapTx || unWrapTx
+        if (currentTxHash && !processedSuccessHashes.has(currentTxHash)) {
+          newStatus = 'success'
+          txHash = currentTxHash
+          queryClient.invalidateQueries({ queryKey: ["balance"] })
+          setProcessedSuccessHashes(prev => new Set(prev).add(currentTxHash))
+        }
+      } else if (swapConfig?.request && !enableRouteCache && prev.status !== 'success') {
         newStatus = 'ready'
-      } else if (!enableRouteCache && !swapConfig?.request && prev.status !== 'loading-routes' && prev.status !== 'error') {
+      } else if (!enableRouteCache && !swapConfig?.request && prev.status !== 'loading-routes' && prev.status !== 'error' && prev.status !== 'success') {
         // Don't force to idle if we have valid tokens and amounts - let route calculation trigger
         if (!tokenIn || !tokenOut || !effectiveAmountIn || effectiveAmountIn === 0n) {
           newStatus = 'idle'
@@ -1074,7 +1081,7 @@ export const useSwap = (params: SwapParams) => {
     routeCache.routes, routeCache.optimizedRoute, routeCache.error, createError,
     isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess,
     swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending,
-    isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess, wrapTx, unWrapTx
+    isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess, wrapTx, unWrapTx, processedSuccessHashes
   ])
 
   // Chargement initial pour le mode sans cache uniquement - using ref to prevent infinite loops

@@ -287,15 +287,15 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               )}
             </div>
           </div>
-            {!isError && (
-              <button
-                className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
-                onClick={handleSwap}
-                disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
-              >
-                {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? '🎉 Success!' : btnText}
-              </button>
-            )}
+          {!isError && (
+            <button
+              className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
+              onClick={handleSwap}
+              disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
+            >
+              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? '🎉 Success!' : btnText}
+            </button>
+          )}
         </>
       )}
     </Modal>
