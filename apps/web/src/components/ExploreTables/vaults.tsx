@@ -1,7 +1,7 @@
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
 
@@ -15,6 +15,8 @@ const BL = [
 ]
 
 export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
+  const navigate = useNavigate();
+
   const filteredVaults = useMemo(() => {
     const approvedVaults = vaults.filter((v: any) => !BL.includes(v.id))
 
@@ -26,6 +28,15 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
     );
   }, [searchValue]);
 
+  const handleRowClick = (row: any) => {
+    navigate(`/vaults/${row.id}`);
+  };
+
+  const handleExplorerClick = (e: React.MouseEvent, vaultId: string) => {
+    e.stopPropagation();
+    window.open(`https://berascan.com/address/${vaultId}`, '_blank', 'noopener,noreferrer');
+  };
+
   const columns: TableColumn[] = [
     {
       label: '#',
@@ -33,23 +44,17 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
       className: 'VaultsTable__IndexTd',
       render: (row) => (
         <span className="VaultsTable__IndexCell">
-          <Link
-            to={`/vaults/${row.id}`}
-            className="VaultsTable__IndexLink"
-          >
-            <span className="Table__Address">
-              {row.poolRef.token0Ref.symbol}/{row.poolRef.token1Ref.symbol}
-            </span>
-          </Link>
-          <a
-            href={`https://berascan.com/address/${row.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <span className="Table__Address">
+            {row.poolRef.token0Ref.symbol}/{row.poolRef.token1Ref.symbol}
+          </span>
+          <button
+            onClick={(e) => handleExplorerClick(e, row.id)}
             className="Table__Icon"
             title={row.id}
+            type="button"
           >
             <ExplorerIcon />
-          </a>
+          </button>
         </span>
       )
     },
@@ -180,6 +185,7 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
       scrollClassName="Table__Scroll"
       defaultSortKey="tvl"
       defaultSortDirection="desc"
+      onRowClick={handleRowClick}
     />
   )
 }
