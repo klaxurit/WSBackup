@@ -53,11 +53,9 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       isAuto: true,
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
-    const [editing, setEditing] = useState<'from' | 'to' | null>(null);
+    const [lastEditedField, setLastEditedField] = useState<'from' | 'to' | null>(null);
+    const isUpdatingFromQuote = useRef<boolean>(false);
     const { data: tokens } = useTokens();
-
-    // État pour forcer le refresh des inputs
-    const [refreshKey, setRefreshKey] = useState(0);
 
     const swap = useSwap({
       tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
@@ -105,11 +103,10 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const handleRefreshInputs = useCallback(() => {
       setFromAmount(0n);
       setToAmount(0n);
-      setEditing(null);
+      setLastEditedField(null);
       setTimeout(() => {
         swap.reset();
       }, 100);
-      setRefreshKey(prev => prev + 1);
     }, [swap]);
 
     const handleSwitchTokens = useCallback(() => {
@@ -122,7 +119,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(currentFromToken);
       setFromAmount(currentToAmount);
       setToAmount(currentFromAmount);
-      setEditing(null);
+      setLastEditedField(null);
     }, [fromToken, toToken, fromAmount, toAmount]);
 
     const updateSlippage = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +170,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.isWrap) return "Wrap"
       if (swap.isUnWrap) return "Unwrap"
 
-      if (swap.status === "ready") return "Preview"
+      if (swap.status === "ready" && swap.quote) return "Preview"
       if (swap.status === "success" && showModal) return "Success! 🎉"
       if (swap.status === "error") {
         return swap?.error?.message || "Error"
@@ -202,12 +199,23 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken && fromAmount > 0n) {
-        setToAmount(swap.quote.amountOut)
-      } else if (fromAmount === 0n && editing !== 'to') {
+      if (swap?.quote?.amountOut &&
+          lastEditedField !== 'to' &&
+          fromToken && toToken &&
+          fromAmount > 0n &&
+          !isUpdatingFromQuote.current) {
+
+        isUpdatingFromQuote.current = true;
+        setToAmount(swap.quote.amountOut);
+
+        // Reset the flag after state update
+        setTimeout(() => {
+          isUpdatingFromQuote.current = false;
+        }, 0);
+      } else if (fromAmount === 0n && lastEditedField !== 'to') {
         setToAmount(0n);
       }
-    }, [swap.quote, editing, fromToken, toToken, fromAmount])
+    }, [swap?.quote?.amountOut, lastEditedField, fromToken, toToken, fromAmount])
 
     useEffect(() => {
       if (onPoolChange) {
@@ -249,13 +257,13 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       }
     }, [initialToToken]);
 
-    const handleFromAmountChange = (amount: bigint) => {
-      setEditing('from');
+    const handleFromAmountChange = useCallback((amount: bigint) => {
+      setLastEditedField('from');
       setFromAmount(amount);
-    };
+    }, []);
 
     const handleToAmountChange = useCallback((amount: bigint) => {
-      setEditing('to');
+      setLastEditedField('to');
       setToAmount(amount);
     }, []);
 
@@ -320,7 +328,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
 
           <div className="Inputs">
             <FromInput
-              key={`from-${refreshKey}`}
               selectedToken={fromToken}
               onTokenSelect={handleFromTokenSelect}
               onAmountChange={handleFromAmountChange}
@@ -329,7 +336,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!fromToken}
-              onBlur={() => setEditing(null)}
+              onBlur={() => setLastEditedField(null)}
             />
             <Divider
               dominantColor={dominantColor}
@@ -337,7 +344,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               onClick={handleSwitchTokens}
             />
             <SwapToInput
-              key={`to-${refreshKey}`}
               steps={{ totalRatio: 0, steps: [] }}
               preSelected={toToken}
               onSelect={handleToTokenSelect}
@@ -347,7 +353,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!toToken}
-              onBlur={() => setEditing(null)}
+              onBlur={() => setLastEditedField(null)}
             />
           </div>
 

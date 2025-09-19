@@ -67,7 +67,7 @@ pnpm test:e2e            # Run e2e tests
 ## Key Technologies
 
 - **Frontend**: React 19, Vite, Redux Toolkit, React Router, Framer Motion
-- **Backend**: NestJS, Drizzle ORM
+- **Backend**: NestJS, Prisma
 - **Indexer**: Ponder (blockchain indexing), Viem, Drizzle ORM
 - **Database**: PostgreSQL with Prisma
 - **Blockchain**: Viem for Ethereum interactions
@@ -99,3 +99,5 @@ pnpm test:e2e            # Run e2e tests
 - Node.js >=18 required
 - The indexer processes blockchain events using Ponder framework
 - Frontend uses Web3Modal and Wagmi for wallet connections
+- For testing, always run project individualy, never run the entire stack
+- The indexer (Ponder) is very long (around 1 hour) to start because he synchronise at each run

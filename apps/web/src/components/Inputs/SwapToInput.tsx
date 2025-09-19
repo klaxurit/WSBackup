@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { usePrice } from "../../hooks/usePrice";
@@ -39,8 +39,8 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     onBlur,
   }) => {
     const textareaRef = useRef<HTMLInputElement>(null);
-    const isInputting = useRef(false);
     const [inputDisplayValue, setInputDisplayValue] = useState('');
+    const [isUserTyping, setIsUserTyping] = useState(false);
 
     const { address } = useAccount()
     const { data: balance, isLoading: loading } = useBalance({
@@ -52,32 +52,32 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     })
     const { data: usdValue = 0 } = usePrice(preSelected)
 
-    // Réinitialiser l'état interne quand le composant est remonté (key change)
+    // Reset internal state when component remounts
     useEffect(() => {
       setInputDisplayValue('');
-      isInputting.current = false;
+      setIsUserTyping(false);
     }, []);
 
-    // Synchroniser l'affichage avec la valeur externe
+    // Synchronize display with external value when not typing
     useEffect(() => {
-      if (!isInputting.current) {
+      if (!isUserTyping) {
         const formattedValue = inputValue === 0n ? '' : formatUnits(inputValue, preSelected?.decimals || 18);
         setInputDisplayValue(formattedValue);
       }
-    }, [inputValue, preSelected?.decimals]);
+    }, [inputValue, preSelected?.decimals, isUserTyping]);
 
-    // Forcer le nettoyage quand inputValue devient 0n
+    // Force cleanup when inputValue becomes 0n
     useEffect(() => {
       if (inputValue === 0n) {
         setInputDisplayValue('');
-        isInputting.current = false;
+        setIsUserTyping(false);
       }
     }, [inputValue]);
 
     const usdAmount = useMemo(() => {
       if (inputValue === 0n) return 0
       return (usdValue * +formatUnits(inputValue, preSelected?.decimals || 18)).toFixed(2)
-    }, [usdValue, inputValue])
+    }, [usdValue, inputValue, preSelected?.decimals])
 
     return (
       <div className={`Inputs__To To`}>
@@ -93,12 +93,12 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
               type="text"
               inputMode="decimal"
               placeholder="0"
-              onChange={e => {
+              onChange={useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
                 const val = e.target.value;
                 setInputDisplayValue(val);
-                isInputting.current = true;
+                setIsUserTyping(true);
 
-                // Validation améliorée
+                // Enhanced validation
                 if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
                   try {
                     const parsedAmount = parseUnits(val, preSelected?.decimals || 18);
@@ -111,14 +111,14 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
                 } else if (val === '') {
                   onInputChange(0n);
                 }
-              }}
+              }, [onInputChange, preSelected?.decimals])}
               readOnly={disabled}
               onClick={disabled ? onInputClick : undefined}
-              onBlur={() => {
-                isInputting.current = false;
+              onBlur={useCallback(() => {
+                setIsUserTyping(false);
                 setInputDisplayValue(inputValue === 0n ? '' : formatUnits(inputValue, preSelected?.decimals || 18));
                 if (onBlur) onBlur();
-              }}
+              }, [inputValue, preSelected?.decimals, onBlur])}
             />
           </div>
           <div className="From__LogosAndBalance">
