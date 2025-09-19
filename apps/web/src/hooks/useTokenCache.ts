@@ -152,7 +152,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
     // Fallback sur l'ancienne logique si GraphQL ne fonctionne pas
     if (price === 0) {
-      let tokenStats = tokensStats?.find((t: any) =>
+      const tokenStats = tokensStats?.find((t: any) =>
         t.address?.toLowerCase() === token.address?.toLowerCase()
       );
 

@@ -314,13 +314,13 @@ const PoolDetailPage: React.FC = () => {
                 <div className="Pool__StatCard">
                   <h4 className="Pool__StatCardTitle">APR</h4>
                   <p className="Pool__StatCardLabel">
-                    {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].maxPotentialAPR}%`}
+                    {vault === null || !vault.vaultDayData.items || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].maxPotentialAPR}%`}
                   </p>
                 </div>
                 <div className="Pool__StatCard">
                   <h4 className="Pool__StatCardTitle">24h Volume</h4>
                   <p className="Pool__StatCardLabel">
-                    {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
+                    {vault === null || !vault.vaultDayData.items || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
                   </p>
                 </div>
               </div>
