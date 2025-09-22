@@ -228,6 +228,56 @@
   color: $white;
 }
 
+.TransactionModal__swapBtn--primary {
+  background: linear-gradient(90deg, $beryl-pure 0%, $beryl-medium 100%);
+  color: $onyx-black;
+  border: none;
+
+  &:hover {
+    background: linear-gradient(90deg, $beryl-medium 0%, $beryl-pure 100%);
+  }
+}
+
+.TransactionModal__swapBtn--secondary {
+  background: transparent;
+  color: $beryl-pure;
+  border: 1px solid $beryl-pure;
+
+  &:hover {
+    background: rgba($beryl-pure, 0.1);
+  }
+}
+
+// Error section styles
+.TransactionModal__error {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.TransactionModal__errorMessage {
+  color: $white;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.TransactionModal__errorDetails {
+  color: $onyx-light;
+  font-size: 0.75rem;
+  font-family: monospace;
+  background: rgba($onyx-medium, 0.3);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid $error-pure;
+}
+
+.TransactionModal__errorActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .TransactionModal__swapBtn.btn__disabled {
   background: $onyx-darker !important;
   color: $onyx-medium !important;

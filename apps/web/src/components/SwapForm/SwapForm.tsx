@@ -5,6 +5,8 @@ import { SwapToInput } from '../Inputs/SwapToInput';
 import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
+import { SwapDetails } from '../SwapDetails/SwapDetails';
+import { RouteDisplay } from '../RouteDisplay';
 import { useSwap } from '../../hooks/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
@@ -51,11 +53,10 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       isAuto: true,
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
+    const [lastEditedField, setLastEditedField] = useState<'from' | 'to' | null>(null);
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
+    const isUpdatingFromQuote = useRef<boolean>(false);
     const { data: tokens } = useTokens();
-
-    // État pour forcer le refresh des inputs
-    const [refreshKey, setRefreshKey] = useState(0);
 
     const swap = useSwap({
       tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
@@ -63,6 +64,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       amountIn: fromAmount,
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
+      enableDebounce: true, // Enable debounce for optimal performance
     })
 
     const { poolAddress } = usePoolAddress(
@@ -95,14 +97,17 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     };
 
 
+    const handleAdjustSettings = useCallback(() => {
+      setParamOpen(true);
+    }, []);
+
     const handleRefreshInputs = useCallback(() => {
       setFromAmount(0n);
       setToAmount(0n);
-      setEditing(null);
+      setLastEditedField(null);
       setTimeout(() => {
         swap.reset();
       }, 100);
-      setRefreshKey(prev => prev + 1);
     }, [swap]);
 
     const handleSwitchTokens = useCallback(() => {
@@ -115,7 +120,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(currentFromToken);
       setFromAmount(currentToAmount);
       setToAmount(currentFromAmount);
-      setEditing(null);
+      setLastEditedField(null);
     }, [fromToken, toToken, fromAmount, toAmount]);
 
     const updateSlippage = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -166,15 +171,15 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.isWrap) return "Wrap"
       if (swap.isUnWrap) return "Unwrap"
 
-      if (swap.status === "ready") return "Preview"
+      if (swap.status === "ready" && swap.quote) return "Preview"
       if (swap.status === "success" && showModal) return "Success! 🎉"
       if (swap.status === "error") {
-        return swap?.error || "Error"
+        return swap?.error?.message || "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return "Preview"
-    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap])
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap, swap.error])
 
     const handleBtnClick = async () => {
       if (swap.isWrap) {
@@ -195,12 +200,23 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken && fromAmount > 0n) {
-        setToAmount(swap.quote.amountOut)
-      } else if (fromAmount === 0n && editing !== 'to') {
+      if (swap?.quote?.amountOut &&
+          lastEditedField !== 'to' &&
+          fromToken && toToken &&
+          fromAmount > 0n &&
+          !isUpdatingFromQuote.current) {
+
+        isUpdatingFromQuote.current = true;
+        setToAmount(swap.quote.amountOut);
+
+        // Reset the flag after state update
+        setTimeout(() => {
+          isUpdatingFromQuote.current = false;
+        }, 0);
+      } else if (fromAmount === 0n && lastEditedField !== 'to') {
         setToAmount(0n);
       }
-    }, [swap.quote, editing, fromToken, toToken, fromAmount])
+    }, [swap?.quote?.amountOut, lastEditedField, fromToken, toToken, fromAmount])
 
     // Effet pour attendre que les routes soient recalculées après un changement
     useEffect(() => {
@@ -256,13 +272,13 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       }
     }, [initialToToken]);
 
-    const handleFromAmountChange = (amount: bigint) => {
-      setEditing('from');
+    const handleFromAmountChange = useCallback((amount: bigint) => {
+      setLastEditedField('from');
       setFromAmount(amount);
-    };
+    }, []);
 
     const handleToAmountChange = useCallback((amount: bigint) => {
-      setEditing('to');
+      setLastEditedField('to');
       setToAmount(amount);
     }, []);
 
@@ -327,7 +343,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
 
           <div className="Inputs">
             <FromInput
-              key={`from-${refreshKey}`}
               selectedToken={fromToken}
               onTokenSelect={handleFromTokenSelect}
               onAmountChange={handleFromAmountChange}
@@ -336,7 +351,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!fromToken}
-              onBlur={() => setEditing(null)}
+              onBlur={() => setLastEditedField(null)}
             />
             <Divider
               dominantColor={dominantColor}
@@ -344,7 +359,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               onClick={handleSwitchTokens}
             />
             <SwapToInput
-              key={`to-${refreshKey}`}
               steps={{ totalRatio: 0, steps: [] }}
               preSelected={toToken}
               onSelect={handleToTokenSelect}
@@ -354,9 +368,28 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!toToken}
-              onBlur={() => setEditing(null)}
+              onBlur={() => setLastEditedField(null)}
             />
           </div>
+
+          {/* SwapDetails component - show only when we have valid quote data */}
+          {fromToken && toToken && fromAmount > 0n && swap.quote && (
+            <SwapDetails
+              swap={swap}
+              fromToken={fromToken}
+              toToken={toToken}
+              fromAmount={fromAmount}
+            />
+          )}
+
+          {/* RouteDisplay component - show optimal route visualization */}
+          {fromToken && toToken && fromAmount > 0n && swap.optimizedRoute && (
+            <RouteDisplay
+              optimizedRoute={swap.optimizedRoute}
+              fromToken={fromToken}
+              toToken={toToken}
+            />
+          )}
 
           <div className="Form__ConnectBtnWrapper">
             {!isConnected ? (
@@ -387,6 +420,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
           outputAmount={toAmount}
           swap={swap}
           onRefreshInputs={handleRefreshInputs}
+          onAdjustSettings={handleAdjustSettings}
         />
       </div >
     );

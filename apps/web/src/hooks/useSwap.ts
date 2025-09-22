@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { encodePacked, erc20Abi, formatUnits, parseEther, zeroAddress, type Address, type Hex } from "viem"
 import { useAccount, usePublicClient, useReadContract, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { calculatePriceImpact, calculateSlippageAmount, encodePath } from "../utils/swap"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTokenCache } from "./useTokenCache"
+import { useDebounce } from "./useDebounce"
+import { useRouteCache, type RouteCalculatorFn } from "./useRouteCache"
 
 import { CONTRACTS_ADDRESS } from "../config/contractsAddress"
 
@@ -31,6 +33,13 @@ interface SwapParams {
   slippageTolerance?: number // Percent (0.05 = 5%)
   deadline?: number // Minutes
   recipient?: Address
+  enableDebounce?: boolean // Enable debounce on amountIn (default: true)
+  enableRouteCache?: boolean // Enable intelligent route caching (default: true)
+  cacheOptions?: {
+    staleTime?: number // TTL en millisecondes (défaut: 30s)
+    enablePersistentCache?: boolean // Cache localStorage (défaut: true)
+    backgroundRefetch?: boolean // Refetch en arrière-plan (défaut: true)
+  }
 }
 
 interface TokenInfo {
@@ -80,7 +89,12 @@ export interface OptimizedRoute {
 
 interface SwapState {
   status: 'idle' | 'loading-routes' | 'quoting' | 'optimizing' | 'ready' | 'approving' | 'swapping' | 'wrapping' | 'unwrapping' | 'success' | 'error'
-  error?: string
+  error?: {
+    message: string
+    originalError?: unknown
+    code?: string
+    context?: string
+  }
   routes: SingleRoute[]
   optimizedRoute: OptimizedRoute | null
   txHash?: Hex
@@ -107,17 +121,48 @@ const parseParams = (params: SwapParams) => {
 
 export const useSwap = (params: SwapParams) => {
   const queryClient = useQueryClient()
-  const { tokenIn, tokenOut, amountIn, slippageTolerance = 0.05, deadline = 20, recipient, isWrap, isUnWrap } = parseParams(params)
+  const {
+    tokenIn,
+    tokenOut,
+    amountIn,
+    slippageTolerance = 0.05,
+    deadline = 20,
+    recipient,
+    enableDebounce = true,
+    enableRouteCache = false,
+    cacheOptions = {},
+    isWrap,
+    isUnWrap
+  } = parseParams(params)
   const { address } = useAccount()
   const publicClient = usePublicClient()
   const { getTokenInfo } = useTokenCache()
   const [processedSuccessHashes, setProcessedSuccessHashes] = useState<Set<string>>(new Set());
+
+  // Debounce amountIn with 500ms delay if enabled
+  const debouncedAmountIn = useDebounce(amountIn, 500)
+  const effectiveAmountIn = useMemo(() => {
+    return enableDebounce ? debouncedAmountIn : amountIn
+  }, [enableDebounce, debouncedAmountIn, amountIn])
 
   const [state, setState] = useState<SwapState>({
     status: 'idle',
     routes: [],
     optimizedRoute: null
   })
+
+  // Refs to prevent duplicate calls and infinite loops
+  const loadedAmountRef = useRef<bigint>(0n)
+  const isLoadingRef = useRef(false)
+
+
+  // Helper function to create structured error - memoized to prevent recreations
+  const createError = useCallback((message: string, originalError?: unknown, code?: string, context?: string) => ({
+    message,
+    originalError,
+    code,
+    context
+  }), [])
 
   /**
    * Fetch datas onChain
@@ -380,7 +425,8 @@ export const useSwap = (params: SwapParams) => {
   }, [quoteRoute])
 
   const generateTransactionData = useCallback(async (
-    route: OptimizedRoute
+    route: OptimizedRoute,
+    currentAmountIn: bigint
   ): Promise<TransactionData> => {
     if (!address) throw new Error('No address')
 
@@ -398,7 +444,7 @@ export const useSwap = (params: SwapParams) => {
           tokenOut: singleRoute.path[1].address,
           fee: singleRoute.fees[0],
           recipient: recipient || address,
-          amountIn,
+          amountIn: currentAmountIn,
           amountOutMinimum,
           sqrtPriceLimitX96: 0n
         }
@@ -408,7 +454,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: "exactInputSingle",
           args: [params],
-          value: tokenIn === WBERA ? amountIn : 0n
+          value: tokenIn === zeroAddress ? currentAmountIn : 0n
         }
       } else {
         // Multi-hop
@@ -421,7 +467,7 @@ export const useSwap = (params: SwapParams) => {
           path,
           recipient: recipient || address,
           deadline: deadlineTS,
-          amountIn,
+          amountIn: currentAmountIn,
           amountOutMinimum
         }
 
@@ -430,7 +476,7 @@ export const useSwap = (params: SwapParams) => {
           abi: SwapRouteV2ABI,
           functionName: 'exactInput',
           args: [params],
-          value: tokenIn === WBERA ? amountIn : 0n
+          value: tokenIn === zeroAddress ? currentAmountIn : 0n
         }
       }
     } else {
@@ -476,7 +522,7 @@ export const useSwap = (params: SwapParams) => {
           )
         }
 
-        if (tokenIn === WBERA) {
+        if (tokenIn === zeroAddress) {
           totalValue += splitRoute.amount
         }
       }
@@ -489,9 +535,9 @@ export const useSwap = (params: SwapParams) => {
         value: totalValue
       }
     }
-  }, [address, deadline, slippageTolerance, recipient, tokenIn, amountIn])
+  }, [address, deadline, slippageTolerance, recipient, tokenIn])
 
-  const optimizeRoutes = useCallback(async (routes: SingleRoute[]) => {
+  const optimizeRoutes = useCallback(async (routes: SingleRoute[], currentAmountIn: bigint) => {
     if (routes.length === 0) return null
 
     setState(prev => ({ ...prev, status: 'optimizing' }))
@@ -507,7 +553,7 @@ export const useSwap = (params: SwapParams) => {
         totalGasEstimate: bestSingleRoute.gasEstimate,
         quoteFormatted: formatUnits(bestSingleRoute.quote, tokenOutInfo?.decimals || 18),
         priceImpact: calculatePriceImpact(
-          amountIn,
+          currentAmountIn,
           bestSingleRoute.quote,
           bestSingleRoute.pools[0]?.sqrtPriceX96 || 1n,
           bestSingleRoute.path[0].decimals,
@@ -516,14 +562,14 @@ export const useSwap = (params: SwapParams) => {
         routes: [{
           route: bestSingleRoute,
           percentage: 100,
-          amount: amountIn,
+          amount: currentAmountIn,
           quote: bestSingleRoute.quote
         }],
         transactionData: null
       }
 
       // 2. Test split routes
-      const splitOptions = await testOrderSplitting(routes, amountIn)
+      const splitOptions = await testOrderSplitting(routes, currentAmountIn)
 
       // 3. Compare all options
       const allOptions = [singleOptimized, ...splitOptions]
@@ -536,99 +582,148 @@ export const useSwap = (params: SwapParams) => {
       })
 
       // 4. Generate transactionData
-      bestOption.transactionData = await generateTransactionData(bestOption)
+      bestOption.transactionData = await generateTransactionData(bestOption, currentAmountIn)
 
       return bestOption
     } catch (error) {
       console.error('Route optimization failed', error)
       return null
     }
-  }, [amountIn, testOrderSplitting, generateTransactionData, getTokenInfo])
+  }, [testOrderSplitting, generateTransactionData, getTokenInfo])
 
   /**
-   * Main function to fetch routes
+   * Route calculation function for cache - extracted from original loadRoutes logic
    */
-  const loadRoutes = useCallback(async () => {
-    if (!tokenIn || !tokenOut || !amountIn || amountIn === 0n) return
-    if (!["ready", "idle"].includes(state.status)) return
+  const calculateRoutes: RouteCalculatorFn = useCallback(async (
+    calcTokenIn: Address,
+    calcTokenOut: Address,
+    calcAmountIn: bigint
+  ) => {
+    // 1. Find all possible routes
+    const possibleRoutes = await findRoutes(calcTokenIn, calcTokenOut)
+    if (possibleRoutes.length === 0) {
+      throw createError('No trading routes available for this token pair', null, 'NO_ROUTES_FOUND', 'route_discovery')
+    }
 
+    // 2. Quote all routes in parallel
+    const quotedRoutes = await Promise.all(
+      possibleRoutes.map(async (route) => {
+        const quoteResult = await quoteRoute(route.tokens, route.fees, calcAmountIn)
+        if (!quoteResult) return null
+
+        // Get pool info for each hop
+        const pools: PoolInfo[] = []
+        for (let i = 0; i < route.fees.length; i++) {
+          const poolAddress = await checkPoolExists(route.tokens[i], route.tokens[i + 1], route.fees[i])
+          if (poolAddress) {
+            const poolInfo = await getPoolInfo(poolAddress, route.fees[i])
+            if (poolInfo) pools.push(poolInfo)
+          }
+        }
+
+        // get token info for path
+        const pathTokenInfo = await Promise.all(
+          route.tokens.map(token => getTokenInfo(token))
+        )
+
+        return {
+          path: pathTokenInfo,
+          fees: route.fees,
+          pools,
+          quote: quoteResult.quote,
+          gasEstimate: quoteResult.gasEstimate
+        } as SingleRoute
+      })
+    )
+
+    // Filter out failed quotes and sort by output amount
+    const validRoutes = quotedRoutes
+      .filter((route): route is SingleRoute => route !== null && route.quote > 0n)
+      .sort((a, b) => {
+        const aNet = a.quote - a.gasEstimate
+        const bNet = b.quote - b.gasEstimate
+        return aNet > bNet ? -1 : 1;
+      })
+
+    if (validRoutes.length === 0) {
+      throw createError('Unable to get price quotes for any available routes', null, 'NO_VALID_QUOTES', 'quote_validation')
+    }
+
+    // 3. Optimize routes
+    const optimizedRoute = await optimizeRoutes(validRoutes, calcAmountIn)
+    if (!optimizedRoute) {
+      throw createError('Failed to optimize trading routes', null, 'ROUTE_OPTIMIZATION_FAILED', 'route_optimization')
+    }
+
+    return {
+      routes: validRoutes,
+      optimizedRoute
+    }
+  }, [findRoutes, quoteRoute, checkPoolExists, getPoolInfo, getTokenInfo, optimizeRoutes, createError])
+
+  // Route cache avec logique intelligente
+  const routeCache = useRouteCache(
+    tokenIn,
+    tokenOut,
+    effectiveAmountIn,
+    calculateRoutes,
+    {
+      enabled: enableRouteCache && !!tokenIn && !!tokenOut && effectiveAmountIn > 0n,
+      staleTime: cacheOptions.staleTime || 30 * 1000, // 30 secondes par défaut
+      enablePersistentCache: cacheOptions.enablePersistentCache !== false,
+      backgroundRefetch: cacheOptions.backgroundRefetch !== false,
+      retryAttempts: 2
+    }
+  )
+
+  /**
+   * Main function to fetch routes - refactored to accept amount as parameter to prevent infinite loops
+   */
+  const loadRoutes = useCallback(async (amountToLoad: bigint) => {
+    if (!tokenIn || !tokenOut || !amountToLoad || amountToLoad === 0n) return
+
+    // Prevent duplicate calls for the same amount
+    if (loadedAmountRef.current === amountToLoad && isLoadingRef.current) {
+      return
+    }
+
+    // Si le cache est activé, laisse le cache gérer le chargement automatiquement
+    if (enableRouteCache) {
+      return // Le cache useRouteCache gère déjà le chargement et la synchronisation
+    }
+
+    loadedAmountRef.current = amountToLoad
+    isLoadingRef.current = true
+
+    // Pour le mode sans cache uniquement
     setState(prev => ({ ...prev, status: 'loading-routes', error: undefined }))
 
     try {
-      // 1. Find all possible routes
-      const possibleRoutes = await findRoutes(tokenIn, tokenOut)
-      if (possibleRoutes.length === 0) {
-        throw new Error('No routes found')
-      }
-
-      setState(prev => ({ ...prev, status: 'quoting' }))
-
-      // 2. Quote all routes in parallel
-      const quotedRoutes = await Promise.all(
-        possibleRoutes.map(async (route) => {
-          const quoteResult = await quoteRoute(route.tokens, route.fees, amountIn)
-          if (!quoteResult) return null
-
-          // Get pool info for each hop
-          const pools: PoolInfo[] = []
-          for (let i = 0; i < route.fees.length; i++) {
-            const poolAddress = await checkPoolExists(route.tokens[i], route.tokens[i + 1], route.fees[i])
-            if (poolAddress) {
-              const poolInfo = await getPoolInfo(poolAddress, route.fees[i])
-              if (poolInfo) pools.push(poolInfo)
-            }
-          }
-
-          // get token info for path
-          const pathTokenInfo = await Promise.all(
-            route.tokens.map(token => getTokenInfo(token))
-          )
-
-          return {
-            path: pathTokenInfo,
-            fees: route.fees,
-            pools,
-            quote: quoteResult.quote,
-            gasEstimate: quoteResult.gasEstimate
-          } as SingleRoute
-        })
-      )
-
-      // Filter out failed quotes and sort by output amount
-      const validRoutes = quotedRoutes
-        .filter((route): route is SingleRoute => route !== null && route.quote > 0n)
-        .sort((a, b) => {
-          const aNet = a.quote - a.gasEstimate
-          const bNet = b.quote - b.gasEstimate
-          return aNet > bNet ? -1 : 1;
-        })
-
-      if (validRoutes.length === 0) {
-        throw new Error('No valid quotes found')
-      }
-
-      // 3. Optimize routes
-      const optimizedRoute = await optimizeRoutes(validRoutes)
-      if (!optimizedRoute) {
-        throw new Error('Route optimization failed')
-      }
-
+      const result = await calculateRoutes(tokenIn, tokenOut, amountToLoad)
       setState({
         status: "ready",
-        routes: validRoutes,
-        optimizedRoute,
+        routes: result.routes,
+        optimizedRoute: result.optimizedRoute,
         error: undefined
       })
-
     } catch (error) {
       console.error('Failed to load routes', error)
       setState(prev => ({
         ...prev,
         status: 'error',
-        error: error instanceof Error ? error.message : 'Failed to find routes'
+        error: error && typeof error === 'object' && 'message' in error
+          ? error as typeof prev.error
+          : createError(
+              error instanceof Error ? error.message : 'Failed to find routes',
+              error,
+              'ROUTE_LOADING_FAILED',
+              'route_discovery'
+            )
       }))
+    } finally {
+      isLoadingRef.current = false
     }
-  }, [tokenIn, tokenOut, amountIn, findRoutes, quoteRoute, checkPoolExists, getPoolInfo, optimizeRoutes])
+  }, [tokenIn, tokenOut, enableRouteCache, calculateRoutes, createError])
 
   /**
    * Token approval
@@ -644,8 +739,8 @@ export const useSwap = (params: SwapParams) => {
     }
   })
   const needsApproval = useMemo(() => {
-    return !!state.optimizedRoute && allowance !== undefined && allowance < amountIn
-  }, [state.optimizedRoute, allowance, amountIn])
+    return !!state.optimizedRoute && allowance !== undefined && allowance < effectiveAmountIn
+  }, [state.optimizedRoute, allowance, effectiveAmountIn])
 
   const {
     writeContract: executeApprove,
@@ -677,7 +772,12 @@ export const useSwap = (params: SwapParams) => {
           setState(prev => ({
             ...prev,
             status: "error",
-            error: error instanceof Error ? error.message : 'Approve failed'
+            error: createError(
+              error instanceof Error ? error.message : 'Token approval failed',
+              error,
+              'APPROVAL_FAILED',
+              'token_approval'
+            )
           }))
         }
       })
@@ -685,7 +785,12 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({
         ...prev,
         status: "error",
-        error: error instanceof Error ? error.message : 'Approve failed'
+        error: createError(
+          error instanceof Error ? error.message : 'Token approval failed',
+          error,
+          'APPROVAL_FAILED',
+          'token_approval'
+        )
       }))
     }
   }, [tokenIn, state.optimizedRoute, address, needsApproval, executeApprove])
@@ -705,7 +810,7 @@ export const useSwap = (params: SwapParams) => {
     address: WBERA,
     abi: wBeraABI,
     functionName: "deposit",
-    value: amountIn,
+    value: effectiveAmountIn,
     query: {
       enabled: isWrap && !!address
     }
@@ -721,7 +826,12 @@ export const useSwap = (params: SwapParams) => {
           setState(prev => ({
             ...prev,
             status: "error",
-            error: error instanceof Error ? error.message : 'Wrap failed'
+            error: createError(
+              error instanceof Error ? error.message : 'BERA wrapping failed',
+              error,
+              'WRAP_FAILED',
+              'bera_wrapping'
+            )
           }))
         }
       })
@@ -729,7 +839,12 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({
         ...prev,
         status: "error",
-        error: error instanceof Error ? error.message : 'Wrap failed'
+        error: createError(
+          error instanceof Error ? error.message : 'BERA wrapping failed',
+          error,
+          'WRAP_FAILED',
+          'bera_wrapping'
+        )
       }))
     }
   }, [wrapConfig])
@@ -746,7 +861,7 @@ export const useSwap = (params: SwapParams) => {
     address: WBERA,
     abi: wBeraABI,
     functionName: "withdraw",
-    args: [amountIn],
+    args: [effectiveAmountIn],
     query: {
       enabled: isUnWrap && !!address
     }
@@ -762,7 +877,12 @@ export const useSwap = (params: SwapParams) => {
           setState(prev => ({
             ...prev,
             status: "error",
-            error: error instanceof Error ? error.message : 'Unwrap failed'
+            error: createError(
+              error instanceof Error ? error.message : 'BERA unwrapping failed',
+              error,
+              'UNWRAP_FAILED',
+              'bera_unwrapping'
+            )
           }))
         }
       })
@@ -770,7 +890,12 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({
         ...prev,
         status: "error",
-        error: error instanceof Error ? error.message : 'Unwrap failed'
+        error: createError(
+          error instanceof Error ? error.message : 'BERA unwrapping failed',
+          error,
+          'UNWRAP_FAILED',
+          'bera_unwrapping'
+        )
       }))
     }
   }, [unWrapConfig])
@@ -809,7 +934,12 @@ export const useSwap = (params: SwapParams) => {
           setState(prev => ({
             ...prev,
             status: "error",
-            error: error instanceof Error ? error.message : 'Swap failed'
+            error: createError(
+              error instanceof Error ? error.message : 'Token swap failed',
+              error,
+              'SWAP_FAILED',
+              'token_swap'
+            )
           }))
         }
       })
@@ -817,7 +947,12 @@ export const useSwap = (params: SwapParams) => {
       setState(prev => ({
         ...prev,
         status: "error",
-        error: error instanceof Error ? error.message : 'Swap failed'
+        error: createError(
+          error instanceof Error ? error.message : 'Token swap failed',
+          error,
+          'SWAP_FAILED',
+          'token_swap'
+        )
       }))
     }
   }, [address, needsApproval, executeSwap, swapConfig])
@@ -826,42 +961,141 @@ export const useSwap = (params: SwapParams) => {
    * Utils
    */
   const refresh = useCallback(() => {
-    loadRoutes()
-  }, [loadRoutes])
-  const reset = () => {
+    if (enableRouteCache) {
+      // Invalide le cache et force un refetch
+      routeCache.invalidateCache({ forceRefresh: true })
+    } else {
+      loadRoutes(effectiveAmountIn)
+    }
+  }, [loadRoutes, enableRouteCache, routeCache, effectiveAmountIn])
+
+  const reset = useCallback(() => {
     setState({
       status: "idle",
       routes: [],
       optimizedRoute: null,
+      error: undefined,
       txHash: undefined
     })
-  }
 
-  useEffect(() => {
-    loadRoutes()
-  }, [loadRoutes])
-  // Update swap state
-  useEffect(() => {
-    if (isApproving || isApprovingTxPending) {
-      setState(prev => ({ ...prev, status: 'approving' }))
-    } else if (isSwapping || isSwapTxPending) {
-      setState(prev => ({ ...prev, status: 'swapping', tsHash: swapTx }))
-    } else if (isWrapping || isWrapTxPending) {
-      setState(prev => ({ ...prev, status: 'wrapping', tsHash: wrapTx }))
-    } else if (isUnWrapping || isUnWrapTxPending) {
-      setState(prev => ({ ...prev, status: 'unwrapping', tsHash: unWrapTx }))
-    } else if ((isSwapSuccess || isWrapSuccess || isUnWrapSuccess) && swapTx && !processedSuccessHashes.has(swapTx)) {
-      setState(prev => ({ ...prev, status: 'success', txHash: swapTx }))
-      queryClient.invalidateQueries({ queryKey: ["balance"] })
-      setProcessedSuccessHashes(prev => new Set(prev).add(swapTx))
-    } else if (swapConfig?.request && state.status !== 'success') {
-      setState(prev => ({ ...prev, status: 'ready' }))
-    } else if (state.status !== 'success') {
-      setState(prev => ({ ...prev, status: 'idle' }))
+    if (enableRouteCache) {
+      // Nettoie aussi le cache
+      routeCache.invalidateCache({ invalidateAll: false })
     }
-  }, [isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess, swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending, isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess, processedSuccessHashes, state.status])
+  }, [enableRouteCache, routeCache])
+
+  // Fonction pour invalider le cache lors de changements significatifs
+  const invalidateCacheForAmount = useCallback((newAmountIn: bigint) => {
+    if (enableRouteCache) {
+      routeCache.invalidateCache({ newAmountIn })
+    }
+  }, [enableRouteCache, routeCache])
+
+  // Optimisations simplifiées (cache désactivé par défaut)
+  const prefetchPopularRoutes = useCallback(async () => {
+    // Cache désactivé, fonction vide pour compatibilité
+    return Promise.resolve()
+  }, [])
+
+  // Consolidated state updates - optimized to prevent unnecessary re-renders with processedSuccessHashes integration
+  useEffect(() => {
+    setState(prev => {
+      let newStatus: SwapState['status'] = prev.status
+      let txHash: typeof prev.txHash = prev.txHash
+      let routes = prev.routes
+      let optimizedRoute = prev.optimizedRoute
+      let error = prev.error
+
+      // Cache state handling
+      if (enableRouteCache) {
+        if (routeCache.isError && routeCache.error) {
+          newStatus = 'error'
+          error = createError(
+            routeCache.error instanceof Error ? routeCache.error.message : 'Cache route loading failed',
+            routeCache.error,
+            'CACHE_ROUTE_FAILED',
+            'route_cache'
+          )
+        } else if (routeCache.isLoading && prev.status !== 'loading-routes') {
+          newStatus = 'loading-routes'
+          error = undefined
+        } else if (routeCache.isSuccess && routeCache.routes.length > 0 && routeCache.optimizedRoute) {
+          // Only update if data actually changed
+          if (JSON.stringify(prev.optimizedRoute) !== JSON.stringify(routeCache.optimizedRoute)) {
+            newStatus = "ready"
+            routes = routeCache.routes
+            optimizedRoute = routeCache.optimizedRoute
+            error = undefined
+          }
+        }
+      }
+
+      // Transaction state handling - check in priority order with processedSuccessHashes logic
+      if (isApproving || isApprovingTxPending) {
+        newStatus = 'approving'
+      } else if (isSwapping || isSwapTxPending) {
+        newStatus = 'swapping'
+        txHash = swapTx
+      } else if (isWrapping || isWrapTxPending) {
+        newStatus = 'wrapping'
+        txHash = wrapTx
+      } else if (isUnWrapping || isUnWrapTxPending) {
+        newStatus = 'unwrapping'
+        txHash = unWrapTx
+      } else if ((isSwapSuccess || isWrapSuccess || isUnWrapSuccess) && (swapTx || wrapTx || unWrapTx)) {
+        const currentTxHash = swapTx || wrapTx || unWrapTx
+        if (currentTxHash && !processedSuccessHashes.has(currentTxHash)) {
+          newStatus = 'success'
+          txHash = currentTxHash
+          queryClient.invalidateQueries({ queryKey: ["balance"] })
+          setProcessedSuccessHashes(prev => new Set(prev).add(currentTxHash))
+        }
+      } else if (swapConfig?.request && !enableRouteCache && prev.status !== 'success') {
+        newStatus = 'ready'
+      } else if (!enableRouteCache && !swapConfig?.request && prev.status !== 'loading-routes' && prev.status !== 'error' && prev.status !== 'success') {
+        // Don't force to idle if we have valid tokens and amounts - let route calculation trigger
+        if (!tokenIn || !tokenOut || !effectiveAmountIn || effectiveAmountIn === 0n) {
+          newStatus = 'idle'
+        }
+      }
+
+      // Only update if something actually changed
+      if (newStatus !== prev.status ||
+          txHash !== prev.txHash ||
+          routes !== prev.routes ||
+          optimizedRoute !== prev.optimizedRoute ||
+          error !== prev.error) {
+        return {
+          status: newStatus,
+          routes,
+          optimizedRoute,
+          error,
+          txHash
+        }
+      }
+
+      return prev
+    })
+  }, [
+    enableRouteCache, routeCache.isError, routeCache.isLoading, routeCache.isSuccess,
+    routeCache.routes, routeCache.optimizedRoute, routeCache.error, createError,
+    isApproving, isApprovingTxPending, isSwapping, isSwapTxPending, isSwapSuccess,
+    swapTx, queryClient, swapConfig, isWrapping, isUnWrapping, isWrapTxPending,
+    isUnWrapTxPending, isWrapSuccess, isUnWrapSuccess, wrapTx, unWrapTx, processedSuccessHashes
+  ])
+
+  // Chargement initial pour le mode sans cache uniquement - using ref to prevent infinite loops
+  useEffect(() => {
+    if (!enableRouteCache && tokenIn && tokenOut && effectiveAmountIn > 0n) {
+      // Only load if amount changed to prevent infinite loops
+      if (loadedAmountRef.current !== effectiveAmountIn) {
+        loadRoutes(effectiveAmountIn)
+      }
+    }
+  }, [tokenIn, tokenOut, effectiveAmountIn, enableRouteCache, loadRoutes])
 
   return {
+    // État principal
     status: state.status,
     error: state.error,
     routes: state.routes,
@@ -869,13 +1103,16 @@ export const useSwap = (params: SwapParams) => {
     txhash: state.txHash,
     slippageTolerance: slippageTolerance,
 
+    // État des transactions
     needsApproval,
     isLoading: ['loading-routes', 'quoting', 'optimizing', 'approving', 'swapping', 'wrapping', 'unwrapping'].includes(state.status),
     isReady: state.status === "ready" && !!state.optimizedRoute?.transactionData,
 
+    // Types de transaction
     isWrap,
     isUnWrap,
 
+    // Informations de quote
     quote: state.optimizedRoute ? {
       amountOut: state.optimizedRoute.totalQuote,
       amountOutFormatted: state.optimizedRoute.quoteFormatted,
@@ -891,11 +1128,48 @@ export const useSwap = (params: SwapParams) => {
         : 0n
     } : null,
 
+    // Actions principales
     swap,
     approve,
     refresh,
     wrap,
     unwrap,
-    reset
+    reset,
+
+    // Nouvelles fonctionnalités de cache
+    cache: enableRouteCache ? {
+      isEnabled: true,
+      isFromCache: routeCache.isFromCache,
+      isDataFresh: routeCache.isDataFresh,
+      isStale: routeCache.isStale,
+      timestamp: routeCache.timestamp,
+      cacheKey: routeCache.cacheKey,
+      invalidateCache: routeCache.invalidateCache,
+      invalidateCacheForAmount,
+      prefetchPopularRoutes,
+      // Métriques de performance
+      metrics: {
+        dataUpdatedAt: routeCache.dataUpdatedAt,
+        errorUpdatedAt: routeCache.errorUpdatedAt,
+        failureCount: routeCache.failureCount,
+        isFetching: routeCache.isFetching
+      }
+    } : {
+      isEnabled: false,
+      isFromCache: false,
+      isDataFresh: true,
+      isStale: false,
+      timestamp: undefined,
+      cacheKey: null,
+      invalidateCache: () => {},
+      invalidateCacheForAmount: () => {},
+      prefetchPopularRoutes: async () => {},
+      metrics: {
+        dataUpdatedAt: 0,
+        errorUpdatedAt: 0,
+        failureCount: 0,
+        isFetching: false
+      }
+    }
   }
 }

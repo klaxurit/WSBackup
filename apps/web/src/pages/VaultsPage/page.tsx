@@ -116,7 +116,7 @@ const VaultsPage: React.FC = () => {
         <div className="VaultsPage__Table">
           {isLoading
             ? <p>Loading...</p>
-            : !!data
+            : data
               ? <VaultsTable vaults={data} searchValue={search} />
               : <p>No Vaults</p>
           }

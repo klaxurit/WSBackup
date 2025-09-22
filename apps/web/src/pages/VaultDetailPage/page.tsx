@@ -257,12 +257,12 @@ export const VaultDetailPage = () => {
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">Vault APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items?.[0].maxPotentialAPR || "0"}%</span>
+              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%</span>
             </div>
             <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
               <span className="VaultDetailPage__StatLabel">Total APR</span>
               <span className="VaultDetailPage__StatValue VaultDetailPage__StatValue--highlight">
-                {vault?.vaultDayData.items?.[0].maxPotentialAPR || "0"}%
+                {vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%
               </span>
             </div>
           </div>
@@ -418,25 +418,29 @@ export const VaultDetailPage = () => {
                 <div className="VaultDetailPage__PercentageButtons">
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.1 * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.1 * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     10%
                   </button>
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.25 * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.25 * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     25%
                   </button>
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.5 * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.5 * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     50%
                   </button>
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     MAX
                   </button>
