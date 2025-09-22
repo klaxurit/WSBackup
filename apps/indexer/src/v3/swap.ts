@@ -45,7 +45,8 @@ ponder.on("v3Pool:Swap", async ({ event, context }) => {
 
   const amount0USD = amount0Bera.mul(beraPriceUSD)
   const amount1USD = amount1Bera.mul(beraPriceUSD)
-  const totalAmountUSD = amount0USD // Only take 1 amount
+  // Fix: Take average of both sides to avoid double counting (align with vault logic)
+  const totalAmountUSD = amount0USD.plus(amount1USD).div(2)
 
   // Les frais sont calculés sur la moitié du volume (un seul côté du swap)
   const volumeForFees = totalAmountBera.div(2) // On prend la moitié puisque on a amount0 + amount1
