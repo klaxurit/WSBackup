@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { FallbackImg } from "../utils/FallbackImg";
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
 
@@ -82,6 +82,7 @@ const GET_TOKENS_STATS = `
 
 export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   const itemsPerPage = 20;
+  const navigate = useNavigate();
 
   // État pour gérer le mode de tri
   const [sortMode, setSortMode] = useState<'server' | 'client'>('server');
@@ -258,7 +259,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
     return {
       hasNextPage: sortMode === 'server' ? !!hasNextPage : false, // Désactiver "Load More" en mode client
       isFetchingNextPage: sortMode === 'server' ? isFetchingNextPage : false,
-      onLoadMore: sortMode === 'server' ? fetchNextPage : () => {},
+      onLoadMore: sortMode === 'server' ? fetchNextPage : () => { },
       totalItems: firstPage?.totalCount || 0,
       currentItems: tokens.length,
       itemLabel: "tokens",
@@ -273,15 +274,24 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       label: '#',
       key: 'index',
       render: (row) => (
-        <a
-          href={`https://berascan.com/address/${row.id || ''}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="Table__Address"
-          title={row.id || ''}
-        >
-          {row.id ? row.id.slice(0, 4) + '...' + row.id.slice(-4) : 'N/A'}
-        </a>
+        <span className="Table__IndexCell">
+          <button
+            type="button"
+            className="Table__Address"
+            onClick={() => navigate(`/tokens/${row.id || ''}`)}
+          >
+            {row.id ? row.id.slice(0, 4) + '...' + row.id.slice(-4) : 'N/A'}
+          </button>
+          <a
+            href={`https://berascan.com/address/${row.id || ''}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="Table__Icon"
+            title={row.id || ''}
+            onClick={(e) => e.stopPropagation()}
+          >
+          </a>
+        </span>
       )
     },
     {
@@ -297,13 +307,14 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
               ? <img src={row.logoUri} className="TokensTable__Logo" />
               : <FallbackImg content={row.symbol} className="TokensTable__Logo" />}
           </span>
-          <Link
-            to={`/tokens/${row.id || ''}`}
+          <button
+            type="button"
+            onClick={() => navigate(`/tokens/${row.id || ''}`)}
             className="TokensTable__NameLink"
             title={`View ${row.name || 'Unknown'} details`}
           >
             {row.symbol} - {row.name}
-          </Link>
+          </button>
         </span>
       )
     },
@@ -413,6 +424,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       defaultSortDirection="desc"
       infiniteLoad={infiniteLoadProps}
       itemLabel="tokens"
+      onRowClick={(row) => navigate(`/tokens/${row.id || ''}`)}
     />
   )
 }
