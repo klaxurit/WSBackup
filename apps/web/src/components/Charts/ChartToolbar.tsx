@@ -10,6 +10,7 @@ interface ChartToolbarProps {
   onIntervalChange: (interval: ChartInterval) => void;
   onMetricChange: (metric: ChartMetric) => void;
   availableIntervals?: ChartInterval[];
+  availableMetrics?: ChartMetric[];
   isLoading?: boolean;
 }
 
@@ -78,6 +79,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   onIntervalChange,
   onMetricChange,
   availableIntervals = ['1H', '4H', '1D', '1W', '1M'],
+  availableMetrics,
   isLoading = false,
 }) => {
   const [hoveredInterval, setHoveredInterval] = React.useState<ChartInterval | null>(null);
@@ -237,7 +239,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   onClick={() => setIsDesktopMetricDropdownOpen(false)}
                 />
                 <div className="chart-toolbar__metrics-menu">
-                  {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
+                  {(availableMetrics || (Object.keys(metricLabels) as ChartMetric[])).map((metricOption) => {
                     const isActive = metric === metricOption;
                     const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
 
@@ -416,7 +418,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   onClick={() => setIsMobileMetricDropdownOpen(false)}
                 />
                 <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--open`}>
-                  {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
+                  {(availableMetrics || (Object.keys(metricLabels) as ChartMetric[])).map((metricOption) => {
                     const isActive = metric === metricOption;
                     const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
 
