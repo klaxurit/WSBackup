@@ -140,7 +140,7 @@ export const RouteDisplay: React.FC<RouteDisplayProps> = React.memo(({
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path
                   d="M2 7H12M12 7L8.5 3.5M12 7L8.5 10.5"
-                  stroke="#3B82F6"
+                  stroke="#E39229"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
