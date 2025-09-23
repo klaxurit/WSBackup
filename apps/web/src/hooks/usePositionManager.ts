@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react"
-import { erc20Abi, formatUnits, maxUint128, parseUnits, zeroAddress, type Address } from "viem"
+import { erc20Abi, formatUnits, maxUint128, parseUnits, zeroAddress, type Address, encodeFunctionData } from "viem"
 import { Pool, Position, TickMath } from "@uniswap/v3-sdk"
 import { currentChain } from "../config/wagmi"
 import { Token } from "@uniswap/sdk-core"
@@ -282,22 +282,25 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }
     }
 
-    // Pour un calcul précis des frais, nous utilisons les données on-chain
-    // Note: Le calcul simplifié actuel peut être imprécis car il ne prend pas en compte
-    // les feeGrowthOutside des ticks. Pour une précision maximale, il faudrait :
-    // 1. Récupérer feeGrowthOutside0X128 et feeGrowthOutside1X128 pour tickLower et tickUpper
-    // 2. Calculer feeGrowthInside en fonction de la position actuelle du prix
-    const poolData = pool as PoolData
-    const positionData = onChainPosition
-      ? {
-        ...position,
-        liquidity: onChainPosition[7],
-        tickLower: onChainPosition[5],
-        tickUpper: onChainPosition[6],
-        feeGrowthInside0LastX128: onChainPosition[8],
-        feeGrowthInside1LastX128: onChainPosition[9],
+    // Bug 4 fix: Use on-chain tokensOwed values directly from position contract
+    if (onChainPosition) {
+      const tokensOwed0 = onChainPosition[10]; // tokensOwed0 from positions() call
+      const tokensOwed1 = onChainPosition[11]; // tokensOwed1 from positions() call
+
+      const poolData = pool as PoolData
+      const token0 = poolData.token0Ref || (pool as any).token0
+      const token1 = poolData.token1Ref || (pool as any).token1
+
+      return {
+        token0Amount: formatTokenAmount(formatUnits(tokensOwed0, token0.decimals)),
+        token1Amount: formatTokenAmount(formatUnits(tokensOwed1, token1.decimals)),
+        hasUnclaimed: tokensOwed0 > 0n || tokensOwed1 > 0n
       }
-      : position as PositionData
+    }
+
+    // Fallback calculation if on-chain position data is not available
+    const poolData = pool as PoolData
+    const positionData = position as PositionData
 
     if (poolData.feeGrowthGlobal0X128 && positionData.feeGrowthInside0LastX128) {
       const feeGrowthGlobal0 = BigInt(poolData.feeGrowthGlobal0X128);
@@ -328,24 +331,12 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       }
     }
 
-    // Fallback for old data structure or if fee calculation data is not available
-    const oldPosition = position as any
-    if (oldPosition.amount0 && oldPosition.amount1) {
-      const token0 = (pool as any).token0
-      const token1 = (pool as any).token1
-      return {
-        token0Amount: formatTokenAmount(formatUnits(BigInt(oldPosition.amount0), token0.decimals)),
-        token1Amount: formatTokenAmount(formatUnits(BigInt(oldPosition.amount1), token1.decimals)),
-        hasUnclaimed: BigInt(oldPosition.amount0) > 0n || BigInt(oldPosition.amount1) > 0n
-      }
-    }
-
     return {
       token0Amount: "0",
       token1Amount: "0",
       hasUnclaimed: false
     }
-  }, [pool, position, formatTokenAmount])
+  }, [pool, position, onChainPosition, formatTokenAmount])
 
   /**
    * allowance
@@ -502,19 +493,19 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
   })
   console.log("deposite config", addLiquidityConfig, simulateAddLiquidityError)
 
-  // Withdraw
+  // Withdraw (Bug 3 fix: Use multicall to combine decreaseLiquidity + collect)
   const { data: withdrawTxHash, writeContract: withdraw, isPending: waitWithdraw, reset: withdrawReset, error: withdrawError, isError: hasWithdrawError } = useWriteContract()
   const { data: withdrawConfig, isLoading: isSimulatingWithdraw, error: simulateWithdrawError } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
-    functionName: "decreaseLiquidity",
+    functionName: "multicall",
     args: (() => {
-      if (!datas?.withdraw || !position) return undefined
+      if (!datas?.withdraw || !position || !address) return undefined
 
       // Vérifier que la quantité de liquidité est valide
       if (!datas.withdraw.liquidity || datas.withdraw.liquidity === 0n) return undefined
 
-      console.log('Withdraw Simulation Args:', {
+      console.log('Withdraw+Collect Multicall Simulation Args:', {
         tokenId: position.tokenId,
         liquidity: datas.withdraw.liquidity.toString(),
         amount0Min: 0n.toString(),
@@ -531,13 +522,32 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
       const amount0Min = 0n
       const amount1Min = 0n
 
-      return [{
-        tokenId: BigInt(position.tokenId),
-        liquidity: datas.withdraw.liquidity,
-        amount0Min,
-        amount1Min,
-        deadline: BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
-      }]
+      // Encode decreaseLiquidity call
+      const decreaseLiquidityCall = encodeFunctionData({
+        abi: POSITION_MANAGER_ABI,
+        functionName: "decreaseLiquidity",
+        args: [{
+          tokenId: BigInt(position.tokenId),
+          liquidity: datas.withdraw.liquidity,
+          amount0Min,
+          amount1Min,
+          deadline: BigInt(Math.floor(Date.now() / 1000) + 1200) // 20m
+        }]
+      })
+
+      // Encode collect call to automatically collect the withdrawn tokens
+      const collectCall = encodeFunctionData({
+        abi: POSITION_MANAGER_ABI,
+        functionName: "collect",
+        args: [{
+          tokenId: BigInt(position.tokenId),
+          recipient: address,
+          amount0Max: maxUint128,
+          amount1Max: maxUint128,
+        }]
+      })
+
+      return [[decreaseLiquidityCall, collectCall]]
     })(),
     query: {
       enabled: !!address &&
@@ -661,6 +671,13 @@ export const usePositionManager = (positionData?: PositionData, datas?: UsePosit
     refetchBalances: () => {
       refetchToken0Balance();
       refetchToken1Balance();
+    },
+
+    // Bug 5 fix: Comprehensive refetch system
+    refetchAll: () => {
+      refetchToken0Balance();
+      refetchToken1Balance();
+      // Note: onChainPosition refetch is handled automatically by wagmi based on block updates
     },
 
     reset: () => {

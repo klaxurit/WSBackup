@@ -12,7 +12,7 @@ import { PositionFees } from '../../../components/PoolView/PositionFees';
 import { Modal } from '../../../components/Common/Modal';
 import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
 import { ClaimInput } from '../../../components/Inputs/ClaimInput';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { transformGraphQLTokenToLegacyToken } from '../../../types/api';
 import { ErrorMessage } from '../../../components/Common/ErrorMessage';
 import { TransactionStatus, useTransactionStatus } from '../../../components/Common/TransactionStatus';
@@ -84,6 +84,7 @@ const PoolViewPage: React.FC = () => {
   const { tokenId } = useParams<{ tokenId: string }>();
   const [modalType, setModalType] = useState<null | 'add' | 'remove' | 'success'>(null);
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
+  const queryClient = useQueryClient(); // Bug 5 fix: React Query client for cache invalidation
   const { data: posData, isLoading, refetch: refetchPosition } = useQuery({
     queryKey: ["position", tokenId],
     queryFn: async () => {
@@ -117,23 +118,41 @@ const PoolViewPage: React.FC = () => {
 
   console.log(pm)
 
-  // Gestion succès et erreurs de transaction
+  // Gestion succès et erreurs de transaction (Bug 5 fix: Enhanced with cache invalidation)
   useEffect(() => {
     if (pm.addLiquidityReceipt) {
       setModalType('success');
       setLastTxHash(pm.addLiquidityTxHash || null);
       // Reset config après succès
       setConfig({});
+      // Invalidate and refetch data after successful transaction
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
+        refetchPosition();
+        pm.refetchAll();
+      }, 2000); // Wait 2s for indexer to sync
     } else if (pm.withdrawReceipt) {
       setModalType('success');
       setLastTxHash(pm.withdrawTxHash || null);
       // Reset config après succès
       setConfig({});
+      // Invalidate and refetch data after successful transaction
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
+        refetchPosition();
+        pm.refetchAll();
+      }, 2000); // Wait 2s for indexer to sync
     } else if (pm.claimReceipt) {
       setModalType('success');
       setLastTxHash(pm.claimTxHash || null);
+      // Invalidate and refetch data after successful transaction
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
+        refetchPosition();
+        pm.refetchAll();
+      }, 2000); // Wait 2s for indexer to sync
     }
-  }, [pm.addLiquidityReceipt, pm.withdrawReceipt, pm.claimReceipt]);
+  }, [pm.addLiquidityReceipt, pm.withdrawReceipt, pm.claimReceipt, queryClient, tokenId, refetchPosition, pm]);
 
   // Status de transaction pour Add Liquidity
   const addLiquidityStatus = useTransactionStatus(
@@ -154,11 +173,22 @@ const PoolViewPage: React.FC = () => {
   const reset = () => {
     pm.reset()
     refetchPosition()
-    // Recharger les balances après transaction
-    pm.refetchBalances()
+    // Bug 5 fix: Use comprehensive refetch system
+    pm.refetchAll()
   }
 
-  const openModal = (type: 'add' | 'remove') => setModalType(type);
+  const openModal = (type: 'add' | 'remove') => {
+    setModalType(type);
+    // Bug 1 fix: Initialize config.withdraw when opening remove modal
+    if (type === 'remove' && position) {
+      setConfig({
+        ...config,
+        withdraw: {
+          liquidity: BigInt(position.liquidity)
+        }
+      });
+    }
+  };
   const closeModal = () => setModalType(null);
 
   const addLiquidityBtn = useMemo(() => {
