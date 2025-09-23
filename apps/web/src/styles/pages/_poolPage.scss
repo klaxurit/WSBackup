@@ -138,6 +138,10 @@
     flex-direction: column;
     gap: 24px;
 
+    .VaultDetailPage__FormButton {
+      margin-top: 0;
+    }
+
     @media (max-width: 768px) {
       width: 100%;
       min-width: 0;
