@@ -1,21 +1,17 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import PoolHeader from '../../../components/PoolView/PoolHeader';
 import PoolInfo from '../../../components/PoolView/PoolInfo';
-import PoolActions from '../../../components/PoolView/PoolActions';
 import PoolStats from '../../../components/PoolView/PoolStats';
+import { Loader } from '../../../components/Loader/Loader';
+import { usePositionDatas, usePositionManager, type UsePositionManagerDatas } from '../../../hooks/position/usePositionDatas';
+import PoolActions from '../../../components/PoolView/PoolActions';
+import { PositionFees } from '../../../components/PoolView/PositionFees';
+
+import { useQuery } from '@tanstack/react-query';
+import { transformGraphQLTokenToLegacyToken } from '../../../types/api';
 import '../../../styles/pages/_positionPage.scss';
 import '../../../styles/pages/_poolViewPage.scss';
-import { Loader } from '../../../components/Loader/Loader';
-import { usePositionManager, type UsePositionManagerDatas } from '../../../hooks/usePositionManager';
-import { PositionFees } from '../../../components/PoolView/PositionFees';
-import { Modal } from '../../../components/Common/Modal';
-import { LiquidityInput } from '../../../components/Inputs/LiquidityInput';
-import { ClaimInput } from '../../../components/Inputs/ClaimInput';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { transformGraphQLTokenToLegacyToken } from '../../../types/api';
-import { ErrorMessage } from '../../../components/Common/ErrorMessage';
-import { TransactionStatus, useTransactionStatus } from '../../../components/Common/TransactionStatus';
 
 const GET_POSITION = `
 query GetPosition($id: String!) {
@@ -80,12 +76,12 @@ query GetPosition($id: String!) {
 `
 
 const PoolViewPage: React.FC = () => {
-  const [config, setConfig] = useState<UsePositionManagerDatas>({})
   const { tokenId } = useParams<{ tokenId: string }>();
+  const [config, setConfig] = useState<UsePositionManagerDatas>({});
   const [modalType, setModalType] = useState<null | 'add' | 'remove' | 'success'>(null);
-  const [lastTxHash, setLastTxHash] = useState<string | null>(null);
-  const queryClient = useQueryClient(); // Bug 5 fix: React Query client for cache invalidation
-  const { data: posData, isLoading, refetch: refetchPosition } = useQuery({
+
+
+  const { data: posData, isLoading } = useQuery({
     queryKey: ["position", tokenId],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
@@ -104,78 +100,78 @@ const PoolViewPage: React.FC = () => {
     enabled: !!tokenId
   })
 
-
   const pool = posData?.poolRef
   const position = posData
+
 
   // Transform tokens to match expected interface
   const token0 = pool?.token0Ref ? transformGraphQLTokenToLegacyToken(pool.token0Ref) : null
   const token1 = pool?.token1Ref ? transformGraphQLTokenToLegacyToken(pool.token1Ref) : null
 
-  const pm = usePositionManager(posData, config)
-  const { inRange, positionDetails } = pm
-
+  const positionManager = position && pool ? usePositionManager(position, pool, config) : null
+  const pm = position && pool ? usePositionDatas(position, pool) : null
+  const { inRange, positionDetails } = pm || { inRange: false, positionDetails: null }
 
   console.log(pm)
 
   // Gestion succès et erreurs de transaction (Bug 5 fix: Enhanced with cache invalidation)
-  useEffect(() => {
-    if (pm.addLiquidityReceipt) {
-      setModalType('success');
-      setLastTxHash(pm.addLiquidityTxHash || null);
-      // Reset config après succès
-      setConfig({});
-      // Invalidate and refetch data after successful transaction
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
-        refetchPosition();
-        pm.refetchAll();
-      }, 2000); // Wait 2s for indexer to sync
-    } else if (pm.withdrawReceipt) {
-      setModalType('success');
-      setLastTxHash(pm.withdrawTxHash || null);
-      // Reset config après succès
-      setConfig({});
-      // Invalidate and refetch data after successful transaction
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
-        refetchPosition();
-        pm.refetchAll();
-      }, 2000); // Wait 2s for indexer to sync
-    } else if (pm.claimReceipt) {
-      setModalType('success');
-      setLastTxHash(pm.claimTxHash || null);
-      // Invalidate and refetch data after successful transaction
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
-        refetchPosition();
-        pm.refetchAll();
-      }, 2000); // Wait 2s for indexer to sync
-    }
-  }, [pm.addLiquidityReceipt, pm.withdrawReceipt, pm.claimReceipt, queryClient, tokenId, refetchPosition, pm]);
+  // useEffect(() => {
+  //   if (pm.addLiquidityReceipt) {
+  //     setModalType('success');
+  //     setLastTxHash(pm.addLiquidityTxHash || null);
+  //     // Reset config après succès
+  //     setConfig({});
+  //     // Invalidate and refetch data after successful transaction
+  //     setTimeout(() => {
+  //       queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
+  //       refetchPosition();
+  //       pm.refetchAll();
+  //     }, 2000); // Wait 2s for indexer to sync
+  //   } else if (pm.withdrawReceipt) {
+  //     setModalType('success');
+  //     setLastTxHash(pm.withdrawTxHash || null);
+  //     // Reset config après succès
+  //     setConfig({});
+  //     // Invalidate and refetch data after successful transaction
+  //     setTimeout(() => {
+  //       queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
+  //       refetchPosition();
+  //       pm.refetchAll();
+  //     }, 2000); // Wait 2s for indexer to sync
+  //   } else if (pm.claimReceipt) {
+  //     setModalType('success');
+  //     setLastTxHash(pm.claimTxHash || null);
+  //     // Invalidate and refetch data after successful transaction
+  //     setTimeout(() => {
+  //       queryClient.invalidateQueries({ queryKey: ["position", tokenId] });
+  //       refetchPosition();
+  //       pm.refetchAll();
+  //     }, 2000); // Wait 2s for indexer to sync
+  //   }
+  // }, [pm.addLiquidityReceipt, pm.withdrawReceipt, pm.claimReceipt, queryClient, tokenId, refetchPosition, pm]);
 
   // Status de transaction pour Add Liquidity
-  const addLiquidityStatus = useTransactionStatus(
-    pm.addLiquidityTxHash,
-    pm.addLiquidityReceipt,
-    pm.errors.addLiquidity,
-    pm.status === 'waitMainUserSign' || pm.status === 'waitMainReceipt'
-  );
+  // const addLiquidityStatus = useTransactionStatus(
+  //   pm.addLiquidityTxHash,
+  //   pm.addLiquidityReceipt,
+  //   pm.errors.addLiquidity,
+  //   pm.status === 'waitMainUserSign' || pm.status === 'waitMainReceipt'
+  // );
 
-  // Status de transaction pour Withdraw
-  const withdrawStatus = useTransactionStatus(
-    pm.withdrawTxHash,
-    pm.withdrawReceipt,
-    pm.errors.withdraw,
-    pm.status === 'waitMainUserSign' || pm.status === 'waitMainReceipt'
-  );
+  // // Status de transaction pour Withdraw
+  // const withdrawStatus = useTransactionStatus(
+  //   pm.withdrawTxHash,
+  //   pm.withdrawReceipt,
+  //   pm.errors.withdraw,
+  //   pm.status === 'waitMainUserSign' || pm.status === 'waitMainReceipt'
+  // );
 
-  const reset = () => {
-    pm.reset()
-    refetchPosition()
-    // Bug 5 fix: Use comprehensive refetch system
-    pm.refetchAll()
-  }
+  // const reset = () => {
+  //   pm.reset()
+  //   refetchPosition()
+  //   // Bug 5 fix: Use comprehensive refetch system
+  //   pm.refetchAll()
+  // }
 
   const openModal = (type: 'add' | 'remove') => {
     setModalType(type);
@@ -189,167 +185,166 @@ const PoolViewPage: React.FC = () => {
       });
     }
   };
-  const closeModal = () => setModalType(null);
 
-  const addLiquidityBtn = useMemo(() => {
-    // Vérifier d'abord les approbations
-    if (pm.token0NeedApproval) {
-      return {
-        isDisabled: false,
-        onClick: () => pm.approveToken0(),
-        text: `Approve ${token0?.symbol}`,
-        validationErrors: [],
-        isLoading: false
-      }
-    }
-    if (pm.token1NeedApproval) {
-      return {
-        isDisabled: false,
-        onClick: () => pm.approveToken1(),
-        text: `Approve ${token1?.symbol}`,
-        validationErrors: [],
-        isLoading: false
-      }
-    }
+  // const addLiquidityBtn = useMemo(() => {
+  //   // Vérifier d'abord les approbations
+  //   if (pm.token0NeedApproval) {
+  //     return {
+  //       isDisabled: false,
+  //       onClick: () => pm.approveToken0(),
+  //       text: `Approve ${token0?.symbol}`,
+  //       validationErrors: [],
+  //       isLoading: false
+  //     }
+  //   }
+  //   if (pm.token1NeedApproval) {
+  //     return {
+  //       isDisabled: false,
+  //       onClick: () => pm.approveToken1(),
+  //       text: `Approve ${token1?.symbol}`,
+  //       validationErrors: [],
+  //       isLoading: false
+  //     }
+  //   }
 
-    // Validation pour Add Liquidity
-    const validation = pm.validateTransaction('add');
+  //   // Validation pour Add Liquidity
+  //   const validation = pm.validateTransaction('add');
 
-    // Si nous pouvons tenter d'ajouter de la liquidité (montants saisis)
-    if (pm.canAttemptAddLiquidity) {
-      // Si la simulation a une erreur
-      if (pm.errors.simulateAddLiquidity) {
-        return {
-          isDisabled: true,
-          onClick: () => { },
-          text: "Transaction simulation failed",
-          validationErrors: ["Contract simulation failed - check allowances and balances"],
-          isLoading: false
-        }
-      }
+  //   // Si nous pouvons tenter d'ajouter de la liquidité (montants saisis)
+  //   if (pm.canAttemptAddLiquidity) {
+  //     // Si la simulation a une erreur
+  //     if (pm.errors.simulateAddLiquidity) {
+  //       return {
+  //         isDisabled: true,
+  //         onClick: () => { },
+  //         text: "Transaction simulation failed",
+  //         validationErrors: ["Contract simulation failed - check allowances and balances"],
+  //         isLoading: false
+  //       }
+  //     }
 
-      // Si la simulation est en cours
-      if (pm.isSimulatingAddLiquidity) {
-        return {
-          isDisabled: true,
-          onClick: () => { },
-          text: "Preparing transaction...",
-          validationErrors: [],
-          isLoading: true
-        }
-      }
+  //     // Si la simulation est en cours
+  //     if (pm.isSimulatingAddLiquidity) {
+  //       return {
+  //         isDisabled: true,
+  //         onClick: () => { },
+  //         text: "Preparing transaction...",
+  //         validationErrors: [],
+  //         isLoading: true
+  //       }
+  //     }
 
-      // Si la simulation est prête et la validation passe
-      if (pm.canAddLiquidity && validation.isValid) {
-        return {
-          isDisabled: false,
-          onClick: () => pm.addLiquidity(),
-          text: "Add liquidity",
-          validationErrors: [],
-          isLoading: false
-        }
-      }
+  //     // Si la simulation est prête et la validation passe
+  //     if (pm.canAddLiquidity && validation.isValid) {
+  //       return {
+  //         isDisabled: false,
+  //         onClick: () => pm.addLiquidity(),
+  //         text: "Add liquidity",
+  //         validationErrors: [],
+  //         isLoading: false
+  //       }
+  //     }
 
-      // Si la validation échoue
-      if (!validation.isValid) {
-        return {
-          isDisabled: true,
-          onClick: () => { },
-          text: validation.errors[0] || "Cannot add liquidity",
-          validationErrors: validation.errors,
-          isLoading: false
-        }
-      }
+  //     // Si la validation échoue
+  //     if (!validation.isValid) {
+  //       return {
+  //         isDisabled: true,
+  //         onClick: () => { },
+  //         text: validation.errors[0] || "Cannot add liquidity",
+  //         validationErrors: validation.errors,
+  //         isLoading: false
+  //       }
+  //     }
 
-      // Si on peut tenter mais la simulation n'est pas prête
-      return {
-        isDisabled: true,
-        onClick: () => { },
-        text: "Preparing transaction...",
-        validationErrors: [],
-        isLoading: true
-      }
-    }
+  //     // Si on peut tenter mais la simulation n'est pas prête
+  //     return {
+  //       isDisabled: true,
+  //       onClick: () => { },
+  //       text: "Preparing transaction...",
+  //       validationErrors: [],
+  //       isLoading: true
+  //     }
+  //   }
 
-    // État par défaut
-    return {
-      isDisabled: true,
-      onClick: () => { },
-      text: "Enter amounts",
-      validationErrors: [],
-      isLoading: false
-    }
-  }, [pm, token0, token1])
+  //   // État par défaut
+  //   return {
+  //     isDisabled: true,
+  //     onClick: () => { },
+  //     text: "Enter amounts",
+  //     validationErrors: [],
+  //     isLoading: false
+  //   }
+  // }, [pm, token0, token1])
 
-  const withdrawBtn = useMemo(() => {
-    // Validation pour Remove Liquidity
-    const validation = pm.validateTransaction('withdraw');
+  // const withdrawBtn = useMemo(() => {
+  //   // Validation pour Remove Liquidity
+  //   const validation = pm.validateTransaction('withdraw');
 
-    // Si nous pouvons tenter de retirer de la liquidité
-    if (pm.canAttemptWithdraw) {
-      // Si la simulation a une erreur
-      if (pm.errors.simulateWithdraw) {
-        return {
-          isDisabled: true,
-          onClick: () => { },
-          text: "Transaction simulation failed",
-          validationErrors: ["Contract simulation failed - check position liquidity"],
-          isLoading: false
-        }
-      }
+  //   // Si nous pouvons tenter de retirer de la liquidité
+  //   if (pm.canAttemptWithdraw) {
+  //     // Si la simulation a une erreur
+  //     if (pm.errors.simulateWithdraw) {
+  //       return {
+  //         isDisabled: true,
+  //         onClick: () => { },
+  //         text: "Transaction simulation failed",
+  //         validationErrors: ["Contract simulation failed - check position liquidity"],
+  //         isLoading: false
+  //       }
+  //     }
 
-      // Si la simulation est en cours
-      if (pm.isSimulatingWithdraw) {
-        return {
-          isDisabled: true,
-          onClick: () => { },
-          text: "Preparing transaction...",
-          validationErrors: [],
-          isLoading: true
-        }
-      }
+  //     // Si la simulation est en cours
+  //     if (pm.isSimulatingWithdraw) {
+  //       return {
+  //         isDisabled: true,
+  //         onClick: () => { },
+  //         text: "Preparing transaction...",
+  //         validationErrors: [],
+  //         isLoading: true
+  //       }
+  //     }
 
-      // Si la simulation est prête et la validation passe
-      if (pm.canWithdraw && validation.isValid) {
-        return {
-          isDisabled: false,
-          onClick: () => pm.withdraw(),
-          text: "Remove liquidity",
-          validationErrors: [],
-          isLoading: false
-        }
-      }
+  //     // Si la simulation est prête et la validation passe
+  //     if (pm.canWithdraw && validation.isValid) {
+  //       return {
+  //         isDisabled: false,
+  //         onClick: () => pm.withdraw(),
+  //         text: "Remove liquidity",
+  //         validationErrors: [],
+  //         isLoading: false
+  //       }
+  //     }
 
-      // Si la validation échoue
-      if (!validation.isValid) {
-        return {
-          isDisabled: true,
-          onClick: () => { },
-          text: validation.errors[0] || "Cannot remove liquidity",
-          validationErrors: validation.errors,
-          isLoading: false
-        }
-      }
+  //     // Si la validation échoue
+  //     if (!validation.isValid) {
+  //       return {
+  //         isDisabled: true,
+  //         onClick: () => { },
+  //         text: validation.errors[0] || "Cannot remove liquidity",
+  //         validationErrors: validation.errors,
+  //         isLoading: false
+  //       }
+  //     }
 
-      // Si on peut tenter mais la simulation n'est pas prête
-      return {
-        isDisabled: true,
-        onClick: () => { },
-        text: "Preparing transaction...",
-        validationErrors: [],
-        isLoading: true
-      }
-    }
+  //     // Si on peut tenter mais la simulation n'est pas prête
+  //     return {
+  //       isDisabled: true,
+  //       onClick: () => { },
+  //       text: "Preparing transaction...",
+  //       validationErrors: [],
+  //       isLoading: true
+  //     }
+  //   }
 
-    // État par défaut
-    return {
-      isDisabled: true,
-      onClick: () => { },
-      text: "Enter amount",
-      validationErrors: [],
-      isLoading: false
-    }
-  }, [pm])
+  //   // État par défaut
+  //   return {
+  //     isDisabled: true,
+  //     onClick: () => { },
+  //     text: "Enter amount",
+  //     validationErrors: [],
+  //     isLoading: false
+  //   }
+  // }, [pm])
 
   if (isLoading) {
     return (
@@ -376,22 +371,24 @@ const PoolViewPage: React.FC = () => {
           address={`#${position.tokenId} ${pool.id}`}
           usdValue={positionDetails?.positionValueUSD ? `$${positionDetails.positionValueUSD.toFixed(2)}` : "Loading..."}
         />
-
         <PoolInfo
           token0={token0!}
           token1={token1!}
           inRange={inRange}
         />
 
-        <PoolActions
-          refetch={reset}
-          positionData={posData}
-          positionManager={pm}
-          config={config}
-          updateConfig={setConfig}
-          onOpenModal={openModal}
-          reset={modalType === 'success'}
-        />
+
+        {positionManager && (
+          <PoolActions
+            positionData={posData}
+            positionManager={positionManager}
+            config={config}
+            updateConfig={setConfig}
+            refetch={() => {}}
+            onOpenModal={openModal}
+            reset={modalType === 'success'}
+          />
+        )}
 
         <PoolStats
           positionValueUSD={positionDetails?.positionValueUSD}
@@ -403,14 +400,17 @@ const PoolViewPage: React.FC = () => {
           token1={token1}
         />
 
-        <PositionFees
-          pm={pm}
-          token0={token0!}
-          token1={token1!}
-        />
+        {positionManager && (
+          <PositionFees
+            pm={positionManager}
+            token0={token0!}
+            token1={token1!}
+          />
+        )}
 
       </div>
 
+      {/*
       <Modal open={!!modalType} onClose={closeModal} className="PoolView__Modal" overlayClassName="PoolView__ModalOverlay">
         <div className="PoolView__ModalHeader">
           <span className="PoolView__ModalTitle">Manage liquidity</span>
@@ -437,7 +437,6 @@ const PoolViewPage: React.FC = () => {
                   isOverBalance={false}
                 />
 
-                {/* Affichage du statut de transaction */}
                 {addLiquidityStatus !== 'idle' && (
                   <TransactionStatus
                     status={addLiquidityStatus}
@@ -452,7 +451,6 @@ const PoolViewPage: React.FC = () => {
                   />
                 )}
 
-                {/* Affichage des erreurs d'approbation */}
                 {(pm.errors.approveToken0 || pm.errors.approveToken1) && (
                   <ErrorMessage
                     error={pm.errors.approveToken0 || pm.errors.approveToken1}
@@ -460,7 +458,6 @@ const PoolViewPage: React.FC = () => {
                   />
                 )}
 
-                {/* Affichage des erreurs de validation */}
                 {addLiquidityBtn.validationErrors.length > 0 && (
                   <div className="validation-errors">
                     {addLiquidityBtn.validationErrors.map((error, index) => (
@@ -495,7 +492,6 @@ const PoolViewPage: React.FC = () => {
                   decimals={18}
                 />
 
-                {/* Affichage du statut de transaction */}
                 {withdrawStatus !== 'idle' && (
                   <TransactionStatus
                     status={withdrawStatus}
@@ -510,7 +506,6 @@ const PoolViewPage: React.FC = () => {
                   />
                 )}
 
-                {/* Affichage des erreurs de validation pour le retrait */}
                 {withdrawBtn.validationErrors.length > 0 && (
                   <div className="validation-errors">
                     {withdrawBtn.validationErrors.map((error, index) => (
@@ -552,6 +547,8 @@ const PoolViewPage: React.FC = () => {
           )}
         </div>
       </Modal>
+                */}
+
     </div>
   );
 };

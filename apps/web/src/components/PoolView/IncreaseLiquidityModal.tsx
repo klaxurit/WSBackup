@@ -1,0 +1,367 @@
+import React, { useCallback, useRef, useState, type ChangeEvent } from 'react'
+import { Modal } from '../Common/Modal'
+import { LiquidityInput } from '../Inputs/LiquidityInput'
+import { useIncreasePosition } from '../../hooks/position/useIncreasePosition'
+import type { Position } from '../../hooks/position/usePositionDatas'
+import type { Pool } from '../../pages/PoolPage/page'
+import { transformGraphQLTokenToLegacyToken } from '../../types/api'
+import { Nut } from '../SVGs/ProductSVGs'
+
+interface IncreaseLiquidityModalProps {
+  isOpen: boolean
+  onClose: () => void
+  position: Position
+  pool: Pool
+  onSuccess?: () => void
+}
+
+export const IncreaseLiquidityModal: React.FC<IncreaseLiquidityModalProps> = ({
+  isOpen,
+  onClose,
+  position,
+  pool,
+  onSuccess
+}) => {
+  const [paramOpen, setParamOpen] = useState(false)
+  const paramBoxRef = useRef<HTMLDivElement>(null);
+  const [slippageConfig, setSlippageConfig] = useState<{ real: number, display: string, isAuto: boolean }>({
+    real: 5.0,
+    display: "5",
+    isAuto: true,
+  })
+
+  // Transform tokens to match LiquidityInput interface
+  const token0 = pool?.token0Ref ? transformGraphQLTokenToLegacyToken(pool.token0Ref) : null
+  const token1 = pool?.token1Ref ? transformGraphQLTokenToLegacyToken(pool.token1Ref) : null
+
+  const {
+    // Form state
+    parsedToken0Amount,
+    parsedToken1Amount,
+
+    // Validation
+    validationErrors,
+    canSubmit,
+
+    // Approvals
+    token0NeedsApproval,
+    token1NeedsApproval,
+    canApproveToken0,
+    canApproveToken1,
+
+    // Status
+    status,
+    isLoading,
+    isSuccess,
+
+    // Actions
+    setToken0Amount,
+    setToken1Amount,
+    setSlippageTolerance,
+    approveToken0,
+    approveToken1,
+    increaseLiquidity,
+    reset,
+
+    // Transaction data
+    increaseLiquidityHash,
+
+    // Capabilities
+    canIncrease,
+
+    // Errors
+    errors
+  } = useIncreasePosition({ position, pool, isModalOpen: isOpen })
+
+  const handleSlippageChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^\d.,]/g, '')
+    val = val.replace(',', '.')
+
+    if (val.includes('.')) {
+      const parts = val.split('.')
+      if (parts[1] && parts[1].length > 2) {
+        val = parts[0] + '.' + parts[1].substring(0, 2)
+      }
+    }
+    const numVal = val === "" ? 0 : parseFloat(val)
+    const real = numVal / 100
+
+    if (numVal < 0 || numVal > 100) return
+
+    setSlippageTolerance(numVal)
+    setSlippageConfig({ real, display: val, isAuto: false })
+  }, [])
+
+  const handleToken0AmountChange = (amount: bigint) => {
+    setToken0Amount(amount.toString())
+  }
+
+  const handleToken1AmountChange = (amount: bigint) => {
+    setToken1Amount(amount.toString())
+  }
+
+  const handleSuccess = () => {
+    onSuccess?.()
+    onClose()
+    reset()
+  }
+
+  const handleClose = () => {
+    onClose()
+    reset()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <Modal open={isOpen} onClose={handleClose} className="PoolView__Modal" overlayClassName="PoolView__ModalOverlay">
+      <div className="PoolView__ModalHeader">
+        <span className="PoolView__ModalTitle">Increase Liquidity</span>
+        <button className="PoolView__ModalClose" onClick={handleClose} disabled={isLoading} aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6L14 14M14 6L6 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+      <div className="PoolView__ModalContent">
+        {/* Success State */}
+        {isSuccess && (
+          <div className="PoolView__Success">
+            <div className="PoolView__SuccessTitle">Liquidity Added Successfully!</div>
+            {increaseLiquidityHash && (
+              <a
+                className="PoolView__SuccessLink"
+                href={`https://berascan.com/tx/${increaseLiquidityHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on Explorer
+              </a>
+            )}
+            <button
+              className="PoolView__ActionBtn PoolView__ActionBtn--add"
+              onClick={handleSuccess}
+              style={{ marginTop: '16px' }}
+            >
+              Close
+            </button>
+          </div>
+        )}
+
+        {/* Form */}
+        {!isSuccess && (
+          <div className="PoolView__Form">
+            <div className="Form__head">
+              <button className="iconLink" onClick={() => setParamOpen(!paramOpen)}>
+                {!slippageConfig.isAuto ? `${slippageConfig.display}%` : ""}
+                <Nut />
+              </button>
+              <div ref={paramBoxRef} className={`ParamBox ${paramOpen ? "" : "ParamBox--hide"}`}>
+                <div className="ParamBox__param">
+                  <p>Max slippage</p>
+                  <div className="ParamBox__slippageInput">
+                    <button
+                      className={slippageConfig.isAuto ? "active" : ""}
+                      onClick={() => setSlippageConfig({ real: 5.0, display: "5", isAuto: true })}
+                    >
+                      Auto
+                    </button>
+                    <input
+                      type="text"
+                      value={slippageConfig.display}
+                      onChange={handleSlippageChange}
+                    />
+                    <p>%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Token Inputs using LiquidityInput */}
+            <LiquidityInput
+              selectedToken={token0}
+              onAmountChange={handleToken0AmountChange}
+              value={parsedToken0Amount}
+              isOverBalance={validationErrors.some(e => e.field === 'token0')}
+              disabled={isLoading}
+            />
+            <LiquidityInput
+              selectedToken={token1}
+              onAmountChange={handleToken1AmountChange}
+              value={parsedToken1Amount}
+              isOverBalance={validationErrors.some(e => e.field === 'token1')}
+              disabled={isLoading}
+            />
+
+            {/* Slippage Settings */}
+            {/* <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+              <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>
+                Slippage Tolerance
+              </h4>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                {SLIPPAGE_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    className={`btn btn__secondary ${slippageTolerance === option && !showCustomSlippage ? 'active' : ''
+                      }`}
+                    onClick={() => handleSlippageSelect(option)}
+                    disabled={isLoading}
+                    style={{
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      backgroundColor: slippageTolerance === option && !showCustomSlippage ? '#FFD056' : undefined,
+                      color: slippageTolerance === option && !showCustomSlippage ? '#232323' : undefined
+                    }}
+                  >
+                    {option}%
+                  </button>
+                ))}
+                <button
+                  className={`btn btn__secondary ${showCustomSlippage ? 'active' : ''}`}
+                  onClick={() => setShowCustomSlippage(true)}
+                  disabled={isLoading}
+                  style={{
+                    padding: '8px 12px',
+                    fontSize: '13px',
+                    backgroundColor: showCustomSlippage ? '#FFD056' : undefined,
+                    color: showCustomSlippage ? '#232323' : undefined
+                  }}
+                >
+                  Custom
+                </button>
+              </div>
+              {showCustomSlippage && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <input
+                    type="number"
+                    placeholder="1.0"
+                    value={customSlippage}
+                    onChange={(e) => handleCustomSlippageChange(e.target.value)}
+                    min="0"
+                    max="50"
+                    step="0.1"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: '#fff',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      width: '80px'
+                    }}
+                  />
+                  <span style={{ color: '#888', fontSize: '13px' }}>%</span>
+                </div>
+              )}
+            </div> */}
+
+            {/* Validation Errors */}
+            {validationErrors.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                {validationErrors.map((error, index) => (
+                  <div key={index} style={{
+                    background: 'rgba(255, 107, 107, 0.1)',
+                    border: '1px solid rgba(255, 107, 107, 0.2)',
+                    color: '#FF6B6B',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    marginBottom: index < validationErrors.length - 1 ? '8px' : '0'
+                  }}>
+                    {error.message}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+
+            {/* Token 0 Approval */}
+            {token0NeedsApproval && canApproveToken0 && (
+              <button
+                className="btn btn__main btn--large"
+                onClick={approveToken0}
+                disabled={status === 'approving' || status === 'waitingApproval'}
+                style={{ marginBottom: '12px' }}
+              >
+                {status === 'approving' || status === 'waitingApproval'
+                  ? `Approving ${pool.token0Ref.symbol}...`
+                  : `Approve ${pool.token0Ref.symbol}`
+                }
+              </button>
+            )}
+
+            {/* Token 1 Approval */}
+            {token1NeedsApproval && canApproveToken1 && (
+              <button
+                className="btn btn__main btn--large"
+                onClick={approveToken1}
+                disabled={status === 'approving' || status === 'waitingApproval'}
+                style={{ marginBottom: '12px' }}
+              >
+                {status === 'approving' || status === 'waitingApproval'
+                  ? `Approving ${pool.token1Ref.symbol}...`
+                  : `Approve ${pool.token1Ref.symbol}`
+                }
+              </button>
+            )}
+
+            {/* Increase Liquidity Button */}
+            <button
+              className={`btn btn__main btn--large${!canSubmit ||
+                !canIncrease ||
+                token0NeedsApproval ||
+                token1NeedsApproval ||
+                status === 'increasing' ||
+                status === 'waitingIncrease' ||
+                status === 'simulating'
+                ? ' btn__disabled'
+                : ''
+                }`}
+              onClick={increaseLiquidity}
+              disabled={
+                !canSubmit ||
+                !canIncrease ||
+                token0NeedsApproval ||
+                token1NeedsApproval ||
+                status === 'increasing' ||
+                status === 'waitingIncrease' ||
+                status === 'simulating'
+              }
+            >
+              {status === 'simulating' && 'Simulating...'}
+              {status === 'increasing' && 'Adding Liquidity...'}
+              {status === 'waitingIncrease' && 'Confirming...'}
+              {(status === 'idle' || status === 'approving' || status === 'waitingApproval') && 'Add Liquidity'}
+            </button>
+
+            {/* Status Messages */}
+            {(status === 'simulating' || status === 'increasing' || status === 'waitingIncrease') && (
+              <div style={{
+                background: 'rgba(255, 208, 86, 0.1)',
+                border: '1px solid rgba(255, 208, 86, 0.2)',
+                color: '#FFD056',
+                padding: '12px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                textAlign: 'center',
+                marginTop: '16px'
+              }}>
+                {status === 'simulating' && 'Validating transaction...'}
+                {status === 'increasing' && 'Please confirm the transaction in your wallet'}
+                {status === 'waitingIncrease' && 'Transaction submitted. Waiting for confirmation...'}
+              </div>
+            )}
+
+            {/* Error Messages */}
+            {(errors.simulate || errors.increase) && (
+              <div className="PoolView__FormError">
+                <p>{errors.simulate?.message || errors.increase?.message}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Modal>
+  )
+}

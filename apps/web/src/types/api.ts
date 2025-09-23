@@ -10,7 +10,7 @@ export interface GraphQLToken {
   logoUri?: string | null;
   tokenDayData?: {
     items: Array<{
-      priceUSD: number;
+      priceUSD: string;
     }>;
   };
 }

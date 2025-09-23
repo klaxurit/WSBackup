@@ -20,6 +20,8 @@
 @use 'components/modals/transactionStatusModal';
 @use 'components/modals/popularTokens';
 @use 'components/modals/appkit';
+
+@use 'components/poolView/increaseLiquidityModal';
 @use 'components/footer/footer';
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';

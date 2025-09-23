@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import type { usePositionManager } from "../../hooks/usePositionManager"
+import type { usePositionManager } from "../../hooks/position/usePositionDatas"
 import type { Token } from "../../hooks/usePositions"
 import { TransactionStatus, useTransactionStatus } from "../Common/TransactionStatus"
 
@@ -15,7 +15,7 @@ export const PositionFees = (
   }) => {
 
   const canClaim = useMemo(() => {
-    return pm.canClaim && pm.unclaimedFees.hasUnclaimed
+    return pm.canClaim && pm.unclaimedFees?.hasUnclaimed
   }, [pm])
 
   // Status de transaction pour Claim
@@ -55,8 +55,8 @@ export const PositionFees = (
           onRetry={() => pm.reset()}
           title={
             claimStatus === 'pending' ? 'Claiming Fees...' :
-            claimStatus === 'success' ? 'Fees Claimed!' :
-            'Claim Failed'
+              claimStatus === 'success' ? 'Fees Claimed!' :
+                'Claim Failed'
           }
         />
       )}

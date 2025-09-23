@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import type { usePositionManager, UsePositionManagerDatas } from '../../hooks/usePositionManager';
+import type { usePositionManager, UsePositionManagerDatas } from '../../hooks/position/usePositionDatas';
 import { LiquidityInput } from '../Inputs/LiquidityInput';
 import type { PositionData } from '../../hooks/usePositions';
 import { ClaimInput } from '../Inputs/ClaimInput';

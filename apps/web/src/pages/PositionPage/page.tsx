@@ -64,6 +64,7 @@ query GetTransactions($owner: String) {
   positions(where: {owner: $owner}) {
     items {
       id
+      pool
       poolRef {
         id
         sqrtPrice
@@ -329,7 +330,7 @@ const PoolPage: React.FC = () => {
       label: 'Pair',
       key: 'pair',
       render: (row) => (
-        <Link to={`/pools/${row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link to={`/pool/${row.pool}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
             <TokenPairLogos
               token0={row.poolRef.token0Ref}
@@ -358,7 +359,7 @@ const PoolPage: React.FC = () => {
     },
     {
       label: '', key: 'actions', render: (row) => (
-        <Link to={`/pools/${row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link to={`/pool/${row.pool}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <button className="PoolPage__ManageBtn">Manage</button>
         </Link>
       )
