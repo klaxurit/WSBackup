@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
 import { ExplorerIcon } from "../SVGs";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo, useState } from "react";
 
@@ -91,6 +91,7 @@ const SORT_CONFIG = {
 
 export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   const itemsPerPage = 20;
+  const navigate = useNavigate();
 
   // État pour gérer le mode de tri
   const [sortMode, setSortMode] = useState<'server' | 'client'>('server');
@@ -287,20 +288,22 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       className: 'PoolsTable__IndexTd',
       render: (row) => (
         <span className="PoolsTable__IndexCell">
-          <Link
-            to={`/pool/${row.id || ''}`}
+          <button
+            type="button"
             className="PoolsTable__IndexLink"
+            onClick={() => navigate(`/pool/${row.id || ''}`)}
           >
             <span className="Table__Address">
               {row.token0Ref.symbol}/{row.token1Ref.symbol}
             </span>
-          </Link>
+          </button>
           <a
             href={`https://berascan.com/address/${row.id || ''}`}
             target="_blank"
             rel="noopener noreferrer"
             className="Table__Icon"
             title={row.id || ''}
+            onClick={(e) => e.stopPropagation()}
           >
             <ExplorerIcon />
           </a>
@@ -445,6 +448,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       defaultSortDirection="desc"
       infiniteLoad={infiniteLoadProps}
       itemLabel="pools"
+      onRowClick={(row) => navigate(`/pool/${row.id || ''}`)}
     />
   )
 }

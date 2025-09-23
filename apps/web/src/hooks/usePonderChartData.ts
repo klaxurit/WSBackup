@@ -10,6 +10,8 @@ import type {
   PoolHourData,
   TokenDayData,
   TokenHourData,
+  VaultDayData,
+  VaultHourData,
   ChartStats
 } from '../types/chart';
 
@@ -131,6 +133,34 @@ const buildTokenQuery = (tokenAddress: string, _metric: ChartMetric, interval: C
           high
           low
           close
+        }
+      }
+    }
+  `;
+};
+
+// Build vault query
+const buildVaultQuery = (vaultAddress: string, _metric: ChartMetric, interval: ChartInterval, limit: number) => {
+  const config = INTERVAL_CONFIG[interval];
+  const dataType = config.period === 'hour' ? 'vaultHourDatas' : 'vaultDayDatas';
+  const timeField = config.period === 'hour' ? 'periodStartUnix' : 'date';
+
+  return `
+    query GetVaultChartData {
+      ${dataType}(
+        where: { vault: "${vaultAddress}" }
+        orderBy: "${timeField}"
+        orderDirection: "desc"
+        limit: ${limit}
+      ) {
+        items {
+          id
+          ${timeField}
+          totalValueLockedUSD
+          collectedFeesUSD
+          tradingVolumeUSD
+          depositWithdrawVolumeUSD
+          ${config.period === 'day' ? 'volumeUSD1D\n          volumeUSD30D' : ''}
         }
       }
     }
@@ -374,6 +404,53 @@ const processPoolData = (
   }) as LineChartPoint[];
 };
 
+// Process vault data into chart points
+const processVaultData = (
+  data: VaultDayData[] | VaultHourData[],
+  metric: ChartMetric,
+  _chartType: ChartType,
+  _interval: ChartInterval
+): LineChartPoint[] | CandlestickPoint[] => {
+  if (!data || data.length === 0) return [];
+
+  // vaults don't have OHLC; force line/area if candlestick requested
+  const sortedData = [...data].sort((a, b) => {
+    const timeA = 'periodStartUnix' in a ? a.periodStartUnix : a.date;
+    const timeB = 'periodStartUnix' in b ? b.periodStartUnix : b.date;
+    return timeA - timeB;
+  });
+
+  return sortedData.map(item => {
+    let value = 0;
+    switch (metric) {
+      case 'tvl':
+        value = parseFloat(item.totalValueLockedUSD);
+        break;
+      case 'volume':
+        if ('volumeUSD1D' in item && item.volumeUSD1D !== undefined) {
+          value = parseFloat((item as VaultDayData).volumeUSD1D || '0');
+        } else {
+          // fallback: delta of cumulative volumes cannot be computed here; use tradingVolumeUSD snapshot
+          value = parseFloat(item.tradingVolumeUSD);
+        }
+        break;
+      case 'fees':
+        value = parseFloat(item.collectedFeesUSD);
+        break;
+      case 'price':
+      default:
+        // No price for vaults; default to TVL so chart isn't empty
+        value = parseFloat(item.totalValueLockedUSD);
+        break;
+    }
+
+    return {
+      time: 'periodStartUnix' in item ? item.periodStartUnix : item.date,
+      value,
+    };
+  }) as LineChartPoint[];
+};
+
 // Fonction pour traiter les données de token
 const processTokenData = (
   data: TokenDayData[] | TokenHourData[],
@@ -475,13 +552,16 @@ const calculateStats = (data: LineChartPoint[] | CandlestickPoint[]): ChartStats
 export function usePonderChartData(
   poolAddress: string | null,
   tokenAddress: string | null,
+  // when provided, vault data has priority over pool/token
+  vaultAddress?: string | null,
   metric: ChartMetric = 'price',
   chartType: ChartType = 'area',
   interval: ChartInterval = '1D'
 ) {
   const config = INTERVAL_CONFIG[interval];
-  const isPoolData = !!poolAddress;
-  const address = poolAddress || tokenAddress;
+  const isVaultData = !!vaultAddress;
+  const isPoolData = !!poolAddress && !isVaultData;
+  const address = vaultAddress || poolAddress || tokenAddress;
 
   const query = useQuery({
     queryKey: ['ponder-chart-data', address, metric, chartType, interval],
@@ -493,9 +573,11 @@ export function usePonderChartData(
       // S'assurer que l'URL se termine par /graphql
       const finalUrl = graphqlUrl.endsWith('/graphql') ? graphqlUrl : `${graphqlUrl.replace(/\/$/, '')}/graphql`;
 
-      const graphqlQuery = isPoolData
-        ? buildPoolQuery(address, metric, interval, config.limit)
-        : buildTokenQuery(address, metric, interval, config.limit);
+      const graphqlQuery = isVaultData
+        ? buildVaultQuery(address, metric, interval, config.limit)
+        : isPoolData
+          ? buildPoolQuery(address, metric, interval, config.limit)
+          : buildTokenQuery(address, metric, interval, config.limit);
 
 
       const response = await fetch(finalUrl, {
@@ -520,13 +602,17 @@ export function usePonderChartData(
       }
 
 
-      const data = isPoolData
-        ? result.data.poolDayDatas?.items || result.data.poolHourDatas?.items || []
-        : result.data.tokenDayDatas?.items || result.data.tokenHourDatas?.items || [];
+      const data = isVaultData
+        ? result.data.vaultDayDatas?.items || result.data.vaultHourDatas?.items || []
+        : isPoolData
+          ? result.data.poolDayDatas?.items || result.data.poolHourDatas?.items || []
+          : result.data.tokenDayDatas?.items || result.data.tokenHourDatas?.items || [];
 
-      return isPoolData
-        ? processPoolData(data as PoolDayData[] | PoolHourData[], metric, chartType, interval)
-        : processTokenData(data as TokenDayData[] | TokenHourData[], metric, chartType, interval);
+      return isVaultData
+        ? processVaultData(data as VaultDayData[] | VaultHourData[], metric, chartType, interval)
+        : isPoolData
+          ? processPoolData(data as PoolDayData[] | PoolHourData[], metric, chartType, interval)
+          : processTokenData(data as TokenDayData[] | TokenHourData[], metric, chartType, interval);
     },
     staleTime: config.staleTime,
     refetchInterval: config.refetchInterval,
@@ -551,7 +637,7 @@ export function usePoolChartData(
   chartType: ChartType = 'area',
   interval: ChartInterval = '1D'
 ) {
-  return usePonderChartData(poolAddress, null, metric, chartType, interval);
+  return usePonderChartData(poolAddress, null, null, metric, chartType, interval);
 }
 
 // Hook spécialisé pour les données de token
@@ -561,7 +647,7 @@ export function useTokenChartData(
   chartType: ChartType = 'area',
   interval: ChartInterval = '1D'
 ) {
-  return usePonderChartData(null, tokenAddress, metric, chartType, interval);
+  return usePonderChartData(null, tokenAddress, null, metric, chartType, interval);
 }
 
 // Hook pour trouver une pool par tokens

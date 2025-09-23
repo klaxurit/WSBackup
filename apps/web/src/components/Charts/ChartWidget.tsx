@@ -16,6 +16,7 @@ import { ChartToolbar } from './ChartToolbar';
 export interface ChartWidgetProps {
   tokenAddress?: string | null;
   poolAddress?: string | null;
+  vaultAddress?: string | null;
   chartType?: ChartType;
   interval?: ChartInterval;
   metric?: ChartMetric;
@@ -29,7 +30,7 @@ export interface ChartWidgetProps {
   onMetricChange?: (metric: ChartMetric) => void;
   showNoDataOverlay?: boolean;
   noDataMessage?: string;
-  dataType?: 'token' | 'pool';
+  dataType?: 'token' | 'pool' | 'vault';
 }
 
 const BERYL_PURE = '#E39229';
@@ -39,6 +40,7 @@ const defaultBg = 'transparent';
 export const ChartWidget: React.FC<ChartWidgetProps> = ({
   tokenAddress,
   poolAddress,
+  vaultAddress,
   chartType = 'area',
   interval = '1D',
   metric = 'price',
@@ -51,7 +53,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   onIntervalChange,
   onMetricChange,
   showNoDataOverlay = false,
-  noDataMessage = "No data available"
+  noDataMessage = "No data available",
+  dataType,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -75,10 +78,24 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     setLocalMetric(metric);
   }, [metric]);
 
+  // Harmoniser l'UX: un vault n'a pas de "price" => basculer sur TVL
+  useEffect(() => {
+    if (dataType === 'vault' && localMetric === 'price') {
+      setLocalMetric('tvl');
+      onMetricChange?.('tvl');
+      // si le type est 'candlestick', forcer 'area'
+      if (localChartType === 'candlestick') {
+        setLocalChartType('area');
+        onChartTypeChange?.('area');
+      }
+    }
+  }, [dataType]);
+
   // Hook de données Ponder
   const { data, isLoading, error } = usePonderChartData(
     poolAddress || null,
     tokenAddress || null,
+    vaultAddress || null,
     localMetric,
     localChartType,
     localInterval
@@ -97,7 +114,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
   // Détermine si on doit utiliser les données factices
   // Utiliser les données factices seulement si on n'a pas d'adresse ou si on a une erreur de configuration
-  const shouldUseFakeData = (!poolAddress && !tokenAddress) || (error && error.message.includes('environment variable'));
+  const shouldUseFakeData = (!poolAddress && !tokenAddress && !vaultAddress) || (error && error.message.includes('environment variable'));
   const chartData = shouldUseFakeData ? fakeData : data;
 
   // Initialisation et mise à jour du chart
@@ -344,6 +361,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
           onChartTypeChange={handleChartTypeChange}
           onIntervalChange={handleIntervalChange}
           onMetricChange={handleMetricChange}
+          availableMetrics={dataType === 'vault' ? ['tvl', 'volume', 'fees'] : undefined}
           isLoading={isLoading}
         />
       )}

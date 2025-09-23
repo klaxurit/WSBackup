@@ -270,7 +270,8 @@ export const VaultDetailPage = () => {
           {/* Chart Section */}
           <div className="VaultDetailPage__ChartSection">
             <ChartWidget
-              tokenAddress={token0.address}
+              vaultAddress={vault.id}
+              dataType="vault"
               height={400}
               showToolbar={true}
             />
