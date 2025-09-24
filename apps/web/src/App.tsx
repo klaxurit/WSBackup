@@ -7,7 +7,6 @@ import TokenPage from './pages/TokenPage/page'
 import ExplorePage from './pages/ExplorePage/page'
 import PoolPage from './pages/PositionPage/page'
 import CreatePoolPage from './pages/PositionPage/create/page'
-import PoolViewPage from './pages/PositionPage/[tokenId]/page'
 import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
@@ -53,7 +52,6 @@ function AppContent() {
             <Route path="/vaults/:vaultAddress" element={<VaultDetailPage />} />
             <Route path="/pools" element={<PoolPage />} />
             <Route path="/pools/create" element={<CreatePoolPage />} />
-            <Route path="/pools/:tokenId" element={<PoolViewPage />} />
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />
