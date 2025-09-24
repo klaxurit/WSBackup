@@ -1,7 +1,7 @@
 import React from "react";
 import { FallbackImg } from "../utils/FallbackImg";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import type { OptimizedRoute } from '../../hooks/useSwap';
+import type { OptimizedRoute } from '../../hooks/swap/useSwap';
 
 interface RouteDisplayProps {
   optimizedRoute: OptimizedRoute | null;

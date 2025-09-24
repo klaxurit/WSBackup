@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 import { type Address } from 'viem'
-import { type SingleRoute, type OptimizedRoute } from './useSwap'
+import { type SingleRoute, type OptimizedRoute } from './swap/useSwap'
 
 /**
  * Cache key structure for route caching

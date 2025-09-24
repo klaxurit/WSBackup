@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { useSwap } from '../../hooks/useSwap';
+import type { UseSwapReturn } from '../../hooks/swap/useSwap';
 import { formatEther, formatUnits } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
@@ -17,7 +17,7 @@ interface TransactionStatusModalProps {
   outputToken: BerachainToken | null;
   inputAmount: bigint;
   outputAmount: bigint;
-  swap: ReturnType<typeof useSwap>;
+  swap: UseSwapReturn;
   onRefreshInputs: () => void;
   onAdjustSettings?: () => void;
 }
@@ -107,25 +107,9 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     }
   }, [open]);
 
-  useEffect(() => {
-    if (isSuccess && open) {
-
-      const timer = setTimeout(() => {
-        onClose();
-        setTimeout(() => {
-          if (onRefreshInputs) {
-            onRefreshInputs();
-          }
-        }, 300);
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess, open, onClose, onRefreshInputs]);
-
   const handleCloseAndRefresh = () => {
     onClose();
-
+    swap.reset();
     if (onRefreshInputs) {
       setTimeout(() => {
         onRefreshInputs();
@@ -164,11 +148,10 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   const renderActionButton = (action: ErrorAction, index: number) => (
     <button
       key={index}
-      className={`TransactionModal__swapBtn ${
-        action.type === 'primary'
-          ? 'TransactionModal__swapBtn--primary'
-          : 'TransactionModal__swapBtn--secondary'
-      }`}
+      className={`TransactionModal__swapBtn ${action.type === 'primary'
+        ? 'TransactionModal__swapBtn--primary'
+        : 'TransactionModal__swapBtn--secondary'
+        }`}
       onClick={action.action}
       style={{ marginTop: index === 0 ? 16 : 8 }}
     >

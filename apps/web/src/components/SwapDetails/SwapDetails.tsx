@@ -3,7 +3,7 @@ import { HuahuaNetworkYellow } from "../SVGs/LogoSVGs";
 import { Tooltip } from "../Tooltip/Tooltip";
 import { formatUnits } from "viem";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import type { useSwap } from '../../hooks/useSwap';
+import type { useSwap } from '../../hooks/swap/useSwap';
 
 interface SwapDetailsProps {
   swap: ReturnType<typeof useSwap>;

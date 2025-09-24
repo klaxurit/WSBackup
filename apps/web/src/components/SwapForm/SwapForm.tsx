@@ -4,9 +4,9 @@ import { FromInput } from '../Inputs/FromInput';
 import { SwapToInput } from '../Inputs/SwapToInput';
 import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
-import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
 import { RouteDisplay } from '../RouteDisplay';
-import { useSwap } from '../../hooks/useSwap';
+import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
+import { useSwap } from '../../hooks/swap/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
 import { zeroAddress } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
@@ -27,6 +27,10 @@ interface FormProps {
   initialToToken?: BerachainToken | null;
 }
 
+/**
+ * SwapForm utilisant le nouveau hook useSwap modulaire
+ * Version finale après migration et tests réussis
+ */
 export const SwapForm: React.FC<FormProps> = React.memo(
   ({
     dominantColor,
@@ -57,13 +61,14 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const isUpdatingFromQuote = useRef<boolean>(false);
     const { data: tokens } = useTokens();
 
+    // <<<< NOUVEAU HOOK MODULAIRE
     const swap = useSwap({
       tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
       tokenOut: (toToken?.address as `0x${string}`) || zeroAddress,
       amountIn: fromAmount,
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
-      enableDebounce: true, // Enable debounce for optimal performance
+      enableDebounce: true,
     })
 
     const { poolAddress } = usePoolAddress(
@@ -91,23 +96,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(token);
     }, []);
 
-    const handleCloseModal = () => {
-      setShowModal(false);
-    };
-
-
-    const handleAdjustSettings = useCallback(() => {
-      setParamOpen(true);
-    }, []);
-
-    const handleRefreshInputs = useCallback(() => {
-      setFromAmount(0n);
-      setToAmount(0n);
-      setLastEditedField(null);
-      setTimeout(() => {
-        swap.reset();
-      }, 100);
-    }, [swap]);
+    // Simplified handlers for this version
 
     const handleSwitchTokens = useCallback(() => {
       const currentFromToken = fromToken;
@@ -150,6 +139,11 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const handleClickParams = () => {
       setParamOpen(!paramOpen)
     }
+
+    const handleAdjustSettings = useCallback(() => {
+      setParamOpen(true);
+    }, []);
+
     const isButtonEnabled = useMemo(() => {
       const hasValidTokens = !!(fromToken && toToken);
       const hasValidAmount = fromAmount > 0n;
@@ -171,22 +165,22 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.isUnWrap) return "Unwrap"
 
       if (swap.status === "ready" && swap.quote) return "Preview"
-      if (swap.status === "success" && showModal) return "Success! 🎉"
+      if (swap.status === "success") return "Success! 🎉"
       if (swap.status === "error") {
-        return swap?.error?.message || "Error"
+        return "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return "Preview"
-    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal, swap.isWrap, swap.isUnWrap, swap.error])
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount, swap.isWrap, swap.isUnWrap, swap.error])
 
     const handleBtnClick = async () => {
       if (swap.isWrap) {
-        await swap.wrap()
+        await swap.wrap()  // Wrap/Unwrap restent directs
       } else if (swap.isUnWrap) {
         await swap.unwrap()
       } else {
-        setShowModal(true);
+        setShowModal(true)  // Ouvrir la modal pour les swaps normaux
       }
     }
 
@@ -200,10 +194,10 @@ export const SwapForm: React.FC<FormProps> = React.memo(
 
     useEffect(() => {
       if (swap?.quote?.amountOut &&
-          lastEditedField !== 'to' &&
-          fromToken && toToken &&
-          fromAmount > 0n &&
-          !isUpdatingFromQuote.current) {
+        lastEditedField !== 'to' &&
+        fromToken && toToken &&
+        fromAmount > 0n &&
+        !isUpdatingFromQuote.current) {
 
         isUpdatingFromQuote.current = true;
         setToAmount(swap.quote.amountOut);
@@ -287,7 +281,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       customClassName || ''
     ].filter(Boolean).join(' ');
 
-
     useEffect(() => {
       if (!paramOpen) return;
       function handleClickOutside(event: MouseEvent) {
@@ -298,6 +291,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [paramOpen]);
+
 
     return (
       <div className={formClasses}>
@@ -336,9 +330,9 @@ export const SwapForm: React.FC<FormProps> = React.memo(
                   <p>&nbsp;minutes</p>
                 </div>
               </div>
-
             </div>
           </div>
+
 
           <div className="Inputs">
             <FromInput
@@ -400,15 +394,21 @@ export const SwapForm: React.FC<FormProps> = React.memo(
             )}
           </div>
         </div>
+
+        {/* Transaction Status Modal */}
         <TransactionStatusModal
           open={showModal}
-          onClose={handleCloseModal}
+          onClose={() => setShowModal(false)}
           inputToken={fromToken}
           outputToken={toToken}
           inputAmount={fromAmount}
           outputAmount={toAmount}
           swap={swap}
-          onRefreshInputs={handleRefreshInputs}
+          onRefreshInputs={() => {
+            setFromAmount(0n)
+            setToAmount(0n)
+            swap.reset()
+          }}
           onAdjustSettings={handleAdjustSettings}
         />
       </div >
