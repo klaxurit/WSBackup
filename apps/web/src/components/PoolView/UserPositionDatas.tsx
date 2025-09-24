@@ -165,19 +165,19 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, 
     <>
       <div className="UserPosition__ActionButtons">
         <button
-          className="UserPosition__ActionBtn UserPosition__ActionBtn--add"
+          className="UserPosition__ActionBtn UserPosition__ActionBtn--add btn btn--small btn__main"
           onClick={handleAddLiquidity}
         >
           Increase
         </button>
         <button
-          className="UserPosition__ActionBtn UserPosition__ActionBtn--remove"
+          className="UserPosition__ActionBtn UserPosition__ActionBtn--remove btn btn--small btn__accent"
           onClick={handleRemoveLiquidity}
         >
           Withdraw
         </button>
         <button
-          className="UserPosition__ActionBtn UserPosition__ActionBtn--claim"
+          className="UserPosition__ActionBtn UserPosition__ActionBtn--claim btn btn--small btn__shade"
           onClick={handleClaimFees}
         >
           Claim Fees

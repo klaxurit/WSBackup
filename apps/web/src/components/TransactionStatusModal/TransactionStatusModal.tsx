@@ -164,11 +164,10 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   const renderActionButton = (action: ErrorAction, index: number) => (
     <button
       key={index}
-      className={`TransactionModal__swapBtn ${
-        action.type === 'primary'
-          ? 'TransactionModal__swapBtn--primary'
-          : 'TransactionModal__swapBtn--secondary'
-      }`}
+      className={`TransactionModal__swapBtn ${action.type === 'primary'
+        ? 'TransactionModal__swapBtn--primary'
+        : 'TransactionModal__swapBtn--secondary'
+        }`}
       onClick={action.action}
       style={{ marginTop: index === 0 ? 16 : 8 }}
     >
@@ -293,7 +292,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               onClick={handleSwap}
               disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
             >
-              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? '🎉 Success!' : btnText}
+              {isSuccess && <div className="psychedelic-bear" />}
+              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
             </button>
           )}
         </>

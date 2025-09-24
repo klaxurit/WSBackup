@@ -159,27 +159,6 @@
     }
   }
 
-  &__ActionBtn {
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    border: none;
-    transition: background 0.18s, color 0.18s;
-
-    &--add {
-      background: #FFD056;
-      color: #232323;
-    }
-
-    &--remove {
-      background: #fff;
-      color: #232323;
-      border: 1.5px solid #232323;
-    }
-  }
-
   &__Stats {
     width: 100%;
     margin-top: 12px;
@@ -238,7 +217,6 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 24px;
     width: 100%;
 
     .PoolView__FormRow {
@@ -326,7 +304,6 @@
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: #232323;
       color: #FFD056;
     }
   }
@@ -347,31 +324,9 @@
     margin-bottom: 16px;
     text-align: center;
   }
-
-  &__SuccessLink {
-    color: #fff;
-    background: #232323;
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-weight: 500;
-    font-size: 15px;
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s;
-    margin-top: 4px;
-    display: inline-block;
-
-    &:hover {
-      background: #FFD056;
-      color: #232323;
-    }
-  }
 }
 
 .UserPosition {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 1.5rem;
   max-width: 400px;
 
   h3 {
@@ -619,29 +574,11 @@
   }
 
   &__ActionBtn {
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
     text-align: center;
     white-space: nowrap;
-
-    &--add {
-      background: #FFD056;
-      color: #232323;
-
-      &:hover {
-        background: #ffda70;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-    }
 
     &--remove {
       background: rgba(255, 255, 255, 0.05);
@@ -651,7 +588,6 @@
       &:hover {
         background: rgba(255, 255, 255, 0.08);
         border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-1px);
       }
 
       &:active {
@@ -667,7 +603,6 @@
       &:hover {
         background: rgba(255, 208, 86, 0.15);
         border-color: rgba(255, 208, 86, 0.3);
-        transform: translateY(-1px);
       }
 
       &:active {
@@ -699,11 +634,6 @@
     &__ActionButtons {
       grid-template-columns: 1fr;
       gap: 6px;
-    }
-
-    &__ActionBtn {
-      padding: 10px;
-      font-size: 13px;
     }
   }
 

@@ -80,6 +80,7 @@
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s ease;
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
 
       &:hover {
         background: $onyx-pure;
@@ -186,6 +187,7 @@
       left: 2px;
       border-radius: 12px;
       border: 1px solid $white-008;
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
 
       &.active {
         background: $white-008;
