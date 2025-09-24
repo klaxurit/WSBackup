@@ -19,14 +19,14 @@ import type {
 const INTERVAL_CONFIG = {
   '1H': {
     period: 'hour' as const,
-    limit: 1000, // Maximum autorisé par l'API (1000 heures = ~42 jours)
+    limit: 168, // 7 jours d'heures (168 heures)
     groupBy: 1, // 1 heure par point
     staleTime: 60 * 1000, // 1 minute
     refetchInterval: 60 * 1000
   },
   '4H': {
     period: 'hour' as const,
-    limit: 1000, // Maximum autorisé par l'API (1000 heures = ~42 jours)
+    limit: 168, // 7 jours d'heures (168 heures)
     groupBy: 4, // 4 heures par point
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5 * 60 * 1000
@@ -145,6 +145,11 @@ const buildVaultQuery = (vaultAddress: string, _metric: ChartMetric, interval: C
   const dataType = config.period === 'hour' ? 'vaultHourDatas' : 'vaultDayDatas';
   const timeField = config.period === 'hour' ? 'periodStartUnix' : 'date';
 
+  // Construire les champs supplémentaires pour les données quotidiennes
+  const daySpecificFields = config.period === 'day' ? `
+          volumeUSD1D
+          volumeUSD30D` : '';
+
   return `
     query GetVaultChartData {
       ${dataType}(
@@ -159,12 +164,75 @@ const buildVaultQuery = (vaultAddress: string, _metric: ChartMetric, interval: C
           totalValueLockedUSD
           collectedFeesUSD
           tradingVolumeUSD
-          depositWithdrawVolumeUSD
-          ${config.period === 'day' ? 'volumeUSD1D\n          volumeUSD30D' : ''}
+          depositWithdrawVolumeUSD${daySpecificFields}
         }
       }
     }
   `;
+};
+
+// Fonction pour grouper les données de vault selon l'intervalle
+const groupVaultDataByInterval = (
+  data: VaultDayData[] | VaultHourData[],
+  interval: ChartInterval
+): VaultDayData[] | VaultHourData[] => {
+  const config = INTERVAL_CONFIG[interval];
+
+  if (config.groupBy === 1) {
+    return data; // Pas de groupement nécessaire
+  }
+
+  if (config.period === 'hour') {
+    // Grouper les données horaires
+    const hourData = data as VaultHourData[];
+    const grouped: VaultHourData[] = [];
+
+    for (let i = 0; i < hourData.length; i += config.groupBy) {
+      const group = hourData.slice(i, i + config.groupBy);
+      if (group.length === 0) continue;
+
+      // Prendre la dernière donnée du groupe comme représentative
+      const representative = group[group.length - 1];
+
+      // Calculer le volume total pour le groupe
+      const totalVolume = group.reduce((sum, item) => {
+        return sum + parseFloat(item.tradingVolumeUSD) + parseFloat(item.depositWithdrawVolumeUSD);
+      }, 0);
+
+      grouped.push({
+        ...representative,
+        tradingVolumeUSD: totalVolume.toString(),
+        depositWithdrawVolumeUSD: '0', // Reset pour éviter la double comptabilisation
+      });
+    }
+
+    return grouped;
+  } else {
+    // Grouper les données quotidiennes
+    const dayData = data as VaultDayData[];
+    const grouped: VaultDayData[] = [];
+
+    for (let i = 0; i < dayData.length; i += config.groupBy) {
+      const group = dayData.slice(i, i + config.groupBy);
+      if (group.length === 0) continue;
+
+      // Prendre la dernière donnée du groupe comme représentative
+      const representative = group[group.length - 1];
+
+      // Calculer le volume total pour le groupe
+      const totalVolume = group.reduce((sum, item) => {
+        return sum + parseFloat(item.tradingVolumeUSD) + parseFloat(item.depositWithdrawVolumeUSD);
+      }, 0);
+
+      grouped.push({
+        ...representative,
+        tradingVolumeUSD: totalVolume.toString(),
+        depositWithdrawVolumeUSD: '0', // Reset pour éviter la double comptabilisation
+      });
+    }
+
+    return grouped;
+  }
 };
 
 // Fonction pour grouper les données de pool selon l'intervalle
@@ -409,18 +477,21 @@ const processVaultData = (
   data: VaultDayData[] | VaultHourData[],
   metric: ChartMetric,
   _chartType: ChartType,
-  _interval: ChartInterval
+  interval: ChartInterval
 ): LineChartPoint[] | CandlestickPoint[] => {
   if (!data || data.length === 0) return [];
 
+  // Grouper les données selon l'intervalle
+  const groupedData = groupVaultDataByInterval(data, interval);
+
   // vaults don't have OHLC; force line/area if candlestick requested
-  const sortedData = [...data].sort((a, b) => {
+  const sortedData = [...groupedData].sort((a, b) => {
     const timeA = 'periodStartUnix' in a ? a.periodStartUnix : a.date;
     const timeB = 'periodStartUnix' in b ? b.periodStartUnix : b.date;
     return timeA - timeB;
   });
 
-  return sortedData.map(item => {
+  return sortedData.map((item) => {
     let value = 0;
     switch (metric) {
       case 'tvl':
@@ -428,10 +499,12 @@ const processVaultData = (
         break;
       case 'volume':
         if ('volumeUSD1D' in item && item.volumeUSD1D !== undefined) {
+          // Pour les données quotidiennes, utiliser volumeUSD1D si disponible
           value = parseFloat((item as VaultDayData).volumeUSD1D || '0');
         } else {
-          // fallback: delta of cumulative volumes cannot be computed here; use tradingVolumeUSD snapshot
-          value = parseFloat(item.tradingVolumeUSD);
+          // Pour les données horaires ou groupées, utiliser le volume calculé
+          // Le groupement a déjà calculé le volume total pour la période
+          value = parseFloat(item.tradingVolumeUSD) + parseFloat(item.depositWithdrawVolumeUSD);
         }
         break;
       case 'fees':
@@ -607,6 +680,15 @@ export function usePonderChartData(
         : isPoolData
           ? result.data.poolDayDatas?.items || result.data.poolHourDatas?.items || []
           : result.data.tokenDayDatas?.items || result.data.tokenHourDatas?.items || [];
+
+      // Debug pour les vaults
+      if (isVaultData) {
+        console.log(`[Vault Chart Debug] Interval: ${interval}, Data type: ${config.period}, Data length: ${data.length}`);
+        if (data.length > 0) {
+          console.log(`[Vault Chart Debug] First item:`, data[0]);
+          console.log(`[Vault Chart Debug] Last item:`, data[data.length - 1]);
+        }
+      }
 
       return isVaultData
         ? processVaultData(data as VaultDayData[] | VaultHourData[], metric, chartType, interval)
