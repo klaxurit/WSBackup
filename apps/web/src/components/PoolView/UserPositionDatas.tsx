@@ -6,6 +6,7 @@ import type { Pool } from "../../pages/PoolPage/page"
 import { usePositionDatas, type Position } from "../../hooks/position/usePositionDatas"
 import { IncreaseLiquidityModal } from "./IncreaseLiquidityModal"
 import { WithdrawLiquidityModal } from "./WithdrawLiquidityModal"
+import { ClaimFeesModal } from "./ClaimFeesModal"
 
 const GET_POSITIONS = `
 query GetUserPositions($id: String = "", $owner: String = "") {
@@ -131,6 +132,7 @@ interface ActionButtonsProps {
 const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, onRefresh }) => {
   const [isIncreaseModalOpen, setIsIncreaseModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
 
   const handleAddLiquidity = () => {
     setIsIncreaseModalOpen(true);
@@ -141,8 +143,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, 
   };
 
   const handleClaimFees = () => {
-    // TODO: Implement claim fees functionality
-    console.log('Claim fees for position:', position.tokenId);
+    setIsClaimModalOpen(true);
   };
 
   const handleIncreaseSuccess = () => {
@@ -152,6 +153,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, 
 
   const handleWithdrawSuccess = () => {
     // Refresh position data after successful withdraw
+    onRefresh?.();
+  };
+
+  const handleClaimSuccess = () => {
+    // Refresh position data after successful claim
     onRefresh?.();
   };
 
@@ -195,6 +201,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, 
         posData={posData}
         pool={pool}
         onSuccess={handleWithdrawSuccess}
+      />
+
+      {/* Claim Fees Modal */}
+      <ClaimFeesModal
+        isOpen={isClaimModalOpen}
+        onClose={() => setIsClaimModalOpen(false)}
+        position={position}
+        posData={posData}
+        pool={pool}
+        onSuccess={handleClaimSuccess}
       />
     </>
   );
