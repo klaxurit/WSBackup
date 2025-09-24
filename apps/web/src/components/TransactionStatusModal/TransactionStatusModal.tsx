@@ -276,7 +276,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               onClick={handleSwap}
               disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
             >
-              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? '🎉 Success!' : btnText}
+              {isSuccess && <div className="psychedelic-bear" />}
+              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
             </button>
           )}
         </>

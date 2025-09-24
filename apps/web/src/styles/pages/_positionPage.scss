@@ -13,6 +13,23 @@
     display: flex;
     align-items: center;
     gap: 8px;
+
+    // Désactiver les animations sur les boutons de filtrage
+    .btn {
+      transition: none !important;
+
+      &:hover {
+        transition: none !important;
+      }
+
+      &:active {
+        transition: none !important;
+      }
+
+      &:focus-visible {
+        transition: none !important;
+      }
+    }
   }
 
   &__ContentWrapper {
@@ -65,44 +82,6 @@
     color: $beryl-pure;
   }
 
-  &__NewBtn {
-    padding: 8px 20px;
-    border-radius: 8px;
-    background: var(--accent1, #e39229);
-    color: #fff;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 15px;
-    transition: background 0.2s;
-
-    &:hover {
-      background: #b97a1c;
-    }
-  }
-
-  &__FilterBtn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    background: transparent;
-    color: #aaa;
-    border: 1.5px solid #333;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-
-    &:hover {
-      border-color: var(--accent1, #e39229);
-      color: var(--accent1, #e39229);
-    }
-
-    &.is-active {
-      background: var(--accent1, #e39229);
-      border-color: var(--accent1, #e39229);
-      color: #fff;
-    }
-  }
 
   &__TableWrapper {
     margin-bottom: 16px;
@@ -141,22 +120,6 @@
     }
   }
 
-  &__ManageBtn {
-    padding: 4px 12px;
-    border-radius: 6px;
-    border: 1.5px solid var(--accent1, #e39229);
-    background: none;
-    color: var(--accent1, #e39229);
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: background 0.2s, color 0.2s;
-
-    &:hover {
-      background: rgba(227, 146, 41, 0.13);
-      color: #fff;
-    }
-  }
 
   &__ClosedBtn {
     padding: 8px 20px;
@@ -603,6 +566,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

@@ -219,7 +219,7 @@ export const VaultDetailPage = () => {
               <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
                 <span className="VaultDetailPage__Strategy">
-                  {vault.strategy || 'Auto-Compound'}
+                  {vault.strategy || 'Auto-Win'}
                 </span>
                 <a
                   href={`https://berascan.com/address/${vault.id}`}
@@ -380,7 +380,7 @@ export const VaultDetailPage = () => {
                     <span>Pool Tokens</span>
                     <span>{vaultManager.isQuoted ? formatUnits(vaultManager.quote.minShares || 0n, 18) : "~0"}</span>
                   </div>
-                  <p>These shares represent your position in the auto-compounding vault.</p>
+                  <p>These shares represent your position in the auto-winning vault.</p>
                 </div>
 
                 {/* Deposit Button */}

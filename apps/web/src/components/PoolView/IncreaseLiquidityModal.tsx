@@ -114,8 +114,33 @@ export const IncreaseLiquidityModal: React.FC<IncreaseLiquidityModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <Modal open={isOpen} onClose={handleClose} className="PoolView__Modal" overlayClassName="PoolView__ModalOverlay">
+    <Modal open={isOpen} onClose={handleClose} className="PoolView__ModalContent" overlayClassName="PoolView__ModalOverlay">
       <div className="PoolView__ModalHeader">
+        <div className="PoolView__ModalHeaderLeft">
+          <button className="iconLink" onClick={() => setParamOpen(!paramOpen)}>
+            {!slippageConfig.isAuto ? `${slippageConfig.display}%` : ""}
+            <Nut />
+          </button>
+          <div ref={paramBoxRef} className={`ParamBox ${paramOpen ? "" : "ParamBox--hide"}`}>
+            <div className="ParamBox__param">
+              <p>Max slippage</p>
+              <div className="ParamBox__slippageInput">
+                <button
+                  className={slippageConfig.isAuto ? "active" : ""}
+                  onClick={() => setSlippageConfig({ real: 5.0, display: "5", isAuto: true })}
+                >
+                  Auto
+                </button>
+                <input
+                  type="text"
+                  value={slippageConfig.display}
+                  onChange={handleSlippageChange}
+                />
+                <p>%</p>
+              </div>
+            </div>
+          </div>
+        </div>
         <span className="PoolView__ModalTitle">Increase Liquidity</span>
         <button className="PoolView__ModalClose" onClick={handleClose} disabled={isLoading} aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -123,78 +148,27 @@ export const IncreaseLiquidityModal: React.FC<IncreaseLiquidityModalProps> = ({
           </svg>
         </button>
       </div>
-      <div className="PoolView__ModalContent">
-        {/* Success State */}
-        {isSuccess && (
-          <div className="PoolView__Success">
-            <div className="PoolView__SuccessTitle">Liquidity Added Successfully!</div>
-            {increaseLiquidityHash && (
-              <a
-                className="PoolView__SuccessLink"
-                href={`https://berascan.com/tx/${increaseLiquidityHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View on Explorer
-              </a>
-            )}
-            <button
-              className="PoolView__ActionBtn PoolView__ActionBtn--add"
-              onClick={handleSuccess}
-              style={{ marginTop: '16px' }}
-            >
-              Close
-            </button>
-          </div>
-        )}
+      {/* Form */}
+      <div className="PoolView__Form">
 
-        {/* Form */}
-        {!isSuccess && (
-          <div className="PoolView__Form">
-            <div className="Form__head">
-              <button className="iconLink" onClick={() => setParamOpen(!paramOpen)}>
-                {!slippageConfig.isAuto ? `${slippageConfig.display}%` : ""}
-                <Nut />
-              </button>
-              <div ref={paramBoxRef} className={`ParamBox ${paramOpen ? "" : "ParamBox--hide"}`}>
-                <div className="ParamBox__param">
-                  <p>Max slippage</p>
-                  <div className="ParamBox__slippageInput">
-                    <button
-                      className={slippageConfig.isAuto ? "active" : ""}
-                      onClick={() => setSlippageConfig({ real: 5.0, display: "5", isAuto: true })}
-                    >
-                      Auto
-                    </button>
-                    <input
-                      type="text"
-                      value={slippageConfig.display}
-                      onChange={handleSlippageChange}
-                    />
-                    <p>%</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Token Inputs using LiquidityInput */}
+        <LiquidityInput
+          selectedToken={token0}
+          onAmountChange={handleToken0AmountChange}
+          value={parsedToken0Amount}
+          isOverBalance={validationErrors.some(e => e.field === 'token0')}
+          disabled={isLoading}
+        />
+        <LiquidityInput
+          selectedToken={token1}
+          onAmountChange={handleToken1AmountChange}
+          value={parsedToken1Amount}
+          isOverBalance={validationErrors.some(e => e.field === 'token1')}
+          disabled={isLoading}
+        />
 
-            {/* Token Inputs using LiquidityInput */}
-            <LiquidityInput
-              selectedToken={token0}
-              onAmountChange={handleToken0AmountChange}
-              value={parsedToken0Amount}
-              isOverBalance={validationErrors.some(e => e.field === 'token0')}
-              disabled={isLoading}
-            />
-            <LiquidityInput
-              selectedToken={token1}
-              onAmountChange={handleToken1AmountChange}
-              value={parsedToken1Amount}
-              isOverBalance={validationErrors.some(e => e.field === 'token1')}
-              disabled={isLoading}
-            />
-
-            {/* Slippage Settings */}
-            {/* <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+        {/* Slippage Settings */}
+        {/* <div style={{ marginTop: '16px', marginBottom: '16px' }}>
               <h4 style={{ color: '#fff', fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>
                 Slippage Tolerance
               </h4>
@@ -255,110 +229,103 @@ export const IncreaseLiquidityModal: React.FC<IncreaseLiquidityModalProps> = ({
               )}
             </div> */}
 
-            {/* Validation Errors */}
-            {validationErrors.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                {validationErrors.map((error, index) => (
-                  <div key={index} style={{
-                    background: 'rgba(255, 107, 107, 0.1)',
-                    border: '1px solid rgba(255, 107, 107, 0.2)',
-                    color: '#FF6B6B',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    marginBottom: index < validationErrors.length - 1 ? '8px' : '0'
-                  }}>
-                    {error.message}
-                  </div>
-                ))}
+        {/* Validation Errors */}
+        {/* {validationErrors.length > 0 && (
+          <div className="PoolView__ValidationErrors">
+            {validationErrors.map((error, index) => (
+              <div key={index} className="PoolView__ValidationError">
+                {error.message}
               </div>
-            )}
+            ))}
+          </div>
+        )} */}
 
-            {/* Action Buttons */}
+        {/* Action Buttons */}
 
-            {/* Token 0 Approval */}
-            {token0NeedsApproval && canApproveToken0 && (
-              <button
-                className="btn btn__main btn--large"
-                onClick={approveToken0}
-                disabled={status === 'approving' || status === 'waitingApproval'}
-                style={{ marginBottom: '12px' }}
-              >
-                {status === 'approving' || status === 'waitingApproval'
-                  ? `Approving ${pool.token0Ref.symbol}...`
-                  : `Approve ${pool.token0Ref.symbol}`
-                }
-              </button>
-            )}
+        {/* Token 0 Approval */}
+        {token0NeedsApproval && canApproveToken0 && (
+          <button
+            className="PoolView__ApprovalButton"
+            onClick={approveToken0}
+            disabled={status === 'approving' || status === 'waitingApproval'}
+          >
+            {status === 'approving' || status === 'waitingApproval'
+              ? `Approving ${pool.token0Ref.symbol}...`
+              : `Approve ${pool.token0Ref.symbol}`
+            }
+          </button>
+        )}
 
-            {/* Token 1 Approval */}
-            {token1NeedsApproval && canApproveToken1 && (
-              <button
-                className="btn btn__main btn--large"
-                onClick={approveToken1}
-                disabled={status === 'approving' || status === 'waitingApproval'}
-                style={{ marginBottom: '12px' }}
-              >
-                {status === 'approving' || status === 'waitingApproval'
-                  ? `Approving ${pool.token1Ref.symbol}...`
-                  : `Approve ${pool.token1Ref.symbol}`
-                }
-              </button>
-            )}
+        {/* Token 1 Approval */}
+        {token1NeedsApproval && canApproveToken1 && (
+          <button
+            className="PoolView__ApprovalButton"
+            onClick={approveToken1}
+            disabled={status === 'approving' || status === 'waitingApproval'}
+          >
+            {status === 'approving' || status === 'waitingApproval'
+              ? `Approving ${pool.token1Ref.symbol}...`
+              : `Approve ${pool.token1Ref.symbol}`
+            }
+          </button>
+        )}
 
-            {/* Increase Liquidity Button */}
-            <button
-              className={`btn btn__main btn--large${!canSubmit ||
-                !canIncrease ||
-                token0NeedsApproval ||
-                token1NeedsApproval ||
-                status === 'increasing' ||
-                status === 'waitingIncrease' ||
-                status === 'simulating'
-                ? ' btn__disabled'
-                : ''
-                }`}
-              onClick={increaseLiquidity}
-              disabled={
-                !canSubmit ||
-                !canIncrease ||
-                token0NeedsApproval ||
-                token1NeedsApproval ||
-                status === 'increasing' ||
-                status === 'waitingIncrease' ||
-                status === 'simulating'
-              }
-            >
-              {status === 'simulating' && 'Simulating...'}
-              {status === 'increasing' && 'Adding Liquidity...'}
-              {status === 'waitingIncrease' && 'Confirming...'}
-              {(status === 'idle' || status === 'approving' || status === 'waitingApproval') && 'Add Liquidity'}
-            </button>
+        {/* Increase Liquidity Button */}
+        <button
+          className={`PoolView__MainButton btn btn--large btn__main ${(!canSubmit ||
+            !canIncrease ||
+            token0NeedsApproval ||
+            token1NeedsApproval ||
+            status === 'increasing' ||
+            status === 'waitingIncrease' ||
+            status === 'simulating') && !isSuccess
+            ? ' btn__disabled'
+            : ''
+            } ${isSuccess ? ' PoolView__MainButton--success' : ''}`}
+          onClick={isSuccess ? handleSuccess : increaseLiquidity}
+          disabled={
+            (!canSubmit ||
+              !canIncrease ||
+              token0NeedsApproval ||
+              token1NeedsApproval ||
+              status === 'increasing' ||
+              status === 'waitingIncrease' ||
+              status === 'simulating') && !isSuccess
+          }
+        >
+          {isSuccess && <div className="increase-bear" />}
+          {status === 'simulating' && 'Simulating...'}
+          {status === 'increasing' && 'Adding Liquidity...'}
+          {status === 'waitingIncrease' && 'Confirming...'}
+          {(status === 'idle' || status === 'approving' || status === 'waitingApproval') && 'Add Liquidity'}
+          {isSuccess && 'Liquidity Added Successfully'}
+        </button>
 
-            {/* Status Messages */}
-            {(status === 'simulating' || status === 'increasing' || status === 'waitingIncrease') && (
-              <div style={{
-                background: 'rgba(255, 208, 86, 0.1)',
-                border: '1px solid rgba(255, 208, 86, 0.2)',
-                color: '#FFD056',
-                padding: '12px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                textAlign: 'center',
-                marginTop: '16px'
-              }}>
-                {status === 'simulating' && 'Validating transaction...'}
-                {status === 'increasing' && 'Please confirm the transaction in your wallet'}
-                {status === 'waitingIncrease' && 'Transaction submitted. Waiting for confirmation...'}
-              </div>
-            )}
+        {/* View on Explorer Button - Only show on success */}
+        {isSuccess && increaseLiquidityHash && (
+          <a
+            className="PoolView__SuccessLink btn btn--small btn__shade"
+            href={`https://berascan.com/tx/${increaseLiquidityHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on Explorer
+          </a>
+        )}
 
-            {/* Error Messages */}
-            {(errors.simulate || errors.increase) && (
-              <div className="PoolView__FormError">
-                <p>{errors.simulate?.message || errors.increase?.message}</p>
-              </div>
-            )}
+        {/* Status Messages */}
+        {/* {(status === 'simulating' || status === 'increasing' || status === 'waitingIncrease') && (
+            <div className="PoolView__StatusMessage">
+              {status === 'simulating' && 'Validating transaction...'}
+              {status === 'increasing' && 'Please confirm the transaction in your wallet'}
+              {status === 'waitingIncrease' && 'Transaction submitted. Waiting for confirmation...'}
+            </div>
+          )} */}
+
+        {/* Error Messages */}
+        {(errors.simulate || errors.increase) && (
+          <div className="PoolView__FormError">
+            <p>{errors.simulate?.message || errors.increase?.message}</p>
           </div>
         )}
       </div>
