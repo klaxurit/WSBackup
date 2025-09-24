@@ -2,7 +2,6 @@
  * Error mapping utility for WinnieSwap
  * Maps common swap errors to user-friendly messages and suggested actions
  */
-
 export interface ErrorAction {
   label: string;
   type: 'primary' | 'secondary';
@@ -343,6 +342,8 @@ export function processSwapError(
     errorMessage = error.message;
   } else if (typeof error === 'string') {
     errorMessage = error;
+  } else if ((error as any)?.message) {
+    errorMessage = (error as any).message
   } else {
     errorMessage = 'Unknown error occurred';
   }

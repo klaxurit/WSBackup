@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useAppKitNetwork } from '@reown/appkit/react';
-import { currentChain, berachainNetwork, berachainBepoliaNetwork } from '../config/wagmi';
-import { berachain } from 'viem/chains';
+import { currentChain, berachainNetwork } from '../config/wagmi';
 
 /**
  * Hook pour forcer la connexion sur Berachain
@@ -17,7 +16,7 @@ export const useBerachainForce = () => {
   const isCorrectNetwork = chainId === currentChain.id;
 
   // Déterminer le réseau AppKit correspondant
-  const targetAppKitNetwork = currentChain.id === berachain.id ? berachainNetwork : berachainBepoliaNetwork;
+  const targetAppKitNetwork = berachainNetwork;
 
   // Switch automatique vers Berachain lors de la connexion
   useEffect(() => {

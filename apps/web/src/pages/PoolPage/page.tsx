@@ -13,6 +13,7 @@ import { FallbackImg } from '../../components/utils/FallbackImg';
 import { type Address } from 'viem';
 import { UserPositionDatas } from '../../components/PoolView/UserPositionDatas';
 import { Modal } from '../../components/Common/Modal';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_POOL = `
 query GetTokensStats($id: String = "") {
