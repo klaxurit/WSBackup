@@ -361,7 +361,7 @@ const PoolPage: React.FC = () => {
     {
       label: '', key: 'actions', render: (row) => (
         <Link to={`/pool/${row.pool}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <button className="PoolPage__ManageBtn">Manage</button>
+          <button className="btn btn--tiny btn__accent">Manage</button>
         </Link>
       )
     },
@@ -386,22 +386,16 @@ const PoolPage: React.FC = () => {
           <div className="PoolPage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <h2 className="PoolPage__Title">Your positions</h2>
             <div className="PoolPage__FilterButtons" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <HoverScale scale={1.05}>
                 <button
-                  className={`PoolPage__FilterBtn ${statusFilter === 'open' ? 'is-active' : ''}`}
+                  className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main' : 'btn__shade'}`}
                   onClick={() => setStatusFilter('open')}
                 >Open</button>
-              </HoverScale>
-              <HoverScale scale={1.05}>
                 <button
-                  className={`PoolPage__FilterBtn ${statusFilter === 'closed' ? 'is-active' : ''}`}
+                  className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main' : 'btn__shade'}`}
                   onClick={() => setStatusFilter('closed')}
                 >Closed</button>
-              </HoverScale>
               {isConnected && (
-                <HoverScale scale={1.05}>
-                  <Link className="PoolPage__NewBtn" to="/pools/create">New</Link>
-                </HoverScale>
+                  <Link className="btn btn--tiny btn__accent" to="/pools/create">New</Link>
               )}
             </div>
           </div>

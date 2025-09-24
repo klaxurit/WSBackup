@@ -95,7 +95,8 @@
   }
 
   &--large,
-  &--small {
+  &--small,
+  &--tiny {
     font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
     outline: none;
     border: none;
@@ -120,6 +121,31 @@
     padding: 10px 14px 10px 14px;
     letter-spacing: 0.32px;
     height: 40px;
+  }
+
+  &--tiny {
+    font-size: 14px;
+    padding: 6px 10px 6px 10px;
+    letter-spacing: 0.28px;
+    height: 32px;
+    border-radius: 12px;
+  }
+
+  // Désactiver les animations pour certains boutons
+  &--small.btn__accent {
+    transition: none !important;
+
+    &:hover {
+      transition: none !important;
+    }
+
+    &:active {
+      transition: none !important;
+    }
+
+    &:focus-visible {
+      transition: none !important;
+    }
   }
 }
 
