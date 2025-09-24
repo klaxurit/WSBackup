@@ -46,7 +46,7 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
         className={`btn btn--${size} btn__disabled ${customClassName}`.trim()}
         disabled
       >
-        Enter amount
+        Enter an amount
       </button>
     );
   }

@@ -404,9 +404,11 @@ const PoolDetailPage: React.FC = () => {
   const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (poolsLoading) {
-    return (<div className="VaultDetailPage VaultDetailPage--error">
-      <h2>Loading...</h2>
-    </div>)
+    return (
+      <div className="Pool__Wrapper">
+        <Loader size="mobile" />
+      </div>
+    )
   }
 
   if (!pool) {

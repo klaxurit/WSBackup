@@ -164,7 +164,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
 
     const btnText = useMemo(() => {
       if (!fromToken || !toToken) return "Select a token"
-      if (!fromAmount || fromAmount === 0n) return "Enter Amount"
+      if (!fromAmount || fromAmount === 0n) return "Enter an amount"
 
       // Vérifier les cas de wrap/unwrap en priorité
       if (swap.isWrap) return "Wrap"

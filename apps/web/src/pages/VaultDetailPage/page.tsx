@@ -12,6 +12,8 @@ import { useVault } from '../../hooks/useVault';
 import { formatUnits, type Address } from 'viem';
 import { useAccount } from 'wagmi';
 import stickyVaultIcon from '../../assets/sticky_vault.png';
+import { PageContentTransition } from '../../components/Transitions';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -177,8 +179,8 @@ export const VaultDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="VaultDetailPage VaultDetailPage--error">
-        <h2>Loading...</h2>
+      <div className="VaultDetailPage__Wrapper">
+        <Loader size="mobile" />
       </div>
     );
   }
@@ -198,7 +200,7 @@ export const VaultDetailPage = () => {
   }
 
   return (
-    <div className="VaultDetailPage">
+    <PageContentTransition className="VaultDetailPage">
       {/* Header */}
       <div className="VaultDetailPage__Header">
         <div className="VaultDetailPage__HeaderLeft">
@@ -495,7 +497,7 @@ export const VaultDetailPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageContentTransition>
   );
 };
 

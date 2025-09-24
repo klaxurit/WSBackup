@@ -5,6 +5,7 @@ import { NewBanner } from '../../components/Common/NewBanner';
 import { PageContentTransition } from '../../components/Transitions';
 import vaultIcon from '../../assets/coffre_icon.png';
 import { useQuery } from '@tanstack/react-query';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_STICKYVAULTS = `
   query GetStickyVaults {
@@ -115,7 +116,7 @@ const VaultsPage: React.FC = () => {
 
         <div className="VaultsPage__Table">
           {isLoading
-            ? <p>Loading...</p>
+            ? <Loader size="mobile" />
             : data
               ? <VaultsTable vaults={data} searchValue={search} />
               : <p>No Vaults</p>
