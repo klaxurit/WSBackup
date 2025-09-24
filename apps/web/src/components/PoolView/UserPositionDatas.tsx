@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { Pool } from "../../pages/PoolPage/page"
 import { usePositionDatas, type Position } from "../../hooks/position/usePositionDatas"
 import { IncreaseLiquidityModal } from "./IncreaseLiquidityModal"
+import { WithdrawLiquidityModal } from "./WithdrawLiquidityModal"
 
 const GET_POSITIONS = `
 query GetUserPositions($id: String = "", $owner: String = "") {
@@ -124,18 +125,19 @@ interface ActionButtonsProps {
   position: Position;
   pool: Pool;
   onRefresh?: () => void;
+  posData: ReturnType<typeof usePositionDatas>
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, onRefresh }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, onRefresh }) => {
   const [isIncreaseModalOpen, setIsIncreaseModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
   const handleAddLiquidity = () => {
     setIsIncreaseModalOpen(true);
   };
 
   const handleRemoveLiquidity = () => {
-    // TODO: Implement remove liquidity modal
-    console.log('Remove liquidity for position:', position.tokenId);
+    setIsWithdrawModalOpen(true);
   };
 
   const handleClaimFees = () => {
@@ -145,6 +147,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, onRefresh
 
   const handleIncreaseSuccess = () => {
     // Refresh position data after successful increase
+    onRefresh?.();
+  };
+
+  const handleWithdrawSuccess = () => {
+    // Refresh position data after successful withdraw
     onRefresh?.();
   };
 
@@ -179,6 +186,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, onRefresh
         pool={pool}
         onSuccess={handleIncreaseSuccess}
       />
+
+      {/* Withdraw Liquidity Modal */}
+      <WithdrawLiquidityModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        position={position}
+        posData={posData}
+        pool={pool}
+        onSuccess={handleWithdrawSuccess}
+      />
     </>
   );
 };
@@ -196,6 +213,11 @@ const UserPositionRow = ({ position, pool, onRefresh }: { position: Position, po
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
   };
+
+  const handleRefresh = () => {
+    datas?.refetch()
+    onRefresh?.()
+  }
 
   return (
     <div className="UserPosition__Item">
@@ -278,7 +300,7 @@ const UserPositionRow = ({ position, pool, onRefresh }: { position: Position, po
               )}
 
               {/* Action Buttons */}
-              <ActionButtons position={position} pool={pool} onRefresh={onRefresh} />
+              <ActionButtons position={position} pool={pool} posData={datas} onRefresh={handleRefresh} />
             </div>
           </motion.div>
         )}
