@@ -9,6 +9,8 @@ import { TokenTransactionsTable } from '../../components/Table/TokenTransactions
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import { formatUnits } from 'viem';
+import { PageContentTransition } from '../../components/Transitions';
+import { Loader } from '../../components/Loader/Loader';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
@@ -113,14 +115,28 @@ const TokenPage: React.FC = () => {
   const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (tokensLoading) {
-    return <div style={{ padding: 32 }}>Loading token data...</div>;
+    return (
+      <div className="Token__Wrapper">
+        <Loader size="mobile" />
+      </div>
+    );
   }
   if (!token) {
-    return <div style={{ padding: 32 }}>Token not found.</div>;
+    return (
+      <div className="Token__Wrapper">
+        <div className="Token__Error">
+          <h2>Token not found</h2>
+          <p>The requested token does not exist or has been removed.</p>
+          <Link to="/explore?tab=tokens" className="button button--primary">
+            Back to tokens
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="Token">
+    <PageContentTransition className="Token">
       <div className="Token__Breadcrumbs">
         <Link to="/explore" className="Token__BreadcrumbsLink">Explore</Link>
         <ExplorerChevronIcon />
@@ -286,7 +302,7 @@ const TokenPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageContentTransition>
   );
 };
 

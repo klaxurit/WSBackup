@@ -18,6 +18,7 @@ import { Modal } from '../../components/Common/Modal';
 import { useTransactionStatus } from '../../components/Common/TransactionStatus';
 import { ErrorMessage } from '../../components/Common/ErrorMessage';
 import { transformGraphQLTokenToLegacyToken } from '../../types/api';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_POOL = `
 query GetTokensStats($id: String = "", $user: String = "") {
@@ -356,7 +357,7 @@ const PoolDetailPage: React.FC = () => {
     return {
       isDisabled: true,
       onClick: () => { },
-      text: "Enter amounts",
+      text: "Enter an amount",
       validationErrors: [],
       isLoading: false
     }
@@ -427,7 +428,7 @@ const PoolDetailPage: React.FC = () => {
     return {
       isDisabled: true,
       onClick: () => { },
-      text: "Enter amount",
+      text: "Enter an amount",
       validationErrors: [],
       isLoading: false
     }
@@ -449,9 +450,11 @@ const PoolDetailPage: React.FC = () => {
   const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (poolsLoading) {
-    return (<div className="VaultDetailPage VaultDetailPage--error">
-      <h2>Loading...</h2>
-    </div>)
+    return (
+      <div className="Pool__Wrapper">
+        <Loader size="mobile" />
+      </div>
+    )
   }
 
   if (!pool) {

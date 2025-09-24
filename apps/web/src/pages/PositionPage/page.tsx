@@ -16,6 +16,7 @@ import { Pool, Position, TickMath } from '@uniswap/v3-sdk';
 import { Token } from '@uniswap/sdk-core';
 import { currentChain } from '../../config/wagmi';
 import JSBI from 'jsbi';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_TOP_POOLS = `
   query GetTopPools {
@@ -407,7 +408,7 @@ const PoolPage: React.FC = () => {
             ? isLoading
               ? (
                 <div className="PoolPage__TableWrapper">
-                  <p>Loading</p>
+                  <Loader size="mobile" />
                 </div>
               )
               : (
@@ -433,7 +434,7 @@ const PoolPage: React.FC = () => {
           <h3 className="PoolPage__TopTitle">Top pools by TVL</h3>
           <div className="PoolPage__TopList">
             {topPoolsLoading ? (
-              <p>Loading top pools...</p>
+              <Loader size="mobile" />
             ) : topPoolsError ? (
               <p>Error loading pools: {topPoolsError.message}</p>
             ) : topPools.length === 0 ? (

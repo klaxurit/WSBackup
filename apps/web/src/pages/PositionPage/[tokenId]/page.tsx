@@ -245,7 +245,7 @@ const PoolViewPage: React.FC = () => {
     return {
       isDisabled: true,
       onClick: () => { },
-      text: "Enter amounts",
+      text: "Enter an amount",
       validationErrors: [],
       isLoading: false
     }
@@ -315,7 +315,7 @@ const PoolViewPage: React.FC = () => {
     return {
       isDisabled: true,
       onClick: () => { },
-      text: "Enter amount",
+      text: "Enter an amount",
       validationErrors: [],
       isLoading: false
     }
