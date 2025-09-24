@@ -386,16 +386,16 @@ const PoolPage: React.FC = () => {
           <div className="PoolPage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <h2 className="PoolPage__Title">Your positions</h2>
             <div className="PoolPage__FilterButtons" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button
-                  className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main' : 'btn__shade'}`}
-                  onClick={() => setStatusFilter('open')}
-                >Open</button>
-                <button
-                  className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main' : 'btn__shade'}`}
-                  onClick={() => setStatusFilter('closed')}
-                >Closed</button>
+              <button
+                className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main' : 'btn__shade'}`}
+                onClick={() => setStatusFilter('open')}
+              >Open</button>
+              <button
+                className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main' : 'btn__shade'}`}
+                onClick={() => setStatusFilter('closed')}
+              >Closed</button>
               {isConnected && (
-                  <Link className="btn btn--tiny btn__accent" to="/pools/create">New</Link>
+                <Link className="btn btn--tiny btn__accent" to="/pools/create">New</Link>
               )}
             </div>
           </div>

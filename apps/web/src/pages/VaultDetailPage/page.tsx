@@ -219,7 +219,7 @@ export const VaultDetailPage = () => {
               <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
                 <span className="VaultDetailPage__Strategy">
-                  {vault.strategy || 'Auto-Compound'}
+                  {vault.strategy || 'Auto-Win'}
                 </span>
                 <a
                   href={`https://berascan.com/address/${vault.id}`}
