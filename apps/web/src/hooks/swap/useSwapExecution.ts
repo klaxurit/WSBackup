@@ -156,7 +156,6 @@ export const useSwapExecution = ({
 
   // Execute swap function
   const executeSwap = useCallback(async () => {
-    console.log(simulationConfig, address, transactionData)
     if (!simulationConfig?.request || !address || !transactionData) {
       throw new Error('Cannot execute swap: missing configuration or wallet not connected')
     }

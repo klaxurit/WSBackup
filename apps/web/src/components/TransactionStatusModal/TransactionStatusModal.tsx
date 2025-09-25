@@ -125,7 +125,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
     return processSwapError(swap.error, {
       onRetry: () => {
-        swap.refresh();
+        swap.swap();
       },
       onAdjustSettings: () => {
         onAdjustSettings?.();
@@ -135,7 +135,10 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
         // Open wallet or close modal
         onClose();
       },
-      onClose,
+      onClose: () => {
+        onClose()
+        swap.reset()
+      },
       onApprove: () => {
         if (swap.needsApproval) {
           swap.approve();
