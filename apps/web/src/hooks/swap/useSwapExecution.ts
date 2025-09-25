@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from "react"
-import { encodePacked, zeroAddress, type Address, type Hex } from "viem"
+import { zeroAddress, type Address, type Hex } from "viem"
 import { useAccount, useSimulateContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 
 import { calculateSlippageAmount, encodePath } from "../../utils/swap"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
 import { SwapRouteV2ABI } from "../../config/abis/swapRouter"
-import { UniversalRouteABI } from "../../config/abis/UniversalRouteABI"
 import type { OptimizedRoute, TransactionData } from "./types"
 
 interface UseSwapExecutionParams {
@@ -61,7 +60,6 @@ export const useSwapExecution = ({
 
     // Pour l'estimation sans wallet, utiliser une adresse par défaut
     const targetAddress = address || zeroAddress
-    const deadlineTS = BigInt(Math.floor(Date.now() / 1000) + deadline * 60)
 
     try {
       if (optimizedRoute.type === "single") {
@@ -89,7 +87,7 @@ export const useSwapExecution = ({
             value: singleRoute.path[0].address === zeroAddress ? amountIn : 0n
           }
         } else {
-          // Multi-hop
+          // Multi-hop - Using correct struct/tuple parameters
           const path = encodePath(
             singleRoute.path.map(t => t.address),
             singleRoute.fees
@@ -98,7 +96,6 @@ export const useSwapExecution = ({
           const params = {
             path,
             recipient: recipient || targetAddress,
-            deadline: deadlineTS,
             amountIn,
             amountOutMinimum
           }
@@ -108,72 +105,16 @@ export const useSwapExecution = ({
             abi: SwapRouteV2ABI,
             functionName: 'exactInput',
             args: [params],
-            value: singleRoute.path[0].address === zeroAddress ? amountIn : 0n
+            value: 0n // Always 0n for ERC20 token swaps
           }
-        }
-      } else {
-        // Complex transaction via UniversalRouter (multicall)
-        const commands: Hex[] = []
-        const inputs: Hex[] = []
-        let totalValue = 0n
-
-        for (const splitRoute of optimizedRoute.routes) {
-          const amountOutMinimum = calculateSlippageAmount(splitRoute.quote, slippageTolerance)
-
-          if (splitRoute.route.path.length === 2) {
-            // Single hop in split
-            commands.push('0x00')
-
-            const swapData = encodePacked(
-              ['address', 'address', 'uint24', 'address'],
-              [
-                splitRoute.route.path[0].address,
-                splitRoute.route.path[1].address,
-                splitRoute.route.fees[0],
-                recipient || targetAddress
-              ]
-            )
-
-            inputs.push(
-              encodePacked(
-                ['address', 'uint256', 'uint256', 'bytes'],
-                [recipient || targetAddress, splitRoute.amount, amountOutMinimum, swapData]
-              )
-            )
-          } else {
-            // Multi-hop in split
-            commands.push('0x00')
-            const path = encodePath(
-              splitRoute.route.path.map(t => t.address),
-              splitRoute.route.fees
-            )
-
-            inputs.push(
-              encodePacked(
-                ['address', 'uint256', 'uint256', 'bytes'],
-                [recipient || targetAddress, splitRoute.amount, amountOutMinimum, path]
-              )
-            )
-          }
-
-          // Check if we need to send native token value
-          if (splitRoute.route.path[0].address === zeroAddress) {
-            totalValue += splitRoute.amount
-          }
-        }
-
-        return {
-          to: CONTRACTS_ADDRESS.universalRouter,
-          abi: UniversalRouteABI,
-          functionName: 'execute',
-          args: [commands, inputs, deadlineTS],
-          value: totalValue
         }
       }
     } catch (error) {
       console.error('Failed to generate transaction data:', error)
       return null
     }
+
+    return null
   }, [optimizedRoute, address, enabled, deadline, slippageTolerance, recipient, amountIn])
 
   // Simulate transaction for validation
