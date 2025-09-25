@@ -99,7 +99,8 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
     return deduplicatedTokens.filter((token) =>
       token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.symbol.toLowerCase().includes(searchValue.toLowerCase())
+      token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
+      token.address.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [searchValue, tokens, tokensLoading, onlyPoolToken, tokensData]);
 
@@ -151,7 +152,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
     // Fallback sur l'ancienne logique si GraphQL ne fonctionne pas
     if (price === 0) {
-      let tokenStats = tokensStats?.find((t: any) =>
+      const tokenStats = tokensStats?.find((t: any) =>
         t.address?.toLowerCase() === token.address?.toLowerCase()
       );
 
@@ -253,7 +254,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
   // Gestion du cache
   useEffect(() => {
-    const cacheKey = `${onlyPoolToken}-${isConnected}`;
+    const cacheKey = `${onlyPoolToken}-${isConnected}-${searchValue}`;
     const cached = tokenCache.get(cacheKey);
     const now = Date.now();
 
@@ -286,11 +287,11 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
 
       return () => clearTimeout(timer);
     }
-  }, [tokensLoading, tokensStatsLoading, balancesLoading, tokensArray.length, onlyPoolToken, isConnected]);
+  }, [tokensLoading, tokensStatsLoading, balancesLoading, tokensArray.length, onlyPoolToken, isConnected, searchValue]);
 
   // Récupérer les tokens du cache ou calculer
   const getTokens = () => {
-    const cacheKey = `${onlyPoolToken}-${isConnected}`;
+    const cacheKey = `${onlyPoolToken}-${isConnected}-${searchValue}`;
     const cached = tokenCache.get(cacheKey);
 
     if (cached && isReady) {

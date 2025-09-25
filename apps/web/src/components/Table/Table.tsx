@@ -50,6 +50,7 @@ interface TableProps<T = any> {
   defaultSortKey?: string;
   defaultSortDirection?: SortDirection;
   itemLabel?: string;
+  onRowClick?: (row: T, rowIndex: number) => void;
 }
 
 // Pagination component - currently unused but kept for future use
@@ -178,6 +179,7 @@ export function Table<T = any>({
   defaultSortKey,
   defaultSortDirection = null,
   itemLabel = 'items',
+  onRowClick,
 }: TableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultSortDirection);
@@ -333,7 +335,12 @@ export function Table<T = any>({
               </tr>
             ) : (
               sortedData.map((row, rowIndex) => (
-                <tr key={rowIndex} className={getRowClassName ? getRowClassName(row, rowIndex) : undefined}>
+                <tr
+                  key={rowIndex}
+                  className={getRowClassName ? getRowClassName(row, rowIndex) : undefined}
+                  onClick={() => onRowClick?.(row, rowIndex)}
+                  style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className={col.className}>
                       {col.render ? col.render(row, rowIndex) : (row as any)[col.key]}

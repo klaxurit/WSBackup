@@ -58,7 +58,7 @@ export function Footer({
         <div className="Footer__Right">
           <div className="Footer__Social">
             <a
-              href="https://twitter.com/henlowinnie"
+              href="https://twitter.com/winnieswap"
               target="_blank"
               rel="noopener noreferrer"
               className="Footer__SocialLink"

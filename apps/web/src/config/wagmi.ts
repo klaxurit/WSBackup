@@ -1,10 +1,10 @@
 import React from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { WagmiProvider } from 'wagmi';
+import { createConfig, WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { berachain, berachainBepolia } from 'viem/chains';
-import { arbitrum, mainnet, polygon, base, defineChain } from '@reown/appkit/networks';
+import { berachain } from 'viem/chains';
+import { defineChain, http } from 'viem';
 // Imports supprimés car nous utilisons maintenant AppKit complètement
 
 // Note: Berachain sera géré via Wagmi directement, pas via AppKit
@@ -16,9 +16,7 @@ declare module 'wagmi' {
   }
 }
 
-export const currentChain = import.meta.env.VITE_NODE_ENV === "production"
-  ? berachain
-  : berachainBepolia
+export const currentChain = berachain
 
 // Project ID WalletConnect
 const projectId = 'f5f6f0d2a4bb55b22ce05e9e92a4e95e';
@@ -45,32 +43,28 @@ const berachainNetwork = defineChain({
   testnet: berachain.testnet,
 });
 
-const berachainBepoliaNetwork = defineChain({
-  id: berachainBepolia.id,
-  name: berachainBepolia.name,
-  chainNamespace: 'eip155',
-  caipNetworkId: `eip155:${berachainBepolia.id}`,
-  nativeCurrency: berachainBepolia.nativeCurrency,
-  rpcUrls: berachainBepolia.rpcUrls,
-  blockExplorers: berachainBepolia.blockExplorers,
-  testnet: berachainBepolia.testnet,
-});
-
 // Configuration des réseaux AppKit avec Berachain
-const appKitNetworks = [mainnet, polygon, arbitrum, base, berachainNetwork, berachainBepoliaNetwork];
+const appKitNetworks = [berachainNetwork];
 
 // Export des réseaux Berachain pour utilisation dans les hooks
-export { berachainNetwork, berachainBepoliaNetwork };
+export { berachainNetwork };
 
 // Création de l'adaptateur Wagmi pour AppKit
 const wagmiAdapter = new WagmiAdapter({
   networks: appKitNetworks,
   projectId,
-  ssr: true
+  // ssr: true
 });
 
 // Configuration Wagmi via AppKit (utilise la config de l'adaptateur)
 export const config = wagmiAdapter.wagmiConfig;
+const config2 = createConfig({
+  chains: [berachainNetwork],
+  transports: {
+    [berachainNetwork.id]: http(import.meta.env.VITE_BERACHAIN_API_URL || "https://rpc.berachain.com")
+  }
+})
+
 
 // Création d'AppKit avec la configuration personnalisée
 export const appKit = createAppKit({
@@ -105,7 +99,8 @@ export function AppKitProvider({ children }: { children: React.ReactNode }) {
 
   return React.createElement(
     WagmiProvider,
-    { config },
+    // ts-ignore
+    { config: config2 },
     React.createElement(
       QueryClientProvider,
       { client: queryClient },

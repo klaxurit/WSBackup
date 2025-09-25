@@ -228,6 +228,56 @@
   color: $white;
 }
 
+.TransactionModal__swapBtn--primary {
+  background: linear-gradient(90deg, $beryl-pure 0%, $beryl-medium 100%);
+  color: $onyx-black;
+  border: none;
+
+  &:hover {
+    background: linear-gradient(90deg, $beryl-medium 0%, $beryl-pure 100%);
+  }
+}
+
+.TransactionModal__swapBtn--secondary {
+  background: transparent;
+  color: $beryl-pure;
+  border: 1px solid $beryl-pure;
+
+  &:hover {
+    background: rgba($beryl-pure, 0.1);
+  }
+}
+
+// Error section styles
+.TransactionModal__error {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.TransactionModal__errorMessage {
+  color: $white;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.TransactionModal__errorDetails {
+  color: $onyx-light;
+  font-size: 0.75rem;
+  font-family: monospace;
+  background: rgba($onyx-medium, 0.3);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid $error-pure;
+}
+
+.TransactionModal__errorActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .TransactionModal__swapBtn.btn__disabled {
   background: $onyx-darker !important;
   color: $onyx-medium !important;
@@ -263,213 +313,37 @@
   }
 }
 
-// ========================================
-// ANIMATIONS DU BOUTON DE SUCCÈS DEGEN
-// ========================================
-
-// Variables pour l'animation du gradient arc-en-ciel
-.TransactionModal__swapBtn--success {
-  // CSS Custom Properties pour animation fluide
-  --rainbow-hue-1: 0deg;
-  --rainbow-hue-2: 60deg;
-  --rainbow-hue-3: 120deg;
-  --rainbow-hue-4: 180deg;
-  --rainbow-hue-5: 240deg;
-  --rainbow-hue-6: 300deg;
-
-  position: relative;
-  // Pas d'overflow hidden pour permettre à l'ourson d'être visible au-dessus
-
-  // Gradient arc-en-ciel de base
-  background: linear-gradient(45deg,
-      hsl(var(--rainbow-hue-1), 85%, 60%),
-      hsl(var(--rainbow-hue-2), 85%, 60%),
-      hsl(var(--rainbow-hue-3), 85%, 60%),
-      hsl(var(--rainbow-hue-4), 85%, 60%),
-      hsl(var(--rainbow-hue-5), 85%, 60%),
-      hsl(var(--rainbow-hue-6), 85%, 60%)) !important;
-  background-size: 400% 400%;
-
-  // Animation du gradient (3 secondes)
-  animation:
-    rainbow-shift 3s ease-in-out forwards,
-    success-pulse 3s ease-out forwards;
-
-  // Amélioration de la lisibilité du texte
-  color: white !important;
-  font-weight: 700;
-  font-size: 1.1em;
-  letter-spacing: 0.5px;
-
-  // Ombres multiples pour lisibilité maximale
-  text-shadow:
-    0 0 8px rgba(0, 0, 0, 0.9),
-    0 0 12px rgba(0, 0, 0, 0.7),
-    0 2px 4px rgba(0, 0, 0, 0.8),
-    0 4px 8px rgba(0, 0, 0, 0.5);
-
-  // Overlay semi-transparent pour contraste
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  // Conteneur pour l'image d'ourson
-  &::after {
-    content: '';
-    position: absolute;
-    top: -70px;
-    left: 50%;
-    width: 100px;
-    height: 100px;
-    background: url('/src/assets/oursonpsyko.png') no-repeat center center;
-    background-size: contain;
-    transform: translateX(-50%) rotate(-180deg) scale(0); // Centrer et rotation initiale
-    opacity: 0;
-    z-index: 999; // Z-index très élevé pour être sûr qu'il soit visible
-    pointer-events: none; // Ne pas bloquer les clics
-
-    // Animation fade-in + rotation de l'ourson + effets psychédéliques
-    animation:
-      ourson-appear 3s ease-out forwards 0.3s,
-      psychedelic-eyes 3s ease-in-out forwards 0.5s;
-
-    // Filtres pour effet psychédélique
-    filter: hue-rotate(0deg) saturate(1.5) brightness(1.2);
-  }
-
-  // Effet de lueur pour style DEGEN
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3),
-  0 0 40px rgba(0, 255, 255, 0.2),
-  inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
-
-  // Optimisations de performance GPU
-  will-change: background-position,
-  box-shadow;
-  transform: translateZ(0); // Force GPU layer
-  backface-visibility: hidden;
-}
-
-// Variante avec particules pour célébration maximale
-.TransactionModal__swapBtn--success.with-particles {
-  &::before {
-    background:
-      radial-gradient(2px 2px at 20px 30px, #fff, transparent),
-      radial-gradient(2px 2px at 40px 70px, #ff0080, transparent),
-      radial-gradient(1px 1px at 90px 40px, #00ff80, transparent),
-      radial-gradient(1px 1px at 130px 80px, #0080ff, transparent),
-      radial-gradient(2px 2px at 160px 30px, #ff8000, transparent);
-    background-size: 200px 100px;
-    animation: particles-float 3s ease-out forwards;
-  }
-}
-
-// Animation du gradient arc-en-ciel
-@keyframes rainbow-shift {
+// Animations inspirées du système d'oursons de ChartToolbar
+@keyframes psychedelicBearAppear {
   0% {
-    background-position: 0% 50%;
-    --rainbow-hue-1: 0deg;
-    --rainbow-hue-2: 60deg;
-    --rainbow-hue-3: 120deg;
-    --rainbow-hue-4: 180deg;
-    --rainbow-hue-5: 240deg;
-    --rainbow-hue-6: 300deg;
-  }
-
-  25% {
-    background-position: 100% 25%;
-    --rainbow-hue-1: 90deg;
-    --rainbow-hue-2: 150deg;
-    --rainbow-hue-3: 210deg;
-    --rainbow-hue-4: 270deg;
-    --rainbow-hue-5: 330deg;
-    --rainbow-hue-6: 30deg;
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
   }
 
   50% {
-    background-position: 100% 75%;
-    --rainbow-hue-1: 180deg;
-    --rainbow-hue-2: 240deg;
-    --rainbow-hue-3: 300deg;
-    --rainbow-hue-4: 0deg;
-    --rainbow-hue-5: 60deg;
-    --rainbow-hue-6: 120deg;
-  }
-
-  75% {
-    background-position: 0% 75%;
-    --rainbow-hue-1: 270deg;
-    --rainbow-hue-2: 330deg;
-    --rainbow-hue-3: 30deg;
-    --rainbow-hue-4: 90deg;
-    --rainbow-hue-5: 150deg;
-    --rainbow-hue-6: 210deg;
-  }
-
-  100% {
-    background-position: 0% 50%;
-    --rainbow-hue-1: 360deg;
-    --rainbow-hue-2: 60deg;
-    --rainbow-hue-3: 120deg;
-    --rainbow-hue-4: 180deg;
-    --rainbow-hue-5: 240deg;
-    --rainbow-hue-6: 300deg;
-  }
-}
-
-// Animation de pulsation du bouton
-@keyframes success-pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-
-  15% {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
-  }
-
-  30% {
-    transform: scale(1.02);
-    box-shadow: 0 0 40px rgba(255, 0, 255, 0.4);
-  }
-
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
-  }
-}
-
-// Animation de l'ourson (fade-in + rotation)
-@keyframes ourson-appear {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) rotate(-180deg) scale(0);
-  }
-
-  30% {
-    opacity: 0.7;
-    transform: translateX(-50%) rotate(-45deg) scale(0.8);
-  }
-
-  60% {
-    opacity: 1;
-    transform: translateX(-50%) rotate(10deg) scale(1.1);
+    opacity: 0.8;
+    transform: translateX(-50%) translateY(-5px) scale(1.1);
   }
 
   100% {
     opacity: 1;
-    transform: translateX(-50%) rotate(0deg) scale(1);
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 }
 
-// Animation des yeux psychédéliques
-@keyframes psychedelic-eyes {
+@keyframes psychedelicBearIdle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-2px) scale(1.02);
+  }
+}
+
+@keyframes psychedelicEyes {
   0% {
     filter: hue-rotate(0deg) saturate(1.5) brightness(1.2);
   }
@@ -491,49 +365,127 @@
   }
 }
 
-// Animation des particules
-@keyframes particles-float {
+// Animation de respiration des pattes
+@keyframes pawBreath {
+
+  0%,
+  100% {
+    filter: hue-rotate(0deg) saturate(1) brightness(1);
+  }
+
+  50% {
+    filter: hue-rotate(15deg) saturate(1.3) brightness(1.1);
+  }
+}
+
+// Animation de pulsation du bouton
+@keyframes successButtonPulse {
   0% {
-    opacity: 0;
-    transform: translateY(0);
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.02);
   }
 
   30% {
-    opacity: 1;
+    transform: scale(1.01);
   }
 
   100% {
-    opacity: 0;
-    transform: translateY(-20px);
+    transform: scale(1);
   }
+}
+
+.TransactionModal__swapBtn--success {
+  position: relative;
+  background: $beryl-pure !important;
+  color: #FFC372 !important;
+  border: 2px solid $beryl-pure;
+  box-shadow: 0 4px 12px rgba($beryl-pure, 0.3);
+
+  // Background avec pattes et animation de respiration
+  background-image: url('/src/assets/paw_bg_large_click.svg') !important;
+  background-size: 170%;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  // Animation de respiration des pattes
+  animation: pawBreath 2s ease-in-out infinite, successButtonPulse 0.6s ease-out;
+
+  // Design du texte personnalisé
+  text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+  font-family: "TT Hoves", system-ui, sans-serif;
+  font-size: 28px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 110%;
+  letter-spacing: 0.5px;
+
+  // Overlay semi-transparent pour améliorer la lisibilité du texte
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // Conteneur pour l'ourson psychédélique (inspiré de ChartToolbar)
+  .psychedelic-bear {
+    position: absolute;
+    top: -105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: url('/src/assets/oursonpsyko.png') no-repeat center center;
+    background-size: contain;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+
+    // Animation d'apparition inspirée de ChartToolbar
+    animation:
+      psychedelicBearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards 0.2s,
+      psychedelicBearIdle 2s ease-in-out infinite 0.8s;
+  }
+
+  // Effet de lueur pour le style de succès
+  box-shadow: 0 4px 12px rgba($beryl-pure, 0.3),
+  0 0 20px rgba($beryl-pure, 0.2),
+  inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+
+  // Optimisations de performance GPU
+  will-change: transform,
+  filter,
+  box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 // Nettoyage des performances après animation
 .TransactionModal__swapBtn--success.animation-complete {
   will-change: auto;
 
-  &::after {
+  .psychedelic-bear {
     will-change: auto;
   }
-}
-
-// S'assurer que l'ourson est toujours visible
-.TransactionModal__swapBtn--success::after {
-  // Forcer la visibilité même si le parent a overflow: hidden
-  clip-path: none;
-  -webkit-clip-path: none;
 }
 
 // Accessibilité - respect du prefers-reduced-motion
 @media (prefers-reduced-motion: reduce) {
   .TransactionModal__swapBtn--success {
     animation: none;
-    background: linear-gradient(45deg, #2ecc71, #27ae60) !important;
+    background: $beryl-pure !important;
+    background-image: url('/src/assets/paw_bg_large_click.svg') !important;
 
-    &::after {
+    .psychedelic-bear {
       animation: none;
       opacity: 1;
-      transform: translateX(-50%) rotate(0deg) scale(1);
+      transform: translateX(-50%) translateY(0) scale(1);
       filter: none;
     }
   }

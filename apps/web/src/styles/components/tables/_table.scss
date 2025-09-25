@@ -145,6 +145,12 @@
   font-family: monospace;
   font-size: 14px;
   transition: color 0.15s;
+  background: none;
+  border: none;
+  button {
+    background: none;
+    border: none;
+  }
 }
 
 .Table__Address:hover {
@@ -258,10 +264,18 @@
   min-width: 0;
 }
 
+
+
 .PoolsTable__IndexLink {
   text-decoration: none;
   color: inherit;
   transition: color 0.15s ease;
+  background: none;
+  border: none;
+  button {
+    background: none;
+    border: none;
+  }
 
   &:hover {
     color: #e39229;
@@ -398,6 +412,8 @@
 .Table__Icon {
   height: 24px;
   width: 24px;
+  background: none;
+  border: none;
 }
 
 .VaultsTable__IndexCell {
@@ -591,6 +607,12 @@
   transition: color 0.15s ease;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: none;
+  border: none;
+  button {
+    background: none;
+    border: none;
+  }
 
   &:hover {
     color: #e39229;

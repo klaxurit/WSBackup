@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon } from '../../components/SVGs';
+import { StickyIcon } from '../../components/Common/StickyIcon';
 import { formatNumber } from '../../utils/formatNumber';
 import { LiquidityInput } from '../../components/Inputs/LiquidityInput';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
@@ -10,6 +11,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useVault } from '../../hooks/useVault';
 import { formatUnits, type Address } from 'viem';
 import { useAccount } from 'wagmi';
+import stickyVaultIcon from '../../assets/sticky_vault.png';
+import { PageContentTransition } from '../../components/Transitions';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -165,10 +169,18 @@ export const VaultDetailPage = () => {
 
   }, [vault])
 
+  // Calculer le prix par share basé sur la position de l'utilisateur
+  const vaultPricePerShare = useMemo(() => {
+    if (!userPosition?.currentValueUSD || !userPosition?.shares) return 0
+    const userShares = parseFloat(userPosition.shares) // shares est déjà en format décimal
+    const userValueUSD = parseFloat(userPosition.currentValueUSD)
+    return userShares > 0 ? userValueUSD / userShares : 0
+  }, [userPosition?.currentValueUSD, userPosition?.shares])
+
   if (isLoading) {
     return (
-      <div className="VaultDetailPage VaultDetailPage--error">
-        <h2>Loading...</h2>
+      <div className="VaultDetailPage__Wrapper">
+        <Loader size="mobile" />
       </div>
     );
   }
@@ -188,7 +200,7 @@ export const VaultDetailPage = () => {
   }
 
   return (
-    <div className="VaultDetailPage">
+    <PageContentTransition className="VaultDetailPage">
       {/* Header */}
       <div className="VaultDetailPage__Header">
         <div className="VaultDetailPage__HeaderLeft">
@@ -207,7 +219,7 @@ export const VaultDetailPage = () => {
               <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
                 <span className="VaultDetailPage__Strategy">
-                  {vault.strategy || 'Auto-Compound'}
+                  {vault.strategy || 'Auto-Win'}
                 </span>
                 <a
                   href={`https://berascan.com/address/${vault.id}`}
@@ -247,12 +259,12 @@ export const VaultDetailPage = () => {
             </div>
             <div className="VaultDetailPage__StatCard">
               <span className="VaultDetailPage__StatLabel">Vault APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items?.[0].maxPotentialAPR || "0"}%</span>
+              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%</span>
             </div>
             <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
               <span className="VaultDetailPage__StatLabel">Total APR</span>
               <span className="VaultDetailPage__StatValue VaultDetailPage__StatValue--highlight">
-                {vault?.vaultDayData.items?.[0].maxPotentialAPR || "0"}%
+                {vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%
               </span>
             </div>
           </div>
@@ -260,7 +272,8 @@ export const VaultDetailPage = () => {
           {/* Chart Section */}
           <div className="VaultDetailPage__ChartSection">
             <ChartWidget
-              tokenAddress={token0.address}
+              vaultAddress={vault.id}
+              dataType="vault"
               height={400}
               showToolbar={true}
             />
@@ -275,7 +288,9 @@ export const VaultDetailPage = () => {
             <div className="VaultDetailPage__UserPosition">
               <div className="VaultDetailPage__PositionValue">
                 <span className="VaultDetailPage__PositionAmount">${formatNumber(userPosition?.currentValueUSD || "0")}</span>
-                <span className="VaultDetailPage__PositionShares">{formatNumber(userPosition?.shares || 0)} STICKY {token0.symbol}-{token1.symbol}</span>
+                <span className="VaultDetailPage__PositionShares">
+                  {formatNumber(userPosition?.shares || 0)} <StickyIcon size={14} /> {token0.symbol}-{token1.symbol}
+                </span>
               </div>
             </div>
           </div>
@@ -365,7 +380,7 @@ export const VaultDetailPage = () => {
                     <span>Pool Tokens</span>
                     <span>{vaultManager.isQuoted ? formatUnits(vaultManager.quote.minShares || 0n, 18) : "~0"}</span>
                   </div>
-                  <p>These shares represent your position in the auto-compounding vault.</p>
+                  <p>These shares represent your position in the auto-winning vault.</p>
                 </div>
 
                 {/* Deposit Button */}
@@ -389,14 +404,16 @@ export const VaultDetailPage = () => {
                   <LiquidityInput
                     selectedToken={{
                       address: vault.address as `0x${string}`,
-                      symbol: `STICKY ${token0.symbol}-${token1.symbol}`,
-                      name: `STICKY ${token0.symbol}-${token1.symbol}`,
+                      symbol: `${token0.symbol}-${token1.symbol}`,
+                      name: `${token0.symbol}-${token1.symbol}`,
                       decimals: 18,
-                      logoUri: '' // Chaîne vide au lieu d'undefined
+                      logoUri: stickyVaultIcon
                     }}
                     onAmountChange={setWithdrawAmount}
                     value={withdrawAmount}
                     isOverBalance={false}
+                    showMaxButton={false}
+                    customUsdValue={vaultPricePerShare}
                   />
                 </div>
 
@@ -404,25 +421,29 @@ export const VaultDetailPage = () => {
                 <div className="VaultDetailPage__PercentageButtons">
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.1 * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.1 * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     10%
                   </button>
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.25 * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.25 * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     25%
                   </button>
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.5 * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 0.5 * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     50%
                   </button>
                   <button
                     className="VaultDetailPage__PercentageButton"
-                    onClick={() => setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 1e18)))}
+                    onClick={() => userPosition?.shares && setWithdrawAmount(BigInt(Math.floor(parseFloat(userPosition.shares) * 1e18)))}
+                    disabled={!userPosition?.shares}
                   >
                     MAX
                   </button>
@@ -476,7 +497,7 @@ export const VaultDetailPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageContentTransition>
   );
 };
 

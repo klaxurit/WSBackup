@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
@@ -11,6 +11,9 @@ import { PoolTransactionsTable } from '../../components/Table/PoolTransactionsTa
 import { formatNumber } from '../../utils/formatNumber';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { type Address } from 'viem';
+import { UserPositionDatas } from '../../components/PoolView/UserPositionDatas';
+import { Modal } from '../../components/Common/Modal';
+import { Loader } from '../../components/Loader/Loader';
 
 const GET_POOL = `
 query GetTokensStats($id: String = "") {
@@ -26,6 +29,8 @@ query GetTokensStats($id: String = "") {
     totalValueLockedUSD
     txCount
     volumeUSD
+    feeGrowthGlobal0X128
+    feeGrowthGlobal1X128
     poolDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
       items {
         apr
@@ -44,6 +49,11 @@ query GetTokensStats($id: String = "") {
       logoUri
       name
       symbol
+      tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+        items {
+          priceUSD
+        }
+      }
     }
     token1Ref {
       id
@@ -51,6 +61,11 @@ query GetTokensStats($id: String = "") {
       name
       symbol
       decimals
+      tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+        items {
+          priceUSD
+        }
+      }
     }
   },
   stickyVaults(where: {pool: $id}) {
@@ -71,7 +86,7 @@ query GetTokensStats($id: String = "") {
 }
 `;
 
-interface Pool {
+export interface Pool {
   collectedFeesUSD: string
   feeTier: number
   feesUSD: string
@@ -80,6 +95,11 @@ interface Pool {
   liquidityProviderCount: number
   sqrtPrice: string
   tick: number
+  feeGrowthGlobal0X128: string
+  feeGrowthGlobal1X128: string
+  totalValueLockedUSD: string
+  txCount: number
+  volumeUSD: string
   poolDayData: {
     items: {
       apr: string
@@ -98,6 +118,11 @@ interface Pool {
     logoUri: string
     name: string
     symbol: string
+    tokenDayData: {
+      items: {
+        priceUSD: string
+      }[]
+    }
   }
   token1Ref: {
     decimals: number
@@ -105,10 +130,12 @@ interface Pool {
     logoUri: string
     name: string
     symbol: string
+    tokenDayData: {
+      items: {
+        priceUSD: string
+      }[]
+    }
   }
-  totalValueLockedUSD: string
-  txCount: number
-  volumeUSD: string
 }
 
 const PoolDetailPage: React.FC = () => {
@@ -119,6 +146,10 @@ const PoolDetailPage: React.FC = () => {
   const [interval, setInterval] = React.useState<ChartInterval>('1D');
   const [metric, setMetric] = React.useState<ChartMetric>('price');
 
+  // États pour la gestion des modales
+  const [modalType, setModalType] = useState<null | 'add' | 'remove' | 'success'>(null);
+  const [lastTxHash] = useState<string | null>(null);
+
   const { data, isLoading: poolsLoading } = useQuery({
     queryKey: ['pool', poolAddress],
     queryFn: async () => {
@@ -127,7 +158,12 @@ const PoolDetailPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_POOL, variables: { id: poolAddress } }),
+        body: JSON.stringify({
+          query: GET_POOL,
+          variables: {
+            id: poolAddress
+          }
+        }),
       });
 
       const data = await response.json();
@@ -138,13 +174,16 @@ const PoolDetailPage: React.FC = () => {
 
       return {
         pool: data.data.pool as Pool,
-        vault: data.data.stickyVaults.items[0]
+        vault: data.data.stickyVaults.items[0],
+        positions: data.data.positions?.items || []
       }
     },
+    enabled: !!poolAddress
   });
 
   const { pool, vault } = data ?? { pool: null, vault: null }
-  console.log(pool, vault)
+
+  const closeModal = () => setModalType(null);
 
   // Handlers pour les contrôles du chart
   const handleChartTypeChange = (newType: ChartType) => {
@@ -162,9 +201,11 @@ const PoolDetailPage: React.FC = () => {
   const priceFormatter = (price: number) => `$${price.toFixed(6)}`;
 
   if (poolsLoading) {
-    return (<div className="VaultDetailPage VaultDetailPage--error">
-      <h2>Loading...</h2>
-    </div>)
+    return (
+      <div className="Pool__Wrapper">
+        <Loader size="mobile" />
+      </div>
+    )
   }
 
   if (!pool) {
@@ -205,22 +246,6 @@ const PoolDetailPage: React.FC = () => {
           </span>
         </div>
 
-        <div className='Pool__BreadcrumbsButtons'>
-          {vault?.id && (
-            <Link
-              to={`/vaults/${vault.id}`}
-              className="Pool__AddLiquidityBtn btn btn--small btn__accent"
-            >
-              Add Vault Liquidity
-            </Link>
-          )}
-          <Link
-            to={`/pools/create?token0=${t0.id}&token1=${t1.id}&fee=${pool.feeTier}`}
-            className="Pool__AddLiquidityBtn btn btn--small btn__accent"
-          >
-            Add Pool Liquidity
-          </Link>
-        </div>
       </div>
 
       <div className="Pool__Content">
@@ -314,13 +339,13 @@ const PoolDetailPage: React.FC = () => {
                 <div className="Pool__StatCard">
                   <h4 className="Pool__StatCardTitle">APR</h4>
                   <p className="Pool__StatCardLabel">
-                    {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].maxPotentialAPR}%`}
+                    {vault === null || !vault.vaultDayData.items || vault.vaultDayData.items.length === 0 ? 'N/A' : `${vault.vaultDayData.items[0].maxPotentialAPR}%`}
                   </p>
                 </div>
                 <div className="Pool__StatCard">
                   <h4 className="Pool__StatCardTitle">24h Volume</h4>
                   <p className="Pool__StatCardLabel">
-                    {vault === null || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
+                    {vault === null || !vault.vaultDayData.items || vault.vaultDayData.items.length === 0 ? 'N/A' : `$${formatNumber(vault.vaultDayData.items[0].volumeUSD1D)}`}
                   </p>
                 </div>
               </div>
@@ -334,6 +359,10 @@ const PoolDetailPage: React.FC = () => {
         </div>
 
         <div className="Pool__Right">
+          {/* User Position Info */}
+          <UserPositionDatas pool={pool} />
+
+          {/* Swap Form */}
           <div className="Pool__SwapForm">
             <SwapForm
               toggleSidebar={() => { }}
@@ -353,7 +382,7 @@ const PoolDetailPage: React.FC = () => {
               } as any}
             />
           </div>
-
+          
           {/* Pool Information Section */}
           <div className="Pool__InfoSection">
             <h3 className="Pool__InfoSectionTitle">Pool Information</h3>
@@ -444,6 +473,35 @@ const PoolDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de succès */}
+      <Modal open={!!modalType} onClose={closeModal} className="PoolView__Modal" overlayClassName="PoolView__ModalOverlay">
+        <div className="PoolView__ModalHeader">
+          <span className="PoolView__ModalTitle">Transaction success</span>
+          <button className="PoolView__ModalClose" onClick={closeModal} aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 6L14 14M14 6L6 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+        <div className="PoolView__ModalContent">
+          {modalType === 'success' && (
+            <div className="PoolView__Success">
+              <div className="PoolView__SuccessTitle">Transaction success</div>
+              {lastTxHash && (
+                <a
+                  className="PoolView__SuccessLink"
+                  href={`https://berascan.com/tx/${lastTxHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View in explorer
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

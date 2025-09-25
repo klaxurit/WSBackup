@@ -126,43 +126,11 @@ $hover-bg: #241500;
   &__mobile-dropdown {
     position: relative;
     flex: 1;
-  }
-
-  &__mobile-trigger {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 8px;
-    border: 1px solid $border-color;
-    background: #180E00;
-    color: $text-color;
-    font-family: "TT Hoves", system-ui, sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    justify-content: space-between;
-    min-height: 44px;
-
-    &:hover:not(&--disabled) {
-      background: $white-012;
-      color: $white;
-      border-color: $white-016;
-    }
-
-    &--open {
-      background: #180E00;
-      color: $white;
-      border-color: $beryl-pure;
-    }
-
-    &--disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .btn.btn--small.btn__accent {
+      gap: 3px;
     }
   }
+
 
   &__mobile-trigger-icon {
     display: flex;
@@ -208,6 +176,49 @@ $hover-bg: #241500;
     // Masquer sur desktop sauf pour les métriques qui ont besoin des deux versions
     @media (min-width: 1029px) {
       display: none;
+    }
+
+    // Retirer les backgrounds des boutons dans les menus mobiles
+    .btn {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      &:active {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      &.btn__main {
+        background: transparent !important;
+        color: $beryl-pure !important;
+        border: none !important;
+        box-shadow: none !important;
+
+        &:hover {
+          background: rgba($beryl-pure, 0.1) !important;
+          color: $beryl-pure !important;
+        }
+      }
+
+      &.btn__shade {
+        background: transparent !important;
+        color: $onyx-light !important;
+        border: none !important;
+        box-shadow: none !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+          color: $white !important;
+        }
+      }
     }
   }
 
@@ -302,55 +313,70 @@ $hover-bg: #241500;
     gap: 8px;
   }
 
-  &__button {
+  // Styles pour les boutons d'intervalle uniquement (animation ourson préservée)
+  &__intervals-original {
     display: flex;
+    gap: 12px;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: #180E00;
-    border: 1px solid $border-color;
-    border-radius: 8px;
-    color: $text-color;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    font-size: 14px;
-    font-weight: 500;
 
-    &:hover:not(:disabled) {
-      border-color: $hover-border-color;
-      background: $hover-bg;
-      color: #fff;
-      transform: scale(1.02);
+    >div {
+      position: relative;
     }
 
-    &:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    &--active {
-      border-color: $beryl-pure;
-      background: #180E00;
-      color: $beryl-pure;
-    }
-
-    &--disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      background: #0F0A00;
-      border-color: #374151;
-      color: #6B7280;
+    // Override des styles btn pour les boutons d'intervalle
+    .btn {
+      position: relative;
+      z-index: 10; // Au-dessus des oursons au hover
+      padding: 6px 10px; // Override du padding tiny
+      border-radius: 12px; // Override du border-radius tiny
+      font-size: 14px; // Override du font-size tiny
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 1;
+      border: 1px solid $beryl-020;
 
       &:hover {
-        transform: none;
-        border-color: #374151;
-        background: #0F0A00;
-        color: #6B7280;
+        border-color: $beryl-040;
+      }
+
+      &:hover:not(:disabled) {
+        transform: scale(1.02);
+        border-color: $beryl-040;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+        transition: all 0.1s ease-out;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
     }
 
-    &-label {
-      font-size: 12px;
-      font-weight: 600;
+    .bear {
+      position: absolute;
+      top: -23px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 45px;
+      z-index: 11;
+      pointer-events: none;
+
+      &--active {
+        animation: bearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+
+      &--hover {
+        animation: bearHover 0.3s ease-out forwards;
+        z-index: 1;
+      }
+
+      &--disappearing {
+        animation: bearDisappear 0.3s ease-in forwards;
+        z-index: 1;
+      }
     }
   }
 
@@ -427,60 +453,21 @@ $hover-bg: #241500;
     left: 0;
     right: 0;
     z-index: 1000;
-    background: #180E00;
-    border: 1px solid $border-color;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    margin-top: 4px;
-    overflow: hidden;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 8px;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 
     @media (max-width: 1028px) {
       display: none;
     }
   }
 
-  &__metrics-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 12px 16px;
-    background: transparent;
-    border: none;
-    color: $text-color;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: "TT Hoves", system-ui, sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-
-    &:hover:not(&--disabled) {
-      background: $hover-bg;
-      color: #fff;
-    }
-
-    &--active {
-      background: $beryl-pure;
-      color: #000;
-
-      &:hover {
-        background: $beryl-pure;
-        color: #000;
-      }
-    }
-
-    &--disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      color: #6B7280;
-
-      &:hover {
-        background: transparent;
-        color: #6B7280;
-      }
-    }
-  }
 
   &__metrics-option-icon {
     display: flex;
@@ -588,6 +575,11 @@ $hover-bg: #241500;
     display: inline-block;
     padding-top: 22px;
 
+    .btn.btn--tiny.btn__accent {
+        display: flex;
+        gap: 3px;
+      }
+
     @media (max-width: 768px) {
       padding-top: 0;
       width: 100%;
@@ -663,8 +655,6 @@ $hover-bg: #241500;
     top: 100%;
     right: 0;
     z-index: 9999;
-    background: #180E00;
-    border: 1px solid $white-012;
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     margin-top: 4px;

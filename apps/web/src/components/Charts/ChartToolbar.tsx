@@ -10,6 +10,7 @@ interface ChartToolbarProps {
   onIntervalChange: (interval: ChartInterval) => void;
   onMetricChange: (metric: ChartMetric) => void;
   availableIntervals?: ChartInterval[];
+  availableMetrics?: ChartMetric[];
   isLoading?: boolean;
 }
 
@@ -78,6 +79,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   onIntervalChange,
   onMetricChange,
   availableIntervals = ['1H', '4H', '1D', '1W', '1M'],
+  availableMetrics,
   isLoading = false,
 }) => {
   const [hoveredInterval, setHoveredInterval] = React.useState<ChartInterval | null>(null);
@@ -182,16 +184,12 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
               return (
                 <button
                   key={type}
-                  className={`chart-toolbar__button chart-toolbar__chart-type ${isActive ? 'chart-toolbar__button--active' : ''
-                    } ${isDisabled ? 'chart-toolbar__button--disabled' : ''}`}
+                  className={`btn btn--tiny ${isActive ? 'btn__main' : 'btn__shade'} ${isDisabled ? 'btn__disabled' : ''}`}
                   onClick={() => !isDisabled && onChartTypeChange(type)}
                   title={isDisabled ? 'Candlestick only available for Price metric' : chartTypeLabels[type]}
                   disabled={isLoading || isDisabled}
                 >
                   <Icon />
-                  <span className="chart-toolbar__button-label">
-                    {chartTypeLabels[type]}
-                  </span>
                 </button>
               );
             })}
@@ -203,7 +201,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           {/* Dropdown des métriques */}
           <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
             <button
-              className={`chart-toolbar__metrics-trigger ${isDesktopMetricDropdownOpen ? 'chart-toolbar__metrics-trigger--open' : ''} ${isLoading ? 'chart-toolbar__metrics-trigger--disabled' : ''}`}
+              className={`btn btn--tiny btn__accent ${isDesktopMetricDropdownOpen ? 'btn__main' : ''} ${isLoading ? 'btn__disabled' : ''}`}
               onClick={() => !isLoading && setIsDesktopMetricDropdownOpen(!isDesktopMetricDropdownOpen)}
               disabled={isLoading}
             >
@@ -237,15 +235,14 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   onClick={() => setIsDesktopMetricDropdownOpen(false)}
                 />
                 <div className="chart-toolbar__metrics-menu">
-                  {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
+                  {(availableMetrics || (Object.keys(metricLabels) as ChartMetric[])).map((metricOption) => {
                     const isActive = metric === metricOption;
                     const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
 
                     return (
                       <button
                         key={metricOption}
-                        className={`chart-toolbar__metrics-option ${isActive ? 'chart-toolbar__metrics-option--active' : ''
-                          } ${isDisabled ? 'chart-toolbar__metrics-option--disabled' : ''}`}
+                        className={`btn btn--tiny ${isActive ? 'btn__main' : 'btn__shade'} ${isDisabled ? 'btn__disabled' : ''}`}
                         onClick={() => !isDisabled && handleMetricSelect(metricOption)}
                         disabled={isDisabled}
                         title={isDisabled ? 'Candlestick only available for Price metric' : metricLabels[metricOption]}
@@ -299,7 +296,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                 )}
 
                 <button
-                  className={interval === int ? 'active' : ''}
+                  className={`btn btn--tiny ${interval === int ? 'btn__main' : 'btn__shade'} ${isLoading ? 'btn__disabled' : ''}`}
                   onClick={() => handleIntervalChange(int)}
                   onMouseEnter={() => handleMouseEnter(int)}
                   onMouseLeave={handleMouseLeave}
@@ -319,15 +316,12 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           {/* Dropdown Type de Chart */}
           <div className="chart-toolbar__mobile-dropdown" ref={chartTypeDropdownRef}>
             <button
-              className={`chart-toolbar__mobile-trigger ${isChartTypeDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              className={`btn btn--small btn__accent ${isChartTypeDropdownOpen ? 'btn__main' : ''} ${isLoading ? 'btn__disabled' : ''}`}
               onClick={() => !isLoading && setIsChartTypeDropdownOpen(!isChartTypeDropdownOpen)}
               disabled={isLoading}
             >
               <span className="chart-toolbar__mobile-trigger-icon">
                 {React.createElement(chartTypeIcons[chartType])}
-              </span>
-              <span className="chart-toolbar__mobile-trigger-label">
-                {chartTypeLabels[chartType]}
               </span>
               <svg
                 className={`chart-toolbar__mobile-trigger-arrow ${isChartTypeDropdownOpen ? 'chart-toolbar__mobile-trigger-arrow--open' : ''}`}
@@ -361,15 +355,12 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                     return (
                       <button
                         key={type}
-                        className={`chart-toolbar__mobile-option ${isActive ? 'chart-toolbar__mobile-option--active' : ''} ${isDisabled ? 'chart-toolbar__mobile-option--disabled' : ''}`}
+                        className={`btn btn--small ${isActive ? 'btn__main' : 'btn__shade'} ${isDisabled ? 'btn__disabled' : ''}`}
                         onClick={() => !isDisabled && handleChartTypeSelect(type)}
                         disabled={isDisabled}
                       >
                         <span className="chart-toolbar__mobile-option-icon">
                           <Icon />
-                        </span>
-                        <span className="chart-toolbar__mobile-option-label">
-                          {chartTypeLabels[type]}
                         </span>
                       </button>
                     );
@@ -382,7 +373,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           {/* Dropdown Métriques */}
           <div className="chart-toolbar__mobile-dropdown" ref={metricMobileDropdownRef}>
             <button
-              className={`chart-toolbar__mobile-trigger ${isMobileMetricDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              className={`btn btn--small btn__accent ${isMobileMetricDropdownOpen ? 'btn__main' : ''} ${isLoading ? 'btn__disabled' : ''}`}
               onClick={() => !isLoading && setIsMobileMetricDropdownOpen(!isMobileMetricDropdownOpen)}
               disabled={isLoading}
             >
@@ -416,14 +407,14 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   onClick={() => setIsMobileMetricDropdownOpen(false)}
                 />
                 <div className={`chart-toolbar__mobile-menu chart-toolbar__mobile-menu--open`}>
-                  {(Object.keys(metricLabels) as ChartMetric[]).map((metricOption) => {
+                  {(availableMetrics || (Object.keys(metricLabels) as ChartMetric[])).map((metricOption) => {
                     const isActive = metric === metricOption;
                     const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
 
                     return (
                       <button
                         key={metricOption}
-                        className={`chart-toolbar__mobile-option ${isActive ? 'chart-toolbar__mobile-option--active' : ''} ${isDisabled ? 'chart-toolbar__mobile-option--disabled' : ''}`}
+                        className={`btn btn--small ${isActive ? 'btn__main' : 'btn__shade'} ${isDisabled ? 'btn__disabled' : ''}`}
                         onClick={() => !isDisabled && handleMetricSelect(metricOption)}
                         disabled={isDisabled}
                       >
@@ -444,7 +435,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
           {/* Dropdown Intervalle */}
           <div className="chart-toolbar__mobile-dropdown" ref={intervalDropdownRef}>
             <button
-              className={`chart-toolbar__mobile-trigger ${isIntervalDropdownOpen ? 'chart-toolbar__mobile-trigger--open' : ''} ${isLoading ? 'chart-toolbar__mobile-trigger--disabled' : ''}`}
+              className={`btn btn--small btn__accent ${isIntervalDropdownOpen ? 'btn__main' : ''} ${isLoading ? 'btn__disabled' : ''}`}
               onClick={() => !isLoading && setIsIntervalDropdownOpen(!isIntervalDropdownOpen)}
               disabled={isLoading}
             >
@@ -478,7 +469,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                   {availableIntervals.map((int) => (
                     <button
                       key={int}
-                      className={`chart-toolbar__mobile-option ${interval === int ? 'chart-toolbar__mobile-option--active' : ''}`}
+                      className={`btn btn--small ${interval === int ? 'btn__main' : 'btn__shade'}`}
                       onClick={() => handleIntervalSelect(int)}
                     >
                       <span className="chart-toolbar__mobile-option-label">

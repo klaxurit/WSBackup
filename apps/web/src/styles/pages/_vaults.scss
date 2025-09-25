@@ -626,6 +626,23 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    .networkSelector__logoWrapper{
+      width: 32px;
+      height: 32px;
+      background: black;
+      border-radius: 50%;
+      border: 2px solid #e39229;
+      img {
+        width: 27px;
+        height: 27px;
+      }
+    }
+    .networkSelector__symbol {
+      font-size: 12px;
+    }
+    .Inputs__From {
+      height: 98px;
+    }
   }
 
   &__PercentageButtons {

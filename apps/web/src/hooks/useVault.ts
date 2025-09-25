@@ -5,7 +5,7 @@ import { StickyVaultRouter } from '../config/abis/StickyVaultRouter';
 import { currentChain } from '../config/wagmi';
 import { encodeFunctionData, erc20Abi, type Address, type Hex } from 'viem';
 import { StickyVaultWithRouter } from '../config/abis/StickyVaultWithRouter';
-import { useSwap } from './useSwap';
+import { useSwap } from './swap/useSwap';
 
 interface VaultConfig {
   vault?: any;

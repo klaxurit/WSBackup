@@ -20,9 +20,13 @@
 @use 'components/modals/transactionStatusModal';
 @use 'components/modals/popularTokens';
 @use 'components/modals/appkit';
+@use 'components/modals/positionModals';
+
+@use 'components/poolView/increaseLiquidityModal';
 @use 'components/footer/footer';
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';
+@use 'components/swap/routeDisplay';
 
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
@@ -38,6 +42,7 @@
 @use 'components/common/modal';
 @use 'components/common/newBanner';
 @use 'components/common/tokenPairLogos';
+@use 'components/common/stickyIcon';
 @use 'components/common/globalSearch';
 @use 'components/vaults/vault';
 @use 'components/transitions/pageTransition';

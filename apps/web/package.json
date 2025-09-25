@@ -17,6 +17,7 @@
     "@tanstack/react-query": "^5.80.7",
     "@uniswap/sdk-core": "^7.7.2",
     "@uniswap/v3-sdk": "^3.25.2",
+    "@wagmi/core": "^2.21.1",
     "@web3modal/ethereum": "^2.7.1",
     "@winnieswap/ui": "file:../../packages/ui",
     "framer-motion": "^12.11.3",

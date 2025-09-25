@@ -1,5 +1,5 @@
 import { ponder } from "ponder:registry";
-import { factory as sFactory, pool as sPool, token as sToken, collect as sCollect, bundle, position } from "ponder:schema";
+import { factory as sFactory, pool as sPool, token as sToken, collect as sCollect, bundle } from "ponder:schema";
 import { CONTRACTS } from "../utils/abi";
 import Decimal from "decimal.js";
 import { getOrCreateTransaction } from "./helpers";
@@ -8,6 +8,12 @@ import { updatePoolStats } from "../stats/pool";
 import { updateTokenStats } from "../stats/token";
 import { formatUnits } from "viem";
 
+/**
+ * Handler pour l'événement Collect du Pool (v3Pool:Collect)
+ * ⚠️ IMPORTANT: Ce handler NE met plus à jour les positions individuelles
+ * Il sert uniquement pour les statistiques globales du pool
+ * Les positions sont mises à jour par v3PositionManager:Collect dans positionCollect.ts
+ */
 ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });
   if (!factoryEntity) return;
@@ -39,6 +45,7 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const totalCollectedBera = amount0Bera.plus(amount1Bera)
   const totalCollectedUSD = totalCollectedBera.mul(beraPriceUSD)
 
+  // ✅ STATS GLOBALES DU POOL UNIQUEMENT (pas de positions)
   pool.collectedFeesToken0 = new Decimal(pool.collectedFeesToken0).plus(amount0).toString()
   pool.collectedFeesToken1 = new Decimal(pool.collectedFeesToken1).plus(amount1).toString()
   pool.collectedFeesUSD = Decimal(pool.collectedFeesUSD).plus(totalCollectedUSD).toString()
@@ -48,18 +55,19 @@ ponder.on("v3Pool:Collect", async ({ event, context }) => {
   const poolCollectedFeesTotalBera = poolCollectedFeesT0Bera.plus(poolCollectedFeesT1Bera)
   const poolCollectedFeesTotalUSD = poolCollectedFeesTotalBera.mul(beraPriceUSD)
 
+  // Enregistrer l'événement collect pour l'historique
   const collectId = `${event.transaction.hash}#${event.log.logIndex}`;
   const txEntity = await getOrCreateTransaction(context, event);
 
   await context.db.insert(sCollect).values({
-    id: collectId, // tx hash + "#" + index
+    id: collectId,
     transaction: txEntity.id,
     timestamp: txEntity.timestamp,
     pool: poolEntity.id,
     owner: event.args.owner,
     amount0: event.args.amount0,
     amount1: event.args.amount1,
-    amountUSD: poolCollectedFeesTotalUSD.toString(),
+    amountUSD: totalCollectedUSD.toString(), // Corrigé: utiliser le montant de cette transaction, pas le total
     tickLower: event.args.tickLower,
     tickUpper: event.args.tickUpper,
     logIndex: event.log.logIndex

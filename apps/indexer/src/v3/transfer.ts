@@ -1,9 +1,10 @@
 import { and, eq } from "ponder";
 import { ponder } from "ponder:registry";
 import { pool as sPool, position, token } from "ponder:schema";
-import { zeroAddress } from "viem";
+import { formatUnits, zeroAddress } from "viem";
 import { updatePoolStats } from "../stats/pool";
 import { updateTokenStats } from "../stats/token";
+import Decimal from "decimal.js";
 
 ponder.on("v3PositionManager:Transfer", async ({ event, context }) => {
   const positionId = event.args.tokenId.toString();
@@ -29,6 +30,30 @@ ponder.on("v3PositionManager:Transfer", async ({ event, context }) => {
 
       if (!posPool || posPool.length === 0) return
 
+      // ✅ FIX: Les montants initiaux sont difficiles à calculer précisément lors du mint
+      // On les initialise à 0, ils seront correctement mis à jour lors des events IncreaseLiquidity
+      const initialLiquidity = positionData[7] || 0n;
+
+      if (posPool[0]) {
+        const pool = await context.db.find(sPool, { id: posPool[0].id })
+        if (pool) {
+          await updatePoolStats(event.block.timestamp, pool, context)
+        }
+      }
+      const token0 = await context.db.find(token, { id: positionData[2] })
+      if (token0) {
+        await updateTokenStats(event.block.timestamp, token0, context)
+      }
+      const token1 = await context.db.find(token, { id: positionData[3] })
+      if (token1) {
+        await updateTokenStats(event.block.timestamp, token1, context)
+      }
+
+      // Les valeurs initiales sont approximatives, mieux vaut commencer à 0
+      // Les vraies valeurs seront mises à jour lors du premier IncreaseLiquidity event
+      const depositedToken0 = "0"
+      const depositedToken1 = "0"
+
       await context.db.insert(position).values({
         id: positionId,
         owner: event.args.to,
@@ -37,9 +62,9 @@ ponder.on("v3PositionManager:Transfer", async ({ event, context }) => {
         token1: positionData[3] || "0x",
         tickLower: positionData[5],
         tickUpper: positionData[6],
-        liquidity: positionData[7] || 0n,
-        depositedToken0: "0",
-        depositedToken1: "0",
+        liquidity: initialLiquidity,
+        depositedToken0: depositedToken0, // ✅ FIX: Initialisé à "0", sera mis à jour par IncreaseLiquidity
+        depositedToken1: depositedToken1, // ✅ FIX: Initialisé à "0", sera mis à jour par IncreaseLiquidity
         withdrawnToken0: "0",
         withdrawnToken1: "0",
         collectedFeesToken0: "0",
@@ -50,22 +75,6 @@ ponder.on("v3PositionManager:Transfer", async ({ event, context }) => {
         tokenId: event.args.tokenId
       });
 
-      if (posPool[0]) {
-        const pool = await context.db.find(sPool, { id: posPool[0].id })
-        if (pool) {
-          await updatePoolStats(event.block.timestamp, pool, context)
-        }
-      }
-      if (positionData) {
-        const token0 = await context.db.find(token, { id: positionData[2] })
-        if (token0) {
-          await updateTokenStats(event.block.timestamp, token0, context)
-        }
-        const token1 = await context.db.find(token, { id: positionData[3] })
-        if (token1) {
-          await updateTokenStats(event.block.timestamp, token1, context)
-        }
-      }
     } catch (error) {
       console.error(`Error fetching position data for ${positionId}:`, error);
     }

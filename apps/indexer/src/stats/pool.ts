@@ -308,8 +308,41 @@ async function calculateVolumeForPeriod(pool: typeof sPool.$inferSelect, targetH
     }
   }
 
-  if (!fromPool) return "0"
+  if (!fromPool) {
+    // If no data found at target period, try to find oldest available data
+    // This handles young pools that don't have 30 days of history
+    fromPool = await findOldestPoolData(poolId, context);
+
+    if (fromPool) {
+      // For young pools, return volume since creation (cumulative volume)
+      const volumeDiff = new Decimal(pool.volumeUSD).minus(fromPool.volumeUSD)
+      return volumeDiff.gt(0) ? volumeDiff.toString() : pool.volumeUSD
+    }
+
+    return "0"
+  }
 
   const volumeDiff = new Decimal(pool.volumeUSD).minus(fromPool.volumeUSD)
   return volumeDiff.gt(0) ? volumeDiff.toString() : "0"
+}
+
+async function findOldestPoolData(poolId: string, context: Context): Promise<typeof poolHourData.$inferSelect | null> {
+  // Search for the oldest available pool hour data
+  // Start from pool creation and search forward
+  let oldestData: typeof poolHourData.$inferSelect | null = null;
+
+  // Get pool creation info to estimate earliest possible data
+  const pool = await context.db.find(sPool, { id: poolId });
+  if (!pool) return null;
+
+  // Calculate approximate starting hour from pool creation
+  const creationHour = Math.floor(Number(pool.createdAtTimestamp) / 3600);
+  const currentHour = Math.floor(Date.now() / 1000 / 3600);
+
+  // Search from creation time forward to find the first available data
+  for (let hour = creationHour; hour <= currentHour && !oldestData; hour++) {
+    oldestData = await context.db.find(poolHourData, { id: `${poolId}-${hour}` });
+  }
+
+  return oldestData;
 }

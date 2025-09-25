@@ -229,7 +229,7 @@ importers:
         version: 1.8.5(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)
       '@reown/appkit-adapter-wagmi':
         specifier: ^1.8.5
-        version: 1.8.5(@types/react@19.1.8)(@wagmi/core@2.20.3)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)(wagmi@2.16.9)
+        version: 1.8.5(@types/react@19.1.8)(@wagmi/core@2.21.1)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)(wagmi@2.16.9)
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -242,9 +242,12 @@ importers:
       '@uniswap/v3-sdk':
         specifier: ^3.25.2
         version: 3.25.2(hardhat@2.25.0)
+      '@wagmi/core':
+        specifier: ^2.21.1
+        version: 2.21.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)
       '@web3modal/ethereum':
         specifier: ^2.7.1
-        version: 2.7.1(@wagmi/core@2.20.3)(viem@2.37.6)
+        version: 2.7.1(@wagmi/core@2.21.1)(viem@2.37.6)
       '@winnieswap/ui':
         specifier: file:../../packages/ui
         version: file:packages/ui
@@ -360,7 +363,7 @@ importers:
         version: 5.2.0(eslint@9.29.0)
       eslint-plugin-turbo:
         specifier: ^2.5.0
-        version: 2.5.4(eslint@9.29.0)(turbo@2.5.6)
+        version: 2.5.4(eslint@9.29.0)(turbo@2.5.8)
       globals:
         specifier: ^16.1.0
         version: 16.2.0
@@ -3601,7 +3604,7 @@ packages:
       reselect: 5.1.1
     dev: false
 
-  /@reown/appkit-adapter-wagmi@1.8.5(@types/react@19.1.8)(@wagmi/core@2.20.3)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)(wagmi@2.16.9):
+  /@reown/appkit-adapter-wagmi@1.8.5(@types/react@19.1.8)(@wagmi/core@2.21.1)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)(wagmi@2.16.9):
     resolution: {integrity: sha512-+9d2GvEeBBMSSLAgzmssS/G57jDpKr1+LFOAgZ/syHTa7HqYAaBspFwxjL+xL0IAe0jcb14uo0CGMxIO5AhFXQ==}
     peerDependencies:
       '@wagmi/core': '>=2.20.3'
@@ -3615,13 +3618,13 @@ packages:
       '@reown/appkit-scaffold-ui': 1.8.5(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(valtio@2.1.7)
       '@reown/appkit-utils': 1.8.5(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(valtio@2.1.7)
       '@reown/appkit-wallet': 1.8.5(typescript@5.8.3)
-      '@wagmi/core': 2.20.3(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0)(viem@2.37.6)
+      '@wagmi/core': 2.21.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)
       '@walletconnect/universal-provider': 2.21.7(typescript@5.8.3)
       valtio: 2.1.7(@types/react@19.1.8)(react@19.1.0)
       viem: 2.37.6(typescript@5.8.3)(zod@3.22.4)
       wagmi: 2.16.9(@tanstack/react-query@5.80.7)(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)
     optionalDependencies:
-      '@wagmi/connectors': 5.9.9(@types/react@19.1.8)(@wagmi/core@2.20.3)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0)(viem@2.37.6)
+      '@wagmi/connectors': 5.9.9(@types/react@19.1.8)(@wagmi/core@2.21.1)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -6193,6 +6196,58 @@ packages:
       - zod
     dev: false
 
+  /@wagmi/connectors@5.9.9(@types/react@19.1.8)(@wagmi/core@2.21.1)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6):
+    resolution: {integrity: sha512-6+eqU7P2OtxU2PkIw6kHojfYYUJykYG2K5rSkzVh29RDCAjhJqGEZW5f1b8kV5rUBORip1NpST8QTBNi96JHGQ==}
+    peerDependencies:
+      '@wagmi/core': 2.20.3
+      typescript: '>=5.0.4'
+      viem: 2.x
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@base-org/account': 1.1.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0)
+      '@coinbase/wallet-sdk': 4.3.6(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0)
+      '@gemini-wallet/core': 0.2.0(viem@2.37.6)
+      '@metamask/sdk': 0.32.0
+      '@safe-global/safe-apps-provider': 0.18.6(typescript@5.8.3)
+      '@safe-global/safe-apps-sdk': 9.1.0(typescript@5.8.3)
+      '@wagmi/core': 2.21.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)
+      '@walletconnect/ethereum-provider': 2.21.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)
+      cbw-sdk: /@coinbase/wallet-sdk@3.9.3
+      typescript: 5.8.3
+      viem: 2.37.6(typescript@5.8.3)(zod@3.22.4)
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - immer
+      - ioredis
+      - react
+      - supports-color
+      - uploadthing
+      - use-sync-external-store
+      - utf-8-validate
+      - zod
+    dev: false
+    optional: true
+
   /@wagmi/connectors@5.9.9(@wagmi/core@2.20.3)(react@18.3.1)(typescript@5.8.2)(viem@2.31.3):
     resolution: {integrity: sha512-6+eqU7P2OtxU2PkIw6kHojfYYUJykYG2K5rSkzVh29RDCAjhJqGEZW5f1b8kV5rUBORip1NpST8QTBNi96JHGQ==}
     peerDependencies:
@@ -6309,6 +6364,30 @@ packages:
       typescript: 5.8.2
       viem: 2.31.3(typescript@5.8.2)
       zustand: 5.0.0(react@18.3.1)(use-sync-external-store@1.4.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+      - react
+      - use-sync-external-store
+    dev: false
+
+  /@wagmi/core@2.21.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6):
+    resolution: {integrity: sha512-uG0Cujm24acrFYqbi1RGw9MRMLTGVKvyv5OAJT+2pkcasM9PP8eJCzhlvUxK9IYVXXnbaAT8JX/rXEurOSM6mg==}
+    peerDependencies:
+      '@tanstack/query-core': '>=5.0.0'
+      typescript: '>=5.0.4'
+      viem: 2.x
+    peerDependenciesMeta:
+      '@tanstack/query-core':
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      eventemitter3: 5.0.1
+      mipd: 0.0.7(typescript@5.8.3)
+      typescript: 5.8.3
+      viem: 2.37.6(typescript@5.8.3)(zod@3.22.4)
+      zustand: 5.0.0(@types/react@19.1.8)(react@19.1.0)(use-sync-external-store@1.4.0)
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -7833,14 +7912,14 @@ packages:
       - react
     dev: false
 
-  /@web3modal/ethereum@2.7.1(@wagmi/core@2.20.3)(viem@2.37.6):
+  /@web3modal/ethereum@2.7.1(@wagmi/core@2.21.1)(viem@2.37.6):
     resolution: {integrity: sha512-1x3qhYh9qgtvw1MDQD4VeDf2ZOsVANKRPtUty4lF+N4L8xnAIwvNKUAMA4j6T5xSsjqUfq5Tdy5mYsNxLmsWMA==}
     deprecated: Please use new @web3modal/wagmi package
     peerDependencies:
       '@wagmi/core': '>=1'
       viem: '>=1'
     dependencies:
-      '@wagmi/core': 2.20.3(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0)(viem@2.37.6)
+      '@wagmi/core': 2.21.1(@types/react@19.1.8)(react@19.1.0)(typescript@5.8.3)(viem@2.37.6)
       viem: 2.37.6(typescript@5.8.3)(zod@3.22.4)
     dev: false
 
@@ -10723,7 +10802,7 @@ packages:
       string.prototype.repeat: 1.0.0
     dev: true
 
-  /eslint-plugin-turbo@2.5.4(eslint@9.29.0)(turbo@2.5.6):
+  /eslint-plugin-turbo@2.5.4(eslint@9.29.0)(turbo@2.5.8):
     resolution: {integrity: sha512-IZsW61DFj5mLMMaCJxhh1VE4HvNhfdnHnAaXajgne+LUzdyHk2NvYT0ECSa/1SssArcqgTvV74MrLL68hWLLFw==}
     peerDependencies:
       eslint: '>6.6.0'
@@ -10731,7 +10810,7 @@ packages:
     dependencies:
       dotenv: 16.0.3
       eslint: 9.29.0
-      turbo: 2.5.6
+      turbo: 2.5.8
     dev: true
 
   /eslint-scope@5.1.1:
@@ -16507,8 +16586,8 @@ packages:
     dev: true
     optional: true
 
-  /turbo-darwin-64@2.5.6:
-    resolution: {integrity: sha512-3C1xEdo4aFwMJAPvtlPqz1Sw/+cddWIOmsalHFMrsqqydcptwBfu26WW2cDm3u93bUzMbBJ8k3zNKFqxJ9ei2A==}
+  /turbo-darwin-64@2.5.8:
+    resolution: {integrity: sha512-Dh5bCACiHO8rUXZLpKw+m3FiHtAp2CkanSyJre+SInEvEr5kIxjGvCK/8MFX8SFRjQuhjtvpIvYYZJB4AGCxNQ==}
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
@@ -16523,8 +16602,8 @@ packages:
     dev: true
     optional: true
 
-  /turbo-darwin-arm64@2.5.6:
-    resolution: {integrity: sha512-LyiG+rD7JhMfYwLqB6k3LZQtYn8CQQUePbpA8mF/hMLPAekXdJo1g0bUPw8RZLwQXUIU/3BU7tXENvhSGz5DPA==}
+  /turbo-darwin-arm64@2.5.8:
+    resolution: {integrity: sha512-f1H/tQC9px7+hmXn6Kx/w8Jd/FneIUnvLlcI/7RGHunxfOkKJKvsoiNzySkoHQ8uq1pJnhJ0xNGTlYM48ZaJOQ==}
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
@@ -16539,8 +16618,8 @@ packages:
     dev: true
     optional: true
 
-  /turbo-linux-64@2.5.6:
-    resolution: {integrity: sha512-GOcUTT0xiT/pSnHL4YD6Yr3HreUhU8pUcGqcI2ksIF9b2/r/kRHwGFcsHgpG3+vtZF/kwsP0MV8FTlTObxsYIA==}
+  /turbo-linux-64@2.5.8:
+    resolution: {integrity: sha512-hMyvc7w7yadBlZBGl/bnR6O+dJTx3XkTeyTTH4zEjERO6ChEs0SrN8jTFj1lueNXKIHh1SnALmy6VctKMGnWfw==}
     cpu: [x64]
     os: [linux]
     requiresBuild: true
@@ -16555,8 +16634,8 @@ packages:
     dev: true
     optional: true
 
-  /turbo-linux-arm64@2.5.6:
-    resolution: {integrity: sha512-10Tm15bruJEA3m0V7iZcnQBpObGBcOgUcO+sY7/2vk1bweW34LMhkWi8svjV9iDF68+KJDThnYDlYE/bc7/zzQ==}
+  /turbo-linux-arm64@2.5.8:
+    resolution: {integrity: sha512-LQELGa7bAqV2f+3rTMRPnj5G/OHAe2U+0N9BwsZvfMvHSUbsQ3bBMWdSQaYNicok7wOZcHjz2TkESn1hYK6xIQ==}
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
@@ -16571,8 +16650,8 @@ packages:
     dev: true
     optional: true
 
-  /turbo-windows-64@2.5.6:
-    resolution: {integrity: sha512-FyRsVpgaj76It0ludwZsNN40ytHN+17E4PFJyeliBEbxrGTc5BexlXVpufB7XlAaoaZVxbS6KT8RofLfDRyEPg==}
+  /turbo-windows-64@2.5.8:
+    resolution: {integrity: sha512-3YdcaW34TrN1AWwqgYL9gUqmZsMT4T7g8Y5Azz+uwwEJW+4sgcJkIi9pYFyU4ZBSjBvkfuPZkGgfStir5BBDJQ==}
     cpu: [x64]
     os: [win32]
     requiresBuild: true
@@ -16587,8 +16666,8 @@ packages:
     dev: true
     optional: true
 
-  /turbo-windows-arm64@2.5.6:
-    resolution: {integrity: sha512-j/tWu8cMeQ7HPpKri6jvKtyXg9K1gRyhdK4tKrrchH8GNHscPX/F71zax58yYtLRWTiK04zNzPcUJuoS0+v/+Q==}
+  /turbo-windows-arm64@2.5.8:
+    resolution: {integrity: sha512-eFC5XzLmgXJfnAK3UMTmVECCwuBcORrWdewoiXBnUm934DY6QN8YowC/srhNnROMpaKaqNeRpoB5FxCww3eteQ==}
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
@@ -16607,16 +16686,16 @@ packages:
       turbo-windows-arm64: 2.5.4
     dev: true
 
-  /turbo@2.5.6:
-    resolution: {integrity: sha512-gxToHmi9oTBNB05UjUsrWf0OyN5ZXtD0apOarC1KIx232Vp3WimRNy3810QzeNSgyD5rsaIDXlxlbnOzlouo+w==}
+  /turbo@2.5.8:
+    resolution: {integrity: sha512-5c9Fdsr9qfpT3hA0EyYSFRZj1dVVsb6KIWubA9JBYZ/9ZEAijgUEae0BBR/Xl/wekt4w65/lYLTFaP3JmwSO8w==}
     hasBin: true
     optionalDependencies:
-      turbo-darwin-64: 2.5.6
-      turbo-darwin-arm64: 2.5.6
-      turbo-linux-64: 2.5.6
-      turbo-linux-arm64: 2.5.6
-      turbo-windows-64: 2.5.6
-      turbo-windows-arm64: 2.5.6
+      turbo-darwin-64: 2.5.8
+      turbo-darwin-arm64: 2.5.8
+      turbo-linux-64: 2.5.8
+      turbo-linux-arm64: 2.5.8
+      turbo-windows-64: 2.5.8
+      turbo-windows-arm64: 2.5.8
     dev: true
 
   /type-check@0.4.0:

@@ -1,0 +1,224 @@
+@use "../../utils" as *;
+
+.RouteDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  align-self: stretch;
+  padding: 16px;
+  border-radius: var(--M, 16px);
+  background: var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--White-Glass-White-008, rgba(255, 255, 255, 0.08));
+  animation: slideIn 0.3s ease-out;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  &__Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+  }
+
+  &__TypeIndicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__TypeText {
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+
+    &--single {
+      color: $beryl-pure; // Blue for single routes
+    }
+
+    &--split {
+      color: #F59E0B; // Orange for split routes
+    }
+  }
+
+  &__TotalFee {
+    color: $onyx-pure;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
+  }
+
+  &__Routes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: stretch;
+  }
+
+  &__Path {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  &__Percentage {
+    color: #F59E0B;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+    min-width: 32px;
+    text-align: left;
+  }
+
+  &__TokenPath {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  &__Token {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+  }
+
+  &__TokenIcon {
+    border-radius: 50%;
+    background: $white-008;
+  }
+
+  &__TokenFallback {
+    border-radius: 50%;
+  }
+
+  &__TokenSymbol {
+    color: $white;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+  }
+
+  &__Arrow {
+    color: $onyx-pure;
+    flex-shrink: 0;
+    margin: 0 2px;
+    transition: color 0.2s ease;
+  }
+
+  &__Fee {
+    color: $onyx-pure;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+    margin-left: auto;
+  }
+
+  &__SplitInfo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    align-self: stretch;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--White-Glass-White-001, rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--White-Glass-White-004, rgba(255, 255, 255, 0.04));
+
+    svg {
+      color: $onyx-pure;
+      flex-shrink: 0;
+    }
+  }
+
+  &__SplitText {
+    color: $onyx-pure;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 140%;
+    letter-spacing: -0.029px;
+  }
+
+  // Responsive design
+  @media (max-width: 480px) {
+    padding: 12px;
+    gap: 10px;
+
+    &__Header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    &__TypeText {
+      font-size: 12px;
+    }
+
+    &__TotalFee {
+      font-size: 10px;
+      align-self: flex-end;
+    }
+
+    &__Path {
+      padding: 6px 0;
+      gap: 6px;
+    }
+
+    &__TokenSymbol {
+      font-size: 10px;
+    }
+
+    &__Arrow {
+      margin: 0 1px;
+    }
+
+    &__SplitInfo {
+      padding: 6px 8px;
+    }
+
+    &__SplitText {
+      font-size: 10px;
+    }
+  }
+
+  // Hover effects
+  &:hover {
+    background: var(--White-Glass-White-003, rgba(255, 255, 255, 0.03));
+    border-color: var(--White-Glass-White-012, rgba(255, 255, 255, 0.12));
+    transition: all 0.2s ease;
+
+    .RouteDisplay__Arrow {
+      color: $beryl-pure;
+    }
+  }
+
+  // Dark theme adjustments
+  @media (prefers-color-scheme: dark) {
+    background: var(--White-Glass-White-002, rgba(255, 255, 255, 0.02));
+    border-color: var(--White-Glass-White-008, rgba(255, 255, 255, 0.08));
+  }
+}

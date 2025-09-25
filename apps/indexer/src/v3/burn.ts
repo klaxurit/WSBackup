@@ -40,7 +40,8 @@ ponder.on("v3Pool:Burn", async ({ event, context }) => {
 
   const amount0USD = amount0Bera.mul(beraPriceUSD)
   const amount1USD = amount1Bera.mul(beraPriceUSD)
-  const totalAmountUSD = amount0USD.plus(amount1USD)
+  // Fix: Take average of both sides to avoid double counting (align with vault and swap logic)
+  const totalAmountUSD = amount0USD.plus(amount1USD).div(2)
 
   factory.txCount += 1
   factory.totalValueLockedBERA = Decimal(factory.totalValueLockedBERA).minus(pool.totalValueLockedBERA).toString()
