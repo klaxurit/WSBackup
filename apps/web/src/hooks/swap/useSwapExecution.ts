@@ -5,6 +5,7 @@ import { useAccount, useSimulateContract, useWriteContract, useWaitForTransactio
 import { calculateSlippageAmount, encodePath } from "../../utils/swap"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
 import { SwapRouteV2ABI } from "../../config/abis/swapRouter"
+import { isNativeToken } from "../../utils/swap/tokenHelpers"
 import type { OptimizedRoute, TransactionData } from "./types"
 
 interface UseSwapExecutionParams {
@@ -14,6 +15,9 @@ interface UseSwapExecutionParams {
   deadline: number
   recipient?: Address
   enabled?: boolean
+  // Original tokens for transaction value calculation
+  originalTokenIn?: Address
+  originalTokenOut?: Address
 }
 
 interface UseSwapExecutionReturn {
@@ -50,7 +54,9 @@ export const useSwapExecution = ({
   slippageTolerance,
   deadline,
   recipient,
-  enabled = true
+  enabled = true,
+  originalTokenIn,
+  originalTokenOut
 }: UseSwapExecutionParams): UseSwapExecutionReturn => {
   const { address } = useAccount()
 
@@ -84,7 +90,7 @@ export const useSwapExecution = ({
             abi: SwapRouteV2ABI,
             functionName: "exactInputSingle",
             args: [params],
-            value: singleRoute.path[0].address === zeroAddress ? amountIn : 0n
+            value: originalTokenIn && isNativeToken(originalTokenIn) ? amountIn : 0n
           }
         } else {
           // Multi-hop - Using correct struct/tuple parameters
@@ -105,7 +111,7 @@ export const useSwapExecution = ({
             abi: SwapRouteV2ABI,
             functionName: 'exactInput',
             args: [params],
-            value: 0n // Always 0n for ERC20 token swaps
+            value: originalTokenIn && isNativeToken(originalTokenIn) ? amountIn : 0n
           }
         }
       }
@@ -115,7 +121,7 @@ export const useSwapExecution = ({
     }
 
     return null
-  }, [optimizedRoute, address, enabled, deadline, slippageTolerance, recipient, amountIn])
+  }, [optimizedRoute, address, enabled, deadline, slippageTolerance, recipient, amountIn, originalTokenIn, originalTokenOut])
 
   // Simulate transaction for validation
   const { data: simulationConfig, error: simuError } = useSimulateContract({

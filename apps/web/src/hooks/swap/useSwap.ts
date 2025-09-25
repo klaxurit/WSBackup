@@ -3,6 +3,7 @@ import { useAccount } from "wagmi"
 import { useQueryClient } from "@tanstack/react-query"
 import type { Address, Hex } from "viem"
 import { calculateSlippageAmount } from "../../utils/swap"
+import { isNativeToken } from "../../utils/swap/tokenHelpers"
 
 // Import de nos hooks modulaires
 import { useTokenPairManager } from "./useTokenPairManager"
@@ -225,7 +226,10 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     slippageTolerance: slippageTolerance,
     deadline: deadline,
     recipient: recipient,
-    enabled: !!optimizer.optimizedRoute // Enabled même sans wallet pour générer transactionData
+    enabled: !!optimizer.optimizedRoute, // Enabled même sans wallet pour générer transactionData
+    // Pass original tokens for transaction value calculation
+    originalTokenIn: tokenPair.originalTokenIn,
+    originalTokenOut: tokenPair.originalTokenOut
   })
 
   // Puis approval qui dépend de execution
@@ -233,7 +237,8 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     tokenAddress: tokenPair.normalizedTokenIn,
     spenderAddress: execution.transactionData?.to,
     amountNeeded: amountIn,
-    enabled: !!address && !!execution.transactionData
+    // Don't approve native BERA tokens - they don't need approval
+    enabled: !!address && !!execution.transactionData && !isNativeToken(tokenPair.originalTokenIn)
   })
 
   const wrapUnwrap = useWrapUnwrap({
