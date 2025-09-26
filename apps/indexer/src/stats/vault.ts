@@ -375,6 +375,20 @@ async function calculateVolumeForPeriod(
   }
 
   if (!fromVault) {
+    // If no data found at target period, try to find oldest available vault data
+    // This handles young vaults that don't have 30 days of history
+    fromVault = await findOldestVaultData(vaultId, context, periodType);
+
+    if (fromVault) {
+      // For young vaults, calculate volume since creation (cumulative volume)
+      const pastTradingVolume = new Decimal(fromVault.tradingVolumeUSD || "0");
+      const pastDepositWithdrawVolume = new Decimal(fromVault.depositWithdrawVolumeUSD || "0");
+      const pastTotalVolume = pastTradingVolume.plus(pastDepositWithdrawVolume);
+      const volumeDiff = currentTotalVolume.minus(pastTotalVolume);
+
+      return volumeDiff.gt(0) ? volumeDiff.toString() : currentTotalVolume.toString();
+    }
+
     // Fallback: Use pool historical data for comparison
     if (periodType === "hour") {
       // Try to find pool hour data
@@ -405,6 +419,41 @@ async function calculateVolumeForPeriod(
   const volumeDiff = currentTotalVolume.minus(pastTotalVolume);
 
   return volumeDiff.gt(0) ? volumeDiff.toString() : "0";
+}
+
+async function findOldestVaultData(
+  vaultId: string,
+  context: Context,
+  periodType: "day" | "hour" = "hour"
+): Promise<typeof vaultDayData.$inferSelect | typeof vaultHourData.$inferSelect | null> {
+  // Search for the oldest available vault data
+  let oldestData: typeof vaultDayData.$inferSelect | typeof vaultHourData.$inferSelect | null = null;
+
+  // Get vault creation info to estimate earliest possible data
+  const vault = await context.db.find(stickyVault, { id: vaultId });
+  if (!vault) return null;
+
+  if (periodType === "day") {
+    // Calculate approximate starting day from vault creation
+    const creationDay = Math.floor(Number(vault.createdAtTimestamp) / 86400);
+    const currentDay = Math.floor(Date.now() / 1000 / 86400);
+
+    // Search from creation time forward to find the first available day data
+    for (let day = creationDay; day <= currentDay && !oldestData; day++) {
+      oldestData = await context.db.find(vaultDayData, { id: `${vaultId}-${day}` });
+    }
+  } else {
+    // Calculate approximate starting hour from vault creation
+    const creationHour = Math.floor(Number(vault.createdAtTimestamp) / 3600);
+    const currentHour = Math.floor(Date.now() / 1000 / 3600);
+
+    // Search from creation time forward to find the first available hour data
+    for (let hour = creationHour; hour <= currentHour && !oldestData; hour++) {
+      oldestData = await context.db.find(vaultHourData, { id: `${vaultId}-${hour}` });
+    }
+  }
+
+  return oldestData;
 }
 
 async function updateDayVaultData(

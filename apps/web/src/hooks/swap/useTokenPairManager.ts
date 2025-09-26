@@ -34,6 +34,10 @@ interface UseTokenPairManagerReturn {
   normalizedTokenIn: Address
   normalizedTokenOut: Address
 
+  // Original tokens for transaction value calculation
+  originalTokenIn: Address
+  originalTokenOut: Address
+
   // Special operations detection
   wrapInfo: WrapInfo
 
@@ -99,6 +103,10 @@ export const useTokenPairManager = (params: UseTokenPairManagerParams): UseToken
       // Normalized for routing
       normalizedTokenIn,
       normalizedTokenOut,
+
+      // Original tokens for transaction value calculation
+      originalTokenIn: tokenIn,
+      originalTokenOut: tokenOut,
 
       // Wrap detection
       wrapInfo,
