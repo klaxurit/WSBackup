@@ -64,13 +64,6 @@ const metricLabels: Record<ChartMetric, string> = {
   fees: 'Fees',
 };
 
-const metricIcons: Record<ChartMetric, string> = {
-  price: '💰',
-  tvl: '🏦',
-  volume: '📊',
-  fees: '💸',
-};
-
 export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   chartType,
   interval,
@@ -205,15 +198,12 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
               onClick={() => !isLoading && setIsDesktopMetricDropdownOpen(!isDesktopMetricDropdownOpen)}
               disabled={isLoading}
             >
-              <span className="chart-toolbar__metrics-trigger-icon">
-                {metricIcons[metric]}
-              </span>
               <span className="chart-toolbar__metrics-trigger-label">
                 {metricLabels[metric]}
               </span>
               <svg
                 className={`chart-toolbar__metrics-trigger-arrow ${isDesktopMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
-                width="12"
+                width="8"
                 height="8"
                 viewBox="0 0 12 8"
                 fill="none"
@@ -247,9 +237,6 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                         disabled={isDisabled}
                         title={isDisabled ? 'Candlestick only available for Price metric' : metricLabels[metricOption]}
                       >
-                        <span className="chart-toolbar__metrics-option-icon">
-                          {metricIcons[metricOption]}
-                        </span>
                         <span className="chart-toolbar__metrics-option-label">
                           {metricLabels[metricOption]}
                         </span>
@@ -377,9 +364,6 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
               onClick={() => !isLoading && setIsMobileMetricDropdownOpen(!isMobileMetricDropdownOpen)}
               disabled={isLoading}
             >
-              <span className="chart-toolbar__mobile-trigger-icon">
-                {metricIcons[metric]}
-              </span>
               <span className="chart-toolbar__mobile-trigger-label">
                 {metricLabels[metric]}
               </span>
@@ -418,9 +402,6 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                         onClick={() => !isDisabled && handleMetricSelect(metricOption)}
                         disabled={isDisabled}
                       >
-                        <span className="chart-toolbar__mobile-option-icon">
-                          {metricIcons[metricOption]}
-                        </span>
                         <span className="chart-toolbar__mobile-option-label">
                           {metricLabels[metricOption]}
                         </span>
