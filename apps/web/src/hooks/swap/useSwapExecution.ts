@@ -27,6 +27,7 @@ interface UseSwapExecutionReturn {
   // Actions
   executeSwap: () => Promise<void>
   reset: () => void
+  refetchSimu: () => void
 
   // Transaction states
   isExecuting: boolean
@@ -124,7 +125,7 @@ export const useSwapExecution = ({
   }, [optimizedRoute, address, enabled, deadline, slippageTolerance, recipient, amountIn, originalTokenIn, originalTokenOut])
 
   // Simulate transaction for validation
-  const { data: simulationConfig, error: simuError } = useSimulateContract({
+  const { data: simulationConfig, error: simuError, refetch: refetchSimu } = useSimulateContract({
     address: transactionData?.to,
     abi: transactionData?.abi,
     functionName: transactionData?.functionName,
@@ -190,6 +191,7 @@ export const useSwapExecution = ({
     // Actions
     executeSwap,
     reset,
+    refetchSimu,
 
     // Transaction states
     isExecuting,
