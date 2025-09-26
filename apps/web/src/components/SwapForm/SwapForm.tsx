@@ -71,6 +71,8 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       enableDebounce: true,
     })
 
+    console.log(swap)
+
     const { poolAddress } = usePoolAddress(
       fromToken?.address as `0x${string}` | undefined,
       toToken?.address as `0x${string}` | undefined
