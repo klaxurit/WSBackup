@@ -19,6 +19,19 @@ const baseExplorer = import.meta.env.VITE_NODE_ENV === "production"
   ? "https://berascan.com/token/"
   : "https://bepolia.beratrail.io/token/"
 
+const GET_TOKENS_WITH_PRICE = `
+  query MyQuery($id: String = "") {
+  token(id: $id) {
+    id
+    tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+      items {
+        priceUSD
+      }
+    }
+  }
+}
+`
+
 export const TokenItem: React.FC<NetworkItemProps> = ({
   token,
   isSelected,
@@ -28,60 +41,38 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
   const [displayFallback, setDisplayFallback] = useState<boolean>(false)
   const { data: balance, isLoading: isLoading } = useBalance({
     address,
-    token: token.address === zeroAddress ? undefined : (token.address as `0x${string}`)
+    ...(token.address !== zeroAddress && { token: token.address as `0x${string}` })
   })
 
   // Récupérer les stats du token pour avoir le prix USD
-  const { data: tokenStats } = useQuery({
+  const { data: balanceUsd } = useQuery({
     queryKey: ["tokenStats", token.address],
     queryFn: async () => {
-      if (!token.address) return null;
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`)
-      if (!resp.ok) return null;
+      if (!token.address) return 0;
+      const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: GET_TOKENS_WITH_PRICE,
+          variables: {
+            id: token.address === zeroAddress ? `0x6969696969696969696969696969696969696969` : token.address
+          }
+        }),
+      });
+      if (!resp.ok) return 0;
       const data = await resp.json();
-      return data.find((t: any) =>
-        t.address?.toLowerCase() === token.address?.toLowerCase()
-      );
+
+      const price = data.data.token.tokenDayData.items[0].priceUSD ?? 0
+
+      return price === 0 || !balance
+        ? 0
+        : parseFloat(formatUnits(balance.value, token.decimals || 18));
     },
-    enabled: !!token.address,
+    enabled: !!token.address && !!balance,
     staleTime: 60_000
   });
-
-  // Récupérer aussi les stats du WBERA pour le fallback du BERA
-  const { data: wBeraStats } = useQuery({
-    queryKey: ["wBeraStats"],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`)
-      if (!resp.ok) return null;
-      const data = await resp.json();
-      return data.find((t: any) =>
-        t.symbol === 'wBERA' || t.address?.toLowerCase() === '0x6969696969696969696969696969696969696969'
-      );
-    },
-    staleTime: 60_000
-  });
-
-  // Calculer la valeur USD de la balance
-  const balanceUsd = useMemo(() => {
-    if (!balance || balance.value === 0n) return 0;
-
-    let price = 0;
-
-    // Essayer d'abord le prix du token lui-même
-    if (tokenStats) {
-      price = tokenStats?.TokenDailyStats?.[0]?.price || 0;
-    }
-
-    // Si c'est le token BERA (zeroAddress) et qu'on n'a pas de prix, utiliser le prix du WBERA
-    if (price === 0 && token.address === zeroAddress && wBeraStats) {
-      price = wBeraStats?.TokenDailyStats?.[0]?.price || 0;
-    }
-
-    if (price === 0) return 0;
-
-    const amount = parseFloat(formatUnits(balance.value, token.decimals || 18));
-    return amount * price;
-  }, [balance, tokenStats, wBeraStats, token.address, token.decimals]);
 
   return (
     <div
@@ -123,7 +114,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
           ) : (
             <>
               <span className="Modal__ItemPrice">
-                {balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` : ''}
+                {balanceUsd ? `$${balanceUsd.toFixed(2)}` : ''}
               </span>
               <span className="Modal__ItemBalance">
                 {balance && balance.value !== 0n
