@@ -5,7 +5,6 @@ import { useAccount, useBalance } from 'wagmi';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
 
 interface NetworkItemProps {
   token: BerachainToken;
