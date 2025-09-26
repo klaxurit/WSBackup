@@ -12,6 +12,7 @@ interface ChartToolbarProps {
   availableIntervals?: ChartInterval[];
   availableMetrics?: ChartMetric[];
   isLoading?: boolean;
+  hideMetricsDropdown?: boolean;
 }
 
 
@@ -74,6 +75,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   availableIntervals = ['1H', '4H', '1D', '1W', '1M'],
   availableMetrics,
   isLoading = false,
+  hideMetricsDropdown = false,
 }) => {
   const [hoveredInterval, setHoveredInterval] = React.useState<ChartInterval | null>(null);
   const [previousInterval, setPreviousInterval] = React.useState<ChartInterval | null>(null);
@@ -188,65 +190,67 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
             })}
           </div>
 
-          {/* Séparateur */}
-          <div className="chart-toolbar__separator" />
+          {/* Séparateur - seulement si le dropdown des métriques est visible */}
+          {!hideMetricsDropdown && <div className="chart-toolbar__separator" />}
 
           {/* Dropdown des métriques */}
-          <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
-            <button
-              className={`btn btn--tiny btn__accent ${isDesktopMetricDropdownOpen ? 'btn__main' : ''} ${isLoading ? 'btn__disabled' : ''}`}
-              onClick={() => !isLoading && setIsDesktopMetricDropdownOpen(!isDesktopMetricDropdownOpen)}
-              disabled={isLoading}
-            >
-              <span className="chart-toolbar__metrics-trigger-label">
-                {metricLabels[metric]}
-              </span>
-              <svg
-                className={`chart-toolbar__metrics-trigger-arrow ${isDesktopMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
-                width="8"
-                height="8"
-                viewBox="0 0 12 8"
-                fill="none"
+          {!hideMetricsDropdown && (
+            <div className="chart-toolbar__metrics-dropdown" ref={metricDropdownRef}>
+              <button
+                className={`btn btn--tiny btn__accent ${isDesktopMetricDropdownOpen ? 'btn__main' : ''} ${isLoading ? 'btn__disabled' : ''}`}
+                onClick={() => !isLoading && setIsDesktopMetricDropdownOpen(!isDesktopMetricDropdownOpen)}
+                disabled={isLoading}
               >
-                <path
-                  d="M1 1.5L6 6.5L11 1.5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+                <span className="chart-toolbar__metrics-trigger-label">
+                  {metricLabels[metric]}
+                </span>
+                <svg
+                  className={`chart-toolbar__metrics-trigger-arrow ${isDesktopMetricDropdownOpen ? 'chart-toolbar__metrics-trigger-arrow--open' : ''}`}
+                  width="8"
+                  height="8"
+                  viewBox="0 0 12 8"
+                  fill="none"
+                >
+                  <path
+                    d="M1 1.5L6 6.5L11 1.5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
 
-            {isDesktopMetricDropdownOpen && (
-              <>
-                <div
-                  className="chart-toolbar__mobile-overlay"
-                  onClick={() => setIsDesktopMetricDropdownOpen(false)}
-                />
-                <div className="chart-toolbar__metrics-menu">
-                  {(availableMetrics || (Object.keys(metricLabels) as ChartMetric[])).map((metricOption) => {
-                    const isActive = metric === metricOption;
-                    const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
+              {isDesktopMetricDropdownOpen && (
+                <>
+                  <div
+                    className="chart-toolbar__mobile-overlay"
+                    onClick={() => setIsDesktopMetricDropdownOpen(false)}
+                  />
+                  <div className="chart-toolbar__metrics-menu">
+                    {(availableMetrics || (Object.keys(metricLabels) as ChartMetric[])).map((metricOption) => {
+                      const isActive = metric === metricOption;
+                      const isDisabled = metricOption !== 'price' && chartType === 'candlestick';
 
-                    return (
-                      <button
-                        key={metricOption}
-                        className={`btn btn--tiny ${isActive ? 'btn__main' : 'btn__shade'} ${isDisabled ? 'btn__disabled' : ''}`}
-                        onClick={() => !isDisabled && handleMetricSelect(metricOption)}
-                        disabled={isDisabled}
-                        title={isDisabled ? 'Candlestick only available for Price metric' : metricLabels[metricOption]}
-                      >
-                        <span className="chart-toolbar__metrics-option-label">
-                          {metricLabels[metricOption]}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+                      return (
+                        <button
+                          key={metricOption}
+                          className={`btn btn--tiny ${isActive ? 'btn__main' : 'btn__shade'} ${isDisabled ? 'btn__disabled' : ''}`}
+                          onClick={() => !isDisabled && handleMetricSelect(metricOption)}
+                          disabled={isDisabled}
+                          title={isDisabled ? 'Candlestick only available for Price metric' : metricLabels[metricOption]}
+                        >
+                          <span className="chart-toolbar__metrics-option-label">
+                            {metricLabels[metricOption]}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Séparateur */}
           <div className="chart-toolbar__separator" />

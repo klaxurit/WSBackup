@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useAppDispatch } from '../store/hooks';
-import { setWalletConnected, setWalletDisconnected, setError, setBalance } from '../store/slices/walletSlice';
+import { setWalletConnected, setError, setBalance, clearWalletState } from '../store/slices/walletSlice';
 import { useAccount, useDisconnect } from 'wagmi';
 import { createPublicClient, http, formatEther } from 'viem';
 import { berachain } from 'viem/chains';
@@ -31,7 +31,7 @@ export const useWallet = () => {
         dispatch(setBalance('0'));
       });
     } else if (!isConnected) {
-      dispatch(setWalletDisconnected());
+      dispatch(clearWalletState());
     }
   }, [isConnected, address, chainId, dispatch]);
 
@@ -44,9 +44,14 @@ export const useWallet = () => {
     }
   }, [open, dispatch]);
 
-  const disconnectWallet = useCallback(() => {
+  const disconnectWallet = useCallback(async () => {
     try {
-      wagmiDisconnect();
+      // Déconnecter via Wagmi
+      await wagmiDisconnect();
+
+      // Nettoyer l'état Redux
+      dispatch(clearWalletState());
+
     } catch (err) {
       dispatch(setError(err instanceof Error ? err.message : 'Disconnection error'));
     }
@@ -58,8 +63,8 @@ export const useWallet = () => {
     address,
     chainId,
     isConnected,
-    isConnecting: false, // AppKit gère l'état de connexion
-    connectors: [], // AppKit gère les connecteurs
+    isConnecting: false,
+    connectors: [],
     isCorrectNetwork,
   };
 };

@@ -31,6 +31,7 @@ export interface ChartWidgetProps {
   showNoDataOverlay?: boolean;
   noDataMessage?: string;
   dataType?: 'token' | 'pool' | 'vault';
+  hideMetricsDropdown?: boolean;
 }
 
 const BERYL_PURE = '#E39229';
@@ -55,6 +56,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   showNoDataOverlay = false,
   noDataMessage = "No data available",
   dataType,
+  hideMetricsDropdown = false,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -363,6 +365,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
           onMetricChange={handleMetricChange}
           availableMetrics={dataType === 'vault' ? ['tvl', 'volume', 'fees'] : undefined}
           isLoading={isLoading}
+          hideMetricsDropdown={hideMetricsDropdown}
         />
       )}
 

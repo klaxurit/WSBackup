@@ -138,6 +138,7 @@ export const SwapPageLayout: React.FC<SwapPageLayoutProps> = ({
             showNoDataOverlay={chartConfig.showOverlay || poolSelection.isLoading}
             noDataMessage={getNoDataMessage()}
             dataType={chartConfig.dataType}
+            hideMetricsDropdown={true}
           />
         </div>
         <div className="swap-page-layout__swap">
