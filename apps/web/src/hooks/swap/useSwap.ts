@@ -401,6 +401,12 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     }
   }, [status, queryClient])
 
+  // Refetch simulation after approve
+  useEffect(() => {
+    console.log("need refetch simu")
+    execution?.refetchSimu()
+  }, [approval.needsApproval])
+
   // RETOUR DE L'INTERFACE EXACTE DE L'ANCIEN HOOK
   return {
     // État principal
