@@ -187,24 +187,39 @@
   }
 }
 
-.TransactionModal__swapBtn {
+.TransactionModal__ConnectBtn {
   width: 100%;
   margin-top: 8px;
-  padding: 14px 0;
-  border-radius: 12px;
-  border: none;
-  font-size: 1.1rem;
-  font-weight: 600;
-  background: linear-gradient(90deg, $beryl-pure 0%, $beryl-medium 100%);
-  color: $onyx-black;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, opacity 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  &:disabled {
-    // opacity: 0.6;
-    cursor: not-allowed;
+  button {
+    width: 100%;
+    background-image: url('/src/assets/paw_background_large.svg');
+    background-size: 140%;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    &:hover {
+      background-image: url('/src/assets/paw_bg_large_hover.svg');
+      background-size: 140%;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    &:active {
+      background-image: url('/src/assets/paw_bg_large_click.svg');
+      background-size: 140%;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
   }
+}
+
+.TransactionModal__swapBtn {
+  // Styles de base hérités des boutons natifs
+  // Les styles spécifiques sont maintenant dans TransactionModal__ConnectBtn
 
   &.TransactionModal__swapBtn--loading {
     background: $beryl-pure;
@@ -278,13 +293,24 @@
   gap: 8px;
 }
 
-.TransactionModal__swapBtn.btn__disabled {
+.TransactionModal__ConnectBtn .btn.btn__disabled {
   background: $onyx-darker !important;
   color: $onyx-medium !important;
   cursor: not-allowed !important;
   border: none !important;
   box-shadow: none !important;
   opacity: 1 !important;
+  background-image: none !important;
+
+  &:hover {
+    background: $onyx-darker !important;
+    background-image: none !important;
+  }
+
+  &:active {
+    background: $onyx-darker !important;
+    background-image: none !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -401,14 +427,14 @@
   position: relative;
   background: $beryl-pure !important;
   color: #FFC372 !important;
-  border: 2px solid $beryl-pure;
-  box-shadow: 0 4px 12px rgba($beryl-pure, 0.3);
+  border: 2px solid $beryl-pure !important;
+  box-shadow: 0 4px 12px rgba($beryl-pure, 0.3) !important;
 
   // Background avec pattes et animation de respiration
   background-image: url('/src/assets/paw_bg_large_click.svg') !important;
-  background-size: 170%;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-size: 170% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 
   // Animation de respiration des pattes
   animation: pawBreath 2s ease-in-out infinite, successButtonPulse 0.6s ease-out;

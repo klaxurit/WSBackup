@@ -165,7 +165,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       if (swap.isUnWrap) return "Unwrap"
 
       if (swap.status === "ready" && swap.quote) return "Preview"
-      if (swap.status === "success") return "Success! 🎉"
+      if (swap.status === "success") return "Success"
       if (swap.status === "error") {
         return "Error"
       }
