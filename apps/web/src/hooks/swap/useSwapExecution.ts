@@ -131,8 +131,7 @@ export const useSwapExecution = ({
     args: transactionData?.args,
     value: transactionData?.value || 0n,
     query: {
-      enabled: !!transactionData && !!address && enabled,
-      retry: false
+      enabled: !!transactionData && !!address && enabled
     }
   })
 
