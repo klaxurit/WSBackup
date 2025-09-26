@@ -191,7 +191,8 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
   //   amountIn: amountIn.toString(),
   //   quotedRoutesCount: quoter.quotedRoutes.length,
   //   quoterLoading: quoter.isLoading,
-  //   quoterError: quoter.error?.message
+  //   quoterError: quoter.error?.message,
+  //   quoter
   // })
 
   const optimizer = useSwapOptimizer({
@@ -276,12 +277,14 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
       optimizer.error ||
       approval.approveError ||
       execution.executeError ||
-      execution.simulateError ||
       wrapUnwrap.wrapError ||
       wrapUnwrap.unwrapError
     ) {
       return 'error'
     }
+
+    // Simulation is in error if we need to allow token.
+    if (!approval.needsApproval && execution.simulateError) return 'error'
 
     // Loading states
     if (router.isLoading) return 'loading-routes'
