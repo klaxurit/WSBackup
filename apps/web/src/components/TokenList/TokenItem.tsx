@@ -63,11 +63,12 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
       if (!resp.ok) return 0;
       const data = await resp.json();
 
-      const price = data.data.token.tokenDayData.items[0].priceUSD ?? 0
+      const price = data.data.token?.tokenDayData?.items?.[0]?.priceUSD ?? 0
+      const balanceAmount = parseFloat(formatUnits(balance?.value || 0n, token.decimals || 18))
 
       return price === 0 || !balance
         ? 0
-        : parseFloat(formatUnits(balance.value, token.decimals || 18));
+        : price * balanceAmount;
     },
     enabled: !!token.address && !!balance,
     staleTime: 60_000
@@ -113,7 +114,8 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
           ) : (
             <>
               <span className="Modal__ItemPrice">
-                {balanceUsd ? `$${balanceUsd.toFixed(2)}` : ''}
+                {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` :
+                  balance && balance.value !== 0n ? 'Price loading...' : ''}
               </span>
               <span className="Modal__ItemBalance">
                 {balance && balance.value !== 0n

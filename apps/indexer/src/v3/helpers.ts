@@ -77,7 +77,7 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
         totalValueLocked: "0",
         totalValueLockedUSD: "0",
         totalValueLockedUSDUntracked: "0",
-        derivedETH: "0",
+        derivedBERA: "0",
         whitelistPools: [],
         ...(!!logoUri && { logoUri })
       });
@@ -98,7 +98,7 @@ export async function getOrCreateToken(context: any, tokenAddress: string) {
         totalValueLocked: "0",
         totalValueLockedUSD: "0",
         totalValueLockedUSDUntracked: "0",
-        derivedETH: "0",
+        derivedBERA: "0",
         whitelistPools: [],
       });
     }
