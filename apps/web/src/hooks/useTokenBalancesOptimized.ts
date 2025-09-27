@@ -59,17 +59,24 @@ export const useTokenBalancesOptimized = ({
   const limitedTokens = useMemo(() => {
     if (!tokens || tokens.length === 0) return [];
 
-    // Prioriser uniquement les tokens essentiels (comme Uniswap)
+    // Prioriser les tokens essentiels et autres tokens importants
     const essentialTokens = tokens.filter(t =>
       t.symbol === 'BERA' ||
       t.symbol === 'wBERA' ||
+      t.symbol === 'WBERA' ||
       t.symbol === 'HONEY' ||
       t.symbol === 'iBERA' ||
       t.symbol === 'POLLEN' ||
-      t.symbol === 'WBTC'
+      t.symbol === 'WBTC' ||
+      t.symbol === 'DOLO' ||
+      t.symbol === 'USD₮0' ||
+      t.symbol === 'USDC' ||
+      t.symbol === 'USDT' ||
+      t.symbol === 'WETH' ||
+      t.symbol === 'NECT'
     );
 
-    // Limiter strictement aux tokens essentiels
+    // Limiter aux tokens essentiels
     return essentialTokens.slice(0, maxTokens);
   }, [tokens, maxTokens]);
 

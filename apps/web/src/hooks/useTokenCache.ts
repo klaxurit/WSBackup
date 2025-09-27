@@ -133,7 +133,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
   // Utilisation du hook optimisé pour les balances (limité aux tokens prioritaires)
   const { balances, loading: balancesLoading } = useTokenBalancesOptimized({
     tokens: tokensArray, // Utiliser la liste complète mais limiter dans le hook
-    maxTokens: 8 // Limiter drastiquement pour optimiser les performances
+    maxTokens: 15 // Augmenter pour inclure plus de tokens et améliorer le tri
   });
 
   // Fonction pour obtenir le prix d'un token
@@ -198,7 +198,7 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
     if (!tokensToSort.length) return tokensToSort;
 
     const getBalanceUsd = (token: BerachainToken): number => {
-      // Seulement pour les tokens essentiels qui ont des balances
+      // Récupérer la balance par symbole
       const balanceStr = (balances as Record<string, string | undefined>)[token.symbol];
       if (!balanceStr) return 0;
 
@@ -224,19 +224,30 @@ export const useTokenCache = ({ onlyPoolToken = false, searchValue = "" }: UseTo
         }
       }
 
-      // Tri par balance USD pour les tokens détenus
-      withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a));
+      // Tri par balance USD (décroissant) pour les tokens détenus
+      withBalance.sort((a, b) => {
+        const balanceA = getBalanceUsd(a);
+        const balanceB = getBalanceUsd(b);
+        return balanceB - balanceA;
+      });
 
-      // Tri par market cap pour les tokens non détenus
-      withoutBalance.sort((a, b) => getTokenMarketCapValue(b) - getTokenMarketCapValue(a));
+      // Tri par market cap (décroissant) pour les tokens non détenus
+      withoutBalance.sort((a, b) => {
+        const marketCapA = getTokenMarketCapValue(a);
+        const marketCapB = getTokenMarketCapValue(b);
+        return marketCapB - marketCapA;
+      });
 
-      const result = [...withBalance, ...withoutBalance];
-
-      return result;
+      // Retourner d'abord les tokens avec balance, puis ceux sans balance
+      return [...withBalance, ...withoutBalance];
     }
 
-    // Pour les utilisateurs non connectés, trier par market cap
-    return [...tokensToSort].sort((a, b) => getTokenMarketCapValue(b) - getTokenMarketCapValue(a));
+    // Pour les utilisateurs non connectés, trier par market cap (décroissant)
+    return [...tokensToSort].sort((a, b) => {
+      const marketCapA = getTokenMarketCapValue(a);
+      const marketCapB = getTokenMarketCapValue(b);
+      return marketCapB - marketCapA;
+    });
   }, [balances, getTokenPriceValue, getTokenMarketCapValue, isConnected]);
 
   // Tokens pour les tokens populaires
