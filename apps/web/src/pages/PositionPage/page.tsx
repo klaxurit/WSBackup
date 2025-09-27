@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Table from '../../components/Table/Table';
 import type { TableColumn } from '../../components/Table/Table';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../../styles/pages/_positionPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
@@ -280,6 +280,7 @@ const PositionSizeCell: React.FC<{ row: any }> = ({ row }) => {
 const PoolPage: React.FC = () => {
   const { address, isConnected } = useAccount()
   const [statusFilter, setStatusFilter] = useState<'open' | 'closed'>('open')
+  const navigate = useNavigate()
   const { data: positions, isLoading } = useQuery({
     queryKey: ['positions', address],
     queryFn: async () => {
@@ -438,7 +439,11 @@ const PoolPage: React.FC = () => {
               <StaggerTransition staggerDelay={0.1}>
                 {topPools.map((pool: FormattedPool) => (
                   <HoverScale key={pool.address} scale={1.02}>
-                    <div className="PoolPage__TopCard">
+                    <div
+                      className="PoolPage__TopCard"
+                      onClick={() => navigate(`/pool/${pool.address}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className="PoolPage__TopPair" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <TokenPairLogos
                           token0={{

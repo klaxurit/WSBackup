@@ -93,7 +93,7 @@ const Navbar = () => {
                     {filteredPools.map((pool: Pool) => (
                       <Link
                         key={pool.id}
-                        to={`/pools/${pool.id}`}
+                        to={`/pool/${pool.id}`}
                         className="GlobalSearch__DropdownItem"
                         onClick={() => setSearchValue("")}
                       >
