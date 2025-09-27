@@ -40,8 +40,15 @@ const walletSlice = createSlice({
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+    clearWalletState: (state) => {
+      state.isConnected = false;
+      state.address = null;
+      state.chainId = null;
+      state.balance = '0';
+      state.error = null;
+    },
   },
 });
 
-export const { setWalletConnected, setWalletDisconnected, setBalance, setError } = walletSlice.actions;
+export const { setWalletConnected, setWalletDisconnected, setBalance, setError, clearWalletState } = walletSlice.actions;
 export default walletSlice.reducer; 

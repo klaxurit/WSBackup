@@ -74,10 +74,14 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
     connect();
   }, [connect]);
 
-  const handleDisconnect = useCallback(() => {
-    disconnect();
-    setDropdownOpen(false);
-    if (onClick) onClick();
+  const handleDisconnect = useCallback(async () => {
+    try {
+      await disconnect();
+      setDropdownOpen(false);
+      if (onClick) onClick();
+    } catch (error) {
+      console.error('Error when disconnecting:', error);
+    }
   }, [disconnect, onClick]);
 
   const handleCopy = useCallback(() => {

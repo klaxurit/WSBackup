@@ -65,12 +65,15 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const btnText = useMemo(() => {
     if (swap.status === "ready" && !swap.needsApproval) return "Swap"
-    if (swap.status === "ready" && swap.needsApproval) return "Approve"
+    if (swap.status === "ready" && swap.needsApproval) {
+      const tokenSymbol = inputToken?.symbol || "Token";
+      return `Approve ${tokenSymbol}`;
+    }
     if (["loading-routes", "quoting"].includes(swap.status)) return "Loading"
     if (["approving"].includes(swap.status)) return null
     if (swap.status === "idle") return "Loading routes..."
     return swap.status.replace(/^./, swap.status[0].toUpperCase())
-  }, [swap.status, swap.needsApproval])
+  }, [swap.status, swap.needsApproval, inputToken?.symbol])
 
   const rateValue = useMemo(() => {
     if (!swap?.quote) return "0"
@@ -119,6 +122,17 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const handleModalClose = isSuccess ? handleCloseAndRefresh : onClose;
 
+  // Fermer automatiquement la modal après un swap réussi
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        handleCloseAndRefresh();
+      }, 2000); // Fermer après 2 secondes pour laisser le temps de voir le succès
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
+
   // Process error for user-friendly display
   const errorInfo = useMemo(() => {
     if (!isError || !swap.error) return null;
@@ -151,9 +165,9 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   const renderActionButton = (action: ErrorAction, index: number) => (
     <button
       key={index}
-      className={`TransactionModal__swapBtn ${action.type === 'primary'
-        ? 'TransactionModal__swapBtn--primary'
-        : 'TransactionModal__swapBtn--secondary'
+      className={`btn btn--small ${action.type === 'primary'
+        ? 'btn__main'
+        : 'btn__shade'
         }`}
       onClick={action.action}
       style={{ marginTop: index === 0 ? 16 : 8 }}
@@ -185,7 +199,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
           <div className="TransactionModal__errorActions">
             {errorInfo?.actions.map((action, index) => renderActionButton(action, index)) || (
               <button
-                className="TransactionModal__swapBtn TransactionModal__swapBtn--error"
+                className="btn btn--large btn__shade"
                 onClick={onClose}
                 style={{ marginTop: 16 }}
               >
@@ -274,14 +288,16 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
             </div>
           </div>
           {!isError && (
-            <button
-              className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
-              onClick={handleSwap}
-              disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
-            >
-              {isSuccess && <div className="psychedelic-bear" />}
-              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
-            </button>
+            <div className="TransactionModal__ConnectBtn">
+              <button
+                className={`btn btn--large btn__${isLoadingStep ? 'disabled' : isSuccess ? 'main' : 'main'} TransactionModal__swapBtn${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
+                onClick={handleSwap}
+                disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
+              >
+                {isSuccess && <div className="psychedelic-bear" />}
+                {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
+              </button>
+            </div>
           )}
         </>
       )}

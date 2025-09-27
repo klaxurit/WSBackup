@@ -126,6 +126,7 @@ $hover-bg: #241500;
   &__mobile-dropdown {
     position: relative;
     flex: 1;
+
     .btn.btn--small.btn__accent {
       gap: 3px;
     }
@@ -576,9 +577,9 @@ $hover-bg: #241500;
     padding-top: 22px;
 
     .btn.btn--tiny.btn__accent {
-        display: flex;
-        gap: 3px;
-      }
+      display: flex;
+      gap: 3px;
+    }
 
     @media (max-width: 768px) {
       padding-top: 0;
