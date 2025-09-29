@@ -171,44 +171,18 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     enabled: !!tokenPair.normalizedTokenIn && !!tokenPair.normalizedTokenOut
   })
 
-  // DEBUG: Log router state
-  // console.log('[useSwap] 1 - Router state:', {
-  //   tokensNormalized: { in: tokenPair.normalizedTokenIn, out: tokenPair.normalizedTokenOut },
-  //   routesFound: router.routes.length,
-  //   routerLoading: router.isLoading,
-  //   routerError: router.error?.message
-  // })
-
   const quoter = useSwapQuoter({
     routes: router.routes,
     amountIn: amountIn,
     enabled: router.routes.length > 0  // Retirer la condition amountIn > 0n
   })
 
-  // DEBUG: Log quoter state
-  // console.log('[useSwap] 2 - Quoter state:', {
-  //   routesCount: router.routes.length,
-  //   amountIn: amountIn.toString(),
-  //   quotedRoutesCount: quoter.quotedRoutes.length,
-  //   quoterLoading: quoter.isLoading,
-  //   quoterError: quoter.error?.message,
-  //   quoter
-  // })
 
   const optimizer = useSwapOptimizer({
     routes: quoter.quotedRoutes,
     amountIn: amountIn,
     enabled: quoter.quotedRoutes.length > 0
   })
-
-  // DEBUG: Log optimizer state
-  // console.log('[useSwap] 3 - Optimizer state:', {
-  //   quotedRoutesCount: quoter.quotedRoutes.length,
-  //   hasOptimizedRoute: !!optimizer.optimizedRoute,
-  //   optimizerLoading: optimizer.isLoading,
-  //   optimizerError: optimizer.error?.message,
-  //   transactionData: !!optimizer.optimizedRoute?.transactionData
-  // })
 
   // Phase 3: Validation
   const validation = useSwapValidation({
@@ -246,16 +220,6 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     amount: amountIn,
     enabled: !!address
   })
-
-  // DEBUG: Log approval state
-  // console.log('[useSwap] 4 - Approval state:', {
-  //   isConnected: !!address,
-  //   hasOptimizedRoute: !!optimizer.optimizedRoute,
-  //   hasTransactionData: !!execution.transactionData,
-  //   spenderAddress: execution.transactionData?.to,
-  //   needsApproval: approval.needsApproval,
-  //   approvalError: approval.approveError?.message
-  // })
 
   // DÉRIVATION DU STATUS (même logique que l'original)
   const status = useMemo(() => {
@@ -321,15 +285,6 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     router.error, quoter.error, optimizer.error, approval.approveError,
     execution.executeError, execution.simulateError, wrapUnwrap.wrapError, wrapUnwrap.unwrapError
   ])
-
-  // DEBUG: Log status changes
-  // console.log('[useSwap] 5 - Status and consolidated state:', {
-  //   status,
-  //   hasConsolidatedError: !!consolidatedError,
-  //   consolidatedErrorMessage: consolidatedError?.message,
-  //   isLoading: ['loading-routes', 'quoting', 'optimizing', 'approving', 'swapping', 'wrapping', 'unwrapping'].includes(status),
-  //   isReady: status === "ready" && !!execution.transactionData
-  // })
 
   // TX HASH consolidé
   const txHash: Hex | undefined = useMemo(() => {

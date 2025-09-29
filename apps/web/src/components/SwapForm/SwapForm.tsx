@@ -208,6 +208,8 @@ export const SwapForm: React.FC<FormProps> = React.memo(
         setTimeout(() => {
           isUpdatingFromQuote.current = false;
         }, 0);
+      } else if (swap.isWrap || swap.isUnWrap) {
+        setToAmount(fromAmount)
       } else if (fromAmount === 0n && lastEditedField !== 'to') {
         setToAmount(0n);
       }
