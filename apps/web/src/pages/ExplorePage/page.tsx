@@ -3,14 +3,16 @@ import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { TransactionsTable } from '../../components/ExploreTables/transactions';
 import { PoolsTable } from '../../components/ExploreTables/pools';
 import { TokensTable } from '../../components/ExploreTables/tokens';
+import { VaultsTable } from '../../components/ExploreTables/vaults';
 import { NewBanner } from '../../components/Common/NewBanner';
-import { HoverScale, PageContentTransition } from '../../components/Transitions';
+import { PageContentTransition } from '../../components/Transitions';
 import beeIcon from '../../assets/bee_icon.png';
 import { useLocation } from 'react-router-dom';
 
 const TABS = [
   { key: 'tokens', label: 'Tokens' },
   { key: 'pools', label: 'Pools' },
+  { key: 'vaults', label: 'Vaults' },
   { key: 'transactions', label: 'Transactions' },
 ];
 
@@ -19,8 +21,8 @@ const ExplorePage: React.FC = () => {
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'tokens';
 
-  const [activeTab, setActiveTab] = useState<'tokens' | 'pools' | 'transactions'>(
-    TABS.some(t => t.key === initialTab) ? initialTab as 'tokens' | 'pools' | 'transactions' : 'tokens'
+  const [activeTab, setActiveTab] = useState<'tokens' | 'pools' | 'vaults' | 'transactions'>(
+    TABS.some(t => t.key === initialTab) ? initialTab as 'tokens' | 'pools' | 'vaults' | 'transactions' : 'tokens'
   );
   const [search, setSearch] = useState('');
 
@@ -32,15 +34,14 @@ const ExplorePage: React.FC = () => {
       <div className="ExplorePage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="ExplorePage__Tabs" style={{ display: 'flex', gap: 8 }}>
           {TABS.map(tab => (
-            <HoverScale key={tab.key} scale={1.05}>
-              <button
-                className={activeTab === tab.key ? 'Table__FilterBtn active' : 'Table__FilterBtn'}
-                onClick={() => setActiveTab(tab.key as 'tokens' | 'pools' | 'transactions')}
-                type="button"
-              >
-                {tab.label}
-              </button>
-            </HoverScale>
+            <button
+              key={tab.key}
+              className={`btn btn--tiny ${activeTab === tab.key ? 'btn__main' : 'btn__shade'}`}
+              onClick={() => setActiveTab(tab.key as 'tokens' | 'pools' | 'vaults' | 'transactions')}
+              type="button"
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
         <SearchBar
@@ -53,6 +54,7 @@ const ExplorePage: React.FC = () => {
 
       {activeTab === 'tokens' && <TokensTable searchValue={search} />}
       {activeTab === 'pools' && <PoolsTable searchValue={search} />}
+      {activeTab === 'vaults' && <VaultsTable searchValue={search} />}
       {activeTab === 'transactions' && <TransactionsTable />}
     </PageContentTransition>
   );

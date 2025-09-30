@@ -380,7 +380,7 @@ export const VaultDetailPage = () => {
               <div className="VaultDetailPage__PositionValue">
                 <span className="VaultDetailPage__PositionAmount">${formatNumber(userPosition?.currentValueUSD || "0")}</span>
                 <span className="VaultDetailPage__PositionShares">
-                  {formatNumber(userPosition?.shares || 0)} <StickyIcon size={14} /> {token0.symbol}-{token1.symbol}
+                  {formatNumber(userPosition?.shares || 0)} <StickyIcon width={14} height={14} /> {token0.symbol}-{token1.symbol}
                 </span>
               </div>
             </div>
@@ -391,13 +391,13 @@ export const VaultDetailPage = () => {
             {/* Tab Navigation */}
             <div className="VaultDetailPage__FormTabs">
               <button
-                className={`VaultDetailPage__FormTab ${activeTab === 'deposit' ? 'active' : ''}`}
+                className={`btn btn--tiny ${activeTab === 'deposit' ? 'btn__main' : 'btn__shade'}`}
                 onClick={() => setActiveTab('deposit')}
               >
                 Deposit
               </button>
               <button
-                className={`VaultDetailPage__FormTab ${activeTab === 'withdraw' ? 'active' : ''}`}
+                className={`btn btn--tiny ${activeTab === 'withdraw' ? 'btn__main' : 'btn__shade'}`}
                 onClick={() => setActiveTab('withdraw')}
               >
                 Withdraw
@@ -410,13 +410,13 @@ export const VaultDetailPage = () => {
                 {/* Deposit Mode Tabs */}
                 <div className="VaultDetailPage__DepositModeTabs">
                   <button
-                    className={`VaultDetailPage__DepositModeTab ${depositMode === 'double' ? 'active' : ''}`}
+                    className={`btn btn--tiny ${depositMode === 'double' ? 'btn__main' : 'btn__shade'}`}
                     onClick={() => setDepositMode('double')}
                   >
                     Double-sided
                   </button>
                   <button
-                    className={`VaultDetailPage__DepositModeTab ${depositMode === 'single' ? 'active' : ''}`}
+                    className={`btn btn--tiny ${depositMode === 'single' ? 'btn__main' : 'btn__shade'}`}
                     onClick={() => setDepositMode('single')}
                   >
                     Single-sided
@@ -443,13 +443,13 @@ export const VaultDetailPage = () => {
                   <div className="VaultDetailPage__SingleDeposit">
                     <div className="VaultDetailPage__TokenSelector">
                       <button
-                        className={`VaultDetailPage__TokenButton ${selectedToken === 'token0' ? 'active' : ''}`}
+                        className={`btn btn--tiny ${selectedToken === 'token0' ? 'btn__main' : 'btn__shade'}`}
                         onClick={() => setSelectedToken('token0')}
                       >
                         {token0.symbol}
                       </button>
                       <button
-                        className={`VaultDetailPage__TokenButton ${selectedToken === 'token1' ? 'active' : ''}`}
+                        className={`btn btn--tiny ${selectedToken === 'token1' ? 'btn__main' : 'btn__shade'}`}
                         onClick={() => setSelectedToken('token1')}
                       >
                         {token1.symbol}

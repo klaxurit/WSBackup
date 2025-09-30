@@ -454,7 +454,7 @@ const CreatePoolPage: React.FC = () => {
 
                 <div className="PoolPage__CreateFooter">
                   <button
-                    className="PoolPage__ContinueBtn"
+                    className={`btn btn--large ${!canContinueStep2 ? 'btn__main' : 'btn__disabled'}`}
                     type="button"
                     disabled={canContinueStep2}
                     onClick={() => setCurrentStep(2)}
@@ -651,10 +651,9 @@ const CreatePoolPage: React.FC = () => {
 
                 <div className="PoolPage__CreateFooter" style={{ justifyContent: 'space-between' }}>
                   <button
-                    className="PoolPage__ContinueBtn"
+                    className="btn btn--large btn__shade"
                     type="button"
                     onClick={() => setCurrentStep(1)}
-                    style={{ background: '#232323', color: '#fff', border: '1.5px solid #232323' }}
                   >
                     Back
                   </button>
@@ -663,13 +662,13 @@ const CreatePoolPage: React.FC = () => {
                     <ConnectButton size="large" />
                   ) : (
                     <button
-                      className="PoolPage__ContinueBtn"
+                      className={`btn btn--large ${buttonState?.disabled ? 'btn__disabled' : 'btn__main'}`}
                       type="button"
                       disabled={buttonState?.disabled}
                       onClick={buttonState?.action}
                     >
                       {buttonState?.loading && (
-                        <Loader className="PoolPage__ContinueBtnLoader" size="mobile" />
+                        <Loader size="mobile" />
                       )}
                       {buttonState?.text}
                     </button>

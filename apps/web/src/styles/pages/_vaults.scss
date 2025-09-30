@@ -232,6 +232,7 @@
     td {
       display: flex;
     }
+
     a {
       line-height: 14px;
     }
@@ -491,19 +492,16 @@
     margin-bottom: 0.75rem;
   }
 
-  // Action Forms
-  &__ActionForms {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
-    padding: 1.5rem;
-  }
-
   &__FormTabs {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    width: 100%;
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   &__FormTab {
@@ -536,6 +534,12 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    width: 100%;
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   &__DepositModeTab {
@@ -571,6 +575,12 @@
   &__TokenSelector {
     display: flex;
     gap: 0.5rem;
+    width: 100%;
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   &__TokenButton {
@@ -626,20 +636,24 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    .networkSelector__logoWrapper{
+
+    .networkSelector__logoWrapper {
       width: 32px;
       height: 32px;
       background: black;
       border-radius: 50%;
       border: 2px solid #e39229;
+
       img {
         width: 27px;
         height: 27px;
       }
     }
+
     .networkSelector__symbol {
       font-size: 12px;
     }
+
     .Inputs__From {
       height: 98px;
     }

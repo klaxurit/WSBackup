@@ -396,7 +396,7 @@ const PoolPage: React.FC = () => {
                 onClick={() => setStatusFilter('closed')}
               >Closed</button>
               {isConnected && (
-                <Link className="btn btn--tiny btn__accent" to="/pools/create">New</Link>
+                <Link className="btn btn--tiny btn__accent" to="/liquidity/create">New</Link>
               )}
             </div>
           </div>

@@ -2,25 +2,26 @@ import React from 'react';
 import stickyVaultIcon from '../../assets/sticky_vault.png';
 
 interface StickyIconProps {
-  size?: number;
+  height?: number;
+  width?: number;
   className?: string;
 }
 
 export const StickyIcon: React.FC<StickyIconProps> = ({
-  size = 16,
+  height = 16,
+  width = 16,
   className = ''
 }) => {
   return (
     <img
       src={stickyVaultIcon}
       alt="STICKY"
-      width={size}
-      height={size}
+      width={width}
+      height={height}
       className={`StickyIcon ${className}`}
       style={{
         display: 'inline-block',
-        verticalAlign: 'middle',
-        marginRight: '4px'
+        verticalAlign: 'middle'
       }}
     />
   );
