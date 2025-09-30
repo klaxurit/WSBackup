@@ -1,6 +1,6 @@
 @use "../utils" as *;
 
-.PoolPage {
+.LiquidityPage {
   padding: 0 1rem;
   max-width: 1192px;
   margin: 0 auto;
@@ -34,37 +34,111 @@
 
   &__ContentWrapper {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 32px;
+  }
+
+  &__Main {
+    width: 100%;
+  }
+
+  &__TopSection {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
 
     @media (max-width: 1024px) {
       flex-direction: column;
+      gap: 24px;
     }
   }
 
-  @media (min-width: 600px) {
-    gap: 32px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  &__Left {
-    flex: 7;
-    /* background: var(--surface1, #181818); */
-    border-radius: 16px;
-    padding: 24px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  // Ultra Compact Line - Top Pools & Vaults
+  &__TopLine {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    min-width: 0;
+    gap: 32px;
+
 
     @media (max-width: 1024px) {
-      width: 100%;
-      padding: 16px;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      padding: 12px;
+      gap: 12px;
+    }
+  }
+
+  &__TopPoolsUltraCompact,
+  &__TopVaultsUltraCompact {
+    flex: 1;
+    min-width: 0;
+        background: rgba(255, 255, 255, 0.02);
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 16px;
+  }
+
+  &__TopLineTitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: #aaa;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__TopPoolsRow,
+  &__TopVaultsRow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+
+    @media (max-width: 768px) {
+      gap: 6px;
+    }
+  }
+
+  &__TopPoolUltraCompact,
+  &__TopVaultUltraCompact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    &__Symbol {
+      font-size: 11px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    &__Apr {
+      font-size: 10px;
+      font-weight: 600;
+      color: #e39229;
+      background: rgba(227, 146, 41, 0.1);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+  }
+
+  &__TopVaultUltraCompact {
+    .StickyIcon {
+      opacity: 0.8;
     }
   }
 
@@ -81,7 +155,6 @@
     font-weight: 700;
     color: $beryl-pure;
   }
-
 
   &__TableWrapper {
     margin-bottom: 16px;
@@ -120,7 +193,6 @@
     }
   }
 
-
   &__ClosedBtn {
     padding: 8px 20px;
     border-radius: 8px;
@@ -139,22 +211,6 @@
     }
   }
 
-  &__Right {
-    flex: 3;
-    /* background: var(--surface2, #232323); */
-    border-radius: 16px;
-    padding: 24px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-
-    @media (max-width: 1024px) {
-      width: 100%;
-      padding: 16px;
-    }
-  }
 
   &__TopTitle {
     margin-top: 0;
@@ -174,13 +230,19 @@
   &__TopCard {
     background: $white-004;
     border-radius: 12px;
-    padding: 16px;
+    padding: 12px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
     margin-bottom: 8px;
     color: #e0e0e0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
   }
 
   &__TopPair {
@@ -188,7 +250,7 @@
     font-size: 1.1rem;
     color: #fff;
 
-    .PoolPage__TopVersion {
+    .LiquidityPage__TopVersion {
       color: #888;
       font-size: 0.9rem;
       margin-left: 8px;
@@ -224,13 +286,13 @@
       gap: 16px;
     }
 
-    .PoolPage__CreateHeader {
+    .LiquidityPage__CreateHeader {
       padding: 32px 12px 12px 12px;
       display: flex;
       flex-direction: column;
     }
 
-    .PoolPage__Timeline {
+    .LiquidityPage__Timeline {
       min-width: 180px;
       display: flex;
       flex-direction: column;
@@ -247,7 +309,7 @@
       }
     }
 
-    .PoolPage__Step {
+    .LiquidityPage__Step {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -256,25 +318,25 @@
       &--active {
         opacity: 1;
 
-        .PoolPage__StepNum {
-          background: var(--accent1, #e39229);
+        .LiquidityPage__StepNum {
+          background: $beryl-pure;
           color: #fff;
         }
       }
 
       &--next {
-        .PoolPage__StepNum {
-          background: #232323;
+        .LiquidityPage__StepNum {
+          background: $onyx-darker;
           color: #aaa;
         }
       }
     }
 
-    .PoolPage__StepNum {
+    .LiquidityPage__StepNum {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: #232323;
+      background: $onyx-darker;
       color: #aaa;
       display: flex;
       align-items: center;
@@ -284,13 +346,13 @@
       margin-right: 4px;
     }
 
-    .PoolPage__StepLabel {
+    .LiquidityPage__StepLabel {
       font-size: 1rem;
       font-weight: 600;
       color: #fff;
     }
 
-    .PoolPage__CreateContent {
+    .LiquidityPage__CreateContent {
       flex: 1;
       background: none;
       border-radius: 16px;
@@ -304,49 +366,49 @@
       }
     }
 
-    .PoolPage__CreateTitle {
+    .LiquidityPage__CreateTitle {
       font-size: 1.2rem;
       font-weight: 600;
       color: var(--accent1, #e39229);
       margin-left: 18px;
     }
 
-    .PoolPage__CreateSectionTitle {
+    .LiquidityPage__CreateSectionTitle {
       font-size: 1.1rem;
       font-weight: 700;
       color: #fff;
       margin-bottom: 6px;
     }
 
-    .PoolPage__CreateSectionDesc {
+    .LiquidityPage__CreateSectionDesc {
       color: #aaa;
       font-size: 0.98rem;
       margin-bottom: 12px;
     }
 
-    .PoolPage__TokenSelectors {
+    .LiquidityPage__TokenSelectors {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 8px;
     }
 
-    .PoolPage__TokenSeparator {
+    .LiquidityPage__TokenSeparator {
       font-size: 1.5rem;
       color: #888;
       font-weight: 700;
       margin: 0 8px;
     }
 
-    .PoolPage__FeeTiers {
+    .LiquidityPage__FeeTiers {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 8px;
       margin-bottom: 8px;
     }
 
-    .PoolPage__FeeTierBtn {
-      background: #232323;
+    .LiquidityPage__FeeTierBtn {
+      background: $onyx-darker;
       border-radius: 12px;
       border: 1.5px solid #232323;
       color: #fff;
@@ -368,7 +430,7 @@
       &.active,
       &:hover {
         border-color: var(--accent1, #e39229);
-        background: #181818;
+        background: $onyx-black;
         color: var(--accent1, #e39229);
       }
 
@@ -385,7 +447,7 @@
         width: 100%;
         box-sizing: border-box;
 
-        .PoolPage__FeeTierAdvanced {
+        .LiquidityPage__FeeTierAdvanced {
           color: #888;
           font-size: 0.95rem;
           margin-left: 6px;
@@ -393,33 +455,75 @@
       }
     }
 
-    .PoolPage__FeeTierLabel {
+    .LiquidityPage__FeeTierLabel {
       font-size: 1rem;
       font-weight: 700;
       margin-bottom: 2px;
     }
 
-    .PoolPage__FeeTierDesc {
+    .LiquidityPage__FeeTierDesc {
       font-size: 0.8rem;
       color: #aaa;
       margin-bottom: 2px;
     }
 
-    .PoolPage__FeeTierTVL {
+    .LiquidityPage__FeeTierTVL {
       font-size: 0.95rem;
       color: #888;
     }
 
-    .PoolPage__CreateFooter {
+    .LiquidityPage__CreateFooter {
       display: flex;
       justify-content: flex-end;
       flex-direction: column;
       gap: 12px;
     }
 
+    .LiquidityPage__ContinueBtn {
+      justify-content: center;
+      padding: 12px 32px;
+      border-radius: 10px;
+      background: $beryl-pure;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.18s;
+      width: 100%;
+
+      &:hover {
+        background: $beryl-medium;
+      }
+    }
+
+    .LiquidityPage__ContinueBtn {
+      padding: 12px 32px;
+      border-radius: 10px;
+      background: $beryl-pure;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover {
+        background: $beryl-medium;
+      }
+
+      &:disabled {
+        background: #2d2c2a;
+        color: #504f4c;
+        cursor: not-allowed;
+      }
+    }
 
     // Styles pour Step 2
-    .PoolPage__StepFee {
+    .LiquidityPage__StepFee {
       background: rgba(227, 146, 41, 0.13);
       color: #e39229;
       padding: 4px 8px;
@@ -428,7 +532,7 @@
       font-weight: 600;
     }
 
-    .PoolPage__PriceRange {
+    .LiquidityPage__PriceRange {
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -438,28 +542,28 @@
       margin-bottom: 16px;
     }
 
-    .PoolPage__PriceRow {
+    .LiquidityPage__PriceRow {
       display: flex;
       align-items: center;
       gap: 12px;
       justify-content: space-between;
     }
 
-    .PoolPage__PriceLabel {
+    .LiquidityPage__PriceLabel {
       color: #aaa;
       font-size: 14px;
       font-weight: 600;
       min-width: 100px;
     }
 
-    .PoolPage__PriceValue {
+    .LiquidityPage__PriceValue {
       color: #fff;
       font-size: 16px;
       font-weight: 600;
       flex: 1;
     }
 
-    .PoolPage__PriceInput {
+    .LiquidityPage__PriceInput {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid #232323;
       border-radius: 8px;
@@ -474,19 +578,19 @@
       }
     }
 
-    .PoolPage__PriceUnit {
+    .LiquidityPage__PriceUnit {
       color: #aaa;
       font-size: 12px;
       min-width: 150px;
     }
 
-    .PoolPage__LiquidityInputs {
+    .LiquidityPage__LiquidityInputs {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .PoolPage__LiquidityInput {
+    .LiquidityPage__LiquidityInput {
       width: 100%;
     }
   }
@@ -530,13 +634,10 @@
   }
 }
 
-// Dark theme
-@media (prefers-color-scheme: dark) {
-  .validation-errors {
-    .validation-error {
-      background-color: rgba(251, 191, 36, 0.1);
-      border-color: rgba(251, 191, 36, 0.3);
-      color: #fbbf24;
-    }
-  }
+// StickyIcon styling for vault positions in LiquidityPage
+.LiquidityPage__VaultStickyIcon {
+  width: 18px;
+  height: 18px;
+  background: black;
+  border-radius: 50%;
 }

@@ -4,20 +4,105 @@ import { ExplorerIcon } from "../SVGs";
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { Loader } from '../Loader/Loader';
 
 interface VaultsTableProps {
-  vaults: any
   searchValue: string
 }
+
+const GET_STICKYVAULTS = `
+  query GetStickyVaults {
+  stickyVaults {
+    items {
+      name
+      txCount
+      totalValueLockedUSD
+      totalValueLockedToken1
+      totalValueLockedToken0
+      totalValueLockedBERA
+      totalSupply
+      tickUpper
+      tickLower
+      rebalanceCount
+      pool
+      manager
+      liquidity
+      id
+      currentTick
+      createdAtTimestamp
+      createdAtBlockNumber
+      collectedFeesUSD
+      collectedFeesToken1
+      collectedFeesToken0
+      vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+        items {
+          apr
+          maxPotentialAPR
+          collectedFeesToken0
+          collectedFeesToken1
+          collectedFeesUSD
+          date
+          id
+          volumeUSD1D
+          volumeUSD30D
+          rebalanceCount
+          totalSupply
+          totalValueLockedToken0
+          totalValueLockedToken1
+          totalValueLockedUSD
+          txCount
+        }
+      }
+      poolRef {
+        token1Ref {
+          id
+          logoUri
+          name
+          symbol
+        }
+        token0Ref {
+          id
+          logoUri
+          name
+          symbol
+        }
+      }
+    }
+  }
+}
+`
 
 const BL = [
   "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303" // Sticky Vault WETH-USDC.e-0.05%
 ]
 
-export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
+export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   const navigate = useNavigate();
 
+  const { data: vaults, isLoading } = useQuery({
+    queryKey: ['stickyVaults'],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: GET_STICKYVAULTS }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.stickyVaults.items
+    }
+  });
+
   const filteredVaults = useMemo(() => {
+    if (!vaults) return []
     const approvedVaults = vaults.filter((v: any) => !BL.includes(v.id))
 
     if (!searchValue) return approvedVaults
@@ -26,7 +111,7 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
       (vault.poolRef.token0Ref.symbol && vault.poolRef.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
       (vault.poolRef.token1Ref.symbol && vault.poolRef.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
     );
-  }, [searchValue]);
+  }, [vaults, searchValue]);
 
   const handleRowClick = (row: any) => {
     navigate(`/vaults/${row.id}`);
@@ -174,6 +259,10 @@ export const VaultsTable = ({ searchValue, vaults }: VaultsTableProps) => {
       }
     },
   ];
+
+  if (isLoading) {
+    return <Loader size="mobile" />;
+  }
 
   return (
     <Table

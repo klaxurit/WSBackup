@@ -5,13 +5,12 @@ import { SwapPageLayout } from './components/Layout/SwapPageLayout'
 import { WalletConnect } from './components/WalletConnect/WalletConnect'
 import TokenPage from './pages/TokenPage/page'
 import ExplorePage from './pages/ExplorePage/page'
-import PoolPage from './pages/PositionPage/page'
+import LiquidityPage from './pages/LiquidityPage/page'
 import CreatePoolPage from './pages/PositionPage/create/page'
 import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
 import PoolDetailPage from './pages/PoolPage/page'
-import VaultsPage from './pages/VaultsPage/page'
 import VaultDetailPage from './pages/VaultDetailPage/page'
 import { Footer } from './components/Footer/Footer'
 import { PageTransition } from './components/Transitions/PageTransition'
@@ -48,10 +47,9 @@ function AppContent() {
               </div>
             } />
             <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/vaults" element={<VaultsPage />} />
+            <Route path="/liquidity" element={<LiquidityPage />} />
+            <Route path="/liquidity/create" element={<CreatePoolPage />} />
             <Route path="/vaults/:vaultAddress" element={<VaultDetailPage />} />
-            <Route path="/pools" element={<PoolPage />} />
-            <Route path="/pools/create" element={<CreatePoolPage />} />
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />

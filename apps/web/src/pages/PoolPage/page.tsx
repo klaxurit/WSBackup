@@ -245,22 +245,6 @@ const PoolDetailPage: React.FC = () => {
             {pool.id.slice(0, 6) + '...' + pool.id.slice(-4)}
           </span>
         </div>
-        <div className='Pool__BreadcrumbsButtons'>
-          {!!vault && (
-            <Link
-              to={`/vaults/${vault.id}`}
-              className="Pool__AddLiquidityBtn btn btn--small btn__accent"
-            >
-              Add Vault Liquidity
-            </Link>
-          )}
-          <Link
-            to={`/pools/create?token0=${pool.token0Ref.id}&token1=${pool.token1Ref.id}&fee=${pool.feeTier}`}
-            className="Pool__AddLiquidityBtn btn btn--small btn__accent"
-          >
-            Add Pool Liquidity
-          </Link>
-        </div>
       </div>
 
       <div className="Pool__Content">
@@ -374,6 +358,22 @@ const PoolDetailPage: React.FC = () => {
         </div>
 
         <div className="Pool__Right">
+          <div className='Pool__BreadcrumbsButtons'>
+            {!!vault && (
+              <Link
+                to={`/vaults/${vault.id}`}
+                className="Pool__AddLiquidityBtn btn btn--small btn__accent"
+              >
+                Add Vault Liquidity
+              </Link>
+            )}
+            <Link
+              to={`/liquidity/create?token0=${pool.token0Ref.id}&token1=${pool.token1Ref.id}&fee=${pool.feeTier}`}
+              className="Pool__AddLiquidityBtn btn btn--small btn__accent"
+            >
+              Add Pool Liquidity
+            </Link>
+          </div>
           {/* User Position Info */}
           <UserPositionDatas pool={pool} />
 
