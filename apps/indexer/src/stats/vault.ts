@@ -328,10 +328,10 @@ async function calculateVolumeForPeriod(
     return "0";
   }
 
-  // Calculate current volume using pool data as primary source + vault-specific deposits/withdrawals
-  const poolTradingVolume = new Decimal(relatedPool.volumeUSD || "0");
-  const vaultSpecificVolume = new Decimal(vault.depositWithdrawVolumeUSD || "0");
-  const currentTotalVolume = poolTradingVolume.plus(vaultSpecificVolume);
+  // Calculate current volume using vault's own trading volume + vault-specific deposits/withdrawals
+  const vaultTradingVolume = new Decimal(vault.tradingVolumeUSD || "0");
+  const vaultDepositWithdrawVolume = new Decimal(vault.depositWithdrawVolumeUSD || "0");
+  const currentTotalVolume = vaultTradingVolume.plus(vaultDepositWithdrawVolume);
 
   if (currentTotalVolume.lte("0")) return "0";
 
@@ -389,26 +389,8 @@ async function calculateVolumeForPeriod(
       return volumeDiff.gt(0) ? volumeDiff.toString() : currentTotalVolume.toString();
     }
 
-    // Fallback: Use pool historical data for comparison
-    if (periodType === "hour") {
-      // Try to find pool hour data
-      let fromPool: typeof poolHourData.$inferSelect | null = null;
-
-      for (let i = 0; i <= 168 && !fromPool; i++) {
-        const searchHour = targetPeriod - i;
-        fromPool = await context.db.find(poolHourData, { id: `${vault.pool}-${searchHour}` });
-      }
-
-      if (fromPool) {
-        const pastPoolVolume = new Decimal(fromPool.volumeUSD || "0");
-        const pastVaultSpecificVolume = new Decimal("0"); // No historical vault data available
-        const pastTotalVolume = pastPoolVolume.plus(pastVaultSpecificVolume);
-        const volumeDiff = currentTotalVolume.minus(pastTotalVolume);
-
-        return volumeDiff.gt(0) ? volumeDiff.toString() : "0";
-      }
-    }
-
+    // No historical vault data available - return 0 for this period
+    // We cannot use pool volume as fallback because the vault only tracks its own trading
     return "0";
   }
 
