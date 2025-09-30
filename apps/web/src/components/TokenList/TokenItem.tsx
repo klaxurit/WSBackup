@@ -113,15 +113,15 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
             </span>
           ) : (
             <>
-              <span className="Modal__ItemPrice">
-                {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` :
-                  balance && balance.value !== 0n ? 'Price loading...' : ''}
-              </span>
               <span className="Modal__ItemBalance">
                 {balance && balance.value !== 0n
                   ? `${parseFloat(formatUnits(balance.value, token.decimals || 18)).toFixed(4)}`
                   : ''
                 }
+              </span>
+              <span className="Modal__ItemPrice">
+                {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` :
+                  balance && balance.value !== 0n ? 'Price loading...' : ''}
               </span>
             </>
           )}
