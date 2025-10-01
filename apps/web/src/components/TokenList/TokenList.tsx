@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
 import { PopularTokens } from './PopularTokens';
 import { useTokenCache } from '../../hooks/useTokenCache';
 import { Modal } from '../Common/Modal';
+import { useDebounce } from '../../hooks/useDebounce';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface NetworksListProps {
@@ -23,9 +24,12 @@ export const TokenList = ({
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
 
+  // State to collect USD values from TokenItem components
+  const [tokenValuesUSD, setTokenValuesUSD] = useState<Record<string, number>>({});
+
   // Utilisation du cache de tokens
   const {
-    tokens: sortedTokens,
+    tokens: cachedTokens,
     popularTokens,
     isLoading,
     hasError,
@@ -36,6 +40,53 @@ export const TokenList = ({
     searchValue
   });
 
+  // Debounce the USD values to avoid excessive re-renders
+  const debouncedTokenValuesUSD = useDebounce(tokenValuesUSD, 400);
+
+  // Callback to handle balance updates from TokenItem components
+  const handleBalanceUpdate = useCallback((tokenAddress: string, balanceUSD: number) => {
+    setTokenValuesUSD(prev => {
+      // Only update if the value has actually changed
+      if (prev[tokenAddress] === balanceUSD) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [tokenAddress]: balanceUSD
+      };
+    });
+  }, []);
+
+  // Dynamically sort tokens based on USD values
+  const sortedTokens = useMemo(() => {
+    // Don't re-sort when search is active to maintain search relevance
+    if (searchValue !== "") {
+      return cachedTokens;
+    }
+
+    // Create a copy of the cached tokens to avoid mutation
+    const tokensCopy = [...cachedTokens];
+
+    // Sort tokens by USD value
+    return tokensCopy.sort((a, b) => {
+      const aAddress = a.address || '';
+      const bAddress = b.address || '';
+
+      const aValue = debouncedTokenValuesUSD[aAddress] || 0;
+      const bValue = debouncedTokenValuesUSD[bAddress] || 0;
+
+      // If both tokens have no balance, maintain original order
+      if (aValue === 0 && bValue === 0) {
+        return 0;
+      }
+
+      // Tokens with balance come first, sorted by USD value descending
+      if (aValue === 0) return 1;
+      if (bValue === 0) return -1;
+
+      return bValue - aValue; // Descending order by USD value
+    });
+  }, [cachedTokens, debouncedTokenValuesUSD, searchValue]);
 
   const handleTokenSelect = (token: BerachainToken) => {
     onSelect(token);
@@ -117,6 +168,7 @@ export const TokenList = ({
                 token={token}
                 isSelected={selectedToken?.address === token.address}
                 onSelect={handleTokenSelect.bind(null, token)}
+                onBalanceUpdate={handleBalanceUpdate}
               />
             ))}
           </div>

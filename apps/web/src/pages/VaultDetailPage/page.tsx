@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon } from '../../components/SVGs';
@@ -80,6 +80,11 @@ const GET_STICKYVAULT = `
           symbol
           logoUri
           decimals
+          tokenDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+            items {
+              priceUSD
+            }
+          }
         }
         token0Ref {
           id
@@ -87,6 +92,11 @@ const GET_STICKYVAULT = `
           symbol
           logoUri
           decimals
+          tokenDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+            items {
+              priceUSD
+            }
+          }
         }
       }
     }
@@ -168,6 +178,87 @@ export const VaultDetailPage = () => {
     }
 
   }, [vault])
+
+  // Get token prices for 50/50 ratio calculation
+  const token0PriceUSD = useMemo(() => {
+    return parseFloat(vault?.poolRef?.token0Ref?.tokenDayData?.items?.[0]?.priceUSD || "0")
+  }, [vault?.poolRef?.token0Ref?.tokenDayData])
+
+  const token1PriceUSD = useMemo(() => {
+    return parseFloat(vault?.poolRef?.token1Ref?.tokenDayData?.items?.[0]?.priceUSD || "0")
+  }, [vault?.poolRef?.token1Ref?.tokenDayData])
+
+  // Calculate token amounts for 50/50 ratio
+  const calculateToken1FromToken0 = useCallback((token0Amount: bigint): bigint => {
+    if (!token0Amount || token0Amount === 0n || token0PriceUSD === 0 || token1PriceUSD === 0) {
+      return 0n
+    }
+
+    try {
+      const token0Decimals = token0?.decimals || 18
+      const token1Decimals = token1?.decimals || 18
+
+      // Convert token0 amount to USD value
+      const token0ValueUSD = Number(token0Amount) / Math.pow(10, token0Decimals) * token0PriceUSD
+
+      // Calculate equivalent token1 amount for same USD value
+      const token1AmountFloat = token0ValueUSD / token1PriceUSD
+      const token1AmountBigInt = BigInt(Math.floor(token1AmountFloat * Math.pow(10, token1Decimals)))
+
+      return token1AmountBigInt
+    } catch (error) {
+      console.error('Error calculating token1 from token0:', error)
+      return 0n
+    }
+  }, [token0PriceUSD, token1PriceUSD, token0?.decimals, token1?.decimals])
+
+  const calculateToken0FromToken1 = useCallback((token1Amount: bigint): bigint => {
+    if (!token1Amount || token1Amount === 0n || token0PriceUSD === 0 || token1PriceUSD === 0) {
+      return 0n
+    }
+
+    try {
+      const token0Decimals = token0?.decimals || 18
+      const token1Decimals = token1?.decimals || 18
+
+      // Convert token1 amount to USD value
+      const token1ValueUSD = Number(token1Amount) / Math.pow(10, token1Decimals) * token1PriceUSD
+
+      // Calculate equivalent token0 amount for same USD value
+      const token0AmountFloat = token1ValueUSD / token0PriceUSD
+      const token0AmountBigInt = BigInt(Math.floor(token0AmountFloat * Math.pow(10, token0Decimals)))
+
+      return token0AmountBigInt
+    } catch (error) {
+      console.error('Error calculating token0 from token1:', error)
+      return 0n
+    }
+  }, [token0PriceUSD, token1PriceUSD, token0?.decimals, token1?.decimals])
+
+  // Wrapper functions with automatic ratio calculation for double-sided deposits
+  const handleToken0AmountChange = useCallback((amount: bigint) => {
+    setToken0Amount(amount)
+
+    // Auto-calculate token1 amount for 50/50 ratio (only in double mode)
+    if (depositMode === 'double' && amount && amount !== 0n && token0PriceUSD > 0 && token1PriceUSD > 0) {
+      const calculatedToken1Amount = calculateToken1FromToken0(amount)
+      setToken1Amount(calculatedToken1Amount)
+    } else if (!amount || amount === 0n) {
+      setToken1Amount(0n)
+    }
+  }, [calculateToken1FromToken0, token0PriceUSD, token1PriceUSD, depositMode])
+
+  const handleToken1AmountChange = useCallback((amount: bigint) => {
+    setToken1Amount(amount)
+
+    // Auto-calculate token0 amount for 50/50 ratio (only in double mode)
+    if (depositMode === 'double' && amount && amount !== 0n && token0PriceUSD > 0 && token1PriceUSD > 0) {
+      const calculatedToken0Amount = calculateToken0FromToken1(amount)
+      setToken0Amount(calculatedToken0Amount)
+    } else if (!amount || amount === 0n) {
+      setToken0Amount(0n)
+    }
+  }, [calculateToken0FromToken1, token0PriceUSD, token1PriceUSD, depositMode])
 
   // Calculer le prix par share basé sur la position de l'utilisateur
   const vaultPricePerShare = useMemo(() => {
@@ -289,7 +380,7 @@ export const VaultDetailPage = () => {
               <div className="VaultDetailPage__PositionValue">
                 <span className="VaultDetailPage__PositionAmount">${formatNumber(userPosition?.currentValueUSD || "0")}</span>
                 <span className="VaultDetailPage__PositionShares">
-                  {formatNumber(userPosition?.shares || 0)} <StickyIcon size={14} /> {token0.symbol}-{token1.symbol}
+                  {formatNumber(userPosition?.shares || 0)} <StickyIcon width={14} height={14} /> {token0.symbol}-{token1.symbol}
                 </span>
               </div>
             </div>
@@ -300,13 +391,13 @@ export const VaultDetailPage = () => {
             {/* Tab Navigation */}
             <div className="VaultDetailPage__FormTabs">
               <button
-                className={`VaultDetailPage__FormTab ${activeTab === 'deposit' ? 'active' : ''}`}
+                className={`btn btn--tiny ${activeTab === 'deposit' ? 'btn__main' : 'btn__shade'}`}
                 onClick={() => setActiveTab('deposit')}
               >
                 Deposit
               </button>
               <button
-                className={`VaultDetailPage__FormTab ${activeTab === 'withdraw' ? 'active' : ''}`}
+                className={`btn btn--tiny ${activeTab === 'withdraw' ? 'btn__main' : 'btn__shade'}`}
                 onClick={() => setActiveTab('withdraw')}
               >
                 Withdraw
@@ -319,13 +410,13 @@ export const VaultDetailPage = () => {
                 {/* Deposit Mode Tabs */}
                 <div className="VaultDetailPage__DepositModeTabs">
                   <button
-                    className={`VaultDetailPage__DepositModeTab ${depositMode === 'double' ? 'active' : ''}`}
+                    className={`btn btn--tiny ${depositMode === 'double' ? 'btn__main' : 'btn__shade'}`}
                     onClick={() => setDepositMode('double')}
                   >
                     Double-sided
                   </button>
                   <button
-                    className={`VaultDetailPage__DepositModeTab ${depositMode === 'single' ? 'active' : ''}`}
+                    className={`btn btn--tiny ${depositMode === 'single' ? 'btn__main' : 'btn__shade'}`}
                     onClick={() => setDepositMode('single')}
                   >
                     Single-sided
@@ -337,13 +428,13 @@ export const VaultDetailPage = () => {
                   <div className="VaultDetailPage__DoubleDeposit">
                     <LiquidityInput
                       selectedToken={token0}
-                      onAmountChange={setToken0Amount}
+                      onAmountChange={handleToken0AmountChange}
                       value={token0Amount}
                       isOverBalance={false}
                     />
                     <LiquidityInput
                       selectedToken={token1}
-                      onAmountChange={setToken1Amount}
+                      onAmountChange={handleToken1AmountChange}
                       value={token1Amount}
                       isOverBalance={false}
                     />
@@ -352,13 +443,13 @@ export const VaultDetailPage = () => {
                   <div className="VaultDetailPage__SingleDeposit">
                     <div className="VaultDetailPage__TokenSelector">
                       <button
-                        className={`VaultDetailPage__TokenButton ${selectedToken === 'token0' ? 'active' : ''}`}
+                        className={`btn btn--tiny ${selectedToken === 'token0' ? 'btn__main' : 'btn__shade'}`}
                         onClick={() => setSelectedToken('token0')}
                       >
                         {token0.symbol}
                       </button>
                       <button
-                        className={`VaultDetailPage__TokenButton ${selectedToken === 'token1' ? 'active' : ''}`}
+                        className={`btn btn--tiny ${selectedToken === 'token1' ? 'btn__main' : 'btn__shade'}`}
                         onClick={() => setSelectedToken('token1')}
                       >
                         {token1.symbol}

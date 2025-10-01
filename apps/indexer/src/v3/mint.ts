@@ -104,9 +104,9 @@ ponder.on("v3Pool:Mint", async ({ event, context }) => {
       liquidityNet: event.args.amount,
       price0: "0",
       price1: "0",
-      volumeToken0: amount0.toString(),
-      volumeToken1: amount1.toString(),
-      volumeUSD: amountUSD.toString(),
+      volumeToken0: "0",
+      volumeToken1: "0",
+      volumeUSD: "0",
       untrackedVolumeUSD: "0",
       feesUSD: "0",
       collectedFeesToken0: "0",
@@ -124,9 +124,6 @@ ponder.on("v3Pool:Mint", async ({ event, context }) => {
         liquidityGross: row.liquidityGross + event.args.amount,
         liquidityNet: row.liquidityNet + event.args.amount,
         liquidityProviderCount: row.liquidityProviderCount + 1,
-        volumeToken0: new Decimal(row.volumeToken0).plus(amount0).toString(),
-        volumeToken1: new Decimal(row.volumeToken1).plus(amount1).toString(),
-        volumeUSD: new Decimal(row.volumeUSD).plus(amountUSD).toString(),
       }));
   }
 
@@ -141,9 +138,9 @@ ponder.on("v3Pool:Mint", async ({ event, context }) => {
       liquidityNet: BigInt(-event.args.amount), // Négatif pour le tick supérieur
       price0: "0",
       price1: "0",
-      volumeToken0: amount0.toString(),
-      volumeToken1: amount1.toString(),
-      volumeUSD: amountUSD.toString(),
+      volumeToken0: "0",
+      volumeToken1: "0",
+      volumeUSD: "0",
       untrackedVolumeUSD: "0",
       feesUSD: "0",
       collectedFeesToken0: "0",
@@ -161,9 +158,6 @@ ponder.on("v3Pool:Mint", async ({ event, context }) => {
         liquidityGross: row.liquidityGross + event.args.amount,
         liquidityNet: row.liquidityNet - event.args.amount,
         liquidityProviderCount: row.liquidityProviderCount + 1,
-        volumeToken0: new Decimal(row.volumeToken0).plus(amount0).toString(),
-        volumeToken1: new Decimal(row.volumeToken1).plus(amount1).toString(),
-        volumeUSD: new Decimal(row.volumeUSD).plus(amountUSD).toString(),
       }));
   }
 

@@ -15,12 +15,13 @@
     gap: 12px;
     flex-wrap: wrap;
     margin-bottom: 8px;
+
     a {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    
+
   }
 
   @media (max-width: 600px) {
@@ -316,6 +317,7 @@
 
   &__DetailSection {
     margin-top: 84px;
+
     @media (max-width: 600px) {
       margin-top: 24px;
     }
