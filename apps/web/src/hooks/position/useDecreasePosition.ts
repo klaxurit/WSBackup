@@ -1,16 +1,15 @@
 import { useState, useMemo, useCallback, useEffect } from "react"
-import { type Address, encodeFunctionData, parseUnits } from "viem"
-import { useAccount, useSimulateContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { type Address, encodeFunctionData } from "viem"
+import { useAccount, useSimulateContract, useWriteContract, useWaitForTransactionReceipt, useReadContract, usePublicClient } from "wagmi"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
 import { POSITION_MANAGER_ABI } from "../../config/abis/positionManagerABI"
-import type { Position, usePositionDatas } from "./usePositionDatas"
+import type { Position } from "./usePositionDatas"
 import type { Pool } from "../../pages/PoolPage/page"
 
 interface UseDecreasePositionParams {
   position: Position
   pool: Pool
   isModalOpen: boolean
-  posData: ReturnType<typeof usePositionDatas>
 }
 
 interface ValidationError {
@@ -18,14 +17,32 @@ interface ValidationError {
   message: string
 }
 
-export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: UseDecreasePositionParams) => {
+export const useDecreasePosition = ({ position, isModalOpen }: UseDecreasePositionParams) => {
   const { address } = useAccount()
+  const publicClient = usePublicClient()
 
-  // Form state
+  const { data: freshPositionData, refetch: refetchPosition } = useReadContract({
+    address: CONTRACTS_ADDRESS.positionManager,
+    abi: POSITION_MANAGER_ABI,
+    functionName: 'positions',
+    args: [BigInt(position.tokenId)],
+    query: {
+      enabled: isModalOpen,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  })
+
+  const currentLiquidity = useMemo(() => {
+    if (freshPositionData && Array.isArray(freshPositionData)) {
+      return freshPositionData[7] as bigint
+    }
+    return BigInt(position.liquidity)
+  }, [freshPositionData, position.liquidity])
+
   const [percentage, setPercentageState] = useState<number>(0)
   const [slippageTolerance, setSlippageToleranceState] = useState<number>(3.0)
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!isModalOpen) {
       setPercentageState(0)
@@ -33,31 +50,60 @@ export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: Us
     }
   }, [isModalOpen])
 
-  // Calculate liquidity to withdraw
+  useEffect(() => {
+    if (isModalOpen) {
+      refetchPosition()
+    }
+  }, [isModalOpen, refetchPosition])
+
   const liquidityToWithdraw = useMemo(() => {
     if (percentage === 0) return 0n
-    const totalLiquidity = BigInt(position.liquidity)
-    return (totalLiquidity * BigInt(percentage)) / 100n
-  }, [percentage, position.liquidity])
+    return (currentLiquidity * BigInt(percentage)) / 100n
+  }, [percentage, currentLiquidity])
 
-  // Estimate amounts to receive (simplified calculation)
-  const estimatedAmounts = useMemo(() => {
-    if (percentage === 0 || !posData.positionDetails?.token0Amount || !posData.positionDetails?.token1Amount) {
-      return { token0Amount: 0n, token1Amount: 0n }
+  const [exactAmounts, setExactAmounts] = useState<{ token0Amount: bigint, token1Amount: bigint }>({
+    token0Amount: 0n,
+    token1Amount: 0n
+  })
+
+  useEffect(() => {
+    const simulateDecrease = async () => {
+      if (!publicClient || !address || liquidityToWithdraw === 0n) {
+        setExactAmounts({ token0Amount: 0n, token1Amount: 0n })
+        return
+      }
+
+      try {
+        const result = await publicClient.simulateContract({
+          address: CONTRACTS_ADDRESS.positionManager,
+          abi: POSITION_MANAGER_ABI,
+          functionName: 'decreaseLiquidity',
+          args: [{
+            tokenId: BigInt(position.tokenId),
+            liquidity: liquidityToWithdraw,
+            amount0Min: 0n,
+            amount1Min: 0n,
+            deadline: BigInt(Math.floor(Date.now() / 1000) + 1200)
+          }],
+          account: address
+        })
+
+        if (result.result && Array.isArray(result.result)) {
+          setExactAmounts({
+            token0Amount: result.result[0] as bigint,
+            token1Amount: result.result[1] as bigint
+          })
+        }
+      } catch (error) {
+        console.error('Failed to simulate decreaseLiquidity:', error)
+        setExactAmounts({ token0Amount: 0n, token1Amount: 0n })
+      }
     }
 
-    // Simplified estimation based on deposited amounts and percentage
-    // In a real implementation, this would need price calculation
-    const token0Deposited = parseUnits(posData.positionDetails.token0Amount, pool.token0Ref.decimals)
-    const token1Deposited = parseUnits(posData.positionDetails.token1Amount, pool.token1Ref.decimals)
+    simulateDecrease()
+  }, [publicClient, address, liquidityToWithdraw, position.tokenId])
 
-    const token0Amount = (token0Deposited * BigInt(percentage)) / 100n
-    const token1Amount = (token1Deposited * BigInt(percentage)) / 100n
-
-    return { token0Amount, token1Amount }
-  }, [percentage, posData.positionDetails, pool.token0Ref.decimals, pool.token1Ref.decimals])
-
-  // Validation
+  const estimatedAmounts = exactAmounts
   const validationErrors = useMemo((): ValidationError[] => {
     const errors: ValidationError[] = []
 
@@ -81,26 +127,34 @@ export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: Us
       errors.push({ field: 'general', message: 'Position does not belong to you' })
     }
 
-    // Check if position has liquidity
-    if (BigInt(position.liquidity) === 0n) {
+    if (currentLiquidity === 0n) {
       errors.push({ field: 'general', message: 'Position has no liquidity to withdraw' })
     }
 
     return errors
-  }, [address, percentage, position.owner, position.liquidity])
+  }, [address, percentage, position.owner, currentLiquidity])
 
   const canSubmit = validationErrors.length === 0 && percentage > 0
 
-  // Prepare multicall data
   const multicallData = useMemo(() => {
     if (!canSubmit || liquidityToWithdraw === 0n) return undefined
 
-    // Calculate slippage amounts
     const slippageMultiplier = BigInt(Math.floor((100 - slippageTolerance) * 100))
-    const amount0Min = (estimatedAmounts.token0Amount * slippageMultiplier) / 10000n
-    const amount1Min = (estimatedAmounts.token1Amount * slippageMultiplier) / 10000n
+    const amount0Min = (exactAmounts.token0Amount * slippageMultiplier) / 10000n
+    const amount1Min = (exactAmounts.token1Amount * slippageMultiplier) / 10000n
 
-    // Encode decreaseLiquidity call
+    console.log('🔍 Decrease position:', {
+      percentage,
+      liquidityToWithdraw: liquidityToWithdraw.toString(),
+      currentLiquidity: currentLiquidity.toString(),
+      cachedLiquidity: position.liquidity,
+      exactToken0Amount: exactAmounts.token0Amount.toString(),
+      exactToken1Amount: exactAmounts.token1Amount.toString(),
+      amount0Min: amount0Min.toString(),
+      amount1Min: amount1Min.toString(),
+      slippageTolerance
+    })
+
     const decreaseLiquidityData = encodeFunctionData({
       abi: POSITION_MANAGER_ABI,
       functionName: 'decreaseLiquidity',
@@ -109,26 +163,24 @@ export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: Us
         liquidity: liquidityToWithdraw,
         amount0Min,
         amount1Min,
-        deadline: BigInt(Math.floor(Date.now() / 1000) + 1200) // 20 minutes
+        deadline: BigInt(Math.floor(Date.now() / 1000) + 1200)
       }]
     })
 
-    // Encode collect call
     const collectData = encodeFunctionData({
       abi: POSITION_MANAGER_ABI,
       functionName: 'collect',
       args: [{
         tokenId: BigInt(position.tokenId),
         recipient: address as Address,
-        amount0Max: BigInt("340282366920938463463374607431768211455"), // type(uint128).max
-        amount1Max: BigInt("340282366920938463463374607431768211455")  // type(uint128).max
+        amount0Max: BigInt("340282366920938463463374607431768211455"),
+        amount1Max: BigInt("340282366920938463463374607431768211455")
       }]
     })
 
     return [decreaseLiquidityData, collectData]
-  }, [canSubmit, liquidityToWithdraw, estimatedAmounts, slippageTolerance, position.tokenId, address])
+  }, [canSubmit, liquidityToWithdraw, exactAmounts, slippageTolerance, position.tokenId, address, percentage, currentLiquidity])
 
-  // Decrease + Collect Simulation
   const { data: decreaseConfig, isLoading: isSimulating, error: simulateError } = useSimulateContract({
     address: CONTRACTS_ADDRESS.positionManager,
     abi: POSITION_MANAGER_ABI,
@@ -140,7 +192,6 @@ export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: Us
     }
   })
 
-  // Execute Decrease + Collect
   const { data: decreaseHash, writeContract: decreaseLiquidity, isPending: isDecreasing, error: decreaseError, reset: resetDecrease } = useWriteContract()
   const { data: decreaseReceipt, isLoading: waitingDecreaseReceipt } = useWaitForTransactionReceipt({
     hash: decreaseHash
@@ -151,7 +202,6 @@ export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: Us
     decreaseLiquidity(decreaseConfig.request)
   }, [decreaseConfig, decreaseLiquidity])
 
-  // Utility functions
   const setPercentage = useCallback((newPercentage: number) => {
     setPercentageState(Math.max(0, Math.min(100, newPercentage)))
   }, [])
@@ -166,53 +216,34 @@ export const useDecreasePosition = ({ position, pool, posData, isModalOpen }: Us
     setSlippageToleranceState(3.0)
   }, [resetDecrease])
 
-  // Status for UI
   const status = useMemo(() => {
     if (waitingDecreaseReceipt) return 'waitingDecrease'
     if (isDecreasing) return 'decreasing'
     if (isSimulating) return 'simulating'
     if (decreaseReceipt) return 'success'
     return 'idle'
-  }, [
-    waitingDecreaseReceipt,
-    isDecreasing,
-    isSimulating,
-    decreaseReceipt
-  ])
+  }, [waitingDecreaseReceipt, isDecreasing, isSimulating, decreaseReceipt])
 
   return {
-    // Form state
     percentage,
     slippageTolerance,
     liquidityToWithdraw,
     estimatedAmounts,
-
-    // Validation
     validationErrors,
     canSubmit,
-
-    // Status
     status,
     isLoading: status !== 'idle' && status !== 'success',
     isSuccess: status === 'success',
-
-    // Actions
     setPercentage,
     setSlippageTolerance,
     decreaseLiquidity: handleDecreaseLiquidity,
     reset,
-
-    // Transaction data
     decreaseHash,
     decreaseReceipt,
-
-    // Errors
     errors: {
       simulate: simulateError,
       decrease: decreaseError,
     },
-
-    // Capabilities
     canDecrease: !!decreaseConfig?.request,
   }
 }

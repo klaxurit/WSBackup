@@ -198,7 +198,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ position, pool, posData, 
         isOpen={isWithdrawModalOpen}
         onClose={() => setIsWithdrawModalOpen(false)}
         position={position}
-        posData={posData}
         pool={pool}
         onSuccess={handleWithdrawSuccess}
       />
