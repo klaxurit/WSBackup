@@ -17,7 +17,7 @@ interface ValidationError {
   message: string
 }
 
-export const useDecreasePosition = ({ position, pool, isModalOpen }: UseDecreasePositionParams) => {
+export const useDecreasePosition = ({ position, isModalOpen }: UseDecreasePositionParams) => {
   const { address } = useAccount()
   const publicClient = usePublicClient()
 
