@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState, type ChangeEvent } from 'react'
 import { Modal } from '../Common/Modal'
 import { useDecreasePosition } from '../../hooks/position/useDecreasePosition'
-import type { Position, usePositionDatas } from '../../hooks/position/usePositionDatas'
+import type { Position } from '../../hooks/position/usePositionDatas'
 import type { Pool } from '../../pages/PoolPage/page'
 import { formatUnits } from 'viem'
 import { Nut } from '../SVGs/ProductSVGs'
@@ -12,7 +12,6 @@ interface WithdrawLiquidityModalProps {
   position: Position
   pool: Pool
   onSuccess?: () => void
-  posData: ReturnType<typeof usePositionDatas>
 }
 
 const PERCENTAGE_OPTIONS = [25, 50, 75, 100]
@@ -22,8 +21,7 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
   onClose,
   position,
   pool,
-  onSuccess,
-  posData
+  onSuccess
 }) => {
   const [paramOpen, setParamOpen] = useState(false)
   const paramBoxRef = useRef<HTMLDivElement>(null);
@@ -32,36 +30,35 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
     display: "3",
     isAuto: true,
   })
+  const [percentageInputValue, setPercentageInputValue] = useState<string>('')
 
   const {
-    // Form state
     percentage,
     estimatedAmounts,
-
-    // Validation
-    // validationErrors,
     canSubmit,
-
-    // Status
     status,
     isLoading,
     isSuccess,
-
-    // Actions
     setPercentage,
     setSlippageTolerance,
     decreaseLiquidity,
     reset,
-
-    // Transaction data
     decreaseHash,
-
-    // Capabilities
     canDecrease,
-
-    // Errors
     errors
-  } = useDecreasePosition({ position, pool, isModalOpen: isOpen, posData })
+  } = useDecreasePosition({ position, pool, isModalOpen: isOpen })
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setPercentageInputValue('')
+    }
+  }, [isOpen])
+
+  React.useEffect(() => {
+    if (percentage === 0) {
+      setPercentageInputValue('')
+    }
+  }, [percentage])
 
   const handleSlippageChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/[^\d.,]/g, '')
@@ -83,11 +80,34 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
 
   const handlePercentageSelect = (newPercentage: number) => {
     setPercentage(newPercentage)
+    setPercentageInputValue(newPercentage.toString())
   }
 
   const handlePercentageSliderChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newPercentage = parseInt(e.target.value)
     setPercentage(newPercentage)
+    setPercentageInputValue(newPercentage === 0 ? '' : newPercentage.toString())
+  }
+
+  const handlePercentageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+
+    if (val === '' || /^\d{0,3}$/.test(val)) {
+      setPercentageInputValue(val)
+
+      if (val === '') {
+        setPercentage(0)
+      } else {
+        const numVal = parseInt(val)
+        if (numVal >= 0 && numVal <= 100) {
+          setPercentage(numVal)
+        }
+      }
+    }
+  }
+
+  const handlePercentageInputBlur = () => {
+    setPercentageInputValue(percentage === 0 ? '' : percentage.toString())
   }
 
   const handleSuccess = () => {
@@ -157,6 +177,43 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
             Amount to Withdraw
           </h4>
 
+          {/* Percentage Direct Input with LiquidityInput-like design */}
+          <div className="LiquidityInput">
+            <div className="Inputs">
+              <div className="LiquidityInput__InputWrapper">
+                <div className="Inputs__From From From--idle">
+                  <div className="From__AmountsAndChain">
+                    <div className="From__Amounts" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        className="From__Input"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={percentageInputValue}
+                        onChange={handlePercentageInputChange}
+                        onBlur={handlePercentageInputBlur}
+                        readOnly={isLoading}
+                        style={{ textAlign: 'left' }}
+                      />
+                    </div>
+                    <div className="From__LogosAndBalance">
+                      <div className="From__Logos">
+                        <button className="networkSelector" disabled style={{ cursor: 'default' }}>
+                          <span className="networkSelector__symbol">%</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="From__Details">
+                    <p className="From__Convertion" style={{ opacity: 0.6 }}>
+                      {percentage > 0 ? `${percentage}% of your position` : 'Enter percentage to withdraw'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Percentage Buttons */}
           <div className="PoolView__PercentageButtons">
             {PERCENTAGE_OPTIONS.map((option) => (
@@ -211,17 +268,6 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
           </div>
         )}
 
-        {/* Validation Errors */}
-        {/* {validationErrors.length > 0 && (
-          <div className="PoolView__ValidationErrors">
-            {validationErrors.map((error, index) => (
-              <div key={index} className="PoolView__ValidationError">
-                {error.message}
-              </div>
-            ))}
-          </div>
-        )} */}
-
         {/* Withdraw Button */}
         <button
           className={`PoolView__MainButton btn btn--large btn__main ${(!canSubmit ||
@@ -249,7 +295,6 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
           {isSuccess && 'Liquidity Withdrawn Successfully'}
         </button>
 
-        {/* View on Explorer Button - Only show on success */}
         {isSuccess && decreaseHash && (
           <a
             className="PoolView__SuccessLink btn btn--small btn__shade"
@@ -260,15 +305,6 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
             View on Explorer
           </a>
         )}
-
-        {/* Status Messages */}
-        {/* {(status === 'simulating' || status === 'decreasing' || status === 'waitingDecrease') && (
-            <div className="PoolView__StatusMessage">
-              {status === 'simulating' && 'Validating transaction...'}
-              {status === 'decreasing' && 'Please confirm the transaction in your wallet'}
-              {status === 'waitingDecrease' && 'Transaction submitted. Waiting for confirmation...'}
-            </div>
-          )} */}
 
         {/* Error Messages */}
         {(errors.simulate || errors.decrease) && (
