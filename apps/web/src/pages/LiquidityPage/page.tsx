@@ -193,6 +193,7 @@ query GetUserVaultPositions($user: String) {
         }
       }
       poolRef {
+        feeTier
         token0Ref {
           id
           name
@@ -372,6 +373,7 @@ interface GraphQLVaultWithPositions {
     }>;
   };
   poolRef: {
+    feeTier: number;
     token0Ref: {
       id: string;
       name: string;
@@ -402,6 +404,8 @@ interface FormattedVaultPosition {
   token1LogoUri?: string;
   shares: string;
   currentValueUSD: string;
+  feesEarnedUSD: string;
+  feeTier: number;
   apr: number;
   type: 'vault';
 }
@@ -421,6 +425,8 @@ const transformVaultPositionToFormattedPosition = (vault: GraphQLVaultWithPositi
     token1LogoUri: vault.poolRef.token1Ref.logoUri,
     shares: position.shares,
     currentValueUSD: position.currentValueUSD,
+    feesEarnedUSD: position.feesEarnedUSD,
+    feeTier: vault.poolRef.feeTier,
     apr: typeof aprValue === 'number' ? aprValue : (typeof aprValue === 'string' ? parseFloat(aprValue) : 0),
     type: 'vault' as const,
   };
@@ -764,11 +770,6 @@ const LiquidityPage: React.FC = () => {
 
   const columns: TableColumn[] = [
     {
-      label: 'ID',
-      key: 'id',
-      render: (row) => row.type === 'vault' ? `Vault-${row.id.slice(-4)}` : ('#' + row.tokenId)
-    },
-    {
       label: 'Pair',
       key: 'pair',
       render: (row) => {
@@ -856,12 +857,69 @@ const LiquidityPage: React.FC = () => {
     {
       label: 'Type',
       key: 'type',
-      render: (row) => row.type === 'vault' ? 'Auto-Win' : (`${row.poolRef.feeTier / 10000}% fee`)
+      render: (row) => {
+        if (row.type === 'vault') {
+          return (
+            <span style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#e39229',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              Vault
+            </span>
+          )
+        } else {
+          return (
+            <span style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#aaa',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              Pool
+            </span>
+          )
+        }
+      }
     },
     {
       label: 'Position size',
       key: 'size',
       render: (row) => row.type === 'vault' ? <VaultPositionSizeCell row={row} /> : <PositionSizeCell row={row} />
+    },
+    {
+      label: 'Fees',
+      key: 'fees',
+      render: (row) => {
+        if (row.type === 'vault') {
+          // Pour les vaults, afficher le fee tier de la pool associée
+          const feeTier = row.feeTier / 10000; // Convertir de basis points en pourcentage
+          return (
+            <span style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#e39229'
+            }}>
+              {feeTier}%
+            </span>
+          )
+        } else {
+          // Pour les pools, afficher le fee tier
+          const feeTier = row.poolRef.feeTier / 10000; // Convertir de basis points en pourcentage
+          return (
+            <span style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#aaa'
+            }}>
+              {feeTier}%
+            </span>
+          )
+        }
+      }
     },
     {
       label: 'APR',
@@ -899,12 +957,16 @@ const LiquidityPage: React.FC = () => {
   // Transform top pools and vaults data
   const topPools: FormattedPool[] = useMemo(() => {
     if (!topPoolsData?.pools?.items) return []
-    return topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool)
+    const pools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool)
+    // Trier par APR décroissant (plus haut APR en premier)
+    return pools.sort((a: FormattedPool, b: FormattedPool) => b.apr - a.apr)
   }, [topPoolsData]);
 
   const topVaults: FormattedVault[] = useMemo(() => {
     if (!topVaultsData?.stickyVaults?.items) return []
-    return topVaultsData.stickyVaults.items.map(transformGraphQLVaultToFormattedVault)
+    const vaults = topVaultsData.stickyVaults.items.map(transformGraphQLVaultToFormattedVault)
+    // Trier par APR décroissant (plus haut APR en premier)
+    return vaults.sort((a: FormattedVault, b: FormattedVault) => b.apr - a.apr)
   }, [topVaultsData]);
 
   return (
@@ -915,7 +977,7 @@ const LiquidityPage: React.FC = () => {
         <div className="LiquidityPage__TopLine">
           {/* Top Pools */}
           <div className="LiquidityPage__TopPoolsUltraCompact">
-            <h4 className="LiquidityPage__TopLineTitle">Top Pools</h4>
+            <h4 className="LiquidityPage__TopLineTitle">Top Pools APR</h4>
             <div className="LiquidityPage__TopPoolsRow">
               {topPoolsLoading ? (
                 <Loader size="mobile" />
@@ -961,7 +1023,7 @@ const LiquidityPage: React.FC = () => {
 
           {/* Top Vaults */}
           <div className="LiquidityPage__TopVaultsUltraCompact">
-            <h4 className="LiquidityPage__TopLineTitle">Top Vaults</h4>
+            <h4 className="LiquidityPage__TopLineTitle">Top Vaults APR</h4>
             <div className="LiquidityPage__TopVaultsRow">
               {topVaultsLoading ? (
                 <Loader size="mobile" />
