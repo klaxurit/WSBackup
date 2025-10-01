@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader } from '../Loader/Loader';
 import { formatUnits, zeroAddress } from 'viem';
 import { useAccount, useBalance } from 'wagmi';
@@ -12,6 +12,7 @@ interface NetworkItemProps {
   onSelect: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   balance?: string;
   loading?: boolean;
+  onBalanceUpdate?: (tokenAddress: string, balanceUSD: number) => void;
 }
 
 const baseExplorer = import.meta.env.VITE_NODE_ENV === "production"
@@ -35,6 +36,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
   token,
   isSelected,
   onSelect,
+  onBalanceUpdate
 }) => {
   const { address } = useAccount()
   const [displayFallback, setDisplayFallback] = useState<boolean>(false)
@@ -73,6 +75,14 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
     enabled: !!token.address && !!balance,
     staleTime: 60_000
   });
+
+  // Report balance updates to the parent component
+  useEffect(() => {
+    if (onBalanceUpdate && token.address) {
+      // Report the balance USD value, defaulting to 0 if undefined
+      onBalanceUpdate(token.address, balanceUsd || 0);
+    }
+  }, [balanceUsd, token.address, onBalanceUpdate]);
 
   return (
     <div
@@ -113,15 +123,15 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
             </span>
           ) : (
             <>
-              <span className="Modal__ItemPrice">
-                {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` :
-                  balance && balance.value !== 0n ? 'Price loading...' : ''}
-              </span>
               <span className="Modal__ItemBalance">
                 {balance && balance.value !== 0n
                   ? `${parseFloat(formatUnits(balance.value, token.decimals || 18)).toFixed(4)}`
                   : ''
                 }
+              </span>
+              <span className="Modal__ItemPrice">
+                {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` :
+                  balance && balance.value !== 0n ? 'Price loading...' : ''}
               </span>
             </>
           )}
