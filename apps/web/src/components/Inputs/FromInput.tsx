@@ -4,9 +4,9 @@ import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from "wagmi";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
 import { formatTokenAmount } from '../../utils/format';
+import { useTokensInPool } from "../../hooks/useTokensInPool";
 
 interface FromInputProps {
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -46,14 +46,31 @@ export const FromInput: React.FC<FromInputProps> = React.memo((
   }) => {
   const { address } = useAccount()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { data: balance, isLoading: loading } = useBalance({
+
+  // Hook Wagmi pour les balances (mise à jour automatique après transactions)
+  const { data: wagmiBalance, isLoading: balanceLoading } = useBalance({
     address,
     token: (selectedToken?.address !== zeroAddress) ? selectedToken?.address as `0x${string}` : undefined,
     query: {
       enabled: !!selectedToken
     }
   })
-  const { data: usdValue = 0 } = usePrice(selectedToken)
+
+  // Données optimisées pour les prix USD
+  const { data: tokensData } = useTokensInPool();
+
+  // Trouver le token sélectionné dans les données optimisées pour le prix
+  const selectedTokenData = useMemo(() => {
+    if (!selectedToken || !tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === selectedToken.address.toLowerCase()
+    );
+  }, [selectedToken, tokensData]);
+
+  // Utiliser Wagmi pour la balance (mise à jour automatique) et les données optimisées pour le prix
+  const balance = wagmiBalance;
+  const usdValue = selectedTokenData?.priceUSD || 0;
+  const loading = balanceLoading;
 
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0
@@ -156,7 +173,6 @@ export const FromInput: React.FC<FromInputProps> = React.memo((
               onSelect={onTokenSelect}
               onForceOpen={onInputClick}
               forceListOpen={isListOpen}
-              onlyPoolToken={true}
             />
           </div>
         </div>
