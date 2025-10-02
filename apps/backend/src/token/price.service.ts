@@ -28,7 +28,6 @@ export class TokenPriceService implements OnModuleInit {
   @Cron(CronExpression.EVERY_MINUTE)
   async updateTokenPrices() {
     try {
-      this.logger.log('Starting token prices update from GraphQL...');
 
       // Récupérer tous les tokens IN_POOL
       const tokensInPool = await this.db.token.findMany({
@@ -42,11 +41,9 @@ export class TokenPriceService implements OnModuleInit {
       });
 
       if (tokensInPool.length === 0) {
-        this.logger.warn('No tokens IN_POOL found');
         return;
       }
 
-      this.logger.log(`Found ${tokensInPool.length} tokens to update prices`);
 
       // Récupérer les prix depuis GraphQL pour tous les tokens
       const tokenPrices = await this.fetchPricesFromGraphQL(tokensInPool);
@@ -54,9 +51,7 @@ export class TokenPriceService implements OnModuleInit {
       // Sauvegarder les prix en base de données
       await this.saveTokenPricesFromGraphQL(tokenPrices);
 
-      this.logger.log('Token prices updated successfully from GraphQL');
     } catch (error) {
-      this.logger.error('Error updating token prices from GraphQL:', error);
     }
   }
 
@@ -101,14 +96,12 @@ export class TokenPriceService implements OnModuleInit {
       });
 
       if (!response.ok) {
-        this.logger.error(`GraphQL request failed: ${response.statusText}`);
         return tokenPrices;
       }
 
       const data = await response.json();
 
       if (data.errors) {
-        this.logger.error('GraphQL errors:', data.errors);
         return tokenPrices;
       }
 
@@ -120,9 +113,7 @@ export class TokenPriceService implements OnModuleInit {
         }
       }
 
-      this.logger.log(`Retrieved ${tokenPrices.size} prices from GraphQL`);
     } catch (error) {
-      this.logger.error('Error fetching prices from GraphQL:', error);
     }
 
     return tokenPrices;
@@ -153,7 +144,6 @@ export class TokenPriceService implements OnModuleInit {
     }
 
     if (priceEntries.length === 0) {
-      this.logger.warn('No valid price entries to save');
       return;
     }
 
@@ -163,7 +153,6 @@ export class TokenPriceService implements OnModuleInit {
       skipDuplicates: true,
     });
 
-    this.logger.log(`Saved ${priceEntries.length} token prices from GraphQL`);
   }
 
   /**
@@ -185,7 +174,6 @@ export class TokenPriceService implements OnModuleInit {
 
       return latestPrice?.price || null;
     } catch (error) {
-      this.logger.error(`Error getting latest price for token ${tokenAddress}:`, error);
       return null;
     }
   }
@@ -226,7 +214,6 @@ export class TokenPriceService implements OnModuleInit {
 
       return priceMap;
     } catch (error) {
-      this.logger.error('Error getting latest token prices:', error);
       return {};
     }
   }
@@ -235,7 +222,6 @@ export class TokenPriceService implements OnModuleInit {
    * Force la mise à jour des prix (pour les tests ou mise à jour manuelle)
    */
   async forceUpdatePrices(): Promise<void> {
-    this.logger.log('Force updating token prices...');
     await this.updateTokenPrices();
   }
 
