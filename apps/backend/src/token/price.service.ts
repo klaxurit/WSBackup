@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DatabaseService } from 'src/database/database.service';
 import { PriceSource } from '@repo/db';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TokenPriceService implements OnModuleInit {
@@ -10,8 +11,9 @@ export class TokenPriceService implements OnModuleInit {
 
   constructor(
     private readonly db: DatabaseService,
+    private config: ConfigService,
   ) {
-    this.graphqlUrl = process.env.VITE_GRAPHQL_URL || 'http://localhost:42069/graphql';
+    this.graphqlUrl = this.config.get<string>('GRAPHQL_URL') || 'http://localhost:42069/graphql';
   }
 
   async onModuleInit() {
