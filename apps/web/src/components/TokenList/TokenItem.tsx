@@ -1,88 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Loader } from '../Loader/Loader';
-import { formatUnits, zeroAddress } from 'viem';
-import { useAccount, useBalance } from 'wagmi';
+import React, { useState } from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from '../utils/FallbackImg';
-import { useQuery } from '@tanstack/react-query';
 
 interface NetworkItemProps {
   token: BerachainToken;
   isSelected: boolean;
   onSelect: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-  balance?: string;
-  loading?: boolean;
-  onBalanceUpdate?: (tokenAddress: string, balanceUSD: number) => void;
 }
 
 const baseExplorer = import.meta.env.VITE_NODE_ENV === "production"
   ? "https://berascan.com/token/"
   : "https://bepolia.beratrail.io/token/"
 
-const GET_TOKENS_WITH_PRICE = `
-  query MyQuery($id: String = "") {
-  token(id: $id) {
-    id
-    tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
-      items {
-        priceUSD
-      }
-    }
-  }
-}
-`
-
 export const TokenItem: React.FC<NetworkItemProps> = ({
   token,
   isSelected,
   onSelect,
-  onBalanceUpdate
 }) => {
-  const { address } = useAccount()
   const [displayFallback, setDisplayFallback] = useState<boolean>(false)
-  const { data: balance, isLoading: isLoading } = useBalance({
-    address,
-    ...(token.address !== zeroAddress && { token: token.address as `0x${string}` })
-  })
 
-  // Récupérer les stats du token pour avoir le prix USD
-  const { data: balanceUsd } = useQuery({
-    queryKey: ["tokenStats", token.address],
-    queryFn: async () => {
-      if (!token.address) return 0;
-      const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: GET_TOKENS_WITH_PRICE,
-          variables: {
-            id: token.address === zeroAddress ? `0x6969696969696969696969696969696969696969` : token.address
-          }
-        }),
-      });
-      if (!resp.ok) return 0;
-      const data = await resp.json();
-
-      const price = data.data.token?.tokenDayData?.items?.[0]?.priceUSD ?? 0
-      const balanceAmount = parseFloat(formatUnits(balance?.value || 0n, token.decimals || 18))
-
-      return price === 0 || !balance
-        ? 0
-        : price * balanceAmount;
-    },
-    enabled: !!token.address && !!balance,
-    staleTime: 60_000
-  });
-
-  // Report balance updates to the parent component
-  useEffect(() => {
-    if (onBalanceUpdate && token.address) {
-      // Report the balance USD value, defaulting to 0 if undefined
-      onBalanceUpdate(token.address, balanceUsd || 0);
-    }
-  }, [balanceUsd, token.address, onBalanceUpdate]);
+  // Les balances et prix USD sont maintenant fournis directement par le backend
+  const balance = token.balance || '';
+  const balanceUsd = token.balanceUSD || 0;
 
   return (
     <div
@@ -116,25 +55,17 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         </div>
       </div>
       <div className="Modal__ItemBalanceContainer">
-        {isLoading
-          ? (
-            <span className="Modal__ItemPrice">
-              <Loader size="mini" />
-            </span>
-          ) : (
-            <>
-              <span className="Modal__ItemBalance">
-                {balance && balance.value !== 0n
-                  ? `${parseFloat(formatUnits(balance.value, token.decimals || 18)).toFixed(4)}`
-                  : ''
-                }
-              </span>
-              <span className="Modal__ItemPrice">
-                {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` :
-                  balance && balance.value !== 0n ? 'Price loading...' : ''}
-              </span>
-            </>
-          )}
+        <>
+          <span className="Modal__ItemBalance">
+            {balance && parseFloat(balance) > 0
+              ? `${parseFloat(balance).toFixed(4)}`
+              : ''
+            }
+          </span>
+          <span className="Modal__ItemPrice">
+            {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` : ''}
+          </span>
+        </>
       </div>
     </div>
   );

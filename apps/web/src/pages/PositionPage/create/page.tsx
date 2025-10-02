@@ -409,13 +409,11 @@ const CreatePoolPage: React.FC = () => {
                     <NetworkSelector
                       preSelected={token0}
                       onSelect={handleSelect0}
-                      onlyPoolToken={false}
                     />
                     <span className="PoolPage__TokenSeparator">/</span>
                     <NetworkSelector
                       preSelected={token1}
                       onSelect={handleSelect1}
-                      onlyPoolToken={false}
                     />
                   </div>
                 </div>

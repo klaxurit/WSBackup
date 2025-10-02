@@ -1,9 +1,9 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import type { BerachainToken } from "../../hooks/useBerachainTokenList";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
 import { useAccount, useBalance } from "wagmi";
+import { useTokensInPool } from "../../hooks/useTokensInPool";
 
 interface ToInputProps {
   steps: any;
@@ -43,14 +43,31 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
     const [isUserTyping, setIsUserTyping] = useState(false);
 
     const { address } = useAccount()
-    const { data: balance, isLoading: loading } = useBalance({
+
+    // Hook Wagmi pour les balances (mise à jour automatique après transactions)
+    const { data: wagmiBalance, isLoading: balanceLoading } = useBalance({
       address,
       token: (preSelected?.address !== zeroAddress) ? preSelected?.address as `0x${string}` : undefined,
       query: {
         enabled: !!preSelected
       }
     })
-    const { data: usdValue = 0 } = usePrice(preSelected)
+
+    // Données optimisées pour les prix USD
+    const { data: tokensData } = useTokensInPool();
+
+    // Trouver le token sélectionné dans les données optimisées pour le prix
+    const selectedTokenData = useMemo(() => {
+      if (!preSelected || !tokensData?.data?.tokens) return null;
+      return tokensData.data.tokens.find(token =>
+        token.address.toLowerCase() === preSelected.address.toLowerCase()
+      );
+    }, [preSelected, tokensData]);
+
+    // Utiliser Wagmi pour la balance (mise à jour automatique) et les données optimisées pour le prix
+    const balance = wagmiBalance;
+    const usdValue = selectedTokenData?.priceUSD || 0;
+    const loading = balanceLoading;
 
     // Reset internal state when component remounts
     useEffect(() => {
@@ -130,7 +147,6 @@ export const SwapToInput: React.FC<ToInputProps> = React.memo(
                 dominantColor={dominantColor}
                 secondaryColor={secondaryColor}
                 isHomePage={isHomePage}
-                onlyPoolToken={true}
               />
             </div>
           </div>
