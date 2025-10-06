@@ -311,22 +311,12 @@ export const useVault = (config: VaultConfig): VaultManager => {
     depositeTwo(depositeTwoSideConfig.request)
   }
 
-  console.log("---------------------------------")
-  console.log("Etape 1 - Config")
-  console.log("Token in", oneSideTokenIn)
-  console.log("Token out", oneSideTokenOut)
-  console.log("TotalAmount in", config.amountOneSide)
-  console.log("moitié pour swap", config.amountOneSide / 2n)
   // Deposite One side
   const swap = useSwap({
     tokenIn: oneSideTokenIn,
     tokenOut: oneSideTokenOut,
     amountIn: config.amountOneSide / 2n,
   })
-  console.log("---------------------------------")
-  console.log("Etape 2 - swap quote")
-  console.log("amountOut", swap?.quote?.amountOut)
-  console.log("amountOut Min", swap?.quote?.amountOutMinimum)
   const swapData = useMemo(() => {
     if (swap.status !== "ready" || !swap?.quote?.amountOut || !swap.optimizedRoute?.transactionData?.args) return null
 
@@ -362,19 +352,6 @@ export const useVault = (config: VaultConfig): VaultManager => {
       enabled: isReady && isOneSide && isAllow && !!swap.quote
     }
   })
-  console.log("---------------------------------")
-  console.log("Etape 3 - Get Mint amount")
-  console.log("swapData", swapData)
-  console.log("shares", osQuote?.[2])
-  console.log("quote", osQuote)
-  console.log("Args de la simulation (tx)", [
-    vaultAddr,
-    config.amountOneSide,
-    bpsDown(osQuote?.[2] ?? 0n, config.slippageBps),
-    BigInt(config.slippageBps),
-    swapData!,
-    address!
-  ])
   const { data: depositeOneSideConfig, error: osSimErr } = useSimulateContract({
     address: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
     abi: StickyVaultRouter,
@@ -391,9 +368,6 @@ export const useVault = (config: VaultConfig): VaultManager => {
       enabled: isOneSide && isReady && !!swapData && !!osQuote && isAllow
     }
   })
-  console.log("Etape 4 - Simulate")
-  console.log("Sim config", depositeOneSideConfig)
-  console.log("Sim error", osSimErr)
   const { data: depositeOneHash, writeContract: depositeone, isPending: waitDepositeOne, error: osWriteErr } = useWriteContract()
   const handleDepositeOne = () => {
     if (!depositeOneSideConfig) return
