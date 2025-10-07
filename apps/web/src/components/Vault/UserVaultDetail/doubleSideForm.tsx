@@ -1,67 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { LiquidityInput } from "../../Inputs/LiquidityInput"
 import { useDoubleDeposit } from "../../../hooks/vault/useDoubleDeposit";
 import { formatUnits, type Address } from "viem";
 import type { VaultToken } from "../../../pages/VaultDetailPage/page";
 import { ConnectButton } from "../../Buttons/ConnectButton";
 import { useAccount } from "wagmi";
-
-const ActionBtn = ({
-  missAmt,
-  isAllow,
-  allowHandler,
-  allowText,
-  depose
-}: {
-  missAmt: boolean,
-  isAllow: boolean,
-  allowHandler: () => void,
-  allowText: string,
-  depose: () => void,
-}) => {
-  const { isConnected } = useAccount();
-
-  if (!isConnected) {
-    return (
-      <ConnectButton
-        size={'large'}
-        customClassName=""
-        onClick={() => { }}
-      />
-    )
-  }
-
-  if (missAmt) {
-    return (
-      <button
-        className={`btn btn--large btn__disabled`.trim()}
-        disabled
-      >
-        Enter an amount
-      </button>
-    )
-  }
-
-  if (!isAllow) {
-    return (
-      <button
-        className={`btn btn--large btn__main`.trim()}
-        onClick={allowHandler}
-      >
-        Approve {allowText}
-      </button>
-    )
-  }
-
-  return (
-    <button
-      className={`btn btn--large btn__main`.trim()}
-      onClick={depose}
-    >
-      Deposit
-    </button>
-  );
-}
+import { DoubleSideDepositModal } from "../DoubleSideDepositModal";
 
 interface DoubleSideFormProps {
   vault: Address
@@ -71,8 +15,10 @@ interface DoubleSideFormProps {
 }
 
 export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps) => {
+  const { isConnected } = useAccount();
   const [token0Amount, setToken0Amount] = useState(0n);
   const [token1Amount, setToken1Amount] = useState(0n);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { isQuoted, quote, isAllow, t0Allowance, t1Allowance, deposite } = useDoubleDeposit({
     vault,
@@ -88,6 +34,7 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
     if (deposite.isSuccess) {
       setToken0Amount(0n)
       setToken1Amount(0n)
+      setIsModalOpen(false)
       onSuccess?.()
     }
   }, [deposite.isSuccess, onSuccess])
@@ -145,13 +92,6 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
     }
   }, [calculateToken0FromToken1, t0.priceUSD, t1.priceUSD])
 
-  const { allowHandler, allowText } = useMemo(() => {
-    if (t0Allowance.isNeed) return { allowHandler: t0Allowance.allow, allowText: t0.symbol }
-    if (t1Allowance.isNeed) return { allowHandler: t1Allowance.allow, allowText: t1.symbol }
-
-    return { allowHandler: () => { }, allowText: "error" }
-  }, [t0Allowance, t1Allowance])
-
   return (
     <>
       <div className="VaultDetailPage__DoubleDeposit">
@@ -160,12 +100,14 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
           onAmountChange={handleToken0AmountChange}
           value={token0Amount}
           isOverBalance={false}
+          customUsdValue={t0.priceUSD}
         />
         <LiquidityInput
           selectedToken={t1}
           onAmountChange={handleToken1AmountChange}
           value={token1Amount}
           isOverBalance={false}
+          customUsdValue={t1.priceUSD}
         />
       </div>
 
@@ -181,12 +123,40 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
         </div>
       )}
 
-      <ActionBtn
-        missAmt={(token0Amount === 0n || token1Amount === 0n)}
-        isAllow={isAllow}
-        allowHandler={allowHandler}
-        allowText={allowText}
-        depose={deposite.depose}
+      {/* Action Button - Opens Modal */}
+      {!isConnected ? (
+        <ConnectButton
+          size={'large'}
+          customClassName=""
+          onClick={() => { }}
+        />
+      ) : (token0Amount === 0n || token1Amount === 0n) ? (
+        <button
+          className={`btn btn--large btn__disabled`.trim()}
+          disabled
+        >
+          Enter an amount
+        </button>
+      ) : (
+        <button
+          className={`btn btn--large btn__main`.trim()}
+          onClick={() => setIsModalOpen(true)}
+        >
+          Deposit
+        </button>
+      )}
+
+      {/* Deposit Modal */}
+      <DoubleSideDepositModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        depositHook={{ isQuoted, quote, isAllow, t0Allowance, t1Allowance, deposite }}
+        token0={t0}
+        token1={t1}
+        amount0={token0Amount}
+        amount1={token1Amount}
+        vaultAddress={vault}
+        onSuccess={onSuccess}
       />
     </>
   )

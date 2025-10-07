@@ -13,7 +13,7 @@ interface UseVaultWithdrawParams {
   enabled?: boolean
 }
 
-interface UseVaultWithdrawReturn {
+export interface UseVaultWithdrawReturn {
   // Estimated amounts to receive
   estimatedAmounts: {
     amount0: bigint
@@ -39,6 +39,7 @@ interface UseVaultWithdrawReturn {
     isLoading: boolean
     isSuccess: boolean
     hash?: Hex
+    reset: () => void
   }
 }
 
@@ -85,16 +86,17 @@ export const useVaultWithdraw = ({
   // Extract estimated amounts from simulation result
   const estimatedAmounts = withdrawConfig?.result
     ? {
-        amount0: withdrawConfig.result[0],
-        amount1: withdrawConfig.result[1]
-      }
+      amount0: withdrawConfig.result[0],
+      amount1: withdrawConfig.result[1]
+    }
     : undefined
 
   // Write withdrawal transaction
   const {
     data: withdrawHash,
     writeContract: writeWithdraw,
-    isPending: isWithdrawing
+    isPending: isWithdrawing,
+    reset: resetWithdraw
   } = useWriteContract()
 
   // Wait for transaction receipt
@@ -122,6 +124,10 @@ export const useVaultWithdraw = ({
     })
   }
 
+  const handleReset = () => {
+    resetWithdraw()
+  }
+
   return {
     estimatedAmounts,
     allowance: {
@@ -139,7 +145,8 @@ export const useVaultWithdraw = ({
       isPending: isWithdrawing,
       isLoading: isWithdrawLoading,
       isSuccess: isWithdrawSuccess,
-      hash: withdrawHash
+      hash: withdrawHash,
+      reset: handleReset
     }
   }
 }

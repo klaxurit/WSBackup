@@ -799,20 +799,6 @@ const LiquidityPage: React.FC = () => {
                   <span style={{ fontSize: '14px', fontWeight: '500' }}>
                     {row.vaultName}
                   </span>
-                  <span style={{
-                    fontSize: '10px',
-                    color: '#e39229',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    backgroundColor: 'rgba(227, 146, 41, 0.1)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    display: 'inline-block',
-                    width: 'fit-content'
-                  }}>
-                    VAULT
-                  </span>
                 </div>
               </div>
             </Link>
@@ -833,20 +819,6 @@ const LiquidityPage: React.FC = () => {
                   <span style={{ fontSize: '14px', fontWeight: '500' }}>
                     {`${row.poolRef.token0Ref.symbol} / ${row.poolRef.token1Ref.symbol}`}
                   </span>
-                  <span style={{
-                    fontSize: '10px',
-                    color: '#aaa',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    backgroundColor: 'rgba(170, 170, 170, 0.1)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    display: 'inline-block',
-                    width: 'fit-content'
-                  }}>
-                    POOL
-                  </span>
                 </div>
               </div>
             </Link>
@@ -861,11 +833,16 @@ const LiquidityPage: React.FC = () => {
         if (row.type === 'vault') {
           return (
             <span style={{
-              fontSize: '12px',
-              fontWeight: '600',
+              fontSize: '14px',
               color: '#e39229',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              fontWeight: '500',
+              letterSpacing: '0.5px',
+              backgroundColor: 'rgba(227, 146, 41, 0.1)',
+              textShadow: '0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00',
+              padding: '6px 10px 6px 10px',
+              borderRadius: '12px',
+              display: 'inline-block',
+              width: 'fit-content'
             }}>
               Vault
             </span>
@@ -873,11 +850,16 @@ const LiquidityPage: React.FC = () => {
         } else {
           return (
             <span style={{
-              fontSize: '12px',
-              fontWeight: '600',
+              fontSize: '14px',
               color: '#aaa',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              fontWeight: '500',
+              letterSpacing: '0.5px',
+              backgroundColor: 'rgba(170, 170, 170, 0.1)',
+              textShadow: '0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00',
+              padding: '6px 10px 6px 10px',
+              borderRadius: '12px',
+              display: 'inline-block',
+              width: 'fit-content'
             }}>
               Pool
             </span>

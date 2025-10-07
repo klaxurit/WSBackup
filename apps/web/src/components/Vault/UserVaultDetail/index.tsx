@@ -10,6 +10,7 @@ import { UserPosition } from "./userPosition";
 import { DepositForm } from "./depositForm";
 
 import type { VaultToken } from "../../../pages/VaultDetailPage/page";
+import { WithdrawModal } from "../WithdrawModal";
 
 interface UserVaultDetailProps {
   vault: any
@@ -22,6 +23,7 @@ export const UserVaultDetail = ({ vault, token0, token1, onSuccess }: UserVaultD
   const { address, isConnected } = useAccount()
   const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
   const [withdrawAmount, setWithdrawAmount] = useState(0n);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   // const [autoCompound, setAutoCompound] = useState(true);
   const autoCompound = false
 
@@ -51,6 +53,7 @@ export const UserVaultDetail = ({ vault, token0, token1, onSuccess }: UserVaultD
   useEffect(() => {
     if (withdrawManager.withdraw.isSuccess) {
       setWithdrawAmount(0n)
+      setIsWithdrawModalOpen(false)
       onSuccess?.()
     }
   }, [withdrawManager.withdraw.isSuccess, onSuccess])
@@ -157,7 +160,7 @@ export const UserVaultDetail = ({ vault, token0, token1, onSuccess }: UserVaultD
               )}
             </div>
 
-            {/* Withdraw Button */}
+            {/* Withdraw Button - Opens Modal */}
             <div className="VaultDetailPage__FormButton">
               {!isConnected ? (
                 <ConnectButton
@@ -172,23 +175,27 @@ export const UserVaultDetail = ({ vault, token0, token1, onSuccess }: UserVaultD
                 >
                   Enter an amount
                 </button>
-              ) : !withdrawManager.isAllow ? (
-                <button
-                  className="btn btn--large btn__main VaultDetailPage__ActionButton"
-                  onClick={withdrawManager.allowance.allow}
-                >
-                  Approve Vault Shares
-                </button>
               ) : (
                 <button
                   className="btn btn--large btn__main VaultDetailPage__ActionButton"
-                  onClick={withdrawManager.withdraw.execute}
-                  disabled={withdrawManager.withdraw.isPending}
+                  onClick={() => setIsWithdrawModalOpen(true)}
                 >
-                  {withdrawManager.withdraw.isPending ? 'Withdrawing...' : 'Withdraw'}
+                  Withdraw
                 </button>
               )}
             </div>
+
+            {/* Withdraw Modal */}
+            <WithdrawModal
+              isOpen={isWithdrawModalOpen}
+              onClose={() => setIsWithdrawModalOpen(false)}
+              withdrawHook={withdrawManager}
+              token0={token0}
+              token1={token1}
+              withdrawAmount={withdrawAmount}
+              vaultAddress={vault?.id}
+              onSuccess={onSuccess}
+            />
           </div>
         )}
       </div>

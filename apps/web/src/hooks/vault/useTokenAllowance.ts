@@ -50,12 +50,12 @@ export const useTokenAllowance = ({
   // Check if approval is needed
   const isNeedApproval = (allowance || 0n) < amount
 
-  // Simulate approval transaction
+  // Simulate approval transaction - approve maximum amount for better UX
   const { data: approveConfig } = useSimulateContract({
     address: tokenAddress,
     abi: erc20Abi,
     functionName: 'approve',
-    args: tokenAddress ? [spenderAddress, amount] : undefined,
+    args: tokenAddress ? [spenderAddress, 2n ** 256n - 1n] : undefined, // Max uint256
     chainId: currentChain.id,
     query: {
       enabled: enabled && isNeedApproval && !!tokenAddress

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Loader } from '../Loader/Loader';
 
 export type SortDirection = 'asc' | 'desc' | null;
 
@@ -156,7 +157,13 @@ const InfiniteLoad: React.FC<InfiniteLoadProps> = ({
             onClick={onLoadMore}
             disabled={isFetchingNextPage}
           >
-            {isFetchingNextPage ? 'Loading...' : 'Load More'}
+            {isFetchingNextPage ? (
+              <>
+                <Loader size="small" color="#FFD056" />
+              </>
+            ) : (
+              'Load More'
+            )}
           </button>
         </div>
       )}
@@ -327,7 +334,11 @@ export function Table<T = any>({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={columns.length} className="Table__Empty">Loading...</td>
+                <td colSpan={columns.length} className="Table__Empty">
+                  <div className="Table__LoadingContainer">
+                    <Loader size="desktop" color="#FFD056" />
+                  </div>
+                </td>
               </tr>
             ) : sortedData.length === 0 ? (
               <tr>

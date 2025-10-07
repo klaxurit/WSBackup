@@ -73,7 +73,6 @@ const getTransitionConfig = (pathname: string) => {
 export const PageTransition: React.FC<PageTransitionProps> = ({
   children,
   isLoading = false,
-  loadingText = 'Chargement...',
 }) => {
   const location = useLocation();
   const transitionConfig = getTransitionConfig(location.pathname);
@@ -107,7 +106,6 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
           >
             <div className="loading-content">
               <Loader size="desktop" />
-              <p className="loading-text">{loadingText}</p>
             </div>
           </motion.div>
         ) : (

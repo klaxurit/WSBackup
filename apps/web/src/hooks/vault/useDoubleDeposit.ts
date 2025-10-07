@@ -17,7 +17,7 @@ interface UseDoubleDepositParams {
   slippageBps: number
 }
 
-interface UseDoubleDepositReturn {
+export interface UseDoubleDepositReturn {
   // Quote data
   quote: {
     amount0Max: bigint | null
@@ -56,6 +56,7 @@ interface UseDoubleDepositReturn {
     isLoading: boolean
     isSuccess: boolean
     hash?: Hex
+    reset: () => void
   }
 }
 
@@ -122,7 +123,12 @@ export const useDoubleDeposit = ({
     }
   })
 
-  const { data: depositHash, writeContract: writeDeposit, isPending: isDepositing } = useWriteContract()
+  const {
+    data: depositHash,
+    writeContract: writeDeposit,
+    isPending: isDepositing,
+    reset: resetDeposit
+  } = useWriteContract()
 
   // Wait for transaction receipt
   const {
@@ -138,6 +144,10 @@ export const useDoubleDeposit = ({
   const handleDeposit = () => {
     if (!depositConfig?.request) return
     writeDeposit(depositConfig.request)
+  }
+
+  const handleReset = () => {
+    resetDeposit()
   }
 
   return {
@@ -173,7 +183,8 @@ export const useDoubleDeposit = ({
       isPending: isDepositing,
       isLoading: isDepositLoading,
       isSuccess: isDepositSuccess,
-      hash: depositHash
+      hash: depositHash,
+      reset: handleReset
     }
   }
 }

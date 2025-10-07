@@ -5,6 +5,7 @@ import { formatUnits, type Address } from "viem"
 import type { VaultToken } from "../../../pages/VaultDetailPage/page"
 import { ConnectButton } from "../../Buttons/ConnectButton"
 import { useAccount } from "wagmi"
+import { SingleSideDepositModal } from "../SingleSideDepositModal"
 
 interface OneSideFormProps {
   vault: Address
@@ -17,6 +18,7 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
   const { isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useState<'token0' | 'token1'>('token0')
   const [amount, setAmount] = useState(0n)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const tokenIn = selectedToken === 'token0' ? t0 : t1
   const tokenOut = selectedToken === 'token0' ? t1 : t0
@@ -34,6 +36,7 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
   useEffect(() => {
     if (singleDeposit.deposit.isSuccess) {
       setAmount(0n)
+      setIsModalOpen(false)
       onSuccess?.()
     }
   }, [singleDeposit.deposit.isSuccess, onSuccess])
@@ -63,6 +66,7 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
           onAmountChange={setAmount}
           value={amount}
           isOverBalance={false}
+          customUsdValue={tokenIn.priceUSD}
         />
 
         {/* Swap Info */}
@@ -89,7 +93,7 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
         </div>
       )}
 
-      {/* Action Button */}
+      {/* Action Button - Opens Modal */}
       <div className="VaultDetailPage__FormButton">
         {!isConnected ? (
           <ConnectButton
@@ -111,20 +115,12 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
           >
             Calculating swap...
           </button>
-        ) : !singleDeposit.isAllow ? (
-          <button
-            className="btn btn--large btn__main VaultDetailPage__ActionButton"
-            onClick={singleDeposit.allowance.allow}
-          >
-            Approve {tokenIn.symbol}
-          </button>
         ) : (
           <button
             className="btn btn--large btn__main VaultDetailPage__ActionButton"
-            onClick={singleDeposit.deposit.execute}
-            disabled={singleDeposit.deposit.isPending}
+            onClick={() => setIsModalOpen(true)}
           >
-            {singleDeposit.deposit.isPending ? 'Depositing...' : 'Deposit'}
+            Deposit
           </button>
         )}
       </div>
@@ -135,6 +131,18 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
           <p>Error: Unable to process single-sided deposit. Please try a different amount or use double-sided deposit.</p>
         </div>
       )}
+
+      {/* Deposit Modal */}
+      <SingleSideDepositModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        depositHook={singleDeposit}
+        tokenIn={tokenIn}
+        tokenOut={tokenOut}
+        amount={amount}
+        vaultAddress={vault}
+        onSuccess={onSuccess}
+      />
     </>
   )
 }

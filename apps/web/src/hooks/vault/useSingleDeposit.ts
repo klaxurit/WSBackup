@@ -17,7 +17,7 @@ interface UseSingleDepositParams {
   slippageBps: number
 }
 
-interface UseSingleDepositReturn {
+export interface UseSingleDepositReturn {
   // Swap data
   swapQuote: {
     amountIn: bigint
@@ -51,6 +51,7 @@ interface UseSingleDepositReturn {
     isSuccess: boolean
     hash?: Hex
     error: any
+    reset: () => void
   }
 }
 
@@ -152,7 +153,8 @@ export const useSingleDeposit = ({
     data: depositHash,
     writeContract: writeDeposit,
     isPending: isDepositing,
-    error: writeError
+    error: writeError,
+    reset: resetDeposit
   } = useWriteContract()
 
   // Wait for transaction receipt
@@ -171,11 +173,15 @@ export const useSingleDeposit = ({
     writeDeposit(depositConfig.request)
   }
 
+  const handleReset = () => {
+    resetDeposit()
+  }
+
   return {
     swapQuote: {
       amountIn: swapAmount,
       amountOut: swap.quote?.amountOut,
-      isLoading: swap.status === "loading"
+      isLoading: swap.status === "loading-routes" || swap.status === "quoting"
     },
     vaultQuote: {
       minShares
@@ -197,7 +203,8 @@ export const useSingleDeposit = ({
       isLoading: isDepositLoading,
       isSuccess: isDepositSuccess,
       hash: depositHash,
-      error: simError || writeError
+      error: simError || writeError,
+      reset: handleReset
     }
   }
 }

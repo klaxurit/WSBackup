@@ -45,6 +45,8 @@
 @use 'components/common/stickyIcon';
 @use 'components/common/globalSearch';
 @use 'components/vaults/vault';
+@use 'components/vault/vault-timeline';
+@use 'components/vault/vault-deposit-modal';
 @use 'components/transitions/pageTransition';
 
 @use 'components/tables/table';
