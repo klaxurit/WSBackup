@@ -1,5 +1,5 @@
 import { createConfig, factory } from "ponder";
-import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI, StickyVaultFactoryABI, StickyVaultRouter, StickyVaultWithRouter } from "./src/utils/abi";
+import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI, StickyVaultFactoryABI, StickyVaultRouter, StickyVaultWithRouter, AutoWinFactoryABI, AutowinABI } from "./src/utils/abi";
 
 export default createConfig({
   database: {
@@ -76,6 +76,31 @@ export default createConfig({
       chain: "mainnet",
       abi: StickyVaultRouter,
       address: CONTRACTS.STICKYVAULT_ROUTER,
+      startBlock: 9742600
+    },
+    autoWinFactory: {
+      chain: "mainnet",
+      abi: AutoWinFactoryABI,
+      address: CONTRACTS.AUTOWIN_FACTORY,
+      startBlock: 9742600
+    },
+    autoWinVaults: {
+      chain: "mainnet",
+      abi: AutowinABI,
+      address: factory({
+        address: CONTRACTS.AUTOWIN_FACTORY,
+        event: {
+          anonymous: false,
+          inputs: [
+            { indexed: true, name: "autoWin", type: "address" },
+            { indexed: false, name: "implementation", type: "address" },
+            { indexed: true, name: "stakingToken", type: "address" }
+          ],
+          name: "AutoWinDeployed",
+          type: "event"
+        },
+        parameter: "autoWin"
+      }),
       startBlock: 9742600
     }
   },
