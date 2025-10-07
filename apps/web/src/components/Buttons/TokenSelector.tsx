@@ -3,6 +3,7 @@ import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from "../utils/FallbackImg";
 import { useTokensInPool } from '../../hooks/useTokensInPool';
+import { Loader } from "../Loader/Loader";
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -97,7 +98,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
         </>
       ) : (
         <span className="networkSelector__symbol">
-          {tokensLoading ? 'Loading...' : !isReady ? 'Preparing...' : 'Select'}
+          {tokensLoading || !isReady ? <Loader size="small" /> : 'Select'}
         </span>
       )}
       <span className={`networkSelector__chevron${isNetworksListOpen ? ' open' : ''}`}>

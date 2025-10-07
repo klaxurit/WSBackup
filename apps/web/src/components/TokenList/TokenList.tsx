@@ -3,6 +3,7 @@ import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
 import { PopularTokens } from './PopularTokens';
 import { useTokensInPool, convertToBerachainTokens } from '../../hooks/useTokensInPool';
+import { usePopularTokens } from '../../hooks/usePopularTokens';
 import { Modal } from '../Common/Modal';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
@@ -35,12 +36,8 @@ export const TokenList = ({
     return convertToBerachainTokens(tokensData.data.tokens);
   }, [tokensData]);
 
-  // Tokens populaires (premiers tokens avec balance > 0)
-  const popularTokens = useMemo(() => {
-    return cachedTokens
-      .filter(token => token.balanceUSD && token.balanceUSD > 0)
-      .slice(0, 4);
-  }, [cachedTokens]);
+  // Tokens populaires (utilise le hook usePopularTokens)
+  const popularTokens = usePopularTokens(cachedTokens, undefined, 4);
 
   // États dérivés pour compatibilité
   const hasError = isError;

@@ -49,7 +49,7 @@ function AppContent() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/liquidity" element={<LiquidityPage />} />
             <Route path="/liquidity/create" element={<CreatePoolPage />} />
-            <Route path="/vaults/:vaultAddress" element={<VaultDetailPage />} />
+            <Route path="/vault/:vaultAddress" element={<VaultDetailPage />} />
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />

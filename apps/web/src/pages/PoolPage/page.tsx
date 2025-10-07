@@ -361,7 +361,7 @@ const PoolDetailPage: React.FC = () => {
           <div className='Pool__BreadcrumbsButtons'>
             {!!vault && (
               <Link
-                to={`/vaults/${vault.id}`}
+                to={`/vault/${vault.id}`}
                 className="Pool__AddLiquidityBtn btn btn--small btn__accent"
               >
                 Add Vault Liquidity

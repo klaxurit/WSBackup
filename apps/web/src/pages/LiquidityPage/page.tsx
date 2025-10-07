@@ -775,7 +775,7 @@ const LiquidityPage: React.FC = () => {
       render: (row) => {
         if (row.type === 'vault') {
           return (
-            <Link to={`/vaults/${row.vaultId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={`/vault/${row.vaultId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <TokenPairLogos
                   token0={{
@@ -939,7 +939,7 @@ const LiquidityPage: React.FC = () => {
       render: (row) => {
         if (row.type === 'vault') {
           return (
-            <Link to={`/vaults/${row.vaultId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={`/vault/${row.vaultId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <button className="btn btn--tiny btn__accent">Manage</button>
             </Link>
           )
@@ -1036,7 +1036,7 @@ const LiquidityPage: React.FC = () => {
                   <div
                     key={vault.id}
                     className="LiquidityPage__TopVaultUltraCompact"
-                    onClick={() => navigate(`/vaults/${vault.id}`)}
+                    onClick={() => navigate(`/vault/${vault.id}`)}
                   >
                     <TokenPairLogos
                       token0={{

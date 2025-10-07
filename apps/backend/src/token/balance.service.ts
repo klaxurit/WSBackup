@@ -36,7 +36,6 @@ export class TokenBalanceService {
    */
   async getUserTokenBalances(walletAddress: string): Promise<UserBalancesResponse> {
     try {
-      this.logger.log(`Fetching balances for wallet: ${walletAddress}`);
 
       // 1. Récupérer tous les tokens IN_POOL
       const tokensInPool = await this.db.token.findMany({
@@ -61,7 +60,6 @@ export class TokenBalanceService {
       tokensInPool.unshift(beraNative);
 
       if (tokensInPool.length === 0) {
-        this.logger.warn('No tokens IN_POOL found');
         return {
           walletAddress,
           tokens: [],
@@ -69,7 +67,6 @@ export class TokenBalanceService {
         };
       }
 
-      this.logger.log(`Found ${tokensInPool.length} tokens IN_POOL to check`);
 
       // 2. Récupérer les prix des tokens en batch
       const tokenAddresses = tokensInPool.map(token => token.address);
@@ -121,7 +118,6 @@ export class TokenBalanceService {
             priceUSD,
           } as TokenBalance;
         } catch (error) {
-          this.logger.warn(`Failed to get balance for token ${token.symbol}:`, error.message);
           return null;
         }
       });
@@ -133,7 +129,6 @@ export class TokenBalanceService {
       const validBalances = balanceResults.filter((balance): balance is TokenBalance => balance !== null);
       const totalBalanceUSD = validBalances.reduce((sum, token) => sum + token.balanceUSD, 0);
 
-      this.logger.log(`Retrieved balances for ${validBalances.length}/${tokensInPool.length} tokens`);
 
       return {
         walletAddress,
@@ -141,7 +136,6 @@ export class TokenBalanceService {
         totalBalanceUSD,
       };
     } catch (error) {
-      this.logger.error('Error fetching user token balances:', error);
       throw error;
     }
   }
@@ -163,7 +157,6 @@ export class TokenBalanceService {
       });
 
       if (!token) {
-        this.logger.warn(`Token not found: ${tokenAddress}`);
         return null;
       }
 
@@ -209,7 +202,6 @@ export class TokenBalanceService {
         priceUSD: priceUSD || 0,
       };
     } catch (error) {
-      this.logger.error(`Error fetching balance for token ${tokenAddress}:`, error);
       return null;
     }
   }
@@ -226,7 +218,6 @@ export class TokenBalanceService {
    */
   async getUserTokenBalancesSafe(walletAddress: string): Promise<UserBalancesResponse | null> {
     if (!this.isValidAddress(walletAddress)) {
-      this.logger.warn(`Invalid wallet address: ${walletAddress}`);
       return null;
     }
 

@@ -55,7 +55,7 @@ const getTransitionConfig = (pathname: string) => {
   }
 
   // Smoother transitions for detail pages
-  if (pathname.includes('/pool') || pathname.includes('/token') || pathname.includes('/vaults/')) {
+  if (pathname.includes('/pool') || pathname.includes('/token') || pathname.includes('/vault/')) {
     return {
       type: 'spring' as const,
       stiffness: 300,

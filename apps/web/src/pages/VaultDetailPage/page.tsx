@@ -174,7 +174,7 @@ export const VaultDetailPage = () => {
         <div className="VaultDetailPage__Error">
           <h2>Vault not found</h2>
           <p>The requested vault does not exist or has been removed.</p>
-          <Link to="/vaults" className="button button--primary">
+          <Link to="/explore?tab=vaults" className="button button--primary">
             Back to vaults
           </Link>
         </div>
@@ -189,7 +189,7 @@ export const VaultDetailPage = () => {
       {/* Header */}
       <div className="VaultDetailPage__Header">
         <div className="VaultDetailPage__HeaderLeft">
-          <Link to="/vaults" className="VaultDetailPage__BackLink">
+          <Link to="/explore?tab=vaults" className="VaultDetailPage__BackLink">
             ← Back to vaults
           </Link>
           <div className="VaultDetailPage__VaultInfo">

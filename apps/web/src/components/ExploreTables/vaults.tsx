@@ -114,7 +114,7 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   }, [vaults, searchValue]);
 
   const handleRowClick = (row: any) => {
-    navigate(`/vaults/${row.id}`);
+    navigate(`/vault/${row.id}`);
   };
 
   const handleExplorerClick = (e: React.MouseEvent, vaultId: string) => {

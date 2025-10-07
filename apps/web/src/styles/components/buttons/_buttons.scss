@@ -18,6 +18,11 @@
       background: $beryl-080;
     }
 
+    // Surcharge pour les boutons de type tab actifs
+    &.btn__tab-active:hover {
+      background: $beryl-pure !important;
+    }
+
     &:active {
       border: none;
       box-shadow: none;

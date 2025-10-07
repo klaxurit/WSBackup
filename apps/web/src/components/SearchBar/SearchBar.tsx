@@ -37,6 +37,8 @@ export const SearchBar = ({
         return "Search pools";
       case 'Tokens':
         return "Search tokens";
+      case 'Vaults':
+        return "Search vaults";
       default:
         return "Search";
     }

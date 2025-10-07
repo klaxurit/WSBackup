@@ -33,18 +33,24 @@
 
     .btn {
       border-radius: 8px;
-      
+
       &.btn__main {
         background: rgba(255, 255, 255, 0.12);
         color: #fff;
         border: none;
+
+        // Pour les boutons de type tab, pas de changement au hover
+        &.btn__tab-active:hover {
+          background: rgba(255, 255, 255, 0.12);
+          color: #fff;
+        }
       }
-      
+
       &.btn__shade {
         background: transparent;
         color: #aaa;
         border: none;
-        
+
         &:hover {
           background: rgba(255, 255, 255, 0.06);
           color: #fff;
@@ -68,16 +74,23 @@
       font-weight: 500;
       border-bottom: 2px solid transparent;
       border-radius: 0;
-      
+
       &:hover {
         color: #fff;
         background: none;
       }
-      
+
       &.btn__main {
         color: #e39229;
         border-bottom-color: #e39229;
         background: none;
+
+        // Pour les boutons de type tab, pas de changement au hover
+        &.btn__tab-active:hover {
+          color: #e39229;
+          border-bottom-color: #e39229;
+          background: none;
+        }
       }
     }
   }
@@ -104,16 +117,23 @@
       padding: 6px 12px;
       cursor: pointer;
       transition: color 0.15s;
-      
+
       &:hover {
         color: #fff;
         background: none;
       }
-      
+
       &.btn__main {
         color: #222;
         font-weight: 700;
         background: rgba(255, 255, 255, 0.22);
+
+        // Pour les boutons de type tab, pas de changement au hover
+        &.btn__tab-active:hover {
+          color: #222;
+          font-weight: 700;
+          background: rgba(255, 255, 255, 0.22);
+        }
       }
     }
 
