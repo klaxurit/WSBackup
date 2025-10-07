@@ -32,6 +32,20 @@ const GET_STICKYVAULT = `
       totalValueLockedToken1
       totalValueLockedUSD
       txCount
+      autoWinVault
+      autoWinVaultRef {
+        id
+        totalBgtClaimed
+        estimatedAPR
+        positions(where: {user: $user}) {
+          items {
+            user
+            shares
+            firstDepositAt
+            lastUpdateAt
+          }
+        }
+      }
       vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
         items {
           apr
@@ -134,8 +148,8 @@ export const VaultDetailPage = () => {
     }
   });
 
-  const { token0, token1 } = useMemo(() => {
-    if (!vault?.poolRef) return { token0: null, token1: null }
+  const { token0, token1, autoWinVault } = useMemo(() => {
+    if (!vault?.poolRef) return { token0: null, token1: null, autoWinVault: undefined }
     return {
       token0: {
         id: vault.poolRef.token0Ref.id,
@@ -154,7 +168,9 @@ export const VaultDetailPage = () => {
         decimals: vault.poolRef.token1Ref.decimals,
         logoUri: vault.poolRef.token1Ref.logoUri,
         priceUSD: vault.poolRef.token1Ref.tokenDayData?.items?.[0].priceUSD || 0
-      }
+      },
+      // Get autoWinVault address from the indexed data
+      autoWinVault: vault.autoWinVault as Address | undefined
     }
 
   }, [vault])
@@ -268,7 +284,7 @@ export const VaultDetailPage = () => {
         {/* Right Column - 30% width */}
         <div className="VaultDetailPage__RightColumn">
           {/* User Position Info */}
-          <UserVaultDetail vault={vault} token0={token0} token1={token1} onSuccess={() => refetch()} />
+          <UserVaultDetail vault={vault} token0={token0} token1={token1} autoWinVault={autoWinVault} onSuccess={() => refetch()} />
         </div>
       </div>
     </PageContentTransition>

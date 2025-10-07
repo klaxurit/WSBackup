@@ -141,7 +141,6 @@ export const usePositionDatas = (position: Position, pool: Pool) => {
     }
   }, [position, pool, sdkPosition])
 
-
   const unclaimedFees = useMemo(() => {
     if (!position || !pool) {
       return {

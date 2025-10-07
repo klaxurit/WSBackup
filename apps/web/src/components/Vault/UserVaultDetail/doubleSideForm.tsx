@@ -11,13 +11,15 @@ const ActionBtn = ({
   isAllow,
   allowHandler,
   allowText,
-  depose
+  depose,
+  enableAutoWin
 }: {
   missAmt: boolean,
   isAllow: boolean,
   allowHandler: () => void,
   allowText: string,
   depose: () => void,
+  enableAutoWin?: boolean
 }) => {
   const { isConnected } = useAccount();
 
@@ -58,7 +60,7 @@ const ActionBtn = ({
       className={`btn btn--large btn__main`.trim()}
       onClick={depose}
     >
-      Deposit
+      {enableAutoWin ? 'Deposit & Enable AutoWin' : 'Deposit'}
     </button>
   );
 }
@@ -67,10 +69,12 @@ interface DoubleSideFormProps {
   vault: Address
   t0: VaultToken
   t1: VaultToken
+  enableAutoWin: boolean
+  autoWinVault?: Address
   onSuccess?: () => void
 }
 
-export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps) => {
+export const DoubleSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onSuccess }: DoubleSideFormProps) => {
   const [token0Amount, setToken0Amount] = useState(0n);
   const [token1Amount, setToken1Amount] = useState(0n);
 
@@ -80,7 +84,11 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
     token1: t1.id,
     amount0: token0Amount,
     amount1: token1Amount,
-    slippageBps: 100
+    slippageBps: 100,
+    autoWin: enableAutoWin && autoWinVault ? {
+      vaultAddress: autoWinVault,
+      slippageBps: 100
+    } : undefined
   })
 
   // Reset form and refetch data after successful deposit
@@ -187,6 +195,7 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
         allowHandler={allowHandler}
         allowText={allowText}
         depose={deposite.depose}
+        enableAutoWin={enableAutoWin}
       />
     </>
   )

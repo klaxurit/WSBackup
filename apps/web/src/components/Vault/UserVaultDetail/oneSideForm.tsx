@@ -10,10 +10,12 @@ interface OneSideFormProps {
   vault: Address
   t0: VaultToken
   t1: VaultToken
+  enableAutoWin: boolean
+  autoWinVault?: Address
   onSuccess?: () => void
 }
 
-export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
+export const OneSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onSuccess }: OneSideFormProps) => {
   const { isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useState<'token0' | 'token1'>('token0')
   const [amount, setAmount] = useState(0n)
@@ -27,7 +29,11 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
     tokenOut: tokenOut.id,
     amount,
     isToken0: selectedToken === 'token0',
-    slippageBps: 100 // 1%
+    slippageBps: 100, // 1%
+    autoWin: enableAutoWin && autoWinVault ? {
+      vaultAddress: autoWinVault,
+      slippageBps: 100
+    } : undefined
   })
 
   // Reset form and refetch data after successful deposit
@@ -124,7 +130,7 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
             onClick={singleDeposit.deposit.execute}
             disabled={singleDeposit.deposit.isPending}
           >
-            {singleDeposit.deposit.isPending ? 'Depositing...' : 'Deposit'}
+            {singleDeposit.deposit.isPending ? 'Depositing...' : enableAutoWin ? 'Deposit & Enable AutoWin' : 'Deposit'}
           </button>
         )}
       </div>
