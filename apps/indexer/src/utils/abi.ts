@@ -14,8 +14,8 @@ export { StickyVaultWithRouter } from "./abis/StickyVaultWithRouter"
 export { StickyVaultRouter } from "./abis/StickyVaultRouter"
 
 export { autowinFactoryABI as AutoWinFactoryABI } from "./abis/AutowinFactory"
-export { AutowinABI } from "../../../web/src/config/abis/Autowin"
-export { autowinABI as AutoWinRouterABI } from "../../../web/src/config/abis/AutowinRouter"
+export { AutowinABI } from "./abis/Autowin"
+export { autowinABI as AutoWinRouterABI } from "./abis/AutowinRouter"
 
 
 export const CONTRACTS = {
