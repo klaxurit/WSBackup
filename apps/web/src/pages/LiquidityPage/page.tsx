@@ -768,6 +768,15 @@ const LiquidityPage: React.FC = () => {
     })
   }, [allPositions, statusFilter])
 
+  // Handler pour cliquer sur une ligne
+  const handleRowClick = (row: any) => {
+    if (row.type === 'vault') {
+      navigate(`/vault/${row.vaultId}`);
+    } else {
+      navigate(`/pool/${row.pool}`);
+    }
+  };
+
   const columns: TableColumn[] = [
     {
       label: 'Pair',
@@ -775,53 +784,49 @@ const LiquidityPage: React.FC = () => {
       render: (row) => {
         if (row.type === 'vault') {
           return (
-            <Link to={`/vault/${row.vaultId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <TokenPairLogos
-                  token0={{
-                    id: row.vaultId,
-                    address: row.vaultId,
-                    symbol: row.token0Symbol,
-                    logoUri: row.token0LogoUri
-                  }}
-                  token1={{
-                    id: row.vaultId,
-                    address: row.vaultId,
-                    symbol: row.token1Symbol,
-                    logoUri: row.token1LogoUri
-                  }}
-                  size={28}
-                  gap={3}
-                  borderWidth={2}
-                  separatorWidth={1.5}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                    {row.vaultName}
-                  </span>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <TokenPairLogos
+                token0={{
+                  id: row.vaultId,
+                  address: row.vaultId,
+                  symbol: row.token0Symbol,
+                  logoUri: row.token0LogoUri
+                }}
+                token1={{
+                  id: row.vaultId,
+                  address: row.vaultId,
+                  symbol: row.token1Symbol,
+                  logoUri: row.token1LogoUri
+                }}
+                size={28}
+                gap={3}
+                borderWidth={2}
+                separatorWidth={1.5}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                  {row.vaultName}
+                </span>
               </div>
-            </Link>
+            </div>
           )
         } else {
           return (
-            <Link to={`/pool/${row.pool}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <TokenPairLogos
-                  token0={row.poolRef.token0Ref}
-                  token1={row.poolRef.token1Ref}
-                  size={28}
-                  gap={3}
-                  borderWidth={2}
-                  separatorWidth={1.5}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                    {`${row.poolRef.token0Ref.symbol} / ${row.poolRef.token1Ref.symbol}`}
-                  </span>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <TokenPairLogos
+                token0={row.poolRef.token0Ref}
+                token1={row.poolRef.token1Ref}
+                size={28}
+                gap={3}
+                borderWidth={2}
+                separatorWidth={1.5}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                  {`${row.poolRef.token0Ref.symbol} / ${row.poolRef.token1Ref.symbol}`}
+                </span>
               </div>
-            </Link>
+            </div>
           )
         }
       },
@@ -912,25 +917,6 @@ const LiquidityPage: React.FC = () => {
         } else {
           const apr: string = row.poolRef.poolDayData.items[0].apr || "0";
           return apr !== "0" ? `${apr}%` : "-"
-        }
-      }
-    },
-    {
-      label: '',
-      key: 'actions',
-      render: (row) => {
-        if (row.type === 'vault') {
-          return (
-            <Link to={`/vault/${row.vaultId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <button className="btn btn--tiny btn__accent">Manage</button>
-            </Link>
-          )
-        } else {
-          return (
-            <Link to={`/pool/${row.pool}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <button className="btn btn--tiny btn__accent">Manage</button>
-            </Link>
-          )
         }
       }
     },
@@ -1083,6 +1069,7 @@ const LiquidityPage: React.FC = () => {
                     wrapperClassName="Table__Wrapper"
                     scrollClassName="Table__Scroll"
                     emptyMessage="No positions found"
+                    onRowClick={handleRowClick}
                   />
                 </div>
               )

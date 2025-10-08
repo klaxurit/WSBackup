@@ -869,3 +869,19 @@
     padding: 8px;
   }
 }
+
+// Clickable rows styles
+.Table tbody tr[style*="cursor: pointer"] {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    background: rgba(255, 208, 86, 0.08) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 208, 86, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(255, 208, 86, 0.1);
+  }
+}
