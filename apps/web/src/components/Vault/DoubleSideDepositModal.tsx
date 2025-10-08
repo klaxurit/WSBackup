@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { VaultDepositModal } from './VaultDepositModal';
 import { ApprovalStep, ConfirmDepositStep, WaitingStep, SuccessStep } from './ModalSteps';
 import { useVaultDepositModalState } from '../../hooks/vault/useVaultModalState';
@@ -16,6 +16,8 @@ interface DoubleSideDepositModalProps {
   amount0: bigint;
   amount1: bigint;
   vaultAddress: string;
+  enableAutoWin?: boolean;
+  autoWinVault?: string;
   onSuccess?: () => void;
 }
 
@@ -31,8 +33,20 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
   amount0,
   amount1,
   vaultAddress,
+  enableAutoWin,
+  autoWinVault, // Used to check if AutoWin vault exists before showing AutoCompound banner
   onSuccess
 }) => {
+  // Local state for AutoWin toggle (can be changed in modal)
+  const [isAutoWinEnabled, setIsAutoWinEnabled] = useState(enableAutoWin || false);
+
+  // Reset local state when modal opens with new initial value
+  useEffect(() => {
+    if (isOpen) {
+      setIsAutoWinEnabled(enableAutoWin || false);
+    }
+  }, [isOpen, enableAutoWin]);
+
   const modalState = useVaultDepositModalState({
     mode: 'deposit-only',
     depositHook: {
@@ -167,7 +181,9 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
             amount1={depositHook.quote.amount1Max || amount1}
             expectedShares={depositHook.quote.minShares || 0n}
             minShares={depositHook.quote.minShares || 0n}
-            autoCompoundEnabled={false} // TODO: Check vault.autoCompoundAddress
+            hasAutoWinVault={!!autoWinVault}
+            isAutoWinEnabled={isAutoWinEnabled}
+            onToggleAutoWin={setIsAutoWinEnabled}
             isPending={depositHook.deposite.isPending}
             onConfirm={depositHook.deposite.depose}
           />
@@ -187,7 +203,7 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
           <SuccessStep
             message="Your liquidity has been successfully deposited to the vault!"
             txHash={depositHook.deposite.hash}
-            explorerUrl="https://bartio.beratrail.io"
+            explorerUrl="https://beratrail.io"
             onClose={() => {
               console.log('DoubleSideDepositModal: Success step closed, resetting all states');
               depositHook.deposite.reset(); // Reset deposit hook state (clears isSuccess)
@@ -195,7 +211,8 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
               onSuccess?.(); // Call onSuccess to refresh parent component
               onClose(); // Close the modal
             }}
-            autoCloseDelay={3000} // Auto-close after 3 seconds
+            autoCloseDelay={isAutoWinEnabled ? 3000 : 0} // Auto-close only if AutoWin is ON
+            showStakingOptions={!isAutoWinEnabled} // Show staking buttons if AutoWin is OFF
           />
         );
 

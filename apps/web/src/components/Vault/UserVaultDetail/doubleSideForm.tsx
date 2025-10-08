@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { LiquidityInput } from "../../Inputs/LiquidityInput"
 import { useDoubleDeposit } from "../../../hooks/vault/useDoubleDeposit";
-import { formatUnits, type Address } from "viem";
+import type { Address } from "viem";
 import type { VaultToken } from "../../../pages/VaultDetailPage/page";
 import { ConnectButton } from "../../Buttons/ConnectButton";
 import { useAccount } from "wagmi";
@@ -11,10 +11,12 @@ interface DoubleSideFormProps {
   vault: Address
   t0: VaultToken
   t1: VaultToken
+  enableAutoWin?: boolean
+  autoWinVault?: Address
   onSuccess?: () => void
 }
 
-export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps) => {
+export const DoubleSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onSuccess }: DoubleSideFormProps) => {
   const { isConnected } = useAccount();
   const [token0Amount, setToken0Amount] = useState(0n);
   const [token1Amount, setToken1Amount] = useState(0n);
@@ -26,7 +28,11 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
     token1: t1.id,
     amount0: token0Amount,
     amount1: token1Amount,
-    slippageBps: 100
+    slippageBps: 100,
+    autoWin: enableAutoWin && autoWinVault ? {
+      vaultAddress: autoWinVault,
+      slippageBps: 100
+    } : undefined
   })
 
   // Reset form and refetch data after successful deposit
@@ -34,10 +40,11 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
     if (deposite.isSuccess) {
       setToken0Amount(0n)
       setToken1Amount(0n)
-      setIsModalOpen(false)
-      onSuccess?.()
+      // Don't close modal automatically - let SuccessStep handle it
+      // setIsModalOpen(false) - REMOVED: Let SuccessStep handle modal closing
+      // onSuccess?.() - REMOVED: Let SuccessStep handle onSuccess callback
     }
-  }, [deposite.isSuccess, onSuccess])
+  }, [deposite.isSuccess])
 
   // Calculate token amounts for 50/50 ratio
   const calculateToken1FromToken0 = useCallback((token0Amount: bigint): bigint => {
@@ -93,7 +100,7 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
   }, [calculateToken0FromToken1, t0.priceUSD, t1.priceUSD])
 
   return (
-    <>
+    <div className="VaultDetailPage__DoubleSideForm">
       <div className="VaultDetailPage__DoubleDeposit">
         <LiquidityInput
           selectedToken={t0}
@@ -110,18 +117,6 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
           customUsdValue={t1.priceUSD}
         />
       </div>
-
-      {/* Deposit Summary */}
-      {isQuoted && (
-        <div className="VaultDetailPage__DepositSummary">
-          <h4>You will receive:</h4>
-          <div className="VaultDetailPage__SummaryItem">
-            <span>Pool Tokens</span>
-            <span>{formatUnits(quote.minShares || 0n, 18)}</span>
-          </div>
-          <p>These shares represent your position in the auto-winning vault.</p>
-        </div>
-      )}
 
       {/* Action Button - Opens Modal */}
       {!isConnected ? (
@@ -142,7 +137,7 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
           className={`btn btn--large btn__main`.trim()}
           onClick={() => setIsModalOpen(true)}
         >
-          Deposit
+          {enableAutoWin ? 'Deposit & Enable AutoWin' : 'Deposit'}
         </button>
       )}
 
@@ -156,8 +151,10 @@ export const DoubleSideForm = ({ vault, t0, t1, onSuccess }: DoubleSideFormProps
         amount0={token0Amount}
         amount1={token1Amount}
         vaultAddress={vault}
+        enableAutoWin={enableAutoWin}
+        autoWinVault={autoWinVault}
         onSuccess={onSuccess}
       />
-    </>
+    </div>
   )
 }

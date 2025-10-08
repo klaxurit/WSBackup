@@ -9,6 +9,7 @@ interface SuccessStepProps {
   onClose: () => void;
   autoCloseDelay?: number; // Délai en millisecondes avant fermeture automatique
   bearType?: 'increase' | 'withdraw'; // Type d'ourson à afficher
+  showStakingOptions?: boolean; // Show external staking options (Infrared, Berahub)
 }
 
 /**
@@ -21,7 +22,8 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
   explorerUrl,
   onClose,
   autoCloseDelay = 5000, // 5 secondes par défaut
-  bearType = 'increase' // Par défaut increase
+  bearType = 'increase', // Par défaut increase
+  showStakingOptions = false // Par défaut pas de boutons staking
 }) => {
   console.log('SuccessStep: Component rendered with autoCloseDelay:', autoCloseDelay);
 
@@ -59,6 +61,35 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
           <span>View on Explorer</span>
           <ExplorerIcon />
         </a>
+      )}
+
+      {/* Staking Options (if AutoWin is OFF) */}
+      {showStakingOptions && (
+        <div className="VaultDepositModal__StakingOptions">
+          <p className="staking-prompt">Want to earn more? Stake your sticky tokens to:</p>
+          <div className="staking-buttons">
+            <a
+              href="#" // TODO: Replace with Infrared URL
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--large btn__main staking-btn infrared-btn"
+            >
+              <img
+                src="/src/assets/infrared-wordmark-black.png"
+                alt="Stake on Infrared"
+                className="infrared-logo"
+              />
+            </a>
+            <a
+              href="#" // TODO: Replace with Berahub URL
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--large btn__main staking-btn"
+            >
+              Stake on BeraHub
+            </a>
+          </div>
+        </div>
       )}
 
       {/* Close Button with animated bear above */}

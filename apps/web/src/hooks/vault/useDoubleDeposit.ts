@@ -1,12 +1,14 @@
-import { type Address, type Hex } from "viem"
+import { type Address, type Hex, encodeFunctionData } from "viem"
 import { useAccount, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { useMemo } from "react"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
 import { currentChain } from "../../config/wagmi"
 import { StickyVaultRouter } from "../../config/abis/StickyVaultRouter"
+import { autowinABI } from "../../config/abis/AutowinRouter"
 import { useTokenAllowance } from "./useTokenAllowance"
 import { useVaultQuote } from "./useVaultQuote"
 import { useSlippage } from "./useSlippage"
+import { useAutoWinQuote } from "./useAutoWinQuote"
 
 interface UseDoubleDepositParams {
   vault: Address
@@ -15,6 +17,10 @@ interface UseDoubleDepositParams {
   amount0: bigint
   amount1: bigint
   slippageBps: number
+  autoWin?: {
+    vaultAddress: Address
+    slippageBps: number
+  }
 }
 
 export interface UseDoubleDepositReturn {
@@ -66,7 +72,8 @@ export const useDoubleDeposit = ({
   token1,
   amount0,
   amount1,
-  slippageBps
+  slippageBps,
+  autoWin
 }: UseDoubleDepositParams): UseDoubleDepositReturn => {
   const { address } = useAccount()
   const { calculateMinAmount } = useSlippage(slippageBps)
@@ -93,10 +100,21 @@ export const useDoubleDeposit = ({
 
   const isQuoted = !!amount0Min && !!amount1Min && !!minShares
 
+  // Get AutoWin quote if AutoWin is enabled
+  const { minShares: minAutoWinShares } = useAutoWinQuote({
+    autoWinVault: autoWin?.vaultAddress,
+    stickyShares: minShares || undefined,
+    slippageBps: autoWin?.slippageBps || 100
+  })
+
+  // Determine router and spender based on AutoWin configuration
+  const routerAddress = autoWin ? CONTRACTS_ADDRESS.AUTOWIN_ROUTER : CONTRACTS_ADDRESS.STICKYVAULT_ROUTER
+  const routerABI = autoWin ? autowinABI : StickyVaultRouter
+
   // Token0 allowance management
   const t0Allowance = useTokenAllowance({
     tokenAddress: token0,
-    spenderAddress: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
+    spenderAddress: routerAddress,
     amount: amount0,
     enabled: isQuoted
   })
@@ -104,24 +122,56 @@ export const useDoubleDeposit = ({
   // Token1 allowance management
   const t1Allowance = useTokenAllowance({
     tokenAddress: token1,
-    spenderAddress: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
+    spenderAddress: routerAddress,
     amount: amount1,
     enabled: isQuoted
   })
 
   const isAllow = !t0Allowance.isNeedApproval && !t1Allowance.isNeedApproval
 
+  // Prepare transaction config based on AutoWin configuration
+  const transactionConfig = useMemo(() => {
+    if (!isQuoted || !isAllow || !address) return null
+
+    if (autoWin && autoWin.vaultAddress && minAutoWinShares) {
+      // Prepare multicall for AutoWin
+      const addLiquidityCalldata = encodeFunctionData({
+        abi: autowinABI,
+        functionName: 'addLiquidity',
+        args: [vault, amount0, amount1, amount0Min!, amount1Min!, minShares!, CONTRACTS_ADDRESS.AUTOWIN_ROUTER]
+      })
+
+      const depositIntoAutoWinCalldata = encodeFunctionData({
+        abi: autowinABI,
+        functionName: 'depositIntoAutoWinSelf',
+        args: [autoWin.vaultAddress, minAutoWinShares, address]
+      })
+
+      return {
+        address: CONTRACTS_ADDRESS.AUTOWIN_ROUTER,
+        abi: autowinABI,
+        functionName: 'multicall' as const,
+        args: [[addLiquidityCalldata, depositIntoAutoWinCalldata]] as const
+      }
+    } else {
+      // Standard StickyVault deposit
+      return {
+        address: routerAddress,
+        abi: routerABI,
+        functionName: 'addLiquidity' as const,
+        args: [vault, amount0, amount1, amount0Min!, amount1Min!, minShares!, address] as const
+      }
+    }
+  }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount0, amount1, amount0Min, amount1Min, minShares, routerAddress, routerABI])
+
   // Simulate and execute deposit transaction
   const { data: depositConfig } = useSimulateContract({
-    address: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
-    abi: StickyVaultRouter,
-    functionName: "addLiquidity",
-    args: [vault, amount0, amount1, amount0Min!, amount1Min!, minShares!, address!],
+    ...transactionConfig,
     chainId: currentChain.id,
     query: {
-      enabled: isQuoted && isAllow && !!address
+      enabled: !!transactionConfig
     }
-  })
+  } as any)
 
   const {
     data: depositHash,

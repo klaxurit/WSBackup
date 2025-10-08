@@ -18,6 +18,8 @@ interface ConfirmWithdrawStepProps {
   token0: Token;
   token1: Token;
   withdrawAmount: bigint;
+  pooledAmount0?: bigint;
+  pooledAmount1?: bigint;
   estimatedAmount0: bigint;
   estimatedAmount1: bigint;
   isPending: boolean;
@@ -33,6 +35,8 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
   token0,
   token1,
   withdrawAmount,
+  pooledAmount0,
+  pooledAmount1,
   estimatedAmount0,
   estimatedAmount1,
   isPending,
@@ -50,30 +54,67 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
         </div>
       </div>
 
-      {/* You will receive */}
-      <div className="VaultDepositModal__ReceiveTokens">
-        <h4>You will receive</h4>
-        <div className="token-row">
-          <div className="token-info">
-            {token0.logoUri ? (
-              <img src={token0.logoUri} alt={token0.symbol} />
-            ) : (
-              <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-            )}
-            <span className="symbol">{token0.symbol}</span>
+      {/* Withdraw Details - Combined Pooled and Receive */}
+      <div className="VaultDepositModal__WithdrawDetails">
+        {/* Pooled Tokens Section */}
+        {pooledAmount0 !== undefined && pooledAmount1 !== undefined && (
+          <div className="section">
+            <h4>Pooled tokens:</h4>
+            <div className="token-row">
+              <div className="token-info">
+                {token0.logoUri ? (
+                  <img src={token0.logoUri} alt={token0.symbol} />
+                ) : (
+                  <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
+                )}
+                <span className="symbol">{token0.symbol}</span>
+              </div>
+              <span className="amount">{formatTokenAmount(pooledAmount0, token0.decimals)}</span>
+            </div>
+            <div className="token-row">
+              <div className="token-info">
+                {token1.logoUri ? (
+                  <img src={token1.logoUri} alt={token1.symbol} />
+                ) : (
+                  <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
+                )}
+                <span className="symbol">{token1.symbol}</span>
+              </div>
+              <span className="amount">{formatTokenAmount(pooledAmount1, token1.decimals)}</span>
+            </div>
           </div>
-          <span className="amount">{formatTokenAmount(estimatedAmount0, token0.decimals)}</span>
-        </div>
-        <div className="token-row">
-          <div className="token-info">
-            {token1.logoUri ? (
-              <img src={token1.logoUri} alt={token1.symbol} />
-            ) : (
-              <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-            )}
-            <span className="symbol">{token1.symbol}</span>
+        )}
+
+        {/* Divider */}
+        {pooledAmount0 !== undefined && pooledAmount1 !== undefined && (
+          <div className="divider"></div>
+        )}
+
+        {/* You will receive Section */}
+        <div className="section">
+          <h4>You will receive:</h4>
+          <div className="token-row">
+            <div className="token-info">
+              {token0.logoUri ? (
+                <img src={token0.logoUri} alt={token0.symbol} />
+              ) : (
+                <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
+              )}
+              <span className="symbol">{token0.symbol}</span>
+            </div>
+            <span className="amount">{formatTokenAmount(estimatedAmount0, token0.decimals)}</span>
           </div>
-          <span className="amount">{formatTokenAmount(estimatedAmount1, token1.decimals)}</span>
+          <div className="token-row">
+            <div className="token-info">
+              {token1.logoUri ? (
+                <img src={token1.logoUri} alt={token1.symbol} />
+              ) : (
+                <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
+              )}
+              <span className="symbol">{token1.symbol}</span>
+            </div>
+            <span className="amount">{formatTokenAmount(estimatedAmount1, token1.decimals)}</span>
+          </div>
         </div>
       </div>
 

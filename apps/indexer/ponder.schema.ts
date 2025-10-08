@@ -239,7 +239,141 @@ export const stickyVault = onchainTable("stickyVault", (t) => ({
   // Performance metrics
   netAPR: t.numeric().notNull().default("0"), // APR after management fees
   impermanentLoss: t.numeric().notNull().default("0"), // IL from rebalances
+  // AutoWin integration
+  autoWinVault: t.hex(), // Nullable reference to AutoWin vault
 }));
+
+// ============ AUTOWIN VAULTS ============
+
+export const autoWinVault = onchainTable(
+  "autoWinVault",
+  (t) => ({
+    id: t.hex().primaryKey(), // AutoWin vault address
+    stakingToken: t.hex().notNull(), // StickyVault address
+    implementation: t.hex().notNull(),
+    createdAtTimestamp: t.bigint().notNull(),
+    createdAtBlockNumber: t.bigint().notNull(),
+
+    // Aggregated stats
+    totalDeposits: t.numeric().notNull().default("0"),
+    totalWithdrawals: t.numeric().notNull().default("0"),
+    totalBgtClaimed: t.numeric().notNull().default("0"),
+    totalCompoundFees: t.numeric().notNull().default("0"),
+    totalBountyPaid: t.numeric().notNull().default("0"),
+    claimCount: t.integer().notNull().default(0),
+    depositCount: t.integer().notNull().default(0),
+    withdrawCount: t.integer().notNull().default(0),
+
+    // Performance metrics
+    avgBgtPerClaim: t.numeric().notNull().default("0"),
+    lastClaimTimestamp: t.bigint().notNull().default(0n),
+    estimatedAPR: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    stakingTokenIndex: index().on(table.stakingToken),
+  }),
+);
+
+export const autoWinDeposit = onchainTable(
+  "autoWinDeposit",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + log index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    autoWinVault: t.hex().notNull(),
+    user: t.hex().notNull(),
+    assets: t.bigint().notNull(),
+    shares: t.bigint().notNull(),
+  }),
+  (table) => ({
+    vaultIndex: index().on(table.autoWinVault),
+    userIndex: index().on(table.user),
+    timestampIndex: index().on(table.timestamp),
+  }),
+);
+
+export const autoWinWithdraw = onchainTable(
+  "autoWinWithdraw",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + log index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    autoWinVault: t.hex().notNull(),
+    user: t.hex().notNull(),
+    assets: t.bigint().notNull(),
+    shares: t.bigint().notNull(),
+  }),
+  (table) => ({
+    vaultIndex: index().on(table.autoWinVault),
+    userIndex: index().on(table.user),
+    timestampIndex: index().on(table.timestamp),
+  }),
+);
+
+export const autoWinBgtClaim = onchainTable(
+  "autoWinBgtClaim",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + log index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    autoWinVault: t.hex().notNull(),
+    bountySender: t.hex().notNull(),
+    bgtRecipient: t.hex().notNull(),
+    compoundAmount: t.bigint().notNull(),
+    compoundFee: t.bigint().notNull(),
+    tokenToRecipient: t.bigint().notNull(),
+    tvlSnapshot: t.numeric().notNull().default("0"), // TVL at claim time
+  }),
+  (table) => ({
+    vaultIndex: index().on(table.autoWinVault),
+    timestampIndex: index().on(table.timestamp),
+    senderIndex: index().on(table.bountySender),
+  }),
+);
+
+export const autoWinDayData = onchainTable(
+  "autoWinDayData",
+  (t) => ({
+    id: t.text().primaryKey(), // autoWinVault address + "-" + day id
+    date: t.integer().notNull(),
+    autoWinVault: t.hex().notNull(),
+
+    totalDeposits: t.numeric().notNull().default("0"),
+    totalWithdrawals: t.numeric().notNull().default("0"),
+    totalBgtClaimed: t.numeric().notNull().default("0"),
+    totalCompoundFees: t.numeric().notNull().default("0"),
+    totalBountyPaid: t.numeric().notNull().default("0"),
+
+    depositCount: t.integer().notNull().default(0),
+    withdrawCount: t.integer().notNull().default(0),
+    claimCount: t.integer().notNull().default(0),
+
+    avgAPR: t.numeric().notNull().default("0"),
+    avgTVL: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+    vaultIndex: index().on(table.autoWinVault),
+    compoundIndex: index().on(table.autoWinVault, table.date),
+  }),
+);
+
+export const autoWinUserPosition = onchainTable(
+  "autoWinUserPosition",
+  (t) => ({
+    id: t.text().primaryKey(), // user-autoWinVault
+    user: t.hex().notNull(),
+    autoWinVault: t.hex().notNull(),
+    shares: t.numeric().notNull().default("0"),
+    firstDepositAt: t.bigint().notNull(),
+    lastUpdateAt: t.bigint().notNull(),
+  }),
+  (table) => ({
+    userIndex: index().on(table.user),
+    vaultIndex: index().on(table.autoWinVault),
+    compoundIndex: index().on(table.user, table.autoWinVault),
+  }),
+);
 
 export const vaultUserPosition = onchainTable(
   "vaultUserPosition",
@@ -946,6 +1080,10 @@ export const stickyVaultRelations = relations(stickyVault, ({ one, many }) => ({
   positions: many(vaultUserPosition),
   vaultDayData: many(vaultDayData),
   vaultHourData: many(vaultHourData),
+  autoWinVaultRef: one(autoWinVault, {
+    fields: [stickyVault.autoWinVault],
+    references: [autoWinVault.id],
+  }),
 }));
 export const positionVaultRelations = relations(
   vaultUserPosition,
@@ -1028,5 +1166,65 @@ export const vaultHourDataRelations = relations(vaultHourData, ({ one }) => ({
   vault: one(stickyVault, {
     fields: [vaultHourData.vault],
     references: [stickyVault.id],
+  }),
+}));
+
+// AutoWin Relations
+export const autoWinVaultRelations = relations(autoWinVault, ({ one, many }) => ({
+  stakingTokenRef: one(stickyVault, {
+    fields: [autoWinVault.stakingToken],
+    references: [stickyVault.id],
+  }),
+  deposits: many(autoWinDeposit),
+  withdraws: many(autoWinWithdraw),
+  bgtClaims: many(autoWinBgtClaim),
+  dayData: many(autoWinDayData),
+  positions: many(autoWinUserPosition),
+}));
+
+export const autoWinDepositRelations = relations(autoWinDeposit, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinDeposit.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+  transaction: one(transaction, {
+    fields: [autoWinDeposit.transaction],
+    references: [transaction.id],
+  }),
+}));
+
+export const autoWinWithdrawRelations = relations(autoWinWithdraw, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinWithdraw.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+  transaction: one(transaction, {
+    fields: [autoWinWithdraw.transaction],
+    references: [transaction.id],
+  }),
+}));
+
+export const autoWinBgtClaimRelations = relations(autoWinBgtClaim, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinBgtClaim.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+  transaction: one(transaction, {
+    fields: [autoWinBgtClaim.transaction],
+    references: [transaction.id],
+  }),
+}));
+
+export const autoWinDayDataRelations = relations(autoWinDayData, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinDayData.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+}));
+
+export const autoWinUserPositionRelations = relations(autoWinUserPosition, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinUserPosition.autoWinVault],
+    references: [autoWinVault.id],
   }),
 }));

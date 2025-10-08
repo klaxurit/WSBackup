@@ -87,7 +87,6 @@
 .VaultDepositModal__StepContent {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .VaultDepositModal__InfoRow {
@@ -119,6 +118,7 @@
   background: rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
 
   img {
     width: 40px;
@@ -157,136 +157,230 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
 // ========================================
 // Styles pour ConfirmDepositStep
 // ========================================
 .VaultDepositModal__AutoCompoundBanner {
-  background: rgba(255, 145, 0, 0.08);
-  border: 1px solid rgba(255, 145, 0, 0.2);
+  background: linear-gradient(135deg, rgba(227, 146, 41, 0.12) 0%, rgba(240, 168, 65, 0.08) 100%);
+  border: 1px solid rgba(227, 146, 41, 0.25);
   border-radius: 12px;
-  padding: 16px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+
+  // Subtle glow effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(227, 146, 41, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
 
   .VaultDepositModal__AutoCompoundHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
 
     .label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: $beryl-pure;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .status {
-      font-size: 0.875rem;
-      color: #4CAF50;
+      font-size: 0.85rem;
+      color: $beryl-pure;
       font-weight: 600;
+      background: rgba(227, 146, 41, 0.15);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(227, 146, 41, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
   }
 
   .description {
-    font-size: 0.8125rem;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.5;
+    font-size: 0.85rem;
+    color: $white-072;
+    line-height: 1.6;
     margin-top: 12px;
     margin-bottom: 0;
+    position: relative;
+    z-index: 1;
   }
 }
 
-.VaultDepositModal__MyDeposits {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
+// APR Grid for AutoWin banner
+.VaultDepositModal__APRGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
 
-  h4 {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0 0 12px 0;
-    letter-spacing: 0.5px;
-  }
-
-  .deposits-list {
+  .apr-item {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-  }
+    gap: 4px;
+    transition: all 0.2s ease;
 
-  .deposit-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    img {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      flex-shrink: 0;
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+      border-color: rgba(227, 146, 41, 0.2);
     }
 
-    .symbol {
-      font-size: 0.9375rem;
+    .apr-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.9);
-      min-width: 60px;
+      line-height: 1.2;
     }
 
-    .amount {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: #fff;
-      margin-left: auto;
+    .apr-value {
+      font-size: 1rem;
+      color: $beryl-pure;
+      font-weight: 700;
     }
   }
 }
 
-.VaultDepositModal__Summary {
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.VaultDepositModal__DepositDetails {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 16px;
+  margin-bottom: 16px;
 
-  h4 {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0 0 12px 0;
-    letter-spacing: 0.5px;
-  }
-
-  .summary-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .summary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .label {
+  .section {
+    h4 {
       font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0 0 12px 0;
+      letter-spacing: 0.5px;
     }
 
-    .value {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #fff;
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 0 0;
+
+      .token-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        img {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+        }
+
+        .symbol {
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: #fff;
+        }
+      }
+
+      .amount {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      &:first-of-type {
+        padding-top: 0;
+      }
     }
 
-    .StickyIcon {
-      width: 20px;
-      height: 20px;
-      background: black;
-      border-radius: 50%;
-      border: 1px solid #e39229;
-      margin-bottom: 2px;
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 0 0;
+
+      .label {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .StickyIcon {
+        width: 20px;
+        height: 20px;
+        background: black;
+        border-radius: 50%;
+        border: 1px solid #e39229;
+      }
+
+      &:first-of-type {
+        padding-top: 0;
+      }
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 20px 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 1px;
+      background: rgba(227, 146, 41, 0.3);
     }
   }
 }
@@ -359,25 +453,72 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   color: #fff;
-  text-decoration: none;
+  text-decoration: underline;
   font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 24px;
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
+    color: $beryl-pure;
+
+    svg {
+      path {
+        stroke: $beryl-pure;
+      }
+    }
   }
 
   svg {
     width: 16px;
     height: 16px;
+
+  }
+}
+
+// Staking Options (Infrared, Berahub)
+.VaultDepositModal__StakingOptions {
+  margin: 0 0 20px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .staking-prompt {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+  }
+
+  .staking-buttons {
+    display: flex;
+    gap: 80px;
+    justify-content: space-between;
+
+    .staking-btn {
+      flex: 1;
+      font-size: 0.875rem;
+      padding: 0.6rem 1rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      // Infrared logo button
+      &.infrared-btn {
+        padding: 0.8rem 1.2rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+
+        .infrared-logo {
+          height: 24px;
+          width: auto;
+          max-width: 100%;
+          object-fit: contain;
+        }
+      }
+    }
   }
 }
 
@@ -390,7 +531,7 @@
   // Conteneur pour l'ourson increase
   .increase-bear {
     position: absolute;
-    top: -105px;
+    top: -97px;
     left: 50%;
     transform: translateX(-50%);
     width: 150px;
@@ -566,7 +707,6 @@
 .VaultDepositModal__WithdrawAmount {
   text-align: center;
   padding: 20px 16px;
-  margin-bottom: 16px;
 
   h4 {
     font-size: 0.875rem;
@@ -602,6 +742,77 @@
       border-radius: 50%;
       border: 1px solid #e39229;
       margin-top: 4px;
+    }
+  }
+}
+
+.VaultDepositModal__WithdrawDetails {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  .section {
+    h4 {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0 0 12px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 0 0;
+
+      .token-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        img {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+        }
+
+        .symbol {
+          font-size: 0.9375rem;
+          font-weight: 600;
+          color: #fff;
+        }
+      }
+
+      .amount {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      &:first-of-type {
+        padding-top: 0;
+      }
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 20px 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 1px;
+      background: rgba(227, 146, 41, 0.3);
     }
   }
 }

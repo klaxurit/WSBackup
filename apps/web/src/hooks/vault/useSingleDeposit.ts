@@ -3,10 +3,12 @@ import { useAccount, useSimulateContract, useWaitForTransactionReceipt, useWrite
 import { useMemo } from "react"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
 import { StickyVaultRouter } from "../../config/abis/StickyVaultRouter"
+import { autowinABI } from "../../config/abis/AutowinRouter"
 import { useTokenAllowance } from "./useTokenAllowance"
 import { useVaultQuote } from "./useVaultQuote"
 import { useSlippage } from "./useSlippage"
 import { useSwap } from "../swap/useSwap"
+import { useAutoWinQuote } from "./useAutoWinQuote"
 
 interface UseSingleDepositParams {
   vault: Address
@@ -15,6 +17,10 @@ interface UseSingleDepositParams {
   amount: bigint    // Amount of tokenIn to deposit
   isToken0: boolean // Is tokenIn token0 in the pair
   slippageBps: number
+  autoWin?: {
+    vaultAddress: Address
+    slippageBps: number
+  }
 }
 
 export interface UseSingleDepositReturn {
@@ -61,7 +67,8 @@ export const useSingleDeposit = ({
   tokenOut,
   amount,
   isToken0,
-  slippageBps
+  slippageBps,
+  autoWin
 }: UseSingleDepositParams): UseSingleDepositReturn => {
   const { address } = useAccount()
   const { calculateMinAmount } = useSlippage(slippageBps)
@@ -118,36 +125,72 @@ export const useSingleDeposit = ({
   const minShares = vaultQuote ? calculateMinAmount(vaultQuote.shares, slippageBps) : null
   const isQuoted = !!minShares && !!swapData
 
+  // Get AutoWin quote if AutoWin is enabled
+  const { minShares: minAutoWinShares } = useAutoWinQuote({
+    autoWinVault: autoWin?.vaultAddress,
+    stickyShares: minShares || undefined,
+    slippageBps: autoWin?.slippageBps || 100
+  })
+
+  // Determine router and spender based on AutoWin configuration
+  const routerAddress = autoWin ? CONTRACTS_ADDRESS.AUTOWIN_ROUTER : CONTRACTS_ADDRESS.STICKYVAULT_ROUTER
+  const routerABI = autoWin ? autowinABI : StickyVaultRouter
+
   // Token allowance management
   const tokenAllowance = useTokenAllowance({
     tokenAddress: tokenIn,
-    spenderAddress: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
+    spenderAddress: routerAddress,
     amount,
     enabled: isReady
   })
 
   const isAllow = !tokenAllowance.isNeedApproval
 
+  // Prepare transaction config based on AutoWin configuration
+  const transactionConfig = useMemo(() => {
+    if (!isQuoted || !isAllow || !address) return null
+
+    if (autoWin && autoWin.vaultAddress && minAutoWinShares) {
+      // Prepare multicall for AutoWin
+      const addLiquiditySingleCalldata = encodeFunctionData({
+        abi: autowinABI,
+        functionName: 'addLiquiditySingle',
+        args: [vault, amount, minShares!, BigInt(slippageBps), swapData!, CONTRACTS_ADDRESS.AUTOWIN_ROUTER]
+      })
+
+      const depositIntoAutoWinCalldata = encodeFunctionData({
+        abi: autowinABI,
+        functionName: 'depositIntoAutoWinSelf',
+        args: [autoWin.vaultAddress, minAutoWinShares, address]
+      })
+
+      return {
+        address: CONTRACTS_ADDRESS.AUTOWIN_ROUTER,
+        abi: autowinABI,
+        functionName: 'multicall' as const,
+        args: [[addLiquiditySingleCalldata, depositIntoAutoWinCalldata]] as const
+      }
+    } else {
+      // Standard StickyVault deposit
+      return {
+        address: routerAddress,
+        abi: routerABI,
+        functionName: 'addLiquiditySingle' as const,
+        args: [vault, amount, minShares!, BigInt(slippageBps), swapData!, address] as const
+      }
+    }
+  }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount, minShares, slippageBps, swapData, routerAddress, routerABI])
+
   // Simulate and execute single-sided deposit
   const {
     data: depositConfig,
     error: simError
   } = useSimulateContract({
-    address: CONTRACTS_ADDRESS.STICKYVAULT_ROUTER,
-    abi: StickyVaultRouter,
-    functionName: "addLiquiditySingle",
-    args: [
-      vault,
-      amount,
-      minShares!,
-      BigInt(slippageBps),
-      swapData!,
-      address!
-    ],
+    ...transactionConfig,
     query: {
-      enabled: isQuoted && isAllow && !!address
+      enabled: !!transactionConfig
     }
-  })
+  } as any)
 
   const {
     data: depositHash,
@@ -181,7 +224,7 @@ export const useSingleDeposit = ({
     swapQuote: {
       amountIn: swapAmount,
       amountOut: swap.quote?.amountOut,
-      isLoading: swap.status === "loading-routes" || swap.status === "quoting"
+      isLoading: swap.status === "loading-routes" || swap.status === "quoting" || swap.status === "optimizing"
     },
     vaultQuote: {
       minShares

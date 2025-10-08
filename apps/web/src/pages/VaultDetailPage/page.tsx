@@ -10,6 +10,7 @@ import { useAccount } from 'wagmi';
 import { PageContentTransition } from '../../components/Transitions';
 import { Loader } from '../../components/Loader/Loader';
 import { UserVaultDetail } from '../../components/Vault/UserVaultDetail';
+import { UserPositionsTable } from '../../components/Vault/UserPositionsTable';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -32,6 +33,20 @@ const GET_STICKYVAULT = `
       totalValueLockedToken1
       totalValueLockedUSD
       txCount
+      autoWinVault
+      autoWinVaultRef {
+        id
+        totalBgtClaimed
+        estimatedAPR
+        positions(where: {user: $user}) {
+          items {
+            user
+            shares
+            firstDepositAt
+            lastUpdateAt
+          }
+        }
+      }
       vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
         items {
           apr
@@ -134,8 +149,8 @@ export const VaultDetailPage = () => {
     }
   });
 
-  const { token0, token1 } = useMemo(() => {
-    if (!vault?.poolRef) return { token0: null, token1: null }
+  const { token0, token1, autoWinVault } = useMemo(() => {
+    if (!vault?.poolRef) return { token0: null, token1: null, autoWinVault: undefined }
     return {
       token0: {
         id: vault.poolRef.token0Ref.id,
@@ -154,11 +169,45 @@ export const VaultDetailPage = () => {
         decimals: vault.poolRef.token1Ref.decimals,
         logoUri: vault.poolRef.token1Ref.logoUri,
         priceUSD: vault.poolRef.token1Ref.tokenDayData?.items?.[0].priceUSD || 0
-      }
+      },
+      // Get autoWinVault address from the indexed data
+      autoWinVault: vault.autoWinVault as Address | undefined
     }
 
   }, [vault])
 
+  // Prepare user positions data for the table
+  const userPositions = useMemo(() => {
+    if (!vault || !address) return []
+
+    const positions = []
+
+    // StickyVault position (Vanilla)
+    const stickyPosition = vault.positions?.items?.find((p: any) => p.user === address.toLowerCase())
+    if (stickyPosition && parseFloat(stickyPosition.shares) > 0) {
+      positions.push({
+        type: 'vanilla' as const,
+        valueUSD: parseFloat(stickyPosition.currentValueUSD || '0'),
+        tokenName: `STICKY-${token0?.symbol}-${token1?.symbol}`,
+        tokenAmount: BigInt(Math.floor(parseFloat(stickyPosition.shares) * Math.pow(10, 18))),
+        apr: vault.vaultDayData?.items?.[0]?.maxPotentialAPR || 0
+      })
+    }
+
+    // AutoWin position
+    const autoWinPosition = vault.autoWinVaultRef?.positions?.items?.find((p: any) => p.user === address.toLowerCase())
+    if (autoWinPosition && parseFloat(autoWinPosition.shares) > 0) {
+      positions.push({
+        type: 'autowin' as const,
+        valueUSD: parseFloat(autoWinPosition.currentValueUSD || '0'),
+        tokenName: `AW-${token0?.symbol}-${token1?.symbol}`,
+        tokenAmount: BigInt(Math.floor(parseFloat(autoWinPosition.shares) * Math.pow(10, 18))),
+        apr: vault.autoWinVaultRef?.estimatedAPR || 0
+      })
+    }
+
+    return positions
+  }, [vault, address, token0?.symbol, token1?.symbol])
 
   if (isLoading) {
     return (
@@ -263,12 +312,20 @@ export const VaultDetailPage = () => {
               showToolbar={true}
             />
           </div>
+
+          {/* User Positions Table */}
+          {address && userPositions.length > 0 && (
+            <UserPositionsTable
+              vaultPositions={userPositions}
+              isLoading={isLoading}
+            />
+          )}
         </div>
 
         {/* Right Column - 30% width */}
         <div className="VaultDetailPage__RightColumn">
-          {/* User Position Info */}
-          <UserVaultDetail vault={vault} token0={token0} token1={token1} onSuccess={() => refetch()} />
+          {/* User Action Forms */}
+          <UserVaultDetail vault={vault} token0={token0} token1={token1} autoWinVault={autoWinVault} onSuccess={() => refetch()} />
         </div>
       </div>
     </PageContentTransition>

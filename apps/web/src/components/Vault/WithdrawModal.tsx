@@ -15,6 +15,8 @@ interface WithdrawModalProps {
   token0: VaultToken;
   token1: VaultToken;
   withdrawAmount: bigint;
+  pooledAmount0?: bigint;
+  pooledAmount1?: bigint;
   vaultAddress: string;
   onSuccess?: () => void;
 }
@@ -29,6 +31,8 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
   token0,
   token1,
   withdrawAmount,
+  pooledAmount0,
+  pooledAmount1,
   vaultAddress,
   onSuccess
 }) => {
@@ -116,6 +120,8 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
             token0={token0Display}
             token1={token1Display}
             withdrawAmount={withdrawAmount}
+            pooledAmount0={pooledAmount0}
+            pooledAmount1={pooledAmount1}
             estimatedAmount0={withdrawHook.estimatedAmounts?.amount0 || 0n}
             estimatedAmount1={withdrawHook.estimatedAmounts?.amount1 || 0n}
             isPending={withdrawHook.withdraw.isPending}
@@ -138,7 +144,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
             title="Withdrawal Successful!"
             message="Your liquidity has been successfully withdrawn from the vault!"
             txHash={withdrawHook.withdraw.hash}
-            explorerUrl="https://bartio.beratrail.io"
+            explorerUrl="https://beratrail.io"
             bearType="withdraw"
             onClose={() => {
               console.log('WithdrawModal: Success step closed, resetting all states');

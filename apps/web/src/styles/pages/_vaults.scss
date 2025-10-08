@@ -1,3 +1,8 @@
+@use "../utils" as *;
+
+// Import des composants vault
+@import '../components/vault/user-positions-table';
+
 .VaultsPage {
   padding: 0 1rem;
   max-width: 1192px;
@@ -436,11 +441,12 @@
   }
 
   &__AutoCompound {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1rem;
+    background: $white-004;
+    border: 1px solid $white-008;
+    border-radius: 12px;
+    padding: 1.25rem;
     text-align: center;
+    transition: all 0.3s ease;
 
     &Header {
       display: flex;
@@ -449,39 +455,82 @@
       margin-bottom: 0.75rem;
 
       h4 {
-        color: #e39229;
+        color: $beryl-pure;
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 700;
         margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
+    }
+
+    p {
+      color: $white-064;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin: 0;
     }
   }
 
   &__Toggle {
-    display: flex;
-    align-items: center;
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 12px;
+    padding: 3px;
+    position: relative;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
   }
 
   &__ToggleButton {
-    background: #333;
-    border: 1px solid #555;
-    color: #aaa;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    color: $white-056;
+    padding: 0.3rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 50px;
+    text-align: center;
 
-    &:hover {
-      color: #fff;
-      border-color: #777;
+    &:hover:not(.active) {
+      background: $white-004;
+      color: $white-080;
     }
 
     &.active {
-      background: #00ffa3;
-      border-color: #00ffa3;
-      color: #000;
+      background: #E39229;
+      color: rgb(255, 208, 86);
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+      box-shadow:
+        0 0 15px rgba(227, 146, 41, 0.25),
+        0 4px 8px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        background: #F0A841;
+        box-shadow:
+          0 0 20px rgba(227, 146, 41, 0.35),
+          0 6px 12px rgba(0, 0, 0, 0.25);
+      }
     }
   }
 
@@ -494,13 +543,66 @@
 
   &__FormTabs {
     display: flex;
-    gap: 0.5rem;
+    gap: 4px;
     margin-bottom: 1.5rem;
     width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
 
     .btn {
       flex: 1;
       min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #F0A841;
+          box-shadow:
+            0 0 20px rgba(227, 146, 41, 0.35),
+            0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+      }
     }
   }
 
@@ -532,13 +634,65 @@
 
   &__DepositModeTabs {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 4px;
     width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
 
     .btn {
       flex: 1;
       min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #F0A841;
+          box-shadow:
+            0 0 20px rgba(227, 146, 41, 0.35),
+            0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+      }
     }
   }
 
@@ -565,6 +719,12 @@
     }
   }
 
+  &__DoubleSideForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
   &__DoubleDeposit,
   &__SingleDeposit {
     display: flex;
@@ -572,14 +732,98 @@
     gap: 1rem;
   }
 
+  &__SwapInfo {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 12px;
+
+    p {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      li {
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+    }
+  }
+
   &__TokenSelector {
     display: flex;
-    gap: 0.5rem;
+    gap: 4px;
     width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
+    margin-bottom: 1rem;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
 
     .btn {
       flex: 1;
       min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #F0A841;
+          box-shadow:
+            0 0 20px rgba(227, 146, 41, 0.35),
+            0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+      }
     }
   }
 
@@ -603,26 +847,6 @@
       background: #e39229;
       border-color: #e39229;
       color: #fff;
-    }
-  }
-
-  &__DepositSummary {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1rem;
-
-    h4 {
-      color: #fff;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin: 0 0 0.75rem 0;
-    }
-
-    p {
-      color: #aaa;
-      font-size: 0.8rem;
-      margin: 0.5rem 0 0 0;
     }
   }
 
@@ -660,53 +884,78 @@
   }
 
   &__PercentageButtons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-  }
-
-  &__PercentageButton {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    color: #aaa;
-    padding: 0.5rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      color: #fff;
-      border-color: #555;
-    }
-  }
-
-  &__WithdrawSummary {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1rem;
-  }
-
-  // Common Summary Items
-  &__SummaryItem {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
+    gap: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
 
-    &:last-child {
-      margin-bottom: 0;
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
     }
 
-    span:first-child {
-      color: #aaa;
-      font-size: 0.9rem;
-    }
+    .btn {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    span:last-child {
-      color: #fff;
-      font-weight: 600;
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #F0A841;
+          box-shadow:
+            0 0 20px rgba(227, 146, 41, 0.35),
+            0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+      }
+
+      // Style when disabled
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+          background: transparent;
+          color: $white-056;
+          box-shadow: none;
+        }
+      }
     }
   }
 

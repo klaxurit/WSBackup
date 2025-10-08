@@ -6,15 +6,33 @@ import type { VaultToken } from "../../../pages/VaultDetailPage/page"
 import { ConnectButton } from "../../Buttons/ConnectButton"
 import { useAccount } from "wagmi"
 import { SingleSideDepositModal } from "../SingleSideDepositModal"
+import { TabTransition } from "../../Transitions"
+
+// Helper to format with max 4 decimals
+const formatSwapAmount = (amount: bigint, decimals: number): string => {
+  const formatted = formatUnits(amount, decimals)
+  const num = parseFloat(formatted)
+
+  // If the number is very small, show 4 decimals
+  if (num < 0.0001) return num.toFixed(4)
+
+  // Otherwise, show up to 4 significant decimals
+  const parts = formatted.split('.')
+  if (!parts[1] || parts[1].length <= 4) return formatted
+
+  return `${parts[0]}.${parts[1].slice(0, 4)}`
+}
 
 interface OneSideFormProps {
   vault: Address
   t0: VaultToken
   t1: VaultToken
+  enableAutoWin: boolean
+  autoWinVault?: Address
   onSuccess?: () => void
 }
 
-export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
+export const OneSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onSuccess }: OneSideFormProps) => {
   const { isConnected } = useAccount()
   const [selectedToken, setSelectedToken] = useState<'token0' | 'token1'>('token0')
   const [amount, setAmount] = useState(0n)
@@ -29,17 +47,22 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
     tokenOut: tokenOut.id,
     amount,
     isToken0: selectedToken === 'token0',
-    slippageBps: 100 // 1%
+    slippageBps: 100, // 1%
+    autoWin: enableAutoWin && autoWinVault ? {
+      vaultAddress: autoWinVault,
+      slippageBps: 100
+    } : undefined
   })
 
   // Reset form and refetch data after successful deposit
   useEffect(() => {
     if (singleDeposit.deposit.isSuccess) {
       setAmount(0n)
-      setIsModalOpen(false)
-      onSuccess?.()
+      // Don't close modal automatically - let SuccessStep handle it
+      // setIsModalOpen(false) - REMOVED: Let SuccessStep handle modal closing
+      // onSuccess?.() - REMOVED: Let SuccessStep handle onSuccess callback
     }
-  }, [singleDeposit.deposit.isSuccess, onSuccess])
+  }, [singleDeposit.deposit.isSuccess])
 
   return (
     <>
@@ -60,38 +83,30 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
           </button>
         </div>
 
-        {/* Input */}
-        <LiquidityInput
-          selectedToken={tokenIn}
-          onAmountChange={setAmount}
-          value={amount}
-          isOverBalance={false}
-          customUsdValue={tokenIn.priceUSD}
-        />
+        {/* Input and Swap Info with Transition */}
+        <TabTransition activeTab={selectedToken}>
+          <>
+            <LiquidityInput
+              selectedToken={tokenIn}
+              onAmountChange={setAmount}
+              value={amount}
+              isOverBalance={false}
+              customUsdValue={tokenIn.priceUSD}
+            />
 
-        {/* Swap Info */}
-        {singleDeposit.swapQuote.amountOut && amount > 0n && (
-          <div className="VaultDetailPage__SwapInfo">
-            <p>Your deposit will be split:</p>
-            <ul>
-              <li>{formatUnits(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} kept</li>
-              <li>{formatUnits(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} → {formatUnits(singleDeposit.swapQuote.amountOut, tokenOut.decimals)} {tokenOut.symbol}</li>
-            </ul>
-          </div>
-        )}
+            {/* Swap Info */}
+            {singleDeposit.swapQuote.amountOut && amount > 0n && (
+              <div className="VaultDetailPage__SwapInfo">
+                <p>Your deposit will be split:</p>
+                <ul>
+                  <li>{formatSwapAmount(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} kept</li>
+                  <li>{formatSwapAmount(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} → {formatSwapAmount(singleDeposit.swapQuote.amountOut, tokenOut.decimals)} {tokenOut.symbol}</li>
+                </ul>
+              </div>
+            )}
+          </>
+        </TabTransition>
       </div>
-
-      {/* Deposit Summary */}
-      {singleDeposit.isQuoted && (
-        <div className="VaultDetailPage__DepositSummary">
-          <h4>You will receive:</h4>
-          <div className="VaultDetailPage__SummaryItem">
-            <span>Pool Tokens</span>
-            <span>~{formatUnits(singleDeposit.vaultQuote.minShares || 0n, 18)}</span>
-          </div>
-          <p>These shares represent your position in the auto-winning vault.</p>
-        </div>
-      )}
 
       {/* Action Button - Opens Modal */}
       <div className="VaultDetailPage__FormButton">
@@ -120,7 +135,7 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
             className="btn btn--large btn__main VaultDetailPage__ActionButton"
             onClick={() => setIsModalOpen(true)}
           >
-            Deposit
+            {enableAutoWin ? 'Deposit & Enable AutoWin' : 'Deposit'}
           </button>
         )}
       </div>
@@ -141,6 +156,8 @@ export const OneSideForm = ({ vault, t0, t1, onSuccess }: OneSideFormProps) => {
         tokenOut={tokenOut}
         amount={amount}
         vaultAddress={vault}
+        enableAutoWin={enableAutoWin}
+        autoWinVault={autoWinVault}
         onSuccess={onSuccess}
       />
     </>

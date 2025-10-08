@@ -3,7 +3,7 @@ import { formatNumber } from '../../../utils/formatNumber';
 
 export const UserPosition = ({ userPos, t0, t1 }: { userPos: any, t0: any, t1: any }) => (
   <div className="VaultDetailPage__UserInfo">
-    <h3>Your Deposits</h3>
+    <h3>Your StickyVault Position</h3>
     <div className="VaultDetailPage__UserPosition">
       <div className="VaultDetailPage__PositionValue">
         <span className="VaultDetailPage__PositionAmount">${formatNumber(userPos?.currentValueUSD || "0")}</span>

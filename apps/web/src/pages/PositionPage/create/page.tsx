@@ -112,7 +112,14 @@ const CreatePoolPage: React.FC = () => {
     if (poolManager.mintPositionReceipt?.status === "success") {
       return {
         text: "View positions",
-        action: () => { navigate('/pools') },
+        action: () => {
+          // Navigate to pool detail page if poolAddress is available
+          if (poolManager.poolAddress) {
+            navigate(`/pool/${poolManager.poolAddress}`)
+          } else {
+            navigate('/liquidity')
+          }
+        },
         disabled: false,
         loading: false,
       }
