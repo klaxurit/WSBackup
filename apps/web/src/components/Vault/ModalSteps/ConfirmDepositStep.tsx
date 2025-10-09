@@ -1,9 +1,10 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Loader } from '../../Loader/Loader';
 import { formatTokenAmount } from '../../../utils/formatTokenAmount';
 import { FallbackImg } from '../../utils/FallbackImg';
 import { StickyIcon } from '../../Common/StickyIcon';
+import { AutoWinIcon } from '../../Common/AutoWinIcon';
 
 interface Token {
   symbol: string;
@@ -63,8 +64,6 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
                 onClick={() => onToggleAutoWin?.(!isAutoWinEnabled)}
                 type="button"
                 title="AutoWin Enabled - Your shares will be automatically staked to earn BGT rewards"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.1 }}
               >
                 <motion.span
@@ -84,21 +83,20 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            style={{ overflow: "hidden" }}
           >
-            <div className="apr-item">
+            <div className={`apr-item apr-item--autowin ${isAutoWinEnabled ? 'apr-item--highlighted' : 'apr-item--dimmed'}`}>
               <span className="apr-label">With AutoWin APR</span>
-              <span className="apr-value">- %</span>
+              <span className={`apr-value ${!isAutoWinEnabled ? 'apr-value--shiny' : ''}`}>- %</span>
             </div>
-            <div className="apr-item">
+            <div className="apr-item apr-item--infrared">
               <span className="apr-label">Staking Infrared APR</span>
               <span className="apr-value">- %</span>
             </div>
-            <div className="apr-item">
+            <div className="apr-item apr-item--without">
               <span className="apr-label">Without AutoWin APR</span>
               <span className="apr-value">- %</span>
             </div>
-            <div className="apr-item">
+            <div className="apr-item apr-item--berahub">
               <span className="apr-label">Staking Berahub APR</span>
               <span className="apr-value">- %</span>
             </div>
@@ -135,30 +133,25 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
           </div>
         </div>
 
-        {/* You will receive Section with Transition - Only if AutoWin is OFF */}
-        <AnimatePresence mode="wait">
-          {!isAutoWinEnabled && (
-            <motion.div
-              key="you-will-receive"
-              initial={{ opacity: 0, height: 0, y: -10 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{ overflow: "hidden" }}
-            >
-              <div className="divider"></div>
-              <div className="section">
-                <h4>You will receive:</h4>
-                <div className="summary-item">
-                  <span className="label">Vault Shares</span>
-                  <span className="value">
-                    {formatTokenAmount(expectedShares, 18)} <StickyIcon width={14} height={14} /> {token0.symbol}-{token1.symbol}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* You will receive Section - Always visible with different icons based on AutoWin state */}
+        <div className="divider"></div>
+        <div className="section">
+          <h4>You will receive:</h4>
+          <div className="summary-item">
+            <span className="label">Vault Shares</span>
+            <span className="value">
+              {formatTokenAmount(expectedShares, 18)}
+              {isAutoWinEnabled ? (
+                <AutoWinIcon width={14} height={14} />
+              ) : (
+                <StickyIcon width={14} height={14} />
+              )}
+              <span className="token-symbol">
+                {isAutoWinEnabled ? 'AW-' : ''}{token0.symbol}-{token1.symbol}
+              </span>
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Action Button */}
