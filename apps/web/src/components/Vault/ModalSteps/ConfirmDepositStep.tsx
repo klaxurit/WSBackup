@@ -4,6 +4,7 @@ import { Loader } from '../../Loader/Loader';
 import { formatTokenAmount } from '../../../utils/formatTokenAmount';
 import { FallbackImg } from '../../utils/FallbackImg';
 import { StickyIcon } from '../../Common/StickyIcon';
+import { useQuery } from '@tanstack/react-query';
 
 interface Token {
   symbol: string;
@@ -41,6 +42,22 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
   isPending,
   onConfirm
 }) => {
+  const infraredVaultSlug = `winnieswap-${token0.symbol.toLowerCase()}-${token1.symbol.toLowerCase()}`
+  const { data: infraredApr } = useQuery({
+    queryKey: ["infraredData", infraredVaultSlug],
+    queryFn: async () => {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/vaults/infrared/${infraredVaultSlug}`)
+
+      if (!resp.ok) return "-"
+
+      const { success, vault } = await resp.json()
+      if (!success) return "-"
+
+      return (vault?.apr * 100).toFixed(2) || "-"
+    }
+  })
+
+
   return (
     <div className="VaultDepositModal__StepContent">
       {/* AutoWin Banner (always shown if vault has AutoWin) */}
@@ -92,7 +109,7 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
             </div>
             <div className="apr-item">
               <span className="apr-label">Staking Infrared APR</span>
-              <span className="apr-value">- %</span>
+              <span className="apr-value">{infraredApr} %</span>
             </div>
             <div className="apr-item">
               <span className="apr-label">Without AutoWin APR</span>
