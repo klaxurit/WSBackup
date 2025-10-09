@@ -86,7 +86,7 @@ importers:
         version: 0.14.2
       drizzle-orm:
         specifier: 0.41.0
-        version: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)(postgres@3.4.7)
+        version: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)
       eventsource:
         specifier: ^4.0.0
         version: 4.0.0
@@ -181,27 +181,18 @@ importers:
 
   apps/indexer:
     dependencies:
-      '@ponder/client':
-        specifier: ^0.13.12
-        version: 0.13.12(pg@8.16.3)(postgres@3.4.7)(typescript@5.8.3)
       decimal.js:
         specifier: ^10.6.0
         version: 10.6.0
       drizzle-orm:
         specifier: 0.41.0
-        version: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)(postgres@3.4.7)
+        version: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)
       hono:
         specifier: ^4.5.0
         version: 4.8.12
-      pg:
-        specifier: ^8.16.3
-        version: 8.16.3
       ponder:
         specifier: ^0.12.0
-        version: 0.12.0(@types/node@20.19.9)(hono@4.8.12)(postgres@3.4.7)(typescript@5.8.3)(viem@2.31.3)
-      postgres:
-        specifier: ^3.4.7
-        version: 3.4.7
+        version: 0.12.0(@types/node@20.19.9)(hono@4.8.12)(typescript@5.8.3)(viem@2.31.3)
       viem:
         specifier: ^2.21.3
         version: 2.31.3(typescript@5.8.3)
@@ -213,7 +204,7 @@ importers:
         version: 5.0.0(winston@3.17.0)
     devDependencies:
       '@types/node':
-        specifier: ^20.19.9
+        specifier: ^20.9.0
         version: 20.19.9
       eslint:
         specifier: ^8.53.0
@@ -3538,49 +3529,6 @@ packages:
     resolution: {integrity: sha512-YLT9Zo3oNPJoBjBc4q8G2mjU4tqIbf5CEOORbUUr48dCD9q3umJ3IPlVqOqDakPfd2HuwccBaqlGhN4Gmr5OWg==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
     dev: true
-
-  /@ponder/client@0.13.12(pg@8.16.3)(postgres@3.4.7)(typescript@5.8.3):
-    resolution: {integrity: sha512-hegpX2Wb0TRZvCc85Jgv/SGR2xJbpMdbKkBycXdFd6UaW0vGEAvmBBM2WX9SXc4bQIMpChcuEo5rS25DPwt9EQ==}
-    peerDependencies:
-      typescript: '>=5.0.4'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      drizzle-orm: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)(postgres@3.4.7)
-      eventsource: 3.0.7
-      superjson: 2.2.2
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - '@aws-sdk/client-rds-data'
-      - '@cloudflare/workers-types'
-      - '@electric-sql/pglite'
-      - '@libsql/client'
-      - '@libsql/client-wasm'
-      - '@neondatabase/serverless'
-      - '@op-engineering/op-sqlite'
-      - '@opentelemetry/api'
-      - '@planetscale/database'
-      - '@prisma/client'
-      - '@tidbcloud/serverless'
-      - '@types/better-sqlite3'
-      - '@types/pg'
-      - '@types/sql.js'
-      - '@vercel/postgres'
-      - '@xata.io/client'
-      - better-sqlite3
-      - bun-types
-      - expo-sqlite
-      - gel
-      - knex
-      - kysely
-      - mysql2
-      - pg
-      - postgres
-      - prisma
-      - sql.js
-      - sqlite3
-    dev: false
 
   /@ponder/utils@0.2.10(typescript@5.8.3)(viem@2.31.3):
     resolution: {integrity: sha512-h9y+L+dUEOkLn0oh0GECJ1kWJNzrFtLoMPODR7NsvqGcovq5ZaGFvFxb7+iDOUN6f6xn2M+cUoYjkmMsskw8+A==}
@@ -10187,7 +10135,7 @@ packages:
     peerDependencies:
       valtio: '*'
     dependencies:
-      valtio: 1.13.2(react@18.3.1)
+      valtio: 1.13.2(@types/react@19.1.8)(react@19.1.0)
     dev: false
 
   /destr@2.0.5:
@@ -10292,7 +10240,7 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
-  /drizzle-orm@0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)(postgres@3.4.7):
+  /drizzle-orm@0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3):
     resolution: {integrity: sha512-7A4ZxhHk9gdlXmTdPj/lREtP+3u8KvZ4yEN6MYVxBzZGex5Wtdc+CWSbu7btgF6TB0N+MNPrvW7RKBbxJchs/Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -10384,7 +10332,6 @@ packages:
       '@electric-sql/pglite': 0.2.13
       kysely: 0.26.3
       pg: 8.16.3
-      postgres: 3.4.7
     dev: false
 
   /dset@3.1.4:
@@ -11129,13 +11076,6 @@ packages:
   /eventsource-parser@3.0.3:
     resolution: {integrity: sha512-nVpZkTMM9rF6AQ9gPJpFsNAMt48wIzB5TQgiTLdHiuO8XEDhUgZEhqKlZWXbIzo9VmJ/HvysHqEaVeD5v9TPvA==}
     engines: {node: '>=20.0.0'}
-    dev: false
-
-  /eventsource@3.0.7:
-    resolution: {integrity: sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==}
-    engines: {node: '>=18.0.0'}
-    dependencies:
-      eventsource-parser: 3.0.3
     dev: false
 
   /eventsource@4.0.0:
@@ -14617,7 +14557,7 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: false
 
-  /ponder@0.12.0(@types/node@20.19.9)(hono@4.8.12)(postgres@3.4.7)(typescript@5.8.3)(viem@2.31.3):
+  /ponder@0.12.0(@types/node@20.19.9)(hono@4.8.12)(typescript@5.8.3)(viem@2.31.3):
     resolution: {integrity: sha512-ouAYqzZrjIgUBb43OiOB1iYoL1KabYDce9u545oPNECaXc9rSZHryymwvn8c26ymWNTMRF1dPsIQvERODDs/nw==}
     engines: {node: '>=18.14'}
     hasBin: true
@@ -14644,7 +14584,7 @@ packages:
       dataloader: 2.2.3
       detect-package-manager: 3.0.2
       dotenv: 16.4.7
-      drizzle-orm: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)(postgres@3.4.7)
+      drizzle-orm: 0.41.0(@electric-sql/pglite@0.2.13)(kysely@0.26.3)(pg@8.16.3)
       glob: 10.4.5
       graphql: 16.11.0
       graphql-yoga: 5.15.1(graphql@16.11.0)
@@ -14742,11 +14682,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       xtend: 4.0.2
-    dev: false
-
-  /postgres@3.4.7:
-    resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
-    engines: {node: '>=12'}
     dev: false
 
   /preact@10.24.2:
