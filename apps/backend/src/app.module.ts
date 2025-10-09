@@ -10,6 +10,7 @@ import { DatabaseModule } from './database/database.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { PonderModule } from './ponder/ponder.module';
 import { TokenModule } from './token/token.module';
+import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TokenModule } from './token/token.module';
     DatabaseModule,
     PonderModule,
     TokenModule,
+    VaultsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
