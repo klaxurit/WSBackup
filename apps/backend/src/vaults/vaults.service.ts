@@ -214,6 +214,7 @@ export class VaultsService implements OnModuleInit {
       this.logger.error(
         '❌ Error fetching InfraRed vaults:',
         error?.message || error,
+        console.log(`${this.infraRedApiUrl}/vault/${slug}`)
       );
 
       if (error?.response?.status === 401 || error?.response?.status === 403) {

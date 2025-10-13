@@ -6,6 +6,7 @@ import { useVaultWithdraw } from "../../../hooks/vault/useVaultWithdraw";
 import type { Address } from "viem";
 
 import stickyVaultIcon from '../../../assets/sticky_vault.png';
+import autoWinVaultIcon from '../../../assets/auto-win-vault.png';
 import { DepositForm } from "./depositForm";
 
 import type { VaultToken } from "../../../pages/VaultDetailPage/page";
@@ -26,8 +27,9 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
   const [withdrawAmount, setWithdrawAmount] = useState(0n);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedPercentage, setSelectedPercentage] = useState<10 | 25 | 50 | 100 | null>(null);
+  const [withdrawTokenType, setWithdrawTokenType] = useState<'sticky' | 'autowin'>('sticky');
 
-  // User position data (StickyVault)
+  // User position data (StickyVault) - keeping original simple logic
   const userPosition = useMemo(() => {
     if (!vault?.positions || vault.positions.items.length === 0 || !address) return null
     return vault.positions.items.filter((p: any) => p.user === address.toLowerCase())[0]
@@ -57,7 +59,7 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
     }
   }, [userPosition?.depositedToken0, userPosition?.depositedToken1, token0.decimals, token1.decimals])
 
-  // Withdraw hook
+  // Withdraw hook - keeping original simple logic
   const withdrawManager = useVaultWithdraw({
     vaultAddress: vault?.id as Address,
     burnAmount: withdrawAmount,
@@ -116,15 +118,34 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
             <DepositForm vault={vault?.id} t0={token0} t1={token1} autoWinVault={autoWinVault} onSuccess={handleDepositSuccess} />
           ) : (
             <div className="VaultDetailPage__WithdrawForm">
+              {/* Token Type Selection - Design Only */}
+              <div className="VaultDetailPage__FormTabs" style={{ marginBottom: '0.05rem' }}>
+                <button
+                  className={`btn btn--tiny ${withdrawTokenType === 'sticky' ? 'btn__main' : 'btn__shade'}`}
+                  onClick={() => setWithdrawTokenType('sticky')}
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  <img src={stickyVaultIcon} alt="Sticky" style={{ marginRight: '6px' }} className="StickyIcon" /> Sticky-Token
+                </button>
+                <button
+                  className={`btn btn--tiny ${withdrawTokenType === 'autowin' ? 'btn__main' : 'btn__shade'}`}
+                  onClick={() => setWithdrawTokenType('autowin')}
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  <img src={autoWinVaultIcon} alt="AutoWin" style={{ marginRight: '6px' }} className="AWStickyIcon" />
+                  AW-Sticky-Token
+                </button>
+              </div>
+
               {/* Withdraw Input */}
               <div className="VaultDetailPage__WithdrawInput">
                 <LiquidityInput
                   selectedToken={{
                     address: vault.address as `0x${string}`,
-                    symbol: `${token0.symbol}-${token1.symbol}`,
-                    name: `${token0.symbol}-${token1.symbol}`,
+                    symbol: withdrawTokenType === 'sticky' ? `${token0.symbol}-${token1.symbol}` : `AW-${token0.symbol}-${token1.symbol}`,
+                    name: withdrawTokenType === 'sticky' ? `${token0.symbol}-${token1.symbol}` : `AW-${token0.symbol}-${token1.symbol}`,
                     decimals: 18,
-                    logoUri: stickyVaultIcon
+                    logoUri: withdrawTokenType === 'sticky' ? stickyVaultIcon : autoWinVaultIcon
                   }}
                   onAmountChange={setWithdrawAmount}
                   value={withdrawAmount}

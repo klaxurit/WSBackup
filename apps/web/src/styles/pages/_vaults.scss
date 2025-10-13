@@ -94,6 +94,15 @@
   max-width: 1192px;
   margin: 0 auto;
 
+  .StickyIcon,
+  .AWStickyIcon {
+    width: 20px;
+    height: 20px;
+    background: black;
+    border-radius: 50%;
+    border: 1px solid #e39229;
+  }
+
   &--loading,
   &--error {
     display: flex;
@@ -582,6 +591,12 @@
         &:hover {
           background: $white-004;
           color: $white-080;
+        }
+
+        // Styles pour les icônes dans les boutons inactifs
+        .StickyIcon,
+        .AWStickyIcon {
+          opacity: 0.7;
         }
       }
 

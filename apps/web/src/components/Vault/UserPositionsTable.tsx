@@ -1,6 +1,7 @@
 import React from 'react';
 import Table, { type TableColumn } from '../Table/Table';
 import { StickyIcon } from '../Common/StickyIcon';
+import { AutoWinIcon } from '../Common/AutoWinIcon';
 import { formatNumber } from '../../utils/formatNumber';
 import { formatTokenAmount } from '../../utils/formatTokenAmount';
 
@@ -53,7 +54,11 @@ export const UserPositionsTable: React.FC<UserPositionsTableProps> = ({
       render: (row) => (
         <span className="UserPositionsTable__TokenCell">
           <span className="UserPositionsTable__TokenIcon">
-            <StickyIcon width={20} height={20} />
+            {row.type === 'autowin' ? (
+              <AutoWinIcon width={20} height={20} />
+            ) : (
+              <StickyIcon width={20} height={20} />
+            )}
           </span>
           <span className="UserPositionsTable__TokenName">
             {row.tokenName}
