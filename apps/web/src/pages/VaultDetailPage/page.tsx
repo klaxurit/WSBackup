@@ -5,12 +5,14 @@ import { ExplorerIcon } from '../../components/SVGs';
 import { formatNumber } from '../../utils/formatNumber';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { useQuery } from '@tanstack/react-query';
-import { type Address } from 'viem';
+import { type Address, formatUnits } from 'viem';
 import { useAccount } from 'wagmi';
 import { PageContentTransition } from '../../components/Transitions';
 import { Loader } from '../../components/Loader/Loader';
 import { UserVaultDetail } from '../../components/Vault/UserVaultDetail';
 import { UserPositionsTable } from '../../components/Vault/UserPositionsTable';
+import { useStickyVaultBalance } from '../../hooks/vault/useStickyVaultBalance';
+import { useAutoWinPosition } from '../../hooks/vault/useAutoWinPosition';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -176,38 +178,81 @@ export const VaultDetailPage = () => {
 
   }, [vault])
 
-  // Prepare user positions data for the table
+  // Get on-chain balances for accurate position tracking
+  const stickyVaultBalance = useStickyVaultBalance({
+    vaultAddress: vault?.id as Address | undefined,
+    userAddress: address,
+    vaultTVL_USD: vault?.totalValueLockedUSD
+  })
+
+  const autoWinBalance = useAutoWinPosition({
+    autoWinVault: autoWinVault,
+    userAddress: address,
+    sharesFromIndexer: vault?.autoWinVaultRef?.positions?.items?.find((p: any) => p.user === address?.toLowerCase())?.shares,
+    stickyVaultAddress: vault?.id as Address | undefined,
+    vaultTVL_USD: vault?.totalValueLockedUSD
+  })
+
+  // Prepare user positions data for the table using on-chain balances
   const userPositions = useMemo(() => {
-    if (!vault || !address) return []
+    if (!vault || !address || !token0 || !token1) return []
 
     const positions = []
 
-    // StickyVault position (Vanilla)
-    const stickyPosition = vault.positions?.items?.find((p: any) => p.user === address.toLowerCase())
-    if (stickyPosition && parseFloat(stickyPosition.shares) > 0) {
+    // 1. StickyVault position (Vanilla) - from wallet balance on-chain
+    // This shows only what's in the wallet, not what's staked elsewhere
+    if (stickyVaultBalance.shares > 0n) {
       positions.push({
         type: 'vanilla' as const,
-        valueUSD: parseFloat(stickyPosition.currentValueUSD || '0'),
-        tokenName: `STICKY-${token0?.symbol}-${token1?.symbol}`,
-        tokenAmount: BigInt(Math.floor(parseFloat(stickyPosition.shares) * Math.pow(10, 18))),
+        valueUSD: stickyVaultBalance.valueInUSD,
+        tokenName: `${token0.symbol}-${token1.symbol}`,
+        tokenAmount: stickyVaultBalance.shares,
         apr: vault.vaultDayData?.items?.[0]?.maxPotentialAPR || 0
       })
     }
 
-    // AutoWin position
-    const autoWinPosition = vault.autoWinVaultRef?.positions?.items?.find((p: any) => p.user === address.toLowerCase())
-    if (autoWinPosition && parseFloat(autoWinPosition.shares) > 0) {
+    // 2. AutoWin position - from on-chain balance
+    if (autoWinBalance.shares > 0n) {
       positions.push({
         type: 'autowin' as const,
-        valueUSD: parseFloat(autoWinPosition.currentValueUSD || '0'),
-        tokenName: `AW-${token0?.symbol}-${token1?.symbol}`,
-        tokenAmount: BigInt(Math.floor(parseFloat(autoWinPosition.shares) * Math.pow(10, 18))),
-        apr: vault.autoWinVaultRef?.estimatedAPR || 0
+        valueUSD: autoWinBalance.valueInUSD,
+        tokenName: `AW-${token0.symbol}-${token1.symbol}`,
+        tokenAmount: autoWinBalance.shares,
+        apr: parseFloat(vault.autoWinVaultRef?.estimatedAPR || '0')
       })
     }
 
+    // 3. Staked Externally (Infrared/Berahub)
+    // TODO: Requires Infrared contract address to query staked balance
+    // For now, we show a placeholder if indexer shows more shares than wallet
+    const stickyPositionIndexed = vault.positions?.items?.find((p: any) => p.user === address.toLowerCase())
+
+    // Only try to detect staked position if indexer data exists and is recent
+    if (stickyPositionIndexed && parseFloat(stickyPositionIndexed.shares) > 0) {
+      const indexedSharesDecimal = parseFloat(stickyPositionIndexed.shares)
+      const walletSharesDecimal = parseFloat(formatUnits(stickyVaultBalance.shares, 18))
+
+      // If indexer shows more shares than wallet (with 0.01 tolerance for rounding),
+      // the difference might be staked elsewhere
+      const difference = indexedSharesDecimal - walletSharesDecimal
+
+      if (difference > 0.01) {
+        // Calculate staked amount
+        const stakedElsewhere = BigInt(Math.floor(difference * Math.pow(10, 18)))
+        const stakedValueUSD = difference * stickyVaultBalance.pricePerShare
+
+        positions.push({
+          type: 'staked' as const,
+          valueUSD: stakedValueUSD,
+          tokenName: `Staked ${token0.symbol}-${token1.symbol}`,
+          tokenAmount: stakedElsewhere,
+          apr: 0 // APR from external protocol (Infrared) - to be implemented
+        })
+      }
+    }
+
     return positions
-  }, [vault, address, token0?.symbol, token1?.symbol])
+  }, [vault, address, token0, token1, stickyVaultBalance, autoWinBalance])
 
   if (isLoading) {
     return (
@@ -230,8 +275,6 @@ export const VaultDetailPage = () => {
       </div>
     );
   }
-
-  console.log(token0, token1, vault)
 
   return (
     <PageContentTransition className="VaultDetailPage">

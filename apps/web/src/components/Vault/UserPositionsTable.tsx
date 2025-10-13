@@ -5,7 +5,7 @@ import { formatNumber } from '../../utils/formatNumber';
 import { formatTokenAmount } from '../../utils/formatTokenAmount';
 
 interface UserPosition {
-  type: 'vanilla' | 'autowin';
+  type: 'vanilla' | 'autowin' | 'staked';
   valueUSD: number;
   tokenName: string;
   tokenAmount: bigint;
@@ -29,7 +29,7 @@ export const UserPositionsTable: React.FC<UserPositionsTableProps> = ({
       render: (row) => (
         <span className="UserPositionsTable__TypeCell">
           <span className={`UserPositionsTable__TypeBadge ${row.type}`}>
-            {row.type === 'autowin' ? 'AutoWin' : 'Vanilla'}
+            {row.type === 'autowin' ? 'AutoWin' : row.type === 'staked' ? 'Staked (Infrared)' : 'Vanilla'}
           </span>
         </span>
       )
