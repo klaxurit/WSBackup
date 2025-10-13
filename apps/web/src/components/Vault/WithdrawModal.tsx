@@ -4,14 +4,16 @@ import { ApprovalStep, ConfirmWithdrawStep, WaitingStep, SuccessStep } from './M
 import { useVaultWithdrawModalState } from '../../hooks/vault/useVaultModalState';
 import { VaultModalStep } from '../../types/vaultModal';
 import type { UseVaultWithdrawReturn } from '../../hooks/vault/useVaultWithdraw';
+import type { UseAutoWinWithdrawReturn } from '../../hooks/vault/useAutoWinWithdraw';
 import type { VaultToken } from '../../pages/VaultDetailPage/page';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
 import stickyVaultIcon from '../../assets/sticky_vault.png';
+import autoWinVaultIcon from '../../assets/auto-win-vault.png';
 
 interface WithdrawModalProps {
   isOpen: boolean;
   onClose: () => void;
-  withdrawHook: UseVaultWithdrawReturn;
+  withdrawHook: UseVaultWithdrawReturn | UseAutoWinWithdrawReturn;
   token0: VaultToken;
   token1: VaultToken;
   withdrawAmount: bigint;
@@ -19,6 +21,7 @@ interface WithdrawModalProps {
   pooledAmount1?: bigint;
   vaultAddress: string;
   onSuccess?: () => void;
+  tokenType?: 'sticky' | 'autowin';
 }
 
 /**
@@ -34,8 +37,10 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
   pooledAmount0,
   pooledAmount1,
   vaultAddress,
-  onSuccess
+  onSuccess,
+  tokenType = 'sticky'
 }) => {
+  const isAutoWin = tokenType === 'autowin';
   const modalState = useVaultWithdrawModalState({
     withdrawHook: {
       allowance: {
@@ -96,12 +101,18 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
 
   // Render step content based on current step
   const renderStepContent = () => {
+    const vaultIcon = isAutoWin ? autoWinVaultIcon : stickyVaultIcon
+    const vaultSymbol = isAutoWin
+      ? `AW-${token0Display.symbol}-${token1Display.symbol}`
+      : `${token0Display.symbol}-${token1Display.symbol}`
+    const vaultType = isAutoWin ? 'AutoWin Vault' : 'Sticky Vault'
+
     switch (modalState.currentStep) {
       case VaultModalStep.APPROVE_WITHDRAW:
         return (
           <ApprovalStep
-            tokenSymbol={`${token0Display.symbol}-${token1Display.symbol}`}
-            tokenLogoUri={stickyVaultIcon}
+            tokenSymbol={vaultSymbol}
+            tokenLogoUri={vaultIcon}
             amount={withdrawAmount}
             decimals={18}
             currentAllowance={withdrawHook.allowance.current}
@@ -111,29 +122,54 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
         );
 
       case VaultModalStep.CONFIRM_WITHDRAW:
-        return (
-          <ConfirmWithdrawStep
-            vaultToken={{
-              symbol: `${token0Display.symbol}-${token1Display.symbol}`,
-              logoUri: stickyVaultIcon
-            }}
-            token0={token0Display}
-            token1={token1Display}
-            withdrawAmount={withdrawAmount}
-            pooledAmount0={pooledAmount0}
-            pooledAmount1={pooledAmount1}
-            estimatedAmount0={withdrawHook.estimatedAmounts?.amount0 || 0n}
-            estimatedAmount1={withdrawHook.estimatedAmounts?.amount1 || 0n}
-            isPending={withdrawHook.withdraw.isPending}
-            onConfirm={withdrawHook.withdraw.execute}
-          />
-        );
+        // For AutoWin withdrawals, we only have estimated staking tokens (not individual token amounts)
+        if (isAutoWin) {
+          const autoWinHook = withdrawHook as UseAutoWinWithdrawReturn
+          return (
+            <ConfirmWithdrawStep
+              vaultToken={{
+                symbol: vaultSymbol,
+                logoUri: vaultIcon
+              }}
+              token0={token0Display}
+              token1={token1Display}
+              withdrawAmount={withdrawAmount}
+              pooledAmount0={undefined}
+              pooledAmount1={undefined}
+              estimatedAmount0={0n}
+              estimatedAmount1={0n}
+              estimatedStakingTokens={autoWinHook.estimatedAmount}
+              isPending={withdrawHook.withdraw.isPending}
+              onConfirm={withdrawHook.withdraw.execute}
+              isAutoWin={true}
+            />
+          )
+        } else {
+          const stickyHook = withdrawHook as UseVaultWithdrawReturn
+          return (
+            <ConfirmWithdrawStep
+              vaultToken={{
+                symbol: vaultSymbol,
+                logoUri: vaultIcon
+              }}
+              token0={token0Display}
+              token1={token1Display}
+              withdrawAmount={withdrawAmount}
+              pooledAmount0={pooledAmount0}
+              pooledAmount1={pooledAmount1}
+              estimatedAmount0={stickyHook.estimatedAmounts?.amount0 || 0n}
+              estimatedAmount1={stickyHook.estimatedAmounts?.amount1 || 0n}
+              isPending={withdrawHook.withdraw.isPending}
+              onConfirm={withdrawHook.withdraw.execute}
+            />
+          )
+        }
 
       case VaultModalStep.WAITING_WITHDRAW:
         return (
           <WaitingStep
             title="Waiting For Confirmation"
-            description={`Withdraw from Sticky Vault ${token0.symbol}-${token1.symbol}`}
+            description={`Withdraw from ${vaultType} ${token0.symbol}-${token1.symbol}`}
             message="Confirm this transaction in your wallet"
           />
         );
@@ -142,7 +178,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
         return (
           <SuccessStep
             title="Withdrawal Successful!"
-            message="Your liquidity has been successfully withdrawn from the vault!"
+            message={`Your liquidity has been successfully withdrawn from the ${vaultType}!`}
             txHash={withdrawHook.withdraw.hash}
             explorerUrl="https://beratrail.io"
             bearType="withdraw"

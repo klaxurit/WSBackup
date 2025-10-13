@@ -22,8 +22,10 @@ interface ConfirmWithdrawStepProps {
   pooledAmount1?: bigint;
   estimatedAmount0: bigint;
   estimatedAmount1: bigint;
+  estimatedStakingTokens?: bigint;
   isPending: boolean;
   onConfirm: () => void;
+  isAutoWin?: boolean;
 }
 
 /**
@@ -39,8 +41,10 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
   pooledAmount1,
   estimatedAmount0,
   estimatedAmount1,
+  estimatedStakingTokens,
   isPending,
-  onConfirm
+  onConfirm,
+  isAutoWin = false
 }) => {
   return (
     <div className="VaultDepositModal__StepContent">
@@ -50,14 +54,14 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
         <div className="amount-display">
           <span className="amount">{formatTokenAmount(withdrawAmount, 18)}</span>
           <StickyIcon width={14} height={14} />
-          <span className="symbol">{token0.symbol}-{token1.symbol}</span>
+          <span className="symbol">{vaultToken.symbol}</span>
         </div>
       </div>
 
       {/* Withdraw Details - Combined Pooled and Receive */}
       <div className="VaultDepositModal__WithdrawDetails">
-        {/* Pooled Tokens Section */}
-        {pooledAmount0 !== undefined && pooledAmount1 !== undefined && (
+        {/* Pooled Tokens Section - Only for Sticky vaults */}
+        {!isAutoWin && pooledAmount0 !== undefined && pooledAmount1 !== undefined && (
           <div className="section">
             <h4>Pooled tokens:</h4>
             <div className="token-row">
@@ -86,36 +90,64 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
         )}
 
         {/* Divider */}
-        {pooledAmount0 !== undefined && pooledAmount1 !== undefined && (
+        {!isAutoWin && pooledAmount0 !== undefined && pooledAmount1 !== undefined && (
           <div className="divider"></div>
         )}
 
         {/* You will receive Section */}
         <div className="section">
           <h4>You will receive:</h4>
-          <div className="token-row">
-            <div className="token-info">
-              {token0.logoUri ? (
-                <img src={token0.logoUri} alt={token0.symbol} />
-              ) : (
-                <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-              )}
-              <span className="symbol">{token0.symbol}</span>
+          {isAutoWin && estimatedStakingTokens !== undefined ? (
+            // AutoWin: Show staking token amount (StickyVault shares)
+            <div className="token-row">
+              <div className="token-info">
+                <StickyIcon width={24} height={24} />
+                <span className="symbol">{token0.symbol}-{token1.symbol} Sticky Tokens</span>
+              </div>
+              <span className="amount">{formatTokenAmount(estimatedStakingTokens, 18)}</span>
             </div>
-            <span className="amount">{formatTokenAmount(estimatedAmount0, token0.decimals)}</span>
-          </div>
-          <div className="token-row">
-            <div className="token-info">
-              {token1.logoUri ? (
-                <img src={token1.logoUri} alt={token1.symbol} />
-              ) : (
-                <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-              )}
-              <span className="symbol">{token1.symbol}</span>
-            </div>
-            <span className="amount">{formatTokenAmount(estimatedAmount1, token1.decimals)}</span>
-          </div>
+          ) : (
+            // Sticky: Show individual token amounts
+            <>
+              <div className="token-row">
+                <div className="token-info">
+                  {token0.logoUri ? (
+                    <img src={token0.logoUri} alt={token0.symbol} />
+                  ) : (
+                    <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
+                  )}
+                  <span className="symbol">{token0.symbol}</span>
+                </div>
+                <span className="amount">{formatTokenAmount(estimatedAmount0, token0.decimals)}</span>
+              </div>
+              <div className="token-row">
+                <div className="token-info">
+                  {token1.logoUri ? (
+                    <img src={token1.logoUri} alt={token1.symbol} />
+                  ) : (
+                    <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
+                  )}
+                  <span className="symbol">{token1.symbol}</span>
+                </div>
+                <span className="amount">{formatTokenAmount(estimatedAmount1, token1.decimals)}</span>
+              </div>
+            </>
+          )}
         </div>
+
+        {/* AutoWin Exit Fee Notice */}
+        {isAutoWin && (
+          <div style={{
+            marginTop: '0.5rem',
+            padding: '0.5rem',
+            fontSize: '0.75rem',
+            color: 'var(--text-secondary)',
+            background: 'rgba(255, 208, 86, 0.1)',
+            borderRadius: '0.5rem'
+          }}>
+            Note: A 0.1% exit fee is applied on AutoWin withdrawals
+          </div>
+        )}
       </div>
 
       {/* Action Button */}
