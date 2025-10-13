@@ -15,8 +15,6 @@ interface DepositFormProps {
 
 export const DepositForm = ({ vault, t0, t1, autoWinVault, onSuccess }: DepositFormProps) => {
   const [depositMode, setDepositMode] = useState<'double' | 'single'>('double')
-  // AutoWin is now managed in the modal, default to enabled if vault has AutoWin
-  const enableAutoWin = !!autoWinVault
 
   return (
     <div className="VaultDetailPage__DepositForm">
@@ -44,7 +42,6 @@ export const DepositForm = ({ vault, t0, t1, autoWinVault, onSuccess }: DepositF
             vault={vault}
             t0={t0}
             t1={t1}
-            enableAutoWin={enableAutoWin}
             autoWinVault={autoWinVault}
             onSuccess={onSuccess}
           />
@@ -53,7 +50,6 @@ export const DepositForm = ({ vault, t0, t1, autoWinVault, onSuccess }: DepositF
             vault={vault}
             t0={t0}
             t1={t1}
-            enableAutoWin={enableAutoWin}
             autoWinVault={autoWinVault}
             onSuccess={onSuccess}
           />

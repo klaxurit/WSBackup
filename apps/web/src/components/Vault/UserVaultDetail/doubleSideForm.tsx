@@ -11,16 +11,16 @@ interface DoubleSideFormProps {
   vault: Address
   t0: VaultToken
   t1: VaultToken
-  enableAutoWin?: boolean
   autoWinVault?: Address
   onSuccess?: () => void
 }
 
-export const DoubleSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onSuccess }: DoubleSideFormProps) => {
+export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: DoubleSideFormProps) => {
   const { isConnected } = useAccount();
   const [token0Amount, setToken0Amount] = useState(0n);
   const [token1Amount, setToken1Amount] = useState(0n);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAutoWinEnabled, setIsAutoWinEnabled] = useState(!!autoWinVault);
 
   const { isQuoted, quote, isAllow, t0Allowance, t1Allowance, deposite } = useDoubleDeposit({
     vault,
@@ -29,7 +29,7 @@ export const DoubleSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onS
     amount0: token0Amount,
     amount1: token1Amount,
     slippageBps: 100,
-    autoWin: enableAutoWin && autoWinVault ? {
+    autoWin: isAutoWinEnabled && autoWinVault ? {
       vaultAddress: autoWinVault,
       slippageBps: 100
     } : undefined
@@ -137,7 +137,7 @@ export const DoubleSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onS
           className={`btn btn--large btn__main`.trim()}
           onClick={() => setIsModalOpen(true)}
         >
-          {enableAutoWin ? 'Deposit & Enable AutoWin' : 'Deposit'}
+          {isAutoWinEnabled ? 'Deposit & Enable AutoWin' : 'Deposit'}
         </button>
       )}
 
@@ -151,7 +151,8 @@ export const DoubleSideForm = ({ vault, t0, t1, enableAutoWin, autoWinVault, onS
         amount0={token0Amount}
         amount1={token1Amount}
         vaultAddress={vault}
-        enableAutoWin={enableAutoWin}
+        isAutoWinEnabled={isAutoWinEnabled}
+        onToggleAutoWin={setIsAutoWinEnabled}
         autoWinVault={autoWinVault}
         onSuccess={onSuccess}
       />

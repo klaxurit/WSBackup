@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { VaultDepositModal } from './VaultDepositModal';
 import { ApprovalStep, ConfirmDepositStep, WaitingStep, SuccessStep } from './ModalSteps';
 import { useVaultDepositModalState } from '../../hooks/vault/useVaultModalState';
@@ -15,7 +15,8 @@ interface SingleSideDepositModalProps {
   tokenOut: VaultToken;
   amount: bigint;
   vaultAddress: string;
-  enableAutoWin?: boolean;
+  isAutoWinEnabled: boolean;
+  onToggleAutoWin: (enabled: boolean) => void;
   autoWinVault?: string;
   onSuccess?: () => void;
 }
@@ -31,19 +32,11 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
   tokenOut,
   amount,
   vaultAddress,
-  enableAutoWin,
+  isAutoWinEnabled,
+  onToggleAutoWin,
   autoWinVault, // Used to check if AutoWin vault exists before showing AutoCompound banner
   onSuccess
 }) => {
-  // Local state for AutoWin toggle (can be changed in modal)
-  const [isAutoWinEnabled, setIsAutoWinEnabled] = useState(enableAutoWin || false);
-
-  // Reset local state when modal opens with new initial value
-  useEffect(() => {
-    if (isOpen) {
-      setIsAutoWinEnabled(enableAutoWin || false);
-    }
-  }, [isOpen, enableAutoWin]);
 
   const modalState = useVaultDepositModalState({
     mode: 'single-sided',
@@ -132,7 +125,7 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
             minShares={depositHook.vaultQuote.minShares || 0n}
             hasAutoWinVault={!!autoWinVault}
             isAutoWinEnabled={isAutoWinEnabled}
-            onToggleAutoWin={setIsAutoWinEnabled}
+            onToggleAutoWin={onToggleAutoWin}
             isPending={depositHook.deposit.isPending}
             onConfirm={depositHook.deposit.execute}
           />
