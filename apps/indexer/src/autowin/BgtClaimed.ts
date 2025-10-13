@@ -55,26 +55,47 @@ ponder.on("autoWinVaults:BgtClaimed", async ({ event, context }) => {
   vault.totalCompoundFees = new Decimal(vault.totalCompoundFees).plus(compoundFee).toString();
   vault.totalBountyPaid = new Decimal(vault.totalBountyPaid).plus(bountyPaid).toString();
   vault.claimCount += 1;
-  vault.lastClaimTimestamp = event.block.timestamp;
 
   // Calculate average BGT per claim
   vault.avgBgtPerClaim = new Decimal(vault.totalBgtClaimed)
     .div(vault.claimCount)
     .toString();
 
-  // Calculate estimated APR based on 24h rolling window
-  // Formula: dailyYield = dailyBGT / avgTVL; APR = dailyYield * 365 * 100
-  // For a simple estimation, we use the last claim to approximate daily yields
-  const SECONDS_IN_DAY = 86400n;
-  const DAYS_IN_YEAR = 365;
+  // Calculate estimated APR based on time since last claim
+  // Formula: APR = (bgtClaimed / tvl) * (secondsInYear / timeSinceLastClaim) * 100
+  const SECONDS_IN_DAY = 86400;
+  const SECONDS_IN_YEAR = 365 * SECONDS_IN_DAY;
 
   if (tvlSnapshot !== "0" && Number(tvlSnapshot) > 0) {
-    // Use simple approximation: assume this claim represents average daily yield
-    // More sophisticated: query all claims in last 24h, but that requires more complex logic
-    const dailyYield = bgtClaimed.div(tvlSnapshot);
-    const estimatedAPR = dailyYield.mul(DAYS_IN_YEAR).mul(100);
+    // Calculate time since last claim (BEFORE updating lastClaimTimestamp)
+    const previousClaimTimestamp = vault.lastClaimTimestamp;
+    const timeSinceLastClaim = previousClaimTimestamp > 0n
+      ? Number(event.block.timestamp - previousClaimTimestamp)
+      : SECONDS_IN_DAY; // Default to 1 day for first claim
+
+    // Prevent division by zero and ensure minimum claim interval
+    const effectiveTimeDelta = Math.max(timeSinceLastClaim, 60); // At least 1 minute
+
+    // Calculate annualized yield based on actual time elapsed
+    // yield = (rewards / tvl) * (time normalization) * 100
+    const instantYield = bgtClaimed.div(tvlSnapshot); // Yield for this period
+    const annualizedYield = instantYield.mul(SECONDS_IN_YEAR).div(effectiveTimeDelta);
+    const estimatedAPR = annualizedYield.mul(100);
+
     vault.estimatedAPR = estimatedAPR.toString();
+
+    console.log(
+      `📊 APR calculation: ${bgtClaimed.toString()} BGT over ${effectiveTimeDelta}s ` +
+      `(${(effectiveTimeDelta / SECONDS_IN_DAY).toFixed(2)} days) = ${vault.estimatedAPR}% APR`
+    );
+  } else {
+    console.warn(
+      `⚠️ Cannot calculate APR: TVL is ${tvlSnapshot} (must be > 0)`
+    );
   }
+
+  // Update lastClaimTimestamp AFTER calculating APR
+  vault.lastClaimTimestamp = event.block.timestamp;
 
   // Update the vault entity
   await context.db.update(autoWinVault, { id: vault.id }).set({
