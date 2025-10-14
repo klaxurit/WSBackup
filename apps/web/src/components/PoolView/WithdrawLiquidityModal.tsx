@@ -111,9 +111,12 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
   }
 
   const handleSuccess = () => {
-    onSuccess?.()
-    onClose()
-    reset()
+    // Force refresh to hide position if liquidity is now 0
+    setTimeout(() => {
+      onSuccess?.()
+      onClose()
+      reset()
+    }, 1000) // Give time for blockchain to confirm
   }
 
   const handleClose = () => {

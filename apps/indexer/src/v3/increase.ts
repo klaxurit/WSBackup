@@ -63,6 +63,10 @@ ponder.on("v3PositionManager:IncreaseLiquidity", async ({ event, context }) => {
     args: [event.args.tokenId],
   });
   if (positionData) {
+    // Always sync liquidity with on-chain state (source of truth)
+    const onChainLiquidity = positionData[7] as bigint
+    position.liquidity = onChainLiquidity
+
     position.feeGrowthInside0LastX128 = positionData[8]
     position.feeGrowthInside1LastX128 = positionData[9]
   }

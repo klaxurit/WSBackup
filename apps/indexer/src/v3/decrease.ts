@@ -66,8 +66,11 @@ ponder.on("v3PositionManager:DecreaseLiquidity", async ({ event, context }) => {
     position.feeGrowthInside0LastX128 = positionData[8]
     position.feeGrowthInside1LastX128 = positionData[9]
 
-    // Fix rounding issues: if liquidity is 0, set withdrawn = deposited
+    // Always sync liquidity with on-chain state (source of truth)
     const onChainLiquidity = positionData[7] as bigint
+    position.liquidity = onChainLiquidity
+
+    // Fix rounding issues: if liquidity is 0, set withdrawn = deposited
     if (onChainLiquidity === 0n) {
       position.withdrawnToken0 = position.depositedToken0
       position.withdrawnToken1 = position.depositedToken1
