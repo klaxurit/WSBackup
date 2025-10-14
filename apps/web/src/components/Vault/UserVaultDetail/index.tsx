@@ -7,7 +7,6 @@ import { useAutoWinWithdraw } from "../../../hooks/vault/useAutoWinWithdraw";
 import { useAutoWinPosition } from "../../../hooks/vault/useAutoWinPosition";
 import { useStickyVaultBalance } from "../../../hooks/vault/useStickyVaultBalance";
 import type { Address } from "viem";
-import { formatUnits } from "viem";
 
 import stickyVaultIcon from '../../../assets/sticky_vault.png';
 import autoWinVaultIcon from '../../../assets/auto-win-vault.png';
@@ -33,51 +32,55 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
   const [selectedPercentage, setSelectedPercentage] = useState<10 | 25 | 50 | 100 | null>(null);
   const [withdrawTokenType, setWithdrawTokenType] = useState<'sticky' | 'autowin'>('sticky');
 
-  // User position data (StickyVault) - keeping original simple logic
-  const userPosition = useMemo(() => {
-    if (!vault?.positions || vault.positions.items.length === 0 || !address) return null
-    return vault.positions.items.filter((p: any) => p.user === address.toLowerCase())[0]
-  }, [vault?.positions.items, address])
-
-  // Calculate price per share based on user position
-  const vaultPricePerShare = useMemo(() => {
-    if (!userPosition?.currentValueUSD || !userPosition?.shares) return 0
-    const userShares = parseFloat(userPosition.shares) // shares est déjà en format décimal
-    const userValueUSD = parseFloat(userPosition.currentValueUSD)
-    return userShares > 0 ? userValueUSD / userShares : 0
-  }, [userPosition?.currentValueUSD, userPosition?.shares])
-
-  // Convert pooled token amounts to bigint for modal
-  const pooledAmounts = useMemo(() => {
-    if (!userPosition?.depositedToken0 || !userPosition?.depositedToken1) {
-      return { amount0: undefined, amount1: undefined }
-    }
-    try {
-      // depositedToken0/1 are already in decimal format (string), convert to bigint
-      const amount0 = BigInt(Math.floor(parseFloat(userPosition.depositedToken0) * Math.pow(10, token0.decimals)))
-      const amount1 = BigInt(Math.floor(parseFloat(userPosition.depositedToken1) * Math.pow(10, token1.decimals)))
-      return { amount0, amount1 }
-    } catch (error) {
-      console.error('Error converting pooled amounts:', error)
-      return { amount0: undefined, amount1: undefined }
-    }
-  }, [userPosition?.depositedToken0, userPosition?.depositedToken1, token0.decimals, token1.decimals])
-
-  // Get Sticky balance data
+  // Get user balances for both vault types
   const stickyBalance = useStickyVaultBalance({
     vaultAddress: vault?.id as Address,
     userAddress: address,
     vaultTVL_USD: vault?.totalValueLockedUSD
   })
 
-  // Get AutoWin balance data
   const autoWinBalance = useAutoWinPosition({
-    autoWinVault: autoWinVault,
+    autoWinVault: autoWinVault as Address,
     userAddress: address,
     sharesFromIndexer: vault?.autoWinVaultRef?.positions?.items?.find((p: any) => p.user === address?.toLowerCase())?.shares,
     stickyVaultAddress: vault?.id as Address,
-    vaultTVL_USD: vault?.totalValueLockedUSD
+    vaultTVL_USD: vault?.totalValueLockedUSD?.toString()
   })
+
+  // Get current balance based on selected token type
+  const currentBalance = useMemo(() => {
+    return withdrawTokenType === 'sticky' ? stickyBalance : autoWinBalance
+  }, [withdrawTokenType, stickyBalance, autoWinBalance])
+
+  // Calculate price per share for the selected token type
+  // Use currentValueUSD from GraphQL (indexer) for consistency with LiquidityPage
+  const currentPricePerShare = useMemo(() => {
+    if (withdrawTokenType === 'sticky') {
+      // Get currentValueUSD from GraphQL position data
+      const stickyPosition = vault?.positions?.items?.find((p: any) => p.user === address?.toLowerCase())
+      const currentValueUSD = stickyPosition?.currentValueUSD ? parseFloat(stickyPosition.currentValueUSD) : 0
+      const shares = stickyPosition?.shares ? parseFloat(stickyPosition.shares) : 0
+
+      // If GraphQL data available, use it (same calculation as LiquidityPage)
+      if (currentValueUSD > 0 && shares > 0) {
+        return currentValueUSD / shares
+      }
+
+      // Fallback to on-chain calculation
+      return stickyBalance.pricePerShare
+    }
+
+    // For AutoWin, calculate price per share from the AutoWin position
+    if (!autoWinBalance.valueInUSD || !autoWinBalance.shares) return 0
+    const sharesDecimal = parseFloat(autoWinBalance.shares.toString()) / Math.pow(10, 18)
+    return sharesDecimal > 0 ? autoWinBalance.valueInUSD / sharesDecimal : 0
+  }, [withdrawTokenType, vault?.positions, address, stickyBalance.pricePerShare, autoWinBalance.valueInUSD, autoWinBalance.shares])
+
+  // Convert pooled token amounts to bigint for modal (simplified for now)
+  const pooledAmounts = useMemo(() => {
+    // For now, return undefined - this will be handled by the withdraw modal
+    return { amount0: undefined, amount1: undefined }
+  }, [])
 
   // Sticky Vault withdraw hook
   const withdrawManager = useVaultWithdraw({
@@ -179,44 +182,12 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
                 </button>
               </div>
 
-              {/* Balance Display */}
-              <div style={{
-                padding: '0.5rem 0.75rem',
-                fontSize: '0.85rem',
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <span>Available Balance:</span>
-                <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
-                  {withdrawTokenType === 'sticky' ? (
-                    <>
-                      {parseFloat(formatUnits(stickyBalance.shares, 18)).toFixed(4)} tokens
-                      {stickyBalance.valueInUSD > 0 && (
-                        <span style={{ color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
-                          (${stickyBalance.valueInUSD.toFixed(2)})
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {parseFloat(formatUnits(autoWinBalance.shares, 18)).toFixed(4)} tokens
-                      {autoWinBalance.valueInUSD > 0 && (
-                        <span style={{ color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
-                          (${autoWinBalance.valueInUSD.toFixed(2)})
-                        </span>
-                      )}
-                    </>
-                  )}
-                </span>
-              </div>
 
               {/* Withdraw Input */}
               <div className="VaultDetailPage__WithdrawInput">
                 <LiquidityInput
                   selectedToken={{
-                    address: vault.address as `0x${string}`,
+                    address: withdrawTokenType === 'sticky' ? vault.address as `0x${string}` : autoWinVault as `0x${string}`,
                     symbol: withdrawTokenType === 'sticky' ? `${token0.symbol}-${token1.symbol}` : `AW-${token0.symbol}-${token1.symbol}`,
                     name: withdrawTokenType === 'sticky' ? `${token0.symbol}-${token1.symbol}` : `AW-${token0.symbol}-${token1.symbol}`,
                     decimals: 18,
@@ -225,8 +196,9 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
                   onAmountChange={setWithdrawAmount}
                   value={withdrawAmount}
                   isOverBalance={false}
-                  showMaxButton={false}
-                  customUsdValue={vaultPricePerShare}
+                  showMaxButton={true}
+                  customUsdValue={currentPricePerShare}
+                  customBalance={currentBalance.shares}
                 />
               </div>
 
