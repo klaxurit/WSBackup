@@ -133,6 +133,54 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
     <>
       {/* Action Forms */}
       <div className="VaultDetailPage__ActionForms">
+        {/* My Deposits Card - Only show if user is connected and has deposits */}
+        {isConnected && (stickyBalance.shares > 0n || autoWinBalance.shares > 0n) && (
+          <div className="VaultDetailPage__MyDeposits">
+            <h4 className="VaultDetailPage__MyDepositsTitle">My Deposits</h4>
+            <div className="VaultDetailPage__MyDepositsGrid">
+              {/* Sticky Vault Position */}
+              {stickyBalance.shares > 0n && (
+                <div className="VaultDetailPage__MyDepositCard">
+                  <div className="VaultDetailPage__MyDepositHeader">
+                    <div className="VaultDetailPage__MyDepositIcon">
+                      <img src={stickyVaultIcon} alt="Sticky Vault" />
+                    </div>
+                    <div className="VaultDetailPage__MyDepositInfo">
+                      <span className="VaultDetailPage__MyDepositLabel">STICKY-{token0.symbol}-{token1.symbol}</span>
+                      <span className="VaultDetailPage__MyDepositAmount">
+                        {(Number(stickyBalance.shares) / Math.pow(10, 18)).toFixed(4)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="VaultDetailPage__MyDepositValue">
+                    ${stickyBalance.valueInUSD.toFixed(2)}
+                  </div>
+                </div>
+              )}
+
+              {/* AutoWin Position */}
+              {autoWinBalance.shares > 0n && (
+                <div className="VaultDetailPage__MyDepositCard VaultDetailPage__MyDepositCard--autowin">
+                  <div className="VaultDetailPage__MyDepositHeader">
+                    <div className="VaultDetailPage__MyDepositIcon VaultDetailPage__MyDepositIcon--autowin">
+                      <img src={autoWinVaultIcon} alt="AutoWin Vault" />
+                    </div>
+                    <div className="VaultDetailPage__MyDepositInfo">
+                      <span className="VaultDetailPage__MyDepositLabel">AutoWin-STICKY-{token0.symbol}-{token1.symbol}</span>
+                      <span className="VaultDetailPage__MyDepositAmount">
+                        {(Number(autoWinBalance.shares) / Math.pow(10, 18)).toFixed(4)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="VaultDetailPage__MyDepositValue">
+                    ${autoWinBalance.valueInUSD.toFixed(2)}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div className="VaultDetailPage__FormTabs">
           <button
