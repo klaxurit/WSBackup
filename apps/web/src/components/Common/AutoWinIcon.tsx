@@ -18,7 +18,7 @@ export const AutoWinIcon: React.FC<AutoWinIconProps> = ({
       alt="AutoWin Vault"
       width={width}
       height={height}
-      className={`AutoWinIcon ${className}`}
+      className={`StickyIcon ${className}`}
     />
   );
 };
