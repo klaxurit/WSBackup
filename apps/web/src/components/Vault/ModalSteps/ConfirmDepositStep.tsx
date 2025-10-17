@@ -179,7 +179,7 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
         style={{ marginTop: 'auto' }}
       >
         {isPending ? (
-          <Loader size="small" color="rgba(255, 208, 86)" className="btn__main-loader" />
+          <Loader size="small" className="btn__main-loader" />
         ) : (
           'Confirm Supply'
         )}

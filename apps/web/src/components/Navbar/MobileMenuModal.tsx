@@ -44,8 +44,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
         <nav className="MobileMenuModal__Nav">
           <a href="/" className="MobileMenuModal__Link">Swap</a>
           <a href="/explore" className="MobileMenuModal__Link">Explore</a>
-          <a href="/pools" className="MobileMenuModal__Link">Pools</a>
-          <a href="/vaults" className="MobileMenuModal__Link">Vaults</a>
+          <a href="/liquidity" className="MobileMenuModal__Link">Liquidity</a>
         </nav>
         <div style={{ position: 'relative', width: '100%' }}>
           <SearchBar searchValue={searchValue} setSearchValue={setSearchValue} mode="expanded" />

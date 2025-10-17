@@ -159,7 +159,7 @@ const InfiniteLoad: React.FC<InfiniteLoadProps> = ({
           >
             {isFetchingNextPage ? (
               <>
-                <Loader size="small" color="#FFD056" />
+                <Loader size="small" />
               </>
             ) : (
               'Load More'
@@ -336,7 +336,7 @@ export function Table<T = any>({
               <tr>
                 <td colSpan={columns.length} className="Table__Empty">
                   <div className="Table__LoadingContainer">
-                    <Loader size="desktop" color="#FFD056" />
+                    <Loader size="desktop" />
                   </div>
                 </td>
               </tr>

@@ -158,7 +158,7 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
         style={{ marginTop: 'auto' }}
       >
         {isPending ? (
-          <Loader size="small" color="rgba(255, 208, 86)" className="btn__main-loader" />
+          <Loader size="small" className="btn__main-loader" />
         ) : (
           `Withdraw ${formatTokenAmount(withdrawAmount, 18)} ${vaultToken.symbol}`
         )}

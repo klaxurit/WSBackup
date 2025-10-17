@@ -70,7 +70,7 @@ export const ApprovalStep: React.FC<ApprovalStepProps> = ({
         style={{ marginTop: 'auto' }}
       >
         {isApproving ? (
-          <Loader size="small" color="rgba(255, 208, 86)" className="btn__main-loader" />
+          <Loader size="small" className="btn__main-loader" />
         ) : (
           `Approve ${tokenSymbol}`
         )}
