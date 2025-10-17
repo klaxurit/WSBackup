@@ -10,6 +10,9 @@ export interface BerachainToken {
   totalSupply: string;
   lastPrice: number;
   status: string;
+  balance?: string;
+  priceUSD?: number;
+  balanceUSD?: number;
 }
 
 export const useBerachainTokenList = () => {

@@ -147,6 +147,7 @@
   transition: color 0.15s;
   background: none;
   border: none;
+
   button {
     background: none;
     border: none;
@@ -174,6 +175,45 @@
   color: #888;
   font-size: 15px;
   padding: 32px 0;
+}
+
+.Table__LoadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 0;
+
+  span {
+    color: #888;
+    font-size: 15px;
+  }
+}
+
+.Table__LoadMoreBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 @media (max-width: 768px) {
@@ -272,6 +312,7 @@
   transition: color 0.15s ease;
   background: none;
   border: none;
+
   button {
     background: none;
     border: none;
@@ -609,6 +650,7 @@
   text-overflow: ellipsis;
   background: none;
   border: none;
+
   button {
     background: none;
     border: none;
@@ -825,5 +867,21 @@
 
   td {
     padding: 8px;
+  }
+}
+
+// Clickable rows styles
+.Table tbody tr[style*="cursor: pointer"] {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    background: rgba(255, 208, 86, 0.08) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 208, 86, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(255, 208, 86, 0.1);
   }
 }

@@ -12,7 +12,6 @@ const DEFAULT_POPULAR_TOKENS: PopularTokenConfig[] = [
   { symbol: 'WBERA', priority: 2, enabled: true },
   { symbol: 'HONEY', priority: 3, enabled: true },
   { symbol: 'iBERA', priority: 4, enabled: true },
-  { symbol: 'BGT', priority: 5, enabled: false }, // Désactivé car non tradable
 ];
 
 /**

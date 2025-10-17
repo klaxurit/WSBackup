@@ -19,7 +19,7 @@ import { usePageTransition } from './hooks/usePageTransition'
 function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const { reconnect } = useReconnect();
-  const { isLoading, loadingText } = usePageTransition({
+  const { isLoading } = usePageTransition({
     loadingDelay: 50,
     minimumLoadingTime: 150,
   });
@@ -36,7 +36,7 @@ function AppContent() {
     <div className="app">
       <Navbar />
       <main className="app-main">
-        <PageTransition isLoading={isLoading} loadingText={loadingText}>
+        <PageTransition isLoading={isLoading}>
           <Routes>
             <Route path="/" element={
               <div className="swap-page">
@@ -49,7 +49,7 @@ function AppContent() {
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/liquidity" element={<LiquidityPage />} />
             <Route path="/liquidity/create" element={<CreatePoolPage />} />
-            <Route path="/vaults/:vaultAddress" element={<VaultDetailPage />} />
+            <Route path="/vault/:vaultAddress" element={<VaultDetailPage />} />
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />

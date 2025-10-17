@@ -13,6 +13,10 @@ export { StickyVaultFactoryABI } from "./abis/StickyVaultFactory"
 export { StickyVaultWithRouter } from "./abis/StickyVaultWithRouter"
 export { StickyVaultRouter } from "./abis/StickyVaultRouter"
 
+export { autowinFactoryABI as AutoWinFactoryABI } from "./abis/AutowinFactory"
+export { AutowinABI } from "./abis/Autowin"
+export { autowinABI as AutoWinRouterABI } from "./abis/AutowinRouter"
+
 
 export const CONTRACTS = {
   FACTORY: "0x76fD9D07d5e4D889CAbED96884F15f7ebdcd6B63" as const,
@@ -24,5 +28,8 @@ export const CONTRACTS = {
 
   STICKYVAULT_FACTORY: "0x18B9ABf2E821E2fE7A08Dc255d5a7e77fFc0b844" as const,
   STICKYVAULT_IMPLEMNTATION: "0x32a56Da6f958BBFB24797DD47C7d1146D55C4052" as const,
-  STICKYVAULT_ROUTER: "0xbb962d8805e2B4AF087C4702F088Cf9BE9862F30" as const
+  STICKYVAULT_ROUTER: "0xbb962d8805e2B4AF087C4702F088Cf9BE9862F30" as const,
+
+  AUTOWIN_FACTORY: "0x21b35a3dcF462540cb8EEA0e5d8594FF9e93C2e1" as const,
+  AUTOWIN_ROUTER: "0x674FC8955E28207E12156622DdeB875c7678A15c" as const
 } as const

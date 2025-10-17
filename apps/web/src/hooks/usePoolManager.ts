@@ -596,6 +596,7 @@ export const usePoolManager = ({
     status,
     poolAlreadyExist,
     pool,
+    poolAddress: existingPoolAddress || computedPoolAddress, // Address of existing or newly created pool
 
     // Price calculation
     ...prices,

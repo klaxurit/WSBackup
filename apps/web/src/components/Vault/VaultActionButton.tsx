@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '../Buttons/ConnectButton';
-import type { VaultManager } from '../../hooks/useVault';
+// import type { VaultManager } from '../../hooks/useVault';
+
+// TODO: This component is unused and needs to be updated or removed
+type VaultManager = any;
 
 interface VaultActionButtonProps {
   size?: 'large' | 'small';

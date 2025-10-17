@@ -36,7 +36,7 @@ const ExplorePage: React.FC = () => {
           {TABS.map(tab => (
             <button
               key={tab.key}
-              className={`btn btn--tiny ${activeTab === tab.key ? 'btn__main' : 'btn__shade'}`}
+              className={`btn btn--tiny ${activeTab === tab.key ? 'btn__main btn__tab-active' : 'btn__shade'}`}
               onClick={() => setActiveTab(tab.key as 'tokens' | 'pools' | 'vaults' | 'transactions')}
               type="button"
             >

@@ -24,6 +24,7 @@ interface LiquidityInputProps {
   disabled?: boolean;
   showMaxButton?: boolean;
   customUsdValue?: number;
+  customBalance?: bigint;
 }
 
 export interface LiquidityInputRef {
@@ -38,6 +39,7 @@ export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>
   disabled = false,
   showMaxButton = true,
   customUsdValue,
+  customBalance,
 }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isInputting = useRef(false);
@@ -47,13 +49,18 @@ export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>
   const { address } = useAccount()
   const { data: usdValue = 0 } = usePrice(selectedToken as any)
 
-  const { data: balance, isLoading: loading } = useBalance({
+  // Use custom balance if provided, otherwise use useBalance hook
+  const { data: wagmiBalance, isLoading: loadingWagmi } = useBalance({
     address,
     token: (selectedToken?.address !== zeroAddress) ? selectedToken?.address as `0x${string}` : undefined,
     query: {
-      enabled: !!address
+      enabled: !!address && !customBalance
     }
   })
+
+  // Use custom balance or wagmi balance
+  const balance = customBalance !== undefined ? { value: customBalance } : wagmiBalance
+  const loading = customBalance !== undefined ? false : loadingWagmi
 
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0

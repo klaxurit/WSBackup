@@ -287,7 +287,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
                 )}
 
                 <button
-                  className={`btn btn--tiny ${interval === int ? 'btn__main' : 'btn__shade'} ${isLoading ? 'btn__disabled' : ''}`}
+                  className={`btn btn--tiny ${interval === int ? 'btn__main btn__tab-active' : 'btn__shade'} ${isLoading ? 'btn__disabled' : ''}`}
                   onClick={() => handleIntervalChange(int)}
                   onMouseEnter={() => handleMouseEnter(int)}
                   onMouseLeave={handleMouseLeave}

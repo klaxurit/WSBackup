@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { FallbackImg } from "../utils/FallbackImg";
-import { useTokenCache } from '../../hooks/useTokenCache';
+import { useTokensInPool } from '../../hooks/useTokensInPool';
+import { Loader } from "../Loader/Loader";
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -16,7 +17,6 @@ interface NetworkSelectorProps {
   isHomePage?: boolean;
   onForceOpen?: () => void;
   forceListOpen?: boolean;
-  onlyPoolToken: boolean
 }
 
 const TokenSelector: React.FC<NetworkSelectorProps> = ({
@@ -24,16 +24,16 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   onSelect,
   onToggleNetworkList,
   onForceOpen,
-  forceListOpen,
-  onlyPoolToken
+  forceListOpen
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
 
-  // Préchargement des tokens dès le montage du composant
-  const { isLoading: tokensLoading, isReady } = useTokenCache({
-    onlyPoolToken
-  });
+  // Utilisation du nouveau hook optimisé
+  const { isLoading: tokensLoading, isError, isSuccess } = useTokensInPool();
+
+  // États dérivés pour compatibilité
+  const isReady = isSuccess && !isError;
 
   useEffect(() => {
     setSelectedToken(preSelected || null);
@@ -98,7 +98,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
         </>
       ) : (
         <span className="networkSelector__symbol">
-          {tokensLoading ? 'Loading...' : !isReady ? 'Preparing...' : 'Select'}
+          {tokensLoading || !isReady ? <Loader size="small" /> : 'Select'}
         </span>
       )}
       <span className={`networkSelector__chevron${isNetworksListOpen ? ' open' : ''}`}>
@@ -118,7 +118,6 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
           onClose={handleNetworksListToggle}
           onSelect={handleTokenSelect}
           selectedToken={selectedToken || preSelected}
-          onlyPoolToken={onlyPoolToken}
         />
       )}
     </>

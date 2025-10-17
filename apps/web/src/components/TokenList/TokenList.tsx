@@ -1,10 +1,10 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
 import { PopularTokens } from './PopularTokens';
-import { useTokenCache } from '../../hooks/useTokenCache';
+import { useTokensInPool, convertToBerachainTokens } from '../../hooks/useTokensInPool';
+import { usePopularTokens } from '../../hooks/usePopularTokens';
 import { Modal } from '../Common/Modal';
-import { useDebounce } from '../../hooks/useDebounce';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface NetworksListProps {
@@ -12,7 +12,6 @@ interface NetworksListProps {
   onClose: () => void;
   onSelect: (token: BerachainToken) => void;
   selectedToken?: BerachainToken | null;
-  onlyPoolToken: boolean
 }
 
 export const TokenList = ({
@@ -20,73 +19,58 @@ export const TokenList = ({
   onClose,
   onSelect,
   selectedToken,
-  onlyPoolToken
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
 
-  // State to collect USD values from TokenItem components
-  const [tokenValuesUSD, setTokenValuesUSD] = useState<Record<string, number>>({});
-
-  // Utilisation du cache de tokens
+  // Utilisation du nouveau hook optimisé
   const {
-    tokens: cachedTokens,
-    popularTokens,
+    data: tokensData,
     isLoading,
-    hasError,
-    hasTokens,
-    isReady
-  } = useTokenCache({
-    onlyPoolToken,
-    searchValue
-  });
+    error,
+    isError
+  } = useTokensInPool();
 
-  // Debounce the USD values to avoid excessive re-renders
-  const debouncedTokenValuesUSD = useDebounce(tokenValuesUSD, 400);
+  // Convertir les tokens du backend en format BerachainToken
+  const cachedTokens = useMemo(() => {
+    if (!tokensData?.data?.tokens) return [];
+    return convertToBerachainTokens(tokensData.data.tokens);
+  }, [tokensData]);
 
-  // Callback to handle balance updates from TokenItem components
-  const handleBalanceUpdate = useCallback((tokenAddress: string, balanceUSD: number) => {
-    setTokenValuesUSD(prev => {
-      // Only update if the value has actually changed
-      if (prev[tokenAddress] === balanceUSD) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [tokenAddress]: balanceUSD
-      };
-    });
-  }, []);
+  // Tokens populaires (utilise le hook usePopularTokens)
+  const popularTokens = usePopularTokens(cachedTokens, undefined, 4);
 
-  // Dynamically sort tokens based on USD values
+  // États dérivés pour compatibilité
+  const hasError = isError;
+  const hasTokens = cachedTokens.length > 0;
+  const isReady = !isLoading && !error;
+
+  // Filtrer et trier les tokens selon la recherche et les balances
   const sortedTokens = useMemo(() => {
-    // Don't re-sort when search is active to maintain search relevance
+    let filteredTokens = cachedTokens;
+
+    // Filtrer par recherche si nécessaire
     if (searchValue !== "") {
-      return cachedTokens;
+      const searchLower = searchValue.toLowerCase();
+      filteredTokens = cachedTokens.filter(token =>
+        token.symbol.toLowerCase().includes(searchLower) ||
+        token.name.toLowerCase().includes(searchLower) ||
+        token.address.toLowerCase().includes(searchLower)
+      );
     }
 
-    // Create a copy of the cached tokens to avoid mutation
-    const tokensCopy = [...cachedTokens];
+    // Trier par balance USD (déjà calculée par le backend)
+    return filteredTokens.sort((a, b) => {
+      const aValue = a.balanceUSD || 0;
+      const bValue = b.balanceUSD || 0;
 
-    // Sort tokens by USD value
-    return tokensCopy.sort((a, b) => {
-      const aAddress = a.address || '';
-      const bAddress = b.address || '';
-
-      const aValue = debouncedTokenValuesUSD[aAddress] || 0;
-      const bValue = debouncedTokenValuesUSD[bAddress] || 0;
-
-      // If both tokens have no balance, maintain original order
-      if (aValue === 0 && bValue === 0) {
-        return 0;
-      }
-
-      // Tokens with balance come first, sorted by USD value descending
+      // Tokens avec balance en premier, triés par valeur USD décroissante
+      if (aValue === 0 && bValue === 0) return 0;
       if (aValue === 0) return 1;
       if (bValue === 0) return -1;
 
-      return bValue - aValue; // Descending order by USD value
+      return bValue - aValue;
     });
-  }, [cachedTokens, debouncedTokenValuesUSD, searchValue]);
+  }, [cachedTokens, searchValue]);
 
   const handleTokenSelect = (token: BerachainToken) => {
     onSelect(token);
@@ -168,7 +152,6 @@ export const TokenList = ({
                 token={token}
                 isSelected={selectedToken?.address === token.address}
                 onSelect={handleTokenSelect.bind(null, token)}
-                onBalanceUpdate={handleBalanceUpdate}
               />
             ))}
           </div>

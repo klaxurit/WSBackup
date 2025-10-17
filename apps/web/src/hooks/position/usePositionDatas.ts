@@ -40,7 +40,8 @@ const emptyPosition = {
   inRange: false,
   positionDetails: null,
   unclaimedFees: null,
-  refetch: () => { }
+  refetch: () => { },
+  actualLiquidity: 0n
 }
 
 export const usePositionDatas = (position: Position, pool: Pool) => {
@@ -70,6 +71,22 @@ export const usePositionDatas = (position: Position, pool: Pool) => {
     }
   }, [pool])
 
+  // Fetch on-chain position data
+  const { data: onChainPosition, refetch: refetchOnChain } = useReadContract({
+    address: CONTRACTS_ADDRESS.positionManager,
+    abi: POSITION_MANAGER_ABI,
+    functionName: "positions",
+    args: [BigInt(position.tokenId)]
+  })
+
+  // Use on-chain liquidity as source of truth
+  const actualLiquidity = useMemo(() => {
+    if (onChainPosition && Array.isArray(onChainPosition)) {
+      return onChainPosition[7] as bigint
+    }
+    return BigInt(position.liquidity)
+  }, [onChainPosition, position.liquidity])
+
   const sdkPosition = useMemo(() => {
     if (!sdkPool) return null
 
@@ -78,20 +95,13 @@ export const usePositionDatas = (position: Position, pool: Pool) => {
         pool: sdkPool,
         tickLower: position.tickLower,
         tickUpper: position.tickUpper,
-        liquidity: position.liquidity
+        liquidity: actualLiquidity.toString()
       })
     } catch (error) {
       console.error('Error when formating position:', error)
       return null
     }
-  }, [sdkPool, position])
-
-  const { data: onChainPosition, refetch: refetchOnChain } = useReadContract({
-    address: CONTRACTS_ADDRESS.positionManager,
-    abi: POSITION_MANAGER_ABI,
-    functionName: "positions",
-    args: [BigInt(position.tokenId)]
-  })
+  }, [sdkPool, position, actualLiquidity])
 
   const formatTokenAmount = useMemo(() => {
     return (amount: string): string => {
@@ -140,7 +150,6 @@ export const usePositionDatas = (position: Position, pool: Pool) => {
       return null
     }
   }, [position, pool, sdkPosition])
-
 
   const unclaimedFees = useMemo(() => {
     if (!position || !pool) {
@@ -204,6 +213,7 @@ export const usePositionDatas = (position: Position, pool: Pool) => {
     inRange,
     positionDetails,
     unclaimedFees,
-    refetch: refetchOnChain
+    refetch: refetchOnChain,
+    actualLiquidity // Expose on-chain liquidity for filtering
   }
 }

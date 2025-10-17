@@ -221,6 +221,9 @@ const UserPositionRow = ({ position, pool, onRefresh }: { position: Position, po
 
   if (!datas.isReady) return <></>;
 
+  // Hide positions with no liquidity (closed positions)
+  if (datas.actualLiquidity <= 0n) return <></>;
+
   // Get token prices for fees calculation
   const token0Price = parseFloat(pool.token0Ref.tokenDayData?.items?.[0]?.priceUSD || "0");
   const token1Price = parseFloat(pool.token1Ref.tokenDayData?.items?.[0]?.priceUSD || "0");
@@ -374,19 +377,36 @@ export const UserPositionDatas = ({ pool }: { pool: Pool }) => {
     )
   }
 
+  // Render positions and check if any are visible
+  const positionRows = positions.map((p: Position) => (
+    <UserPositionRow
+      key={p.id}
+      position={p}
+      pool={pool}
+      onRefresh={refetchPositions}
+    />
+  ))
+
+  // Check if all positions are filtered out (all have 0 liquidity)
+  const hasActivePositions = positions.some((p: Position) => {
+    try {
+      // Quick check without full hook - just check if it might be active
+      return BigInt(p.liquidity) > 0n
+    } catch {
+      return true
+    }
+  })
+
   return (
     <div className="UserPosition">
       <h3>Your Positions</h3>
-      <div className="UserPosition__List">
-        {positions.map((p: Position) => (
-          <UserPositionRow
-            key={p.id}
-            position={p}
-            pool={pool}
-            onRefresh={refetchPositions}
-          />
-        ))}
-      </div>
+      {!hasActivePositions ? (
+        <div className="UserPosition__Empty">No active positions for this pool.</div>
+      ) : (
+        <div className="UserPosition__List">
+          {positionRows}
+        </div>
+      )}
     </div>
   )
 }
