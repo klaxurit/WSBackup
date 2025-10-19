@@ -1,10 +1,10 @@
 import React from 'react';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { createConfig, WagmiProvider } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { berachain } from 'viem/chains';
-import { defineChain, http } from 'viem';
+import { defineChain } from 'viem';
 // Imports supprimés car nous utilisons maintenant AppKit complètement
 
 // Note: Berachain sera géré via Wagmi directement, pas via AppKit
@@ -31,14 +31,21 @@ const metadata = {
 
 // Note: Les chaînes sont maintenant gérées par AppKit via WagmiAdapter
 
-// Création du réseau Berachain personnalisé pour AppKit
+// Création du réseau Berachain personnalisé pour AppKit avec configuration WalletConnect complète
 const berachainNetwork = defineChain({
   id: berachain.id,
   name: berachain.name,
   chainNamespace: 'eip155',
   caipNetworkId: `eip155:${berachain.id}`,
   nativeCurrency: berachain.nativeCurrency,
-  rpcUrls: berachain.rpcUrls,
+  rpcUrls: {
+    default: {
+      http: [import.meta.env.VITE_BERACHAIN_API_URL || 'https://rpc.berachain.com'],
+    },
+    public: {
+      http: [import.meta.env.VITE_BERACHAIN_API_URL || 'https://rpc.berachain.com'],
+    },
+  },
   blockExplorers: berachain.blockExplorers,
   testnet: berachain.testnet,
 });
@@ -49,7 +56,7 @@ const appKitNetworks = [berachainNetwork];
 // Export des réseaux Berachain pour utilisation dans les hooks
 export { berachainNetwork };
 
-// Création de l'adaptateur Wagmi pour AppKit
+// Création de l'adaptateur Wagmi pour AppKit avec support WalletConnect v2
 const wagmiAdapter = new WagmiAdapter({
   networks: appKitNetworks,
   projectId,
@@ -58,15 +65,8 @@ const wagmiAdapter = new WagmiAdapter({
 
 // Configuration Wagmi via AppKit (utilise la config de l'adaptateur)
 export const config = wagmiAdapter.wagmiConfig;
-const config2 = createConfig({
-  chains: [berachainNetwork],
-  transports: {
-    [berachainNetwork.id]: http(import.meta.env.VITE_BERACHAIN_API_URL || "https://rpc.berachain.com")
-  }
-})
 
-
-// Création d'AppKit avec la configuration personnalisée
+// Création d'AppKit avec la configuration personnalisée et support multisig
 export const appKit = createAppKit({
   adapters: [wagmiAdapter],
   networks: appKitNetworks as any, // Cast temporaire pour éviter l'erreur de type
@@ -91,6 +91,14 @@ export const appKit = createAppKit({
   enableNetworkSwitch: true,
   enableReconnect: true,
   allowUnsupportedChain: true, // Permettre Berachain même s'il n'est pas dans les réseaux supportés
+  // Configuration pour supporter les Smart Contract Wallets (Safe, etc.)
+  enableCoinbase: true,
+  enableInjected: true, // Support pour les wallets injectés et Safe App
+  featuredWalletIds: [
+    'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
+    '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
+    // Safe Wallet sera disponible via WalletConnect
+  ],
 });
 
 // Provider pour l'application
@@ -99,8 +107,7 @@ export function AppKitProvider({ children }: { children: React.ReactNode }) {
 
   return React.createElement(
     WagmiProvider,
-    // ts-ignore
-    { config: config2 },
+    { config: config as any }, // Type cast pour résoudre les incompatibilités de version wagmi
     React.createElement(
       QueryClientProvider,
       { client: queryClient },

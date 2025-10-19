@@ -17,6 +17,12 @@ export const useWallet = () => {
   // Synchroniser l'état Wagmi avec Redux à chaque changement
   useEffect(() => {
     if (isConnected && address && chainId) {
+      console.log('[useWallet] Wallet connected:', {
+        address,
+        chainId,
+        isCorrectNetwork
+      });
+
       dispatch(setWalletConnected({
         address,
         chainId: Number(chainId)
@@ -26,33 +32,41 @@ export const useWallet = () => {
       const rpcUrl = import.meta.env.VITE_BERACHAIN_API_URL || 'https://rpc.berachain.com/';
       const client = createPublicClient({ chain: berachain, transport: http(rpcUrl) });
       client.getBalance({ address }).then((balance) => {
+        console.log('[useWallet] Balance fetched:', formatEther(balance), 'BERA');
         dispatch(setBalance(formatEther(balance)));
-      }).catch(() => {
+      }).catch((error) => {
+        console.error('[useWallet] Error fetching balance:', error);
         dispatch(setBalance('0'));
       });
     } else if (!isConnected) {
+      console.log('[useWallet] Wallet disconnected');
       dispatch(clearWalletState());
     }
-  }, [isConnected, address, chainId, dispatch]);
+  }, [isConnected, address, chainId, dispatch, isCorrectNetwork]);
 
   const connectWallet = useCallback(() => {
     try {
+      console.log('[useWallet] Opening connection modal...');
       // Ouvrir la modal de connexion AppKit
       open();
     } catch (err) {
+      console.error('[useWallet] Connection error:', err);
       dispatch(setError(err instanceof Error ? err.message : 'Connection error'));
     }
   }, [open, dispatch]);
 
   const disconnectWallet = useCallback(async () => {
     try {
+      console.log('[useWallet] Disconnecting wallet...');
       // Déconnecter via Wagmi
       await wagmiDisconnect();
 
       // Nettoyer l'état Redux
       dispatch(clearWalletState());
+      console.log('[useWallet] Wallet disconnected successfully');
 
     } catch (err) {
+      console.error('[useWallet] Disconnection error:', err);
       dispatch(setError(err instanceof Error ? err.message : 'Disconnection error'));
     }
   }, [wagmiDisconnect, dispatch]);
