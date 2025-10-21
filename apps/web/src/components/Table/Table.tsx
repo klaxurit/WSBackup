@@ -285,17 +285,36 @@ export function Table<T = any>({
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return null;
 
+    // Icônes SVG pour éviter les problèmes de rendu iOS (emojis)
+    const ArrowUpIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 2L10 6H8V10H4V6H2L6 2Z" />
+      </svg>
+    );
+
+    const ArrowDownIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 10L2 6H4V2H8V6H10L6 10Z" />
+      </svg>
+    );
+
+    const ArrowBothIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 1L9 4H7V8H9L6 11L3 8H5V4H3L6 1Z" opacity="0.4" />
+      </svg>
+    );
+
     if (effectiveSortKey !== columnKey) {
-      return <span className="Table__SortIcon Table__SortIcon--inactive">↕</span>;
+      return <span className="Table__SortIcon Table__SortIcon--inactive"><ArrowBothIcon /></span>;
     }
 
     if (effectiveSortDirection === 'asc') {
-      return <span className="Table__SortIcon Table__SortIcon--asc">↑</span>;
+      return <span className="Table__SortIcon Table__SortIcon--asc"><ArrowUpIcon /></span>;
     } else if (effectiveSortDirection === 'desc') {
-      return <span className="Table__SortIcon Table__SortIcon--desc">↓</span>;
+      return <span className="Table__SortIcon Table__SortIcon--desc"><ArrowDownIcon /></span>;
     }
 
-    return <span className="Table__SortIcon Table__SortIcon--inactive">↕</span>;
+    return <span className="Table__SortIcon Table__SortIcon--inactive"><ArrowBothIcon /></span>;
   };
 
   const wrapperClasses = [

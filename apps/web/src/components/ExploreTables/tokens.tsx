@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from '../Common/TokenLogo';
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
@@ -274,7 +275,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       label: '#',
       key: 'index',
       render: (row) => (
-        <span className="Table__IndexCell">
+        <span className="TokensTable__IndexCell">
           <button
             type="button"
             className="Table__Address"
@@ -282,15 +283,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
           >
             {row.id ? row.id.slice(0, 4) + '...' + row.id.slice(-4) : 'N/A'}
           </button>
-          <a
-            href={`https://berascan.com/address/${row.id || ''}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="Table__Icon"
-            title={row.id || ''}
-            onClick={(e) => e.stopPropagation()}
-          >
-          </a>
+          <ExplorerLink address={row.id || ''} type="token" />
         </span>
       )
     },
@@ -303,9 +296,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       render: (row) => (
         <span className="TokensTable__NameCell">
           <span className="TokensTable__LogoWrapper">
-            {row.logoUri
-              ? <img src={row.logoUri} className="TokensTable__Logo" />
-              : <FallbackImg content={row.symbol} className="TokensTable__Logo" />}
+            <TokenLogo logoUri={row.logoUri} symbol={row.symbol} size="medium" className="TokensTable__Logo" />
           </span>
           <button
             type="button"

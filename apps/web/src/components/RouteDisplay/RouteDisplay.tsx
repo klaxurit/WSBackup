@@ -1,5 +1,5 @@
 import React from "react";
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from '../Common/TokenLogo';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import type { OptimizedRoute } from '../../hooks/swap/useSwap';
 
@@ -17,30 +17,7 @@ interface TokenDisplayProps {
 const TokenDisplay: React.FC<TokenDisplayProps> = React.memo(({ token, size = 20 }) => {
   return (
     <div className="RouteDisplay__Token">
-      {token.logoUri ? (
-        <img
-          src={token.logoUri}
-          alt={token.symbol}
-          width={size}
-          height={size}
-          className="RouteDisplay__TokenIcon"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            const fallback = target.nextElementSibling as HTMLElement;
-            if (fallback) {
-              fallback.style.display = 'block';
-            }
-          }}
-        />
-      ) : null}
-      <FallbackImg
-        content={token.symbol.charAt(0)}
-        width={size}
-        height={size}
-        className="RouteDisplay__TokenFallback"
-        style={{ display: token.logoUri ? 'none' : 'block' }}
-      />
+      <TokenLogo logoUri={token.logoUri} symbol={token.symbol} size={size} className="RouteDisplay__TokenIcon" />
       <span className="RouteDisplay__TokenSymbol">{token.symbol}</span>
     </div>
   );
@@ -195,8 +172,8 @@ export const RouteDisplay: React.FC<RouteDisplayProps> = React.memo(({
       {isSplitRoute && optimizedRoute.routes.length > 1 && (
         <div className="RouteDisplay__SplitInfo">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle cx="6" cy="6" r="5" stroke="#8A8984" strokeWidth="1"/>
-            <path d="M6 3.5V6M6 8.5H6.005" stroke="#8A8984" strokeWidth="1" strokeLinecap="round"/>
+            <circle cx="6" cy="6" r="5" stroke="#8A8984" strokeWidth="1" />
+            <path d="M6 3.5V6M6 8.5H6.005" stroke="#8A8984" strokeWidth="1" strokeLinecap="round" />
           </svg>
           <span className="RouteDisplay__SplitText">
             Order split across {optimizedRoute.routes.length} routes for better pricing

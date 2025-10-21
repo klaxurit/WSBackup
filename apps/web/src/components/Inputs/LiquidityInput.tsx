@@ -4,7 +4,7 @@ import { useAccount, useBalance } from 'wagmi';
 import { usePrice } from '../../hooks/usePrice';
 import { formatUnits, parseUnits, zeroAddress } from 'viem';
 import { formatTokenAmount } from '../../utils/format';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
 import type { Token } from '../../hooks/usePositions';
 
 // Type simple pour les tokens mockés
@@ -164,14 +164,7 @@ export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>
                     disabled
                   >
                     <span className="networkSelector__logoWrapper">
-                      {!selectedToken?.logoUri
-                        ? <FallbackImg content={selectedToken?.symbol || ""} />
-                        : (
-                          <img
-                            src={selectedToken?.logoUri}
-                            alt={selectedToken?.name}
-                          />
-                        )}
+                      <TokenLogo logoUri={selectedToken?.logoUri} symbol={selectedToken?.symbol || ""} size="large" />
                     </span>
                     <span className="networkSelector__symbol">{selectedToken?.symbol}</span>
                   </button>

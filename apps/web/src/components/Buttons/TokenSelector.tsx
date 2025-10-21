@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from '../Common/TokenLogo';
 import { useTokensInPool } from '../../hooks/useTokensInPool';
 import { Loader } from "../Loader/Loader";
 
@@ -85,14 +85,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
       {selectedToken ? (
         <>
           <span className="networkSelector__logoWrapper">
-            {!selectedToken.logoUri
-              ? <FallbackImg content={selectedToken.symbol} />
-              : (
-                <img
-                  src={selectedToken.logoUri}
-                  alt={selectedToken.name}
-                />
-              )}
+            <TokenLogo logoUri={selectedToken.logoUri} symbol={selectedToken.symbol} size="large" />
           </span>
           <span className="networkSelector__symbol">{selectedToken.symbol}</span>
         </>

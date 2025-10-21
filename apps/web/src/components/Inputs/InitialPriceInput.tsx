@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { formatUnits, parseUnits } from "viem";
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from "../Common/TokenLogo";
 
 interface InitialPriceInputProps {
   tokens: BerachainToken[];
@@ -115,14 +115,7 @@ export const InitialPriceInput: React.FC<InitialPriceInputProps> = (
                         onClick={() => handleTokenClick(t)}
                       >
                         <span className="networkSelector__logoWrapper">
-                          {!t.logoUri
-                            ? <FallbackImg content={t.symbol} />
-                            : (
-                              <img
-                                src={t.logoUri}
-                                alt={t.name}
-                              />
-                            )}
+                          <TokenLogo logoUri={t.logoUri} symbol={t.symbol} size="large" />
                         </span>
                         <span className="networkSelector__symbol">{t.symbol}</span>
                       </button>

@@ -1,0 +1,262 @@
+@use "../../utils" as *;
+
+// Composant Button générique
+.Button {
+  // Styles de base hérités de .btn dans _buttons.scss
+  // Ce fichier peut être étendu pour des styles spécifiques au composant Button
+
+  // Variantes supplémentaires si nécessaire
+  &--outline {
+    background: transparent;
+    border: 1px solid $beryl-pure;
+    color: $beryl-pure;
+
+    &:hover {
+      background: $beryl-008;
+      border-color: $beryl-pure;
+    }
+
+    &:active {
+      background: $beryl-012;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $beryl-pure;
+    border: none;
+
+    &:hover {
+      background: $beryl-008;
+    }
+
+    &:active {
+      background: $beryl-012;
+    }
+  }
+
+  &--danger {
+    background: #ff4444;
+    color: #ffffff;
+
+    &:hover {
+      background: #ff6666;
+    }
+
+    &:active {
+      background: #ff2222;
+    }
+  }
+
+  &--success {
+    background: #00bb7f;
+    color: #ffffff;
+
+    &:hover {
+      background: #00cc8a;
+    }
+
+    &:active {
+      background: #00aa73;
+    }
+  }
+
+  // Styles pour les boutons avec icônes
+  &--icon-only {
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.btn--small {
+      width: 32px;
+      height: 32px;
+      padding: 6px;
+    }
+
+    &.btn--tiny {
+      width: 28px;
+      height: 28px;
+      padding: 4px;
+    }
+  }
+
+  // Styles pour les boutons avec loading
+  &--loading {
+    position: relative;
+    pointer-events: none;
+
+    .Button__content {
+      opacity: 0;
+    }
+
+    .Button__loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  // Styles pour les boutons de navigation (tabs)
+  &--tab {
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &.btn__main {
+      background: $beryl-pure;
+      color: rgba(255, 208, 86);
+    }
+
+    &.btn__shade {
+      background: rgba(255, 255, 255, 0.04);
+      color: #b1b0ad;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  // Styles pour les boutons de dropdown
+  &--dropdown {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid currentColor;
+    }
+
+    &--open::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+
+  // Styles pour les boutons de fermeture
+  &--close {
+    background: transparent;
+    border: none;
+    color: #b1b0ad;
+    padding: 8px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    &:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  // Styles pour les boutons de copie
+  &--copy {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #b1b0ad;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $beryl-pure;
+      color: $beryl-pure;
+    }
+  }
+
+  // Styles pour les boutons de connexion spécialisés
+  &--connect {
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    &:hover::before {
+      left: 100%;
+    }
+  }
+
+  // Styles pour les boutons avec animations spéciales
+  &--pulse {
+    animation: pulse 2s infinite;
+  }
+
+  &--bounce {
+    animation: bounce 1s infinite;
+  }
+
+  // Styles responsive
+  @media (max-width: 768px) {
+    &--responsive {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 208, 86, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 208, 86, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 208, 86, 0);
+  }
+}
+
+@keyframes bounce {
+
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  40%,
+  43% {
+    transform: translate3d(0, -8px, 0);
+  }
+
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}

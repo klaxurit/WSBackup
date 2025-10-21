@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Table, { type TableColumn } from '../Table/Table';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { formatUnits } from 'viem';
 
 interface PoolTransactionsTableProps {
@@ -317,15 +318,14 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         }
 
         return (
-          <a
-            href={`https://berascan.com/tx/${row.transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <ExplorerLink
+            address={row.transactionHash}
+            type="tx"
+            showIcon={false}
             className="Table__Address"
-            title={row.recipient}
           >
             {text}
-          </a>
+          </ExplorerLink>
         )
       },
     },
@@ -335,31 +335,9 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row: Transaction) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           Swap
-          {row.tokenIn.logoUri ? (
-            <img
-              src={row.tokenIn.logoUri}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-              alt={row.tokenIn.symbol}
-            />
-          ) : (
-            <FallbackImg
-              content={row.tokenIn.symbol}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-            />
-          )}
+          <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" style={{ margin: "0 2px" }} />
           for
-          {row.tokenOut.logoUri ? (
-            <img
-              src={row.tokenOut.logoUri}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-              alt={row.tokenOut.symbol}
-            />
-          ) : (
-            <FallbackImg
-              content={row.tokenOut.symbol}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-            />
-          )}
+          <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" style={{ margin: "0 2px" }} />
         </span>
       ),
     },
@@ -401,7 +379,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} />}
+            <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" style={{ marginLeft: 2 }} />
           </span>
         )
       },
@@ -414,7 +392,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} />}
+            <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" style={{ marginLeft: 2 }} />
           </span>
         )
       },
@@ -423,15 +401,13 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Wallet',
       key: 'wallet',
       render: (row: Transaction) => (
-        <a
-          href={`https://berascan.com/address/${row.recipient}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <ExplorerLink
+          address={row.recipient}
+          showIcon={false}
           className="Table__Address"
-          title={row.recipient}
         >
           {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
-        </a>
+        </ExplorerLink>
       ),
     },
   ];

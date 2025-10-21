@@ -104,6 +104,34 @@
       filter: drop-shadow(0px 1.2px 0.7px #100A25) drop-shadow(-0.2px 0px 0px #180E00) drop-shadow(0.2px 0px 0px #180E00) drop-shadow(0px -0.2px 0px #180E00);
     }
   }
+
+  // Loader dans un bouton btn__accent avec text-shadow
+  &.btn__accent-loader {
+
+    .circular circle,
+    .path {
+      stroke: $beryl-pure !important;
+      filter: drop-shadow(0px 1.2px 0.7px #100A25) drop-shadow(-0.2px 0px 0px #180E00) drop-shadow(0.2px 0px 0px #180E00) drop-shadow(0px -0.2px 0px #180E00);
+    }
+  }
+
+  // Loader dans un bouton btn__shade
+  &.btn__shade-loader {
+
+    .circular circle,
+    .path {
+      stroke: #b1b0ad !important;
+    }
+  }
+
+  // Loader dans un bouton btn__disabled
+  &.btn__disabled-loader {
+
+    .circular circle,
+    .path {
+      stroke: $beryl-048 !important;
+    }
+  }
 }
 
 @keyframes rotate {

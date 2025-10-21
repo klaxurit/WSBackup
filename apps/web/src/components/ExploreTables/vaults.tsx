@@ -1,11 +1,10 @@
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import { ExplorerIcon } from "../SVGs";
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
 import { useQuery } from '@tanstack/react-query';
-import { Loader } from '../Loader/Loader';
 
 interface VaultsTableProps {
   searchValue: string
@@ -117,11 +116,6 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
     navigate(`/vault/${row.id}`);
   };
 
-  const handleExplorerClick = (e: React.MouseEvent, vaultId: string) => {
-    e.stopPropagation();
-    window.open(`https://berascan.com/address/${vaultId}`, '_blank', 'noopener,noreferrer');
-  };
-
   const columns: TableColumn[] = [
     {
       label: '#',
@@ -132,14 +126,7 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
           <span className="Table__Address">
             {row.poolRef.token0Ref.symbol}/{row.poolRef.token1Ref.symbol}
           </span>
-          <button
-            onClick={(e) => handleExplorerClick(e, row.id)}
-            className="Table__Icon"
-            title={row.id}
-            type="button"
-          >
-            <ExplorerIcon />
-          </button>
+          <ExplorerLink address={row.id} />
         </span>
       )
     },
@@ -260,15 +247,11 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
     },
   ];
 
-  if (isLoading) {
-    return <Loader size="mobile" />;
-  }
-
   return (
     <Table
       columns={columns}
       data={filteredVaults}
-      isLoading={false}
+      isLoading={isLoading}
       tableClassName="Table"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"

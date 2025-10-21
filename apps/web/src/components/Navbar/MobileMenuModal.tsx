@@ -3,7 +3,7 @@ import { SearchBar } from '../SearchBar/SearchBar';
 import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
 import { usePools, type Pool } from '../../hooks/usePools';
 import { Link } from 'react-router-dom';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
 import { SafeImage } from '../utils/SafeImage';
 import { ensureArray } from '../../utils/dataValidation';
 
@@ -73,7 +73,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
                               width={22}
                               height={22}
                             />
-                            : <FallbackImg content={token.symbol} width={22} height={22} />}
+                            : <TokenLogo logoUri={null} symbol={token.symbol} size={22} />}
                         </div>
                         <span className="GlobalSearch__TokenSymbol">{token.symbol}</span>
                         <span className="GlobalSearch__TokenName">{token.name}</span>
@@ -105,7 +105,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
                               width={22}
                               height={22}
                             />
-                            : <FallbackImg content={pool.token0Ref?.symbol || '?'} width={22} height={22} />}
+                            : <TokenLogo logoUri={null} symbol={pool.token0Ref?.symbol || '?'} size={22} />}
                         </div>
                         <div className="GlobalSearch__PoolLogo GlobalSearch__PoolLogo--token1">
                           {pool.token1Ref?.logoUri
@@ -116,7 +116,7 @@ export const MobileMenuModal: React.FC<MobileMenuModalProps> = ({ open, onClose,
                               width={22}
                               height={22}
                             />
-                            : <FallbackImg content={pool.token1Ref?.symbol || '?'} width={22} height={22} />}
+                            : <TokenLogo logoUri={null} symbol={pool.token1Ref?.symbol || '?'} size={22} />}
                         </div>
                       </div>
                       <span className="GlobalSearch__TokenSymbol">{pool.token0Ref?.symbol}/{pool.token1Ref?.symbol}</span>
