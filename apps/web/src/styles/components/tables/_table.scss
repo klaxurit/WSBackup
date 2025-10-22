@@ -304,6 +304,13 @@
   min-width: 0;
 }
 
+.TokensTable__IndexCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 
 
 .PoolsTable__IndexLink {
@@ -451,7 +458,7 @@
 }
 
 .Table__Icon {
-  height: 24px;
+  height: 18px;
   width: 24px;
   background: none;
   border: none;
