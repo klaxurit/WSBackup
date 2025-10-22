@@ -15,11 +15,12 @@ export async function updateTokenStats(timestamp: bigint, token: typeof sToken.$
   const tokenPrice = await getPriceInUSD(token, context)
   const oneDayEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - 1}`, context) // It's one hour not one day (not fixed in schema)
   const oneMonthEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - (24)}`, context) // It's one day not one month (not fixed in schema)
+  const oneWeekEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - (24 * 7)}`, context) // 7 days evolution
   const marketCap = await getMarketcap(token, tokenPrice)
   const fdv = await getFDV(token, tokenPrice)
   const volume24hUSD = await getVolumeByPeriod(token, `${token.id}-${hourId - 24}`, context)
 
-  await updateDayTokenData(token, dayTokenId, dayStartTimestamp, tokenPrice, oneDayEvo, oneMonthEvo, marketCap, fdv, volume24hUSD, context)
+  await updateDayTokenData(token, dayTokenId, dayStartTimestamp, tokenPrice, oneDayEvo, oneMonthEvo, oneWeekEvo, marketCap, fdv, volume24hUSD, context)
   await updateHourTokenData(token, hourTokenID, hourStartUnix, tokenPrice, context)
 }
 
@@ -30,6 +31,7 @@ async function updateDayTokenData(
   tokenPrice: string,
   oneDayEvo: string,
   oneMonthEvo: string,
+  oneWeekEvo: string,
   marketCap: string,
   fdv: string,
   volume24hUSD: string,
@@ -54,6 +56,7 @@ async function updateDayTokenData(
       close: tokenPrice,
       oneDayEvo,
       oneMonthEvo,
+      oneWeekEvo,
       marketCap,
       fdv,
       volume24hUSD
@@ -73,6 +76,7 @@ async function updateDayTokenData(
       close: tokenPrice,
       oneDayEvo,
       oneMonthEvo,
+      oneWeekEvo,
       marketCap,
       fdv,
       volume24hUSD

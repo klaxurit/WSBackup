@@ -28,9 +28,9 @@ const TOKEN_SORT_CONFIG = {
       const dayData = token.tokenDayData?.items?.[0];
       return parseFloat(dayData?.oneMonthEvo || '0');
     },
-    'fdv': (token: any) => {
+    '7d': (token: any) => {
       const dayData = token.tokenDayData?.items?.[0];
-      return parseFloat(dayData?.fdv || '0');
+      return parseFloat(dayData?.oneWeekEvo || '0');
     },
     'mcap': (token: any) => {
       const dayData = token.tokenDayData?.items?.[0];
@@ -71,6 +71,7 @@ const GET_TOKENS_STATS = `
             open
             oneDayEvo
             oneMonthEvo
+            oneWeekEvo
             marketCap
             fdv
             volume24hUSD
@@ -359,18 +360,21 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       }
     },
     {
-      label: 'FDV',
-      key: 'fdv',
+      label: '7d',
+      key: '7d',
       sortable: true,
       sortValue: (row) => {
-        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].fdv
-          ? parseFloat(row.tokenDayData.items[0].fdv)
-          : 0;
+        return row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneWeekEvo) : 0;
       },
       render: (row) => {
-        return row.tokenDayData?.items?.length > 0 && row.tokenDayData.items[0].fdv !== "0"
-          ? `$${formatNumber(parseFloat(row.tokenDayData.items[0].fdv))}`
-          : '-'
+        const evolution = row.tokenDayData?.items?.length > 0 ? parseFloat(row.tokenDayData.items[0].oneWeekEvo) : 0;
+        if (!evolution || evolution === 0) return '-';
+        const isPositive = evolution > 0;
+        return (
+          <span style={{ color: isPositive ? '#00FFA3' : '#FF4D4D' }}>
+            {evolution.toFixed(2)}%
+          </span>
+        );
       }
     },
     {
