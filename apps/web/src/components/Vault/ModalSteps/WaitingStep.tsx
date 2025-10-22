@@ -20,7 +20,7 @@ export const WaitingStep: React.FC<WaitingStepProps> = ({
     <div className="VaultDepositModal__StepContent VaultDepositModal__WaitingStep">
       {/* Loader */}
       <div className="VaultDepositModal__LoaderContainer">
-        <Loader size="desktop" color="#FFD056" className="btn__main-loader" />
+        <Loader size="desktop" className="btn__main-loader" />
       </div>
 
       {/* Title */}

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { UseSwapReturn } from '../../hooks/swap/useSwap';
 import { formatEther, formatUnits } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
 import { usePrice } from '../../hooks/usePrice';
 import { formatTokenAmount, formatUsdAmount } from '../../utils/format';
 import { getUsdAmount, getPoolFeesInBera } from '../../utils/transaction';
@@ -224,10 +224,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountIn}</span>
               </div>
-              {inputToken.logoUri
-                ? (<img src={inputToken.logoUri} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />)
-                : <FallbackImg content={inputToken.symbol} />
-              }
+              <TokenLogo logoUri={inputToken.logoUri} symbol={inputToken.symbol} size="medium" className="TransactionModal__tokenLogo" />
             </div>
           </div>
           <div className="TransactionModal__arrowDown">↓</div>
@@ -239,10 +236,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountOut}</span>
               </div>
-              {outputToken.logoUri
-                ? (<img src={outputToken.logoUri} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />)
-                : <FallbackImg content={outputToken.symbol} />
-              }
+              <TokenLogo logoUri={outputToken.logoUri} symbol={outputToken.symbol} size="medium" className="TransactionModal__tokenLogo" />
             </div>
           </div>
           <div className="TransactionModal__moreRow">
@@ -295,7 +289,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
               >
                 {isSuccess && <div className="psychedelic-bear" />}
-                {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
+                {isLoadingStep ? <Loader size="small" /> : isSuccess ? 'Success' : btnText}
               </button>
             </div>
           )}

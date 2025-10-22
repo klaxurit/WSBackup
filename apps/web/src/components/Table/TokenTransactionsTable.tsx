@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "./Table";
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from '../Common/TokenLogo';
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { formatUnits } from "viem";
 import { useState } from "react";
 
@@ -177,9 +178,9 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       render: (row) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           Swap
-          {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} /> : <FallbackImg content={row.tokenIn.symbol} />}
+          <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" style={{ margin: "0 2px" }} />
           for
-          {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} /> : <FallbackImg content={row.tokenOut.symbol} />}
+          <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" style={{ margin: "0 2px" }} />
         </span>
       ),
     },
@@ -214,7 +215,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} />}
+            <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" style={{ marginLeft: 2 }} />
           </span>
         )
       },
@@ -227,7 +228,7 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
         return (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} />}
+            <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" style={{ marginLeft: 2 }} />
           </span>
         )
       },
@@ -236,15 +237,13 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       label: 'Wallet',
       key: 'wallet',
       render: (row) => (
-        <a
-          href={`https://berascan.com/address/${row.recipient}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <ExplorerLink
+          address={row.recipient}
+          showIcon={false}
           className="Table__Address"
-          title={row.recipient}
         >
           {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
-        </a>
+        </ExplorerLink>
       ),
     },
   ];

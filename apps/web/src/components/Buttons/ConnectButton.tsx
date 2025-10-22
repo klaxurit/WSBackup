@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useWallet } from '../../hooks/useWallet';
-import { Loader } from '../Loader/Loader';
+import { Button } from '../Button/Button';
 
 interface ConnectButtonProps {
   size?: 'large' | 'small';
@@ -25,20 +25,17 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     connect();
   }, [connect]);
 
-  const className = `btn btn--${size} btn__shade ${customClassName}`.trim();
-
-  const style: React.CSSProperties = {};
-  if (dominantColor) style.color = dominantColor;
-  if (secondaryColor) style.backgroundColor = secondaryColor;
-
   return (
-    <button
-      className={className}
+    <Button
+      size={size}
+      variant="shade"
       onClick={handleConnect}
-      disabled={isConnecting}
-      style={style}
+      loading={isConnecting}
+      dominantColor={dominantColor}
+      secondaryColor={secondaryColor}
+      customClassName={customClassName}
     >
-      {isConnecting ? <Loader size="mini" /> : 'Connect Wallet'}
-    </button>
+      Connect Wallet
+    </Button>
   );
 };

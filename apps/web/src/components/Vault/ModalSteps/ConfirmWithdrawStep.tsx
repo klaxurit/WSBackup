@@ -1,7 +1,7 @@
 import React from 'react';
-import { Loader } from '../../Loader/Loader';
+import { Button } from '../../Button/Button';
 import { formatTokenAmount } from '../../../utils/formatTokenAmount';
-import { FallbackImg } from '../../utils/FallbackImg';
+import { TokenLogo } from '../../Common/TokenLogo';
 import { StickyIcon } from '../../Common/StickyIcon';
 
 interface Token {
@@ -66,22 +66,14 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
             <h4>Pooled tokens:</h4>
             <div className="token-row">
               <div className="token-info">
-                {token0.logoUri ? (
-                  <img src={token0.logoUri} alt={token0.symbol} />
-                ) : (
-                  <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-                )}
+                <TokenLogo logoUri={token0.logoUri} symbol={token0.symbol} size="medium" />
                 <span className="symbol">{token0.symbol}</span>
               </div>
               <span className="amount">{formatTokenAmount(pooledAmount0, token0.decimals)}</span>
             </div>
             <div className="token-row">
               <div className="token-info">
-                {token1.logoUri ? (
-                  <img src={token1.logoUri} alt={token1.symbol} />
-                ) : (
-                  <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-                )}
+                <TokenLogo logoUri={token1.logoUri} symbol={token1.symbol} size="medium" />
                 <span className="symbol">{token1.symbol}</span>
               </div>
               <span className="amount">{formatTokenAmount(pooledAmount1, token1.decimals)}</span>
@@ -111,22 +103,14 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
             <>
               <div className="token-row">
                 <div className="token-info">
-                  {token0.logoUri ? (
-                    <img src={token0.logoUri} alt={token0.symbol} />
-                  ) : (
-                    <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-                  )}
+                  <TokenLogo logoUri={token0.logoUri} symbol={token0.symbol} size="medium" />
                   <span className="symbol">{token0.symbol}</span>
                 </div>
                 <span className="amount">{formatTokenAmount(estimatedAmount0, token0.decimals)}</span>
               </div>
               <div className="token-row">
                 <div className="token-info">
-                  {token1.logoUri ? (
-                    <img src={token1.logoUri} alt={token1.symbol} />
-                  ) : (
-                    <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-                  )}
+                  <TokenLogo logoUri={token1.logoUri} symbol={token1.symbol} size="medium" />
                   <span className="symbol">{token1.symbol}</span>
                 </div>
                 <span className="amount">{formatTokenAmount(estimatedAmount1, token1.decimals)}</span>
@@ -151,18 +135,16 @@ export const ConfirmWithdrawStep: React.FC<ConfirmWithdrawStepProps> = ({
       </div>
 
       {/* Action Button */}
-      <button
-        className="btn btn--large btn__main"
+      <Button
+        size="large"
+        variant="main"
         onClick={onConfirm}
-        disabled={isPending}
+        loading={isPending}
+        customClassName="btn__vault-withdraw"
         style={{ marginTop: 'auto' }}
       >
-        {isPending ? (
-          <Loader size="small" color="rgba(255, 208, 86)" className="btn__main-loader" />
-        ) : (
-          `Withdraw ${formatTokenAmount(withdrawAmount, 18)} ${vaultToken.symbol}`
-        )}
-      </button>
+        {`Withdraw ${formatTokenAmount(withdrawAmount, 18)} ${vaultToken.symbol}`}
+      </Button>
     </div>
   );
 };

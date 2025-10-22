@@ -3,7 +3,7 @@ import { Modal } from '../Common/Modal'
 import { useClaimFees } from '../../hooks/position/useClaimFees'
 import type { Position, usePositionDatas } from '../../hooks/position/usePositionDatas'
 import type { Pool } from '../../pages/PoolPage/page'
-import { FallbackImg } from '../utils/FallbackImg'
+import { TokenLogo } from '../Common/TokenLogo'
 
 interface ClaimFeesModalProps {
   isOpen: boolean
@@ -117,29 +117,7 @@ export const ClaimFeesModal: React.FC<ClaimFeesModalProps> = ({
             {/* Token 0 Fees */}
             <div className="PoolView__InfoRow" style={{ marginBottom: '16px', padding: '12px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {token0?.logoUri ? (
-                  <img
-                    src={token0.logoUri}
-                    alt={token0.symbol}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    background: '#333',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <FallbackImg content={token0?.symbol || 'T0'} />
-                  </div>
-                )}
+                <TokenLogo logoUri={token0?.logoUri} symbol={token0?.symbol || 'T0'} size="medium" />
                 <span className="PoolView__InfoLabel">
                   {token0?.symbol || 'Token 0'}
                 </span>
@@ -152,29 +130,7 @@ export const ClaimFeesModal: React.FC<ClaimFeesModalProps> = ({
             {/* Token 1 Fees */}
             <div className="PoolView__InfoRow" style={{ padding: '12px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {token1?.logoUri ? (
-                  <img
-                    src={token1.logoUri}
-                    alt={token1.symbol}
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    background: '#333',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <FallbackImg content={token1?.symbol || 'T1'} />
-                  </div>
-                )}
+                <TokenLogo logoUri={token1?.logoUri} symbol={token1?.symbol || 'T1'} size="medium" />
                 <span className="PoolView__InfoLabel">
                   {token1?.symbol || 'Token 1'}
                 </span>

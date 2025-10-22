@@ -742,6 +742,7 @@ export const tokenDayData = onchainTable(
     close: t.numeric().notNull().default("0"),
     oneDayEvo: t.numeric().notNull().default("0"),
     oneMonthEvo: t.numeric().notNull().default("0"),
+    oneWeekEvo: t.numeric().notNull().default("0"),
     marketCap: t.numeric().notNull().default("0"),
     fdv: t.numeric().notNull().default("0"),
   }),

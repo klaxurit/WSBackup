@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import { ExplorerIcon } from "../SVGs";
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo, useState } from "react";
@@ -297,16 +297,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
               {row.token0Ref.symbol}/{row.token1Ref.symbol}
             </span>
           </button>
-          <a
-            href={`https://berascan.com/address/${row.id || ''}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="Table__Icon"
-            title={row.id || ''}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ExplorerIcon />
-          </a>
+          <ExplorerLink address={row.id || ''} />
         </span>
       )
     },

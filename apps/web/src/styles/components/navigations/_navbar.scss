@@ -34,58 +34,6 @@
     align-items: center;
     color: white;
     border: none;
-
-    button {
-      background-image: url('/src/assets/bear_button.svg');
-      background-size: 100%;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      &:hover {
-        background-image: url('/src/assets/bear_btn_hover.svg');
-        background-size: 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-
-      &:active {
-        background-image: url('/src/assets/bear_btn_click.svg');
-        background-size: 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-    }
-  }
-
-  &__BalanceButton {
-    color: $beryl-pure !important;
-    background: $white-008 !important;
-    border: none;
-    cursor: default;
-    min-width: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    position: relative; // Pour positionner les oreilles si besoin
-    padding-left: 8px;
-    padding-right: 8px;
-
-    .ear {
-      width: 28px; // Ajuste la taille selon ton besoin
-      height: auto;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    .left-ear {
-      margin-right: 4px;
-    }
-
-    .right-ear {
-      margin-left: 4px;
-    }
   }
 }
 
@@ -239,28 +187,23 @@
   z-index: 100;
   padding: 14px;
   border: 1px solid $white-008;
+
+  .btn__navbar-disconnect {
+    width: 100%;
+
+    svg {
+      margin-right: 8px;
+
+      path {
+        stroke: $beryl-pure;
+      }
+    }
+  }
 }
 
+// Styles pour le bouton de copie (désormais géré par btn__navbar-copy dans _buttons.scss)
 .Navbar__CopyButton {
   margin-left: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  transition: color 0.15s;
-
-  svg {
-    transition: stroke 0.15s, fill 0.15s;
-    stroke: #fff;
-  }
-
-  &:hover {
-    color: $beryl-pure;
-  }
 }
 
 .Navbar__DropdownHeader {
@@ -293,41 +236,41 @@
   margin-bottom: 14px;
 }
 
-.Navbar__DisconnectButton {
-  width: 100%;
-  background: $white-008;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 0;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 15px;
-  transition: background 0.15s;
+// .Navbar__DisconnectButton {
+//   width: 100%;
+//   background: $white-008;
+//   color: #fff;
+//   border: none;
+//   border-radius: 8px;
+//   padding: 10px 0;
+//   font-weight: 500;
+//   cursor: pointer;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   gap: 8px;
+//   font-size: 15px;
+//   transition: background 0.15s;
 
-  background-image: url('/src/assets/paw_background_large.svg') !important;
-  background-size: 170% !important;
-  background-position: center;
-  background-repeat: no-repeat;
+//   background-image: url('/src/assets/paw_background_large.svg') !important;
+//   background-size: 170% !important;
+//   background-position: center;
+//   background-repeat: no-repeat;
 
-  &:hover {
-    background-image: url('/src/assets/paw_bg_large_hover.svg') !important;
-    background-size: 170% !important;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
+//   &:hover {
+//     background-image: url('/src/assets/paw_bg_large_hover.svg') !important;
+//     background-size: 170% !important;
+//     background-position: center;
+//     background-repeat: no-repeat;
+//   }
 
-  &:active {
-    background-image: url('/src/assets/paw_bg_large_click.svg') !important;
-    background-size: 170% !important;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-}
+//   &:active {
+//     background-image: url('/src/assets/paw_bg_large_click.svg') !important;
+//     background-size: 170% !important;
+//     background-position: center;
+//     background-repeat: no-repeat;
+//   }
+// }
 
 .Navbar__DropdownButton {
   width: 100%;

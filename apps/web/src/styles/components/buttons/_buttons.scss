@@ -154,6 +154,226 @@
   }
 }
 
+// Styles pour les boutons de fermeture
+.btn__close {
+  background: transparent;
+  border: none;
+  color: #b1b0ad;
+  padding: 8px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: bold;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+// Styles pour les boutons de copie
+.btn__copy {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #b1b0ad;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    border-color: $beryl-pure;
+    color: $beryl-pure;
+  }
+}
+
+// Styles pour les boutons avec icônes uniquement
+.btn__icon-only {
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.btn--small {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+  }
+
+  &.btn--tiny {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+  }
+}
+
+// Styles pour les boutons de dropdown
+.btn__dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid currentColor;
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+  }
+
+  &--open::after {
+    transform: rotate(180deg);
+  }
+}
+
+// Styles pour les boutons de navigation (tabs)
+.btn__tab {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &-active {
+
+    // Surcharge pour les boutons de type tab actifs
+    &.btn__main:hover {
+      background: $beryl-pure !important;
+    }
+  }
+}
+
+// Styles pour les boutons avec animations spéciales
+.btn__pulse {
+  animation: pulse 2s infinite;
+}
+
+.btn__bounce {
+  animation: bounce 1s infinite;
+}
+
+// Styles pour les boutons de connexion spécialisés
+.btn__connect {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+}
+
+// Styles pour les boutons avec loading
+.btn__loading {
+  position: relative;
+  pointer-events: none;
+
+  .btn__content {
+    opacity: 0;
+  }
+
+  .btn__loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+// Variantes supplémentaires
+.btn__outline {
+  background: transparent;
+  border: 1px solid $beryl-pure;
+  color: $beryl-pure;
+
+  &:hover {
+    background: $beryl-008;
+    border-color: $beryl-pure;
+  }
+
+  &:active {
+    background: $beryl-012;
+  }
+}
+
+.btn__ghost {
+  background: transparent;
+  color: $beryl-pure;
+  border: none;
+
+  &:hover {
+    background: $beryl-008;
+  }
+
+  &:active {
+    background: $beryl-012;
+  }
+}
+
+.btn__danger {
+  background: #ff4444;
+  color: #ffffff;
+
+  &:hover {
+    background: #ff6666;
+  }
+
+  &:active {
+    background: #ff2222;
+  }
+}
+
+.btn__success {
+  background: #00bb7f;
+  color: #ffffff;
+
+  &:hover {
+    background: #00cc8a;
+  }
+
+  &:active {
+    background: #00aa73;
+  }
+}
+
+// Styles responsive
+@media (max-width: 768px) {
+  .btn__responsive {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
+
 .toggleBtn {
   position: relative;
   height: 40px;
@@ -178,5 +398,95 @@
     &.active {
       background-color: #232323;
     }
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 208, 86, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 208, 86, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 208, 86, 0);
+  }
+}
+
+// =============================
+// Navbar specific button styles
+// =============================
+
+// Connect button in navbar
+.btn__navbar-connect {
+  // Variante shade mais en texte blanc pour la navbar
+  color: #ffffff;
+}
+
+// Copy button in dropdown
+.btn__navbar-copy {
+  @extend .btn__icon-only;
+}
+
+// Disconnect button in dropdown
+.btn__navbar-disconnect {
+  // accent variant already provides visual; keep class for targeting if needed
+}
+
+// Balance pill button next to connect
+.btn__navbar-balance {
+  // Spécifique: même en disabled, conserver la couleur de texte accent
+  // Couleur demandée: #e39229 (utiliser la variable si définie dans la palette)
+  color: #e39229;
+  background: #ffffff14; // pas d'image, juste un fond translucide
+  background-image: none;
+  padding-left: 10px;
+  padding-right: 12px;
+  gap: 8px;
+}
+
+// =============================
+// Vault modal button styles
+// =============================
+
+// Approve button in vault modals
+.btn__vault-approve {
+  // variant main already provides the visual
+}
+
+// Confirm deposit button
+.btn__vault-confirm {
+  // variant main already provides the visual
+}
+
+// Confirm withdraw button
+.btn__vault-withdraw {
+  // variant main already provides the visual
+}
+
+@keyframes bounce {
+
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  40%,
+  43% {
+    transform: translate3d(0, -8px, 0);
+  }
+
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+
+  90% {
+    transform: translate3d(0, -2px, 0);
   }
 }

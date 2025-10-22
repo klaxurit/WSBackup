@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
 
 interface NetworkItemProps {
   token: BerachainToken;
@@ -17,7 +17,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
   isSelected,
   onSelect,
 }) => {
-  const [displayFallback, setDisplayFallback] = useState<boolean>(false)
+  const [displayFallback] = useState<boolean>(false)
 
   // Les balances et prix USD sont maintenant fournis directement par le backend
   const balance = token.balance || '';
@@ -30,16 +30,7 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
       tabIndex={0}
     >
       <div className="Modal__ItemLogo">
-        {displayFallback || !token.logoUri
-          ? <FallbackImg content={token.symbol} />
-          : (
-            <img
-              src={token.logoUri}
-              alt={token.name}
-              onError={() => setDisplayFallback(true)}
-              className="Modal__ItemImage"
-            />
-          )}
+        <TokenLogo logoUri={!displayFallback ? token.logoUri : null} symbol={token.symbol} size="large" className="Modal__ItemImage" />
       </div>
       <div className="Modal__ItemInfo">
         <span className="Modal__ItemName">{token.name}</span>

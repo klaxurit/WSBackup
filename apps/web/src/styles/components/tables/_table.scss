@@ -165,8 +165,8 @@
   vertical-align: middle;
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -455,6 +455,13 @@
   width: 24px;
   background: none;
   border: none;
+}
+
+.VaultsTable__IndexCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .VaultsTable__IndexCell {

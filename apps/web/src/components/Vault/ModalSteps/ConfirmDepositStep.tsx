@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Loader } from '../../Loader/Loader';
+import { Button } from '../../Button/Button';
 import { formatTokenAmount } from '../../../utils/formatTokenAmount';
-import { FallbackImg } from '../../utils/FallbackImg';
+import { TokenLogo } from '../../Common/TokenLogo';
 import { StickyIcon } from '../../Common/StickyIcon';
 import { AutoWinIcon } from '../../Common/AutoWinIcon';
 import { useQuery } from '@tanstack/react-query';
@@ -128,22 +128,14 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
           <h4>My deposits:</h4>
           <div className="token-row">
             <div className="token-info">
-              {token0.logoUri ? (
-                <img src={token0.logoUri} alt={token0.symbol} />
-              ) : (
-                <FallbackImg content={token0.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-              )}
+              <TokenLogo logoUri={token0.logoUri} symbol={token0.symbol} size="medium" />
               <span className="symbol">{token0.symbol}</span>
             </div>
             <span className="amount">{formatTokenAmount(amount0, token0.decimals)}</span>
           </div>
           <div className="token-row">
             <div className="token-info">
-              {token1.logoUri ? (
-                <img src={token1.logoUri} alt={token1.symbol} />
-              ) : (
-                <FallbackImg content={token1.symbol.charAt(0)} style={{ width: '24px', height: '24px' }} />
-              )}
+              <TokenLogo logoUri={token1.logoUri} symbol={token1.symbol} size="medium" />
               <span className="symbol">{token1.symbol}</span>
             </div>
             <span className="amount">{formatTokenAmount(amount1, token1.decimals)}</span>
@@ -172,18 +164,16 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
       </div>
 
       {/* Action Button */}
-      <button
-        className="btn btn--large btn__main"
+      <Button
+        size="large"
+        variant="main"
         onClick={onConfirm}
-        disabled={isPending}
+        loading={isPending}
+        customClassName="btn__vault-confirm"
         style={{ marginTop: 'auto' }}
       >
-        {isPending ? (
-          <Loader size="small" color="rgba(255, 208, 86)" className="btn__main-loader" />
-        ) : (
-          'Confirm Supply'
-        )}
-      </button>
+        Confirm Supply
+      </Button>
     </div>
   );
 };

@@ -27,24 +27,20 @@ export function Footer({
         {/* Section Navigation */}
         <div className="Footer__Center">
           <nav className="Footer__Nav">
-            <a href="#accelerator" className="Footer__Link" onClick={() => { }}>
+            <a href="/" className="Footer__Link">
               Swap
             </a>
             <span className="Footer__Separator" />
-            <a href="#pricings" className="Footer__Link" onClick={() => { }}>
+            <a href="/explore" className="Footer__Link">
               Explore
             </a>
             <span className="Footer__Separator" />
-            <a href="#vaults" className="Footer__Link" onClick={() => { }}>
-              Vaults
-            </a>
-            <span className="Footer__Separator" />
-            <a href="#whitelabel" className="Footer__Link" onClick={() => { }}>
-              Pools
+            <a href="/liquidity" className="Footer__Link">
+              Liquidity
             </a>
             <span className="Footer__Separator" />
             <a
-              href="https://docs.winnieswap.com/introduction"
+              href="https://docs.winnieswap.com/winnieswap/introduction"
               target="_blank"
               rel="noopener noreferrer"
               className="Footer__Link"

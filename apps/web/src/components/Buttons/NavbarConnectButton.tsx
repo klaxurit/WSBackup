@@ -7,7 +7,7 @@ import { formatEther } from 'viem';
 import { WinnieFavicon } from '../SVGs/LogoSVGs';
 import earLeft from '../../assets/ear_left.png';
 import earRight from '../../assets/ear_right.png';
-import bearButtonBg from '../../assets/bear_button.svg';
+import { Button } from '../Button/Button';
 
 interface NavbarConnectButtonProps {
   onClick?: () => void;
@@ -91,35 +91,42 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div style={{ position: 'relative' }} ref={dropdownRef}>
-        <button
-          className={`Navbar__ConnectButton btn btn--small btn__shade ${customClassName}`.trim()}
+        <Button
+          size="small"
+          variant="shade"
           onClick={isConnected ? () => setDropdownOpen((v) => !v) : handleConnect}
-          disabled={isConnecting}
+          loading={isConnecting}
+          customClassName={`btn__navbar-connect ${customClassName}`.trim()}
         >
           {isConnected && address ? (
             beraname ? `${beraname}` : `⛓️ ${formatAddress(address)}`
-          ) : isConnecting ? <Loader size="mini" /> : 'Connect'}
-        </button>
+          ) : 'Connect'}
+        </Button>
         {isConnected && dropdownOpen && (
           <div className="Navbar__Dropdown">
             <div className="Navbar__DropdownHeader">
               <p className="Navbar__Address">{beraname ? beraname : formatAddress(address!)}</p>
-              <button
-                className="Navbar__CopyButton"
+              <Button
+                size="tiny"
+                variant="shade"
                 onClick={handleCopy}
+                customClassName="btn__navbar-copy"
                 title="Copy address"
+                aria-label="Copy address"
               >
                 <CopyIcon />
-              </button>
+              </Button>
             </div>
             <div className="Navbar__DropdownWalletName">{getWalletName()}</div>
-            <button
-              className="Navbar__DisconnectButton"
+            <Button
+              size="small"
+              variant="accent"
               onClick={handleDisconnect}
+              customClassName="btn__navbar-disconnect"
               title="Disconnect"
             >
               <LogoutIcon /> Disconnect
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -128,15 +135,11 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
           {!showLeftEar && (
             <img src={earLeft} alt="Oreille gauche" className="ear left-ear" />
           )}
-          <button
-            className="Navbar__BalanceButton btn btn--small btn__disabled"
+          <Button
+            size="small"
+            variant="disabled"
             disabled
-            style={{
-              backgroundImage: `url(${bearButtonBg})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
+            customClassName="btn__navbar-balance"
           >
             <span className="Navbar__BalanceIcon">
               <WinnieFavicon />
@@ -150,7 +153,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
                   : "0 BERA")
                 : "—"
             )}
-          </button>
+          </Button>
           {!showRightEar && (
             <img src={earRight} alt="Oreille droite" className="ear right-ear" />
           )}

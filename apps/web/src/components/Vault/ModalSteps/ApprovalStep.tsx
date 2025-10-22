@@ -1,7 +1,7 @@
 import React from 'react';
-import { Loader } from '../../Loader/Loader';
 import { formatTokenAmount } from '../../../utils/formatTokenAmount';
-import { FallbackImg } from '../../utils/FallbackImg';
+import { TokenLogo } from '../../Common/TokenLogo';
+import { Button } from '../../Button/Button';
 
 interface ApprovalStepProps {
   tokenSymbol: string;
@@ -30,13 +30,7 @@ export const ApprovalStep: React.FC<ApprovalStepProps> = ({
     <div className="VaultDepositModal__StepContent">
       {/* Token Info */}
       <div className="VaultDepositModal__TokenInfo">
-        {tokenLogoUri ? (
-          <img src={tokenLogoUri} alt={tokenSymbol} onError={(e) => {
-            e.currentTarget.style.display = 'none';
-          }} />
-        ) : (
-          <FallbackImg content={tokenSymbol.charAt(0)} style={{ width: '40px', height: '40px' }} />
-        )}
+        <TokenLogo logoUri={tokenLogoUri} symbol={tokenSymbol} size="xlarge" />
         <div style={{ flex: 1 }}>
           <div>
             <span className="amount">{formatTokenAmount(amount, decimals)}</span>
@@ -63,18 +57,16 @@ export const ApprovalStep: React.FC<ApprovalStepProps> = ({
       </div>
 
       {/* Action Button */}
-      <button
-        className="btn btn--large btn__main"
+      <Button
+        size="large"
+        variant="main"
         onClick={onApprove}
-        disabled={isApproving}
+        loading={isApproving}
+        customClassName="btn__vault-approve"
         style={{ marginTop: 'auto' }}
       >
-        {isApproving ? (
-          <Loader size="small" color="rgba(255, 208, 86)" className="btn__main-loader" />
-        ) : (
-          `Approve ${tokenSymbol}`
-        )}
-      </button>
+        {`Approve ${tokenSymbol}`}
+      </Button>
     </div>
   );
 };
