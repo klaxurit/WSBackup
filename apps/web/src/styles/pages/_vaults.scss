@@ -199,12 +199,27 @@
   }
 
   &__Strategy {
-    background: rgba(255, 255, 255, 0.04);
-    color: #e39229;
-    padding: 0.25rem 0.75rem;
-    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 8px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+
+    &--sticky {
+      background: rgba(255, 255, 255, 0.1);
+      color: $white-080;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    &--autowin {
+      background: rgba(227, 146, 41, 0.15);
+      color: $beryl-pure;
+      border: 1px solid rgba(227, 146, 41, 0.3);
+    }
   }
 
   &__ExplorerLink {
@@ -579,22 +594,6 @@
     flex-direction: column;
     gap: 0.75rem;
     transition: all 0.3s ease;
-
-    // &:hover {
-    //   background: rgba(255, 255, 255, 0.04);
-    //   border-color: rgba(227, 146, 41, 0.3);
-    //   transform: translateY(-2px);
-    //   box-shadow: 0 4px 12px rgba(227, 146, 41, 0.15);
-    // }
-
-    // &--autowin {
-    //   border-color: rgba(156, 120, 72, 0.3);
-
-    //   &:hover {
-    //     border-color: rgba(156, 120, 72, 0.4);
-    //     box-shadow: 0 4px 12px rgba(156, 120, 72, 0.15);
-    //   }
-    // }
   }
 
   &__MyDepositHeader {

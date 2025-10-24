@@ -412,7 +412,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       columns={columns}
       data={tokens}
       isLoading={isLoading}
-      tableClassName="Table"
+      tableClassName="Table Table--bordered"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
       defaultSortKey={defaultSortKey}

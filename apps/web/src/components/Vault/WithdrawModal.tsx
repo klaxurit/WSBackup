@@ -180,7 +180,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
             title="Withdrawal Successful!"
             message={`Your liquidity has been successfully withdrawn from the ${vaultType}!`}
             txHash={withdrawHook.withdraw.hash}
-            explorerUrl="https://beratrail.io"
+            explorerUrl="https://berascan.com"
             bearType="withdraw"
             onClose={() => {
               console.log('WithdrawModal: Success step closed, resetting all states');
@@ -198,10 +198,26 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
     }
   };
 
+  // Callback de fermeture qui gère le reset complet
+  const handleClose = () => {
+    console.log('WithdrawModal: handleClose called');
+
+    // Si on est sur SUCCESS step, faire le reset complet
+    if (modalState.currentStep === VaultModalStep.SUCCESS) {
+      console.log('WithdrawModal: On SUCCESS step, doing full reset');
+      withdrawHook.withdraw.reset();
+      modalState.resetModal();
+      onSuccess?.();
+    }
+
+    // Fermer la modal
+    onClose();
+  };
+
   return (
     <VaultWithdrawModal
       isOpen={modalState.isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       currentStep={modalState.currentStep}
       stepNumber={current}
       totalSteps={total}

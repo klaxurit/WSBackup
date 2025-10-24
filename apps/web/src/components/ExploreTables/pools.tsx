@@ -432,7 +432,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       columns={columns}
       data={pools}
       isLoading={isLoading}
-      tableClassName="Table"
+      tableClassName="Table Table--bordered"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
       defaultSortKey={defaultSortKey}

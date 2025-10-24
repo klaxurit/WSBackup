@@ -141,11 +141,13 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
         );
 
       case VaultModalStep.SUCCESS:
+        const vaultName = `${tokenInDisplay.symbol}-${tokenOutDisplay.symbol}`;
+
         return (
           <SuccessStep
             message="Your liquidity has been successfully deposited to the vault!"
             txHash={depositHook.deposit.hash}
-            explorerUrl="https://beratrail.io"
+            explorerUrl="https://berascan.com"
             onClose={() => {
               console.log('SingleSideDepositModal: Success step closed, resetting all states');
               depositHook.deposit.reset(); // Reset deposit hook state (clears isSuccess)
@@ -155,6 +157,8 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
             }}
             autoCloseDelay={isAutoWinEnabled ? 3000 : 0} // Auto-close only if AutoWin is ON
             showStakingOptions={!isAutoWinEnabled} // Show staking buttons if AutoWin is OFF
+            vaultAddress={vaultAddress}
+            vaultName={vaultName}
           />
         );
 
@@ -163,10 +167,26 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
     }
   };
 
+  // Callback de fermeture qui gère le reset complet
+  const handleClose = () => {
+    console.log('SingleSideDepositModal: handleClose called');
+
+    // Si on est sur SUCCESS step, faire le reset complet
+    if (modalState.currentStep === VaultModalStep.SUCCESS) {
+      console.log('SingleSideDepositModal: On SUCCESS step, doing full reset');
+      depositHook.deposit.reset();
+      modalState.resetModal();
+      onSuccess?.();
+    }
+
+    // Fermer la modal
+    onClose();
+  };
+
   return (
     <VaultDepositModal
       isOpen={modalState.isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       currentStep={modalState.currentStep}
       stepNumber={current}
       totalSteps={total}

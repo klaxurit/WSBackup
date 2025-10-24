@@ -103,17 +103,20 @@
   border-right: none; // Supprime les bordures entre les colonnes du header
   height: 60px; // Hauteur fixe pour tous les headers
   vertical-align: middle; // Centre le contenu verticalement
-
-  &:nth-child(n+3) {
-    text-align: right;
-  }
 }
 
 .Table tbody tr {
   transition: background 0.13s;
+}
 
-  td:nth-child(n+3) {
-    text-align: right;
+.Table tbody td {
+  text-align: left;
+
+  span {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
   }
 }
 
@@ -228,19 +231,37 @@
 }
 
 .Table--bordered {
-  border: 1px solid #232323;
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06); // Bordure plus subtile
+  border-radius: 12px;
   overflow: hidden;
 
   // Supprime les bordures entre les colonnes du header
   thead th {
     border-right: none !important;
     border-left: none !important;
+    background: rgba(255, 255, 255, 0.04); // Background subtil pour les en-têtes
+    color: $white-072;
+    font-weight: 600;
   }
 
   // Garde seulement la bordure du bas pour le header
   thead tr {
-    border-bottom: 1px solid #232323;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  // Bordures plus subtiles entre les lignes
+  tbody td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  // Dernière ligne sans bordure
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  // Hover plus subtil
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
   }
 }
 
@@ -275,7 +296,7 @@
   // S'assurer que la cellule du header n'a pas de hauteur supplémentaire
   vertical-align: middle;
   padding: 1rem; // Utilise le même padding que les autres headers
-  height: 60px; // Même hauteur fixe que les autres headers
+  height: 60px;
 }
 
 // Pour centrer verticalement les TokenPairLogos dans les tableaux
@@ -298,6 +319,13 @@
 }
 
 .PoolsTable__IndexCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.TokensTable__IndexCell {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -367,7 +395,7 @@
 .PoolsTable__FeeCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -381,7 +409,7 @@
 .PoolsTable__TvlCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -395,7 +423,7 @@
 .PoolsTable__AprCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -409,7 +437,7 @@
 .PoolsTable__BgtAprCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -423,7 +451,7 @@
 .PoolsTable__Vol1dCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -437,7 +465,7 @@
 .PoolsTable__Vol30dCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -451,7 +479,7 @@
 }
 
 .Table__Icon {
-  height: 24px;
+  height: 18px;
   width: 24px;
   background: none;
   border: none;
@@ -525,18 +553,33 @@
 .VaultsTable__StrategyCell {
   display: flex;
   align-items: center;
-  justify-content: center;
   min-width: 0;
 }
 
 .VaultsTable__StrategyBadge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  background-color: #2a2a2a;
-  font-size: 12px;
-  font-weight: 500;
-  color: #e0e0e0;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   white-space: nowrap;
+
+  // Style par défaut (Sticky)
+  &--sticky {
+    background: rgba(255, 255, 255, 0.1);
+    color: $white-080;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  // Style AutoWin
+  &--autowin {
+    background: rgba(227, 146, 41, 0.15);
+    color: $beryl-pure;
+    border: 1px solid rgba(227, 146, 41, 0.3);
+  }
 }
 
 // Cellule TVL
@@ -549,7 +592,7 @@
 .VaultsTable__TvlCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -563,7 +606,7 @@
 .VaultsTable__AprCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -577,7 +620,7 @@
 .VaultsTable__FeesAprCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -591,7 +634,7 @@
 .VaultsTable__RewardsAprCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -605,7 +648,7 @@
 .VaultsTable__Vol1dCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -619,7 +662,7 @@
 .VaultsTable__Vol30dCell {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start; // Aligné à gauche pour cohérence
   min-width: 0;
 }
 
@@ -741,10 +784,7 @@
   // border-bottom: 1px solid #232323;
   vertical-align: middle;
   white-space: nowrap;
-
-  &:nth-child(n+3) {
-    text-align: right;
-  }
+  text-align: left; // Toutes les cellules alignées à gauche pour cohérence
 }
 
 // Transaction type styles
@@ -796,7 +836,7 @@
 // Right-aligned columns for numerical data
 .Table thead th:nth-child(n+3) {
   .Table__HeaderContent {
-    justify-content: flex-end;
+    justify-content: flex-start; // Aligné à gauche pour cohérence
   }
 }
 

@@ -199,11 +199,11 @@ export const VaultDetailPage = () => {
 
     const positions = []
 
-    // 1. StickyVault position (Vanilla) - from wallet balance on-chain
+    // 1. StickyVault position (Sticky) - from wallet balance on-chain
     // This shows only what's in the wallet, not what's staked elsewhere
     if (stickyVaultBalance.shares > 0n) {
       positions.push({
-        type: 'vanilla' as const,
+        type: 'sticky' as const,
         valueUSD: stickyVaultBalance.valueInUSD,
         tokenName: `${token0.symbol}-${token1.symbol}`,
         tokenAmount: stickyVaultBalance.shares,
@@ -295,8 +295,8 @@ export const VaultDetailPage = () => {
             <div className="VaultDetailPage__VaultTitle">
               <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
-                <span className="VaultDetailPage__Strategy">
-                  {vault.strategy || 'Auto-Win'}
+                <span className={`VaultDetailPage__Strategy VaultDetailPage__Strategy--${vault.autoWinVault ? 'autowin' : 'sticky'}`}>
+                  {vault.autoWinVault ? 'Auto-Win' : 'Sticky'}
                 </span>
                 <a
                   href={`https://berascan.com/address/${vault.id}`}
