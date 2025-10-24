@@ -187,7 +187,7 @@ const CreatePoolPage: React.FC = () => {
     }
     if (poolManager.status === "waitUserApprovement") {
       return {
-        text: `Waiting user's approvement`,
+        // text: `Waiting user's approvement`,  
         action: () => { },
         disabled: true,
         loading: true
@@ -195,7 +195,7 @@ const CreatePoolPage: React.FC = () => {
     }
     if (poolManager.status === "waitApprovementReceipt") {
       return {
-        text: `Waiting approvement receipt`,
+        // text: `Waiting approvement receipt`,
         action: () => { },
         disabled: true,
         loading: true
@@ -204,7 +204,7 @@ const CreatePoolPage: React.FC = () => {
 
     if (poolManager.status === "waitMainUserSign") {
       return {
-        text: `Waiting user's signature`,
+        // text: `Waiting user's signature`,
         action: () => { },
         disabled: true,
         loading: true
@@ -212,7 +212,7 @@ const CreatePoolPage: React.FC = () => {
     }
     if (poolManager.status === "waitMainReceipt") {
       return {
-        text: `Waiting block validation`,
+        // text: `Waiting block validation`,
         action: () => { },
         disabled: true,
         loading: true
@@ -675,7 +675,7 @@ const CreatePoolPage: React.FC = () => {
                       onClick={buttonState?.action}
                     >
                       {buttonState?.loading && (
-                        <Loader size="mobile" />
+                        <Loader size="small" />
                       )}
                       {buttonState?.text}
                     </button>

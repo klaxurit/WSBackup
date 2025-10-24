@@ -154,7 +154,7 @@ export const usePoolManager = ({
 
         if (!sqrtPriceX96) return null
         const tick = priceToTick(sqrtPriceX96)
-        if (!tick) return null
+        if (tick == null) return null
 
         const pool = new Pool(
           token0,
