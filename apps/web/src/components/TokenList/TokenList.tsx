@@ -3,6 +3,7 @@ import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
 import { PopularTokens } from './PopularTokens';
 import { useTokensInPool, convertToBerachainTokens } from '../../hooks/useTokensInPool';
+import { useTokens } from '../../hooks/useBerachainTokenList';
 import { usePopularTokens } from '../../hooks/usePopularTokens';
 import { Modal } from '../Common/Modal';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
@@ -12,6 +13,11 @@ interface NetworksListProps {
   onClose: () => void;
   onSelect: (token: BerachainToken) => void;
   selectedToken?: BerachainToken | null;
+  /**
+   * Si true, affiche tous les tokens disponibles (pour la création de liquidité)
+   * Si false (défaut), affiche uniquement les tokens présents dans les pools
+   */
+  showAllTokens?: boolean;
 }
 
 export const TokenList = ({
@@ -19,22 +25,41 @@ export const TokenList = ({
   onClose,
   onSelect,
   selectedToken,
+  showAllTokens = false,
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
 
-  // Utilisation du nouveau hook optimisé
+  // Hook pour tous les tokens (pour la création de liquidité)
   const {
-    data: tokensData,
-    isLoading,
-    error,
-    isError
+    data: allTokensData,
+    isLoading: isLoadingAllTokens,
+    error: errorAllTokens
+  } = useTokens();
+
+  // Hook pour les tokens dans les pools (pour le swap et autres)
+  const {
+    data: tokensInPoolData,
+    isLoading: isLoadingTokensInPool,
+    error: errorTokensInPool,
+    isError: isErrorTokensInPool
   } = useTokensInPool();
 
-  // Convertir les tokens du backend en format BerachainToken
+  // Sélectionner les données appropriées selon le mode
+  const isLoading = showAllTokens ? isLoadingAllTokens : isLoadingTokensInPool;
+  const error = showAllTokens ? errorAllTokens : errorTokensInPool;
+  const isError = showAllTokens ? !!errorAllTokens : isErrorTokensInPool;
+
+  // Convertir les tokens en format BerachainToken
   const cachedTokens = useMemo(() => {
-    if (!tokensData?.data?.tokens) return [];
-    return convertToBerachainTokens(tokensData.data.tokens);
-  }, [tokensData]);
+    if (showAllTokens) {
+      // Pour tous les tokens, les données sont déjà au bon format
+      return Array.isArray(allTokensData) ? allTokensData : [];
+    } else {
+      // Pour les tokens dans les pools, utiliser la fonction de conversion
+      if (!tokensInPoolData?.data?.tokens) return [];
+      return convertToBerachainTokens(tokensInPoolData.data.tokens);
+    }
+  }, [showAllTokens, allTokensData, tokensInPoolData]);
 
   // Tokens populaires (utilise le hook usePopularTokens)
   const popularTokens = usePopularTokens(cachedTokens, undefined, 4);

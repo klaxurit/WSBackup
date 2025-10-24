@@ -17,6 +17,11 @@ interface NetworkSelectorProps {
   isHomePage?: boolean;
   onForceOpen?: () => void;
   forceListOpen?: boolean;
+  /**
+   * Si true, affiche tous les tokens disponibles (pour la création de liquidité)
+   * Si false (défaut), affiche uniquement les tokens présents dans les pools
+   */
+  showAllTokens?: boolean;
 }
 
 const TokenSelector: React.FC<NetworkSelectorProps> = ({
@@ -24,7 +29,8 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   onSelect,
   onToggleNetworkList,
   onForceOpen,
-  forceListOpen
+  forceListOpen,
+  showAllTokens = false
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
@@ -111,6 +117,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
           onClose={handleNetworksListToggle}
           onSelect={handleTokenSelect}
           selectedToken={selectedToken || preSelected}
+          showAllTokens={showAllTokens}
         />
       )}
     </>
