@@ -435,7 +435,7 @@ const transformVaultPositionToFormattedPosition = (vault: GraphQLVaultWithPositi
 const VaultPositionSizeCell: React.FC<{ row: FormattedVaultPosition }> = ({ row }) => {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8  }}>
         <span style={{ fontSize: '14px', fontWeight: '500' }}>
           {parseFloat(row.shares).toFixed(4)}
         </span>

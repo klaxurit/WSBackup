@@ -34,6 +34,7 @@ const GET_STICKYVAULTS = `
       collectedFeesUSD
       collectedFeesToken1
       collectedFeesToken0
+      autoWinVault
       vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
         items {
           apr
@@ -156,14 +157,19 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       key: 'strategy',
       className: 'VaultsTable__StrategyTd',
       sortable: true,
-      sortValue: (row) => row.strategy || 'Auto-Win',
-      render: (row) => (
-        <span className="VaultsTable__StrategyCell">
-          <span className="VaultsTable__StrategyBadge">
-            {row.strategy || 'Auto-Win'}
+      sortValue: (row) => row.autoWinVault ? 'AutoWin' : 'Sticky',
+      render: (row) => {
+        const isAutoWin = row.autoWinVault && row.autoWinVault !== '0x0000000000000000000000000000000000000000';
+        const strategy = isAutoWin ? 'AutoWin' : 'Sticky';
+
+        return (
+          <span className="VaultsTable__StrategyCell">
+            <span className={`VaultsTable__StrategyBadge VaultsTable__StrategyBadge--${strategy.toLowerCase()}`}>
+              {strategy}
+            </span>
           </span>
-        </span>
-      )
+        );
+      }
     },
     {
       label: 'TVL',
@@ -252,7 +258,7 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       columns={columns}
       data={filteredVaults}
       isLoading={isLoading}
-      tableClassName="Table"
+      tableClassName="Table Table--bordered"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
       defaultSortKey="tvl"

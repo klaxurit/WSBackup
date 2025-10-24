@@ -133,12 +133,10 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
     <>
       {/* Action Forms */}
       <div className="VaultDetailPage__ActionForms">
-        {/* My Deposits Card - Only show if user is connected and has deposits */}
-        {isConnected && (stickyBalance.shares > 0n || autoWinBalance.shares > 0n) && (
+        {/* {isConnected && (stickyBalance.shares > 0n || autoWinBalance.shares > 0n) && (
           <div className="VaultDetailPage__MyDeposits">
             <h4 className="VaultDetailPage__MyDepositsTitle">My Deposits</h4>
             <div className="VaultDetailPage__MyDepositsGrid">
-              {/* Sticky Vault Position */}
               {stickyBalance.shares > 0n && (
                 <div className="VaultDetailPage__MyDepositCard">
                   <div className="VaultDetailPage__MyDepositHeader">
@@ -158,7 +156,6 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
                 </div>
               )}
 
-              {/* AutoWin Position */}
               {autoWinBalance.shares > 0n && (
                 <div className="VaultDetailPage__MyDepositCard VaultDetailPage__MyDepositCard--autowin">
                   <div className="VaultDetailPage__MyDepositHeader">
@@ -179,7 +176,7 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
               )}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Tab Navigation */}
         <div className="VaultDetailPage__FormTabs">

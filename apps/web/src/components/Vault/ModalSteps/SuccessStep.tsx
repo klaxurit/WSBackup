@@ -10,6 +10,8 @@ interface SuccessStepProps {
   autoCloseDelay?: number; // Délai en millisecondes avant fermeture automatique
   bearType?: 'increase' | 'withdraw'; // Type d'ourson à afficher
   showStakingOptions?: boolean; // Show external staking options (Infrared, Berahub)
+  vaultAddress?: string; // Adresse du vault pour BeraHub
+  vaultName?: string; // Nom du vault pour Infrared (ex: "NECT-HONEY")
 }
 
 /**
@@ -23,9 +25,20 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
   onClose,
   autoCloseDelay = 5000, // 5 secondes par défaut
   bearType = 'increase', // Par défaut increase
-  showStakingOptions = false // Par défaut pas de boutons staking
+  showStakingOptions = false, // Par défaut pas de boutons staking
+  vaultAddress,
+  vaultName
 }) => {
   console.log('SuccessStep: Component rendered with autoCloseDelay:', autoCloseDelay);
+
+  // Générer les URLs dynamiquement
+  const infraredUrl = vaultName
+    ? `https://infrared.finance/pol-vaults/winnieswap-${vaultName.toLowerCase().replace(/\s+/g, '-')}`
+    : null;
+
+  const berahubUrl = vaultAddress
+    ? `https://hub.berachain.com/earn/${vaultAddress}/`
+    : null;
 
   // Fermeture automatique après le délai
   useEffect(() => {
@@ -64,30 +77,34 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
       )}
 
       {/* Staking Options (if AutoWin is OFF) */}
-      {showStakingOptions && (
+      {showStakingOptions && (infraredUrl || berahubUrl) && (
         <div className="VaultDepositModal__StakingOptions">
           <p className="staking-prompt">Want to earn more? Stake your sticky tokens to:</p>
           <div className="staking-buttons">
-            <a
-              href="#" // TODO: Replace with Infrared URL
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn--large btn__main staking-btn infrared-btn"
-            >
-              <img
-                src="/src/assets/infrared-wordmark-black.png"
-                alt="Stake on Infrared"
-                className="infrared-logo"
-              />
-            </a>
-            <a
-              href="#" // TODO: Replace with Berahub URL
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn--large btn__main staking-btn"
-            >
-              Stake on BeraHub
-            </a>
+            {infraredUrl && (
+              <a
+                href={infraredUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn--large btn__main staking-btn infrared-btn"
+              >
+                <img
+                  src="/src/assets/infrared-wordmark-black.png"
+                  alt="Stake on Infrared"
+                  className="infrared-logo"
+                />
+              </a>
+            )}
+            {berahubUrl && (
+              <a
+                href={berahubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn--large btn__main staking-btn"
+              >
+                Stake on BeraHub
+              </a>
+            )}
           </div>
         </div>
       )}

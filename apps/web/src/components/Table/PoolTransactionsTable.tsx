@@ -333,11 +333,11 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Type',
       key: 'type',
       render: (row: Transaction) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span>
           Swap
-          <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" style={{ margin: "0 2px" }} />
+          <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           for
-          <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" style={{ margin: "0 2px" }} />
+          <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
         </span>
       ),
     },
@@ -377,9 +377,9 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals))
         return (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+          <span>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" style={{ marginLeft: 2 }} />
+            <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           </span>
         )
       },
@@ -390,9 +390,9 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals))
         return (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+          <span>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" style={{ marginLeft: 2 }} />
+            <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
           </span>
         )
       },
@@ -419,7 +419,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         columns={txColumns}
         data={paginatedTransactions}
         isLoading={isLoading}
-        tableClassName="Table"
+        tableClassName="Table Table--bordered"
         wrapperClassName="Table__Wrapper"
         scrollClassName="Table__Scroll"
         emptyMessage="No transactions found for this pool"
