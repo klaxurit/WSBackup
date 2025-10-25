@@ -1,7 +1,7 @@
 @use "../../utils" as *;
 
 .Table__Wrapper {
-  background: rgba(255, 255, 255, 0.03);
+  // background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.04);
   overflow: hidden;
@@ -99,7 +99,6 @@
   padding: 1rem;
   z-index: 2;
   text-align: left;
-  border-bottom: 1px solid #232323;
   border-right: none; // Supprime les bordures entre les colonnes du header
   height: 60px; // Hauteur fixe pour tous les headers
   vertical-align: middle; // Centre le contenu verticalement
@@ -231,8 +230,8 @@
 }
 
 .Table--bordered {
-  border: 1px solid rgba(255, 255, 255, 0.06); // Bordure plus subtile
-  border-radius: 12px;
+  
+  border-radius: 20px;
   overflow: hidden;
 
   // Supprime les bordures entre les colonnes du header
@@ -330,6 +329,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  padding-right: 24px; // Ajoute de l'espace après la première colonne
 }
 
 

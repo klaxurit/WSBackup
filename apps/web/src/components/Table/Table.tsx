@@ -153,14 +153,12 @@ const InfiniteLoad: React.FC<InfiniteLoadProps> = ({
       {hasNextPage && (
         <div className="Table__InfiniteLoadControls">
           <button
-            className="Table__LoadMoreBtn"
+            className="Table__LoadMoreButton btn btn--small btn__main"
             onClick={onLoadMore}
             disabled={isFetchingNextPage}
           >
             {isFetchingNextPage ? (
-              <>
-                <Loader size="small" />
-              </>
+              <Loader size="small" className="btn__main-loader" />
             ) : (
               'Load More'
             )}

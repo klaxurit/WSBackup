@@ -105,6 +105,9 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   // Clé correspondante dans le Table pour le tri par défaut
   const defaultSortKey = 'volume';
 
+  // Déterminer si on est en mode recherche
+  const isSearching = searchValue && searchValue.trim() !== '';
+
   const {
     data,
     isLoading,
@@ -114,10 +117,10 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
   } = useInfiniteQuery({
     queryKey: ['tokensStats', searchValue, sortMode, serverSort.field, serverSort.direction, clientSort?.key, clientSort?.direction],
     queryFn: async ({ pageParam }) => {
-      // Pour le tri côté client, récupérer plus de données d'un coup
-      const limit = sortMode === 'client' ? 1000 : itemsPerPage;
-      // Pour le tri côté client, ignorer la pagination (pas de pageParam)
-      const after = sortMode === 'client' ? null : (pageParam || null);
+      // En mode recherche ou tri côté client, charger plus de données
+      const limit = (sortMode === 'client' || isSearching) ? 1000 : itemsPerPage;
+      // En mode recherche ou tri côté client, ignorer la pagination
+      const after = (sortMode === 'client' || isSearching) ? null : (pageParam || null);
 
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
@@ -144,8 +147,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       return result.data.tokens;
     },
     getNextPageParam: (lastPage) => {
-      // Désactiver la pagination pour le tri côté client
-      if (sortMode === 'client') return undefined;
+      // Désactiver la pagination pour le tri côté client ou en mode recherche
+      if (sortMode === 'client' || isSearching) return undefined;
 
       return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
     },
@@ -160,11 +163,12 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
     let allTokens = data.pages.flatMap(page => page.items || []);
 
     // Apply search filter if search value exists
-    if (searchValue && searchValue.trim() !== '') {
+    if (isSearching) {
+      const searchLower = searchValue.toLowerCase();
       allTokens = allTokens.filter((token: any) =>
-        token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchValue.toLowerCase()) ||
-        token.id.toLowerCase().includes(searchValue.toLowerCase())
+        (token.name && token.name.toLowerCase().includes(searchLower)) ||
+        (token.symbol && token.symbol.toLowerCase().includes(searchLower)) ||
+        (token.id && token.id.toLowerCase().includes(searchLower))
       );
     }
 
@@ -180,15 +184,21 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
           return bValue - aValue;
         }
       });
-
-      // Apply client-side pagination
-      const startIndex = 0; // Pour l'instant, on affiche tous les résultats
-      const endIndex = sortMode === 'client' ? allTokens.length : itemsPerPage;
-      return allTokens.slice(startIndex, endIndex);
     }
 
+    // En mode recherche, afficher tous les résultats trouvés
+    if (isSearching) {
+      return allTokens;
+    }
+
+    // En mode tri client, afficher tous les résultats
+    if (sortMode === 'client') {
+      return allTokens;
+    }
+
+    // Sinon, retourner les résultats paginés
     return allTokens;
-  }, [data, searchValue, sortMode, clientSort]);
+  }, [data, searchValue, isSearching, sortMode, clientSort]);
 
   // Fonction pour obtenir la clé de tri actuelle selon le mode
   const getCurrentSortKey = (): string => {
@@ -258,10 +268,13 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
 
     const firstPage = data.pages[0];
 
+    // Désactiver "Load More" en mode client, en mode recherche, ou s'il n'y a plus de pages
+    const canLoadMore = sortMode === 'server' && !isSearching && !!hasNextPage;
+
     return {
-      hasNextPage: sortMode === 'server' ? !!hasNextPage : false, // Désactiver "Load More" en mode client
-      isFetchingNextPage: sortMode === 'server' ? isFetchingNextPage : false,
-      onLoadMore: sortMode === 'server' ? fetchNextPage : () => { },
+      hasNextPage: canLoadMore,
+      isFetchingNextPage: sortMode === 'server' && !isSearching ? isFetchingNextPage : false,
+      onLoadMore: canLoadMore ? fetchNextPage : () => { },
       totalItems: firstPage?.totalCount || 0,
       currentItems: tokens.length,
       itemLabel: "tokens",
@@ -269,7 +282,7 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       currentSortKey: getCurrentSortKey(),
       currentSortDirection: getCurrentSortDirection()
     };
-  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, tokens.length, sortMode, serverSort, clientSort]);
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, tokens.length, sortMode, isSearching, serverSort, clientSort]);
 
   const columns: TableColumn[] = [
     {

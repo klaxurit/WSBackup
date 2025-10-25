@@ -28,15 +28,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (min-width: 768px) {
+    padding-top: 32px;
+  }
 }
 
-.Table__LoadMoreBtn {
-  cursor: pointer;
-  border: none;
-  color: #FFD056;
-  font-size: 16px;
-  font-weight: 500;
-  background: none;
+.Table__LoadMoreButton {
+  min-width: 120px; // Largeur minimale pour éviter le changement de taille
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .Table__PaginationBtn {

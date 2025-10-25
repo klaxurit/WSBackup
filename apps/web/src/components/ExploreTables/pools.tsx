@@ -112,6 +112,9 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   // Clé correspondante dans le Table pour le tri par défaut
   const defaultSortKey = 'tvl';
 
+  // Déterminer si on est en mode recherche
+  const isSearching = searchValue && searchValue.trim() !== '';
+
   const {
     data,
     isLoading,
@@ -121,10 +124,10 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   } = useInfiniteQuery({
     queryKey: ['poolStats', searchValue, sortMode, serverSort.field, serverSort.direction, clientSort?.key, clientSort?.direction],
     queryFn: async ({ pageParam }) => {
-      // Pour le tri côté client, récupérer plus de données d'un coup
-      const limit = sortMode === 'client' ? 1000 : itemsPerPage;
-      // Pour le tri côté client, ignorer la pagination (pas de pageParam)
-      const after = sortMode === 'client' ? null : (pageParam || null);
+      // En mode recherche ou tri côté client, charger plus de données
+      const limit = (sortMode === 'client' || isSearching) ? 1000 : itemsPerPage;
+      // En mode recherche ou tri côté client, ignorer la pagination
+      const after = (sortMode === 'client' || isSearching) ? null : (pageParam || null);
 
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
@@ -151,8 +154,8 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       return result.data.pools;
     },
     getNextPageParam: (lastPage) => {
-      // Désactiver la pagination pour le tri côté client
-      if (sortMode === 'client') return undefined;
+      // Désactiver la pagination pour le tri côté client ou en mode recherche
+      if (sortMode === 'client' || isSearching) return undefined;
 
       return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
     },
@@ -170,11 +173,14 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     allPools = allPools.filter((p: any) => !BL.includes(p.id.toLowerCase()));
 
     // Apply search filter if search value exists
-    if (searchValue && searchValue.trim() !== '') {
+    if (isSearching) {
+      const searchLower = searchValue.toLowerCase();
       allPools = allPools.filter((pool: any) =>
-        (pool.id && pool.id.toLowerCase().includes(searchValue.toLowerCase())) ||
-        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
+        (pool.id && pool.id.toLowerCase().includes(searchLower)) ||
+        (pool.token0Ref?.symbol && pool.token0Ref.symbol.toLowerCase().includes(searchLower)) ||
+        (pool.token1Ref?.symbol && pool.token1Ref.symbol.toLowerCase().includes(searchLower)) ||
+        (pool.token0Ref?.name && pool.token0Ref.name.toLowerCase().includes(searchLower)) ||
+        (pool.token1Ref?.name && pool.token1Ref.name.toLowerCase().includes(searchLower))
       );
     }
 
@@ -190,15 +196,21 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
           return bValue - aValue;
         }
       });
-
-      // Apply client-side pagination
-      const startIndex = 0; // Pour l'instant, on affiche tous les résultats
-      const endIndex = sortMode === 'client' ? allPools.length : itemsPerPage;
-      return allPools.slice(startIndex, endIndex);
     }
 
+    // En mode recherche, afficher tous les résultats trouvés
+    if (isSearching) {
+      return allPools;
+    }
+
+    // En mode tri client, afficher tous les résultats
+    if (sortMode === 'client') {
+      return allPools;
+    }
+
+    // Sinon, retourner les résultats paginés
     return allPools;
-  }, [data, searchValue, sortMode, clientSort]);
+  }, [data, searchValue, isSearching, sortMode, clientSort]);
 
   // Fonction pour obtenir la clé de tri actuelle selon le mode
   const getCurrentSortKey = (): string => {
@@ -268,10 +280,13 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
 
     const firstPage = data.pages[0];
 
+    // Désactiver "Load More" en mode client, en mode recherche, ou s'il n'y a plus de pages
+    const canLoadMore = sortMode === 'server' && !isSearching && !!hasNextPage;
+
     return {
-      hasNextPage: sortMode === 'server' ? !!hasNextPage : false, // Désactiver "Load More" en mode client
-      isFetchingNextPage: sortMode === 'server' ? isFetchingNextPage : false,
-      onLoadMore: sortMode === 'server' ? fetchNextPage : () => { },
+      hasNextPage: canLoadMore,
+      isFetchingNextPage: sortMode === 'server' && !isSearching ? isFetchingNextPage : false,
+      onLoadMore: canLoadMore ? fetchNextPage : () => { },
       totalItems: firstPage?.totalCount || 0,
       currentItems: pools.length,
       itemLabel: "pools",
@@ -279,7 +294,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       currentSortKey: getCurrentSortKey(),
       currentSortDirection: getCurrentSortDirection()
     };
-  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, pools.length, sortMode, serverSort, clientSort]);
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, pools.length, sortMode, isSearching, serverSort, clientSort]);
 
   const columns: TableColumn[] = [
     {
@@ -308,7 +323,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       sortable: true,
       sortValue: (row) => `${row.token0Ref.symbol}/${row.token1Ref.symbol}`,
       render: (row) => (
-        <span className="PoolsTable__PoolCell">
+        <span className="PoolsTable__PoolCell" style={{ marginLeft: '6px' }}>
           <span className="PoolsTable__LogoWrapper">
             <TokenPairLogos
               token0={{ id: row.token0Ref.id, address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}

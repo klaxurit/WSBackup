@@ -5,7 +5,9 @@ import { ExplorerLink } from '../Common/ExplorerLink';
 import { formatUnits } from "viem";
 import { useMemo } from "react";
 
-interface TransactionsTableProps { }
+interface TransactionsTableProps {
+  searchValue?: string
+}
 
 const GET_TRANSACTIONS_FAST = `
   query GetTransactionsFast($limit: Int!, $after: String) {
@@ -53,8 +55,11 @@ const GET_TRANSACTIONS_FAST = `
   }
 `
 
-export const TransactionsTable = ({ }: TransactionsTableProps) => {
+export const TransactionsTable = ({ searchValue = '' }: TransactionsTableProps) => {
   const itemsPerPage = 50; // Plus d'éléments par page pour les transactions
+
+  // Déterminer si on est en mode recherche
+  const isSearching = searchValue && searchValue.trim() !== '';
 
   const {
     data,
@@ -63,8 +68,13 @@ export const TransactionsTable = ({ }: TransactionsTableProps) => {
     hasNextPage,
     fetchNextPage
   } = useInfiniteQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', searchValue],
     queryFn: async ({ pageParam }) => {
+      // En mode recherche, charger plus de données
+      const limit = isSearching ? 500 : itemsPerPage;
+      // En mode recherche, ignorer la pagination
+      const after = isSearching ? null : (pageParam || null);
+
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
@@ -73,8 +83,8 @@ export const TransactionsTable = ({ }: TransactionsTableProps) => {
         body: JSON.stringify({
           query: GET_TRANSACTIONS_FAST,
           variables: {
-            limit: itemsPerPage,
-            after: pageParam || null
+            limit,
+            after
           }
         }),
       });
@@ -92,6 +102,9 @@ export const TransactionsTable = ({ }: TransactionsTableProps) => {
       return result.data.transactions;
     },
     getNextPageParam: (lastPage) => {
+      // Désactiver la pagination en mode recherche
+      if (isSearching) return undefined;
+
       return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
     },
     initialPageParam: null,
@@ -102,7 +115,7 @@ export const TransactionsTable = ({ }: TransactionsTableProps) => {
     if (!data?.pages) return [];
 
     // Combine all pages into a single array and transform data
-    const allTxs = data.pages.flatMap(page =>
+    let allTxs = data.pages.flatMap(page =>
       page.items.map((s: any) => {
         if (s.swaps?.items?.length > 0) {
           const swap = s.swaps.items[0];
@@ -138,23 +151,39 @@ export const TransactionsTable = ({ }: TransactionsTableProps) => {
       }).filter(Boolean)
     );
 
+    // Apply search filter if search value exists
+    if (isSearching) {
+      const searchLower = searchValue.toLowerCase();
+      allTxs = allTxs.filter((tx: any) =>
+        (tx.id && tx.id.toLowerCase().includes(searchLower)) ||
+        (tx.recipient && tx.recipient.toLowerCase().includes(searchLower)) ||
+        (tx.tokenIn?.symbol && tx.tokenIn.symbol.toLowerCase().includes(searchLower)) ||
+        (tx.tokenOut?.symbol && tx.tokenOut.symbol.toLowerCase().includes(searchLower)) ||
+        (tx.tokenIn?.name && tx.tokenIn.name.toLowerCase().includes(searchLower)) ||
+        (tx.tokenOut?.name && tx.tokenOut.name.toLowerCase().includes(searchLower))
+      );
+    }
+
     return allTxs;
-  }, [data]);
+  }, [data, searchValue, isSearching]);
 
   const infiniteLoadProps = useMemo(() => {
     if (!data?.pages?.length) return undefined;
 
     const firstPage = data.pages[0];
 
+    // Désactiver "Load More" en mode recherche ou s'il n'y a plus de pages
+    const canLoadMore = !isSearching && !!hasNextPage;
+
     return {
-      hasNextPage: !!hasNextPage,
-      isFetchingNextPage,
-      onLoadMore: fetchNextPage,
+      hasNextPage: canLoadMore,
+      isFetchingNextPage: !isSearching ? isFetchingNextPage : false,
+      onLoadMore: canLoadMore ? fetchNextPage : () => { },
       totalItems: firstPage?.totalCount || 0,
       currentItems: transactions.length,
       itemLabel: "transactions"
     };
-  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, transactions.length]);
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, transactions.length, isSearching]);
 
   const txColumns: TableColumn[] = [
     {
