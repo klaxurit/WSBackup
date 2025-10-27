@@ -5,6 +5,11 @@ import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo, useState } from "react";
+import { usePositionsGraphQL } from '../../hooks/usePositionsGraphQL';
+import { useAccount } from 'wagmi';
+import { Pool as PoolV3, Position as PositionV3 } from "@uniswap/v3-sdk";
+import { Token } from "@uniswap/sdk-core";
+import { currentChain } from "../../config/wagmi";
 
 
 interface PoolsTableProps {
@@ -92,6 +97,73 @@ const SORT_CONFIG = {
 export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   const itemsPerPage = 20;
   const navigate = useNavigate();
+  const { address } = useAccount();
+  const { positions } = usePositionsGraphQL();
+  const getPoolHolding = useMemo(() => {
+    return (poolId: string): number => {
+      if (!address || !positions || positions.length === 0) return 0;
+
+      const poolPositions = positions.filter((pos: any) =>
+        pos.pool.address.toLowerCase() === poolId.toLowerCase()
+      );
+
+      if (poolPositions.length === 0) return 0;
+
+      return poolPositions.reduce((total: number, posData: any) => {
+        try {
+          const position = posData.position;
+          const pool = posData.pool;
+
+          const liquidity = BigInt(position.liquidity || '0');
+          if (liquidity === 0n) return total;
+
+          const token0 = new Token(
+            currentChain.id,
+            pool.token0.address,
+            pool.token0.decimals,
+            pool.token0.symbol,
+            pool.token0.name
+          );
+          const token1 = new Token(
+            currentChain.id,
+            pool.token1.address,
+            pool.token1.decimals,
+            pool.token1.symbol,
+            pool.token1.name
+          );
+
+          const sdkPool = new PoolV3(
+            token0,
+            token1,
+            pool.fee * 10000,
+            pool.sqrtPriceX96,
+            pool.liquidity,
+            pool.tick
+          );
+
+          const sdkPosition = new PositionV3({
+            pool: sdkPool,
+            tickLower: position.tickLower,
+            tickUpper: position.tickUpper,
+            liquidity: liquidity.toString()
+          });
+
+          const t0Price = pool.token0?.TokenPrice?.[0]?.price || 0;
+          const t1Price = pool.token1?.TokenPrice?.[0]?.price || 0;
+          const amount0 = parseFloat(sdkPosition.amount0.toExact());
+          const amount1 = parseFloat(sdkPosition.amount1.toExact());
+          const t0Usd = amount0 * t0Price;
+          const t1Usd = amount1 * t1Price;
+          const posValueUSD = t0Usd + t1Usd;
+
+          return total + posValueUSD;
+        } catch (error) {
+          console.warn('Error calculating position value with SDK:', error);
+          return total;
+        }
+      }, 0);
+    };
+  }, [address, positions]);
 
   // État pour gérer le mode de tri
   const [sortMode, setSortMode] = useState<'server' | 'client'>('server');
@@ -109,10 +181,8 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     sortFn: (pool: any) => number;
   } | null>(null);
 
-  // Clé correspondante dans le Table pour le tri par défaut
   const defaultSortKey = 'tvl';
 
-  // Déterminer si on est en mode recherche
   const isSearching = searchValue && searchValue.trim() !== '';
 
   const {
@@ -124,9 +194,7 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
   } = useInfiniteQuery({
     queryKey: ['poolStats', searchValue, sortMode, serverSort.field, serverSort.direction, clientSort?.key, clientSort?.direction],
     queryFn: async ({ pageParam }) => {
-      // En mode recherche ou tri côté client, charger plus de données
       const limit = (sortMode === 'client' || isSearching) ? 1000 : itemsPerPage;
-      // En mode recherche ou tri côté client, ignorer la pagination
       const after = (sortMode === 'client' || isSearching) ? null : (pageParam || null);
 
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
@@ -154,25 +222,21 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       return result.data.pools;
     },
     getNextPageParam: (lastPage) => {
-      // Désactiver la pagination pour le tri côté client ou en mode recherche
       if (sortMode === 'client' || isSearching) return undefined;
 
       return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
     },
     initialPageParam: null,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   });
 
   const pools = useMemo(() => {
     if (!data?.pages) return [];
 
-    // Combine all pages into a single array
     let allPools = data.pages.flatMap(page => page.items || []);
 
-    // Filter out blacklisted pools
     allPools = allPools.filter((p: any) => !BL.includes(p.id.toLowerCase()));
 
-    // Apply search filter if search value exists
     if (isSearching) {
       const searchLower = searchValue.toLowerCase();
       allPools = allPools.filter((pool: any) =>
@@ -184,7 +248,6 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       );
     }
 
-    // Apply client-side sorting if in client mode
     if (sortMode === 'client' && clientSort) {
       allPools = [...allPools].sort((a, b) => {
         const aValue = clientSort.sortFn(a);
@@ -198,31 +261,26 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
       });
     }
 
-    // En mode recherche, afficher tous les résultats trouvés
     if (isSearching) {
       return allPools;
     }
 
-    // En mode tri client, afficher tous les résultats
     if (sortMode === 'client') {
       return allPools;
     }
 
-    // Sinon, retourner les résultats paginés
     return allPools;
   }, [data, searchValue, isSearching, sortMode, clientSort]);
 
-  // Fonction pour obtenir la clé de tri actuelle selon le mode
   const getCurrentSortKey = (): string => {
     if (sortMode === 'client' && clientSort) {
       return clientSort.key;
     }
 
-    // Mode serveur : trouver la clé correspondant au champ GraphQL
     for (const [tableKey, gqlField] of Object.entries(SORT_CONFIG.SERVER_SORTABLE)) {
       if (gqlField === serverSort.field) return tableKey;
     }
-    return 'tvl'; // Par défaut
+    return 'tvl';
   };
 
   const getCurrentSortDirection = (): 'asc' | 'desc' => {
@@ -232,14 +290,26 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
     return serverSort.direction;
   };
 
-  // Fonction pour gérer le changement de tri
   const handleSort = (columnKey: string, direction: 'asc' | 'desc' | null) => {
     const sortDirection = direction || 'desc';
 
-    // Vérifier si le champ est triable côté serveur
+    // Cas spécial pour Holdings - tri côté client avec accès au hook
+    if (columnKey === 'holdings') {
+      setSortMode('client');
+      setClientSort({
+        key: columnKey,
+        direction: sortDirection,
+        sortFn: (pool: any) => getPoolHolding(pool.id)
+      });
+      setServerSort({
+        field: 'totalValueLockedUSD',
+        direction: 'desc'
+      });
+      return;
+    }
+
     const serverField = SORT_CONFIG.SERVER_SORTABLE[columnKey as keyof typeof SORT_CONFIG.SERVER_SORTABLE];
     if (serverField) {
-      // Mode serveur
       setSortMode('server');
       setClientSort(null);
       setServerSort({
@@ -247,24 +317,20 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         direction: sortDirection
       });
     }
-    // Vérifier si le champ nécessite un tri côté client
     else {
       const clientSortFn = SORT_CONFIG.CLIENT_SORTABLE[columnKey as keyof typeof SORT_CONFIG.CLIENT_SORTABLE];
       if (clientSortFn) {
-        // Mode client
         setSortMode('client');
         setClientSort({
           key: columnKey,
           direction: sortDirection,
           sortFn: clientSortFn
         });
-        // Garder un ordre par défaut côté serveur pour récupérer les données
         setServerSort({
           field: 'totalValueLockedUSD',
           direction: 'desc'
         });
       } else {
-        // Fallback vers le mode serveur avec TVL par défaut
         setSortMode('server');
         setClientSort(null);
         setServerSort({
@@ -280,7 +346,6 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
 
     const firstPage = data.pages[0];
 
-    // Désactiver "Load More" en mode client, en mode recherche, ou s'il n'y a plus de pages
     const canLoadMore = sortMode === 'server' && !isSearching && !!hasNextPage;
 
     return {
@@ -298,32 +363,13 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
 
   const columns: TableColumn[] = [
     {
-      label: '#',
-      key: 'index',
-      className: 'PoolsTable__IndexTd',
-      render: (row) => (
-        <span className="PoolsTable__IndexCell">
-          <button
-            type="button"
-            className="PoolsTable__IndexLink"
-            onClick={() => navigate(`/pool/${row.id || ''}`)}
-          >
-            <span className="Table__Address">
-              {row.token0Ref.symbol}/{row.token1Ref.symbol}
-            </span>
-          </button>
-          <ExplorerLink address={row.id || ''} />
-        </span>
-      )
-    },
-    {
       label: 'Pool',
       key: 'pool',
       className: 'PoolsTable__PoolTd',
       sortable: true,
       sortValue: (row) => `${row.token0Ref.symbol}/${row.token1Ref.symbol}`,
       render: (row) => (
-        <span className="PoolsTable__PoolCell" style={{ marginLeft: '6px' }}>
+        <span className="PoolsTable__PoolCell">
           <span className="PoolsTable__LogoWrapper">
             <TokenPairLogos
               token0={{ id: row.token0Ref.id, address: row.token0Ref.id, logoUri: row.token0Ref.logoUri, symbol: row.token0Ref.symbol }}
@@ -333,8 +379,10 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
               size={28}
             />
           </span>
-          <span className="PoolsTable__PoolName">{row.pool}</span>
-
+          <span className="PoolsTable__PoolName">
+            {row.token0Ref.symbol}/{row.token1Ref.symbol}
+          </span>
+          <ExplorerLink address={row.id || ''} />
         </span>
       )
     },
@@ -438,6 +486,28 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
               : "-"}
           </span>
         )
+      }
+    },
+    {
+      label: 'Holdings',
+      key: 'holdings',
+      className: 'PoolsTable__HoldingsTd',
+      sortable: true,
+      sortValue: (row) => {
+        if (!address) return 0;
+        return getPoolHolding(row.id);
+      },
+      render: (row) => {
+        if (!address) {
+          return <span className="PoolsTable__HoldingsCell">-</span>;
+        }
+
+        const holding = getPoolHolding(row.id);
+        return (
+          <span className="PoolsTable__HoldingsCell">
+            ${formatNumber(holding)}
+          </span>
+        );
       }
     },
   ];

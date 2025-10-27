@@ -45,7 +45,6 @@ export const Button: React.FC<ButtonProps> = ({
   if (dominantColor) style.color = dominantColor;
   if (secondaryColor) style.backgroundColor = secondaryColor;
 
-  // Déterminer la classe CSS du loader en fonction de la variante du bouton
   const getLoaderClassName = (): string => {
     switch (variant) {
       case 'main':

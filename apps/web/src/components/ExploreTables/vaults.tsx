@@ -5,13 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
 import { useQuery } from '@tanstack/react-query';
+import { useAccount, useReadContracts } from 'wagmi';
+import { type Address, formatUnits } from 'viem';
+import { StickyVaultWithRouter } from '../../config/abis/StickyVaultWithRouter';
+import { AutowinABI } from '../../config/abis/Autowin';
 
 interface VaultsTableProps {
   searchValue: string
 }
 
 const GET_STICKYVAULTS = `
-  query GetStickyVaults {
+  query GetStickyVaults($user: String = "") {
   stickyVaults {
     items {
       name
@@ -35,6 +39,20 @@ const GET_STICKYVAULTS = `
       collectedFeesToken1
       collectedFeesToken0
       autoWinVault
+      positions(where: {user: $user}) {
+        items {
+          currentValueUSD
+          shares
+        }
+      }
+      autoWinVaultRef {
+        id
+        positions(where: {user: $user}) {
+          items {
+            shares
+          }
+        }
+      }
       vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
         items {
           apr
@@ -79,16 +97,20 @@ const BL = [
 
 export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   const navigate = useNavigate();
+  const { address } = useAccount();
 
   const { data: vaults, isLoading } = useQuery({
-    queryKey: ['stickyVaults'],
+    queryKey: ['stickyVaults', address],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_STICKYVAULTS }),
+        body: JSON.stringify({
+          query: GET_STICKYVAULTS,
+          variables: { user: address?.toLowerCase() || "" }
+        }),
       });
 
       const data = await response.json();
@@ -100,6 +122,172 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       return data.data.stickyVaults.items
     }
   });
+
+  // Get vaults where user has positions (for on-chain balance fetching)
+  const vaultsWithPositions = useMemo(() => {
+    if (!vaults || !address) return [];
+
+    return vaults.filter((vault: any) =>
+      (vault.positions?.items?.length > 0) ||
+      (vault.autoWinVaultRef?.positions?.items?.length > 0)
+    );
+  }, [vaults, address]);
+
+  // Create contracts array for batch balance fetching
+  const balanceContracts = useMemo(() => {
+    if (!address || vaultsWithPositions.length === 0) return [];
+
+    const contracts: any[] = [];
+
+    vaultsWithPositions.forEach((vault: any) => {
+      // Sticky vault balance
+      contracts.push({
+        address: vault.id as Address,
+        abi: StickyVaultWithRouter,
+        functionName: 'balanceOf',
+        args: [address]
+      });
+
+      // Sticky vault total supply
+      contracts.push({
+        address: vault.id as Address,
+        abi: StickyVaultWithRouter,
+        functionName: 'totalSupply',
+      });
+
+      // AutoWin vault balance (if exists)
+      if (vault.autoWinVault && vault.autoWinVault !== '0x0000000000000000000000000000000000000000') {
+        contracts.push({
+          address: vault.autoWinVault as Address,
+          abi: AutowinABI,
+          functionName: 'balanceOf',
+          args: [address]
+        });
+
+        // AutoWin convertToAssets
+        contracts.push({
+          address: vault.autoWinVault as Address,
+          abi: AutowinABI,
+          functionName: 'convertToAssets',
+          args: [0n] // Placeholder, will be updated after getting balance
+        });
+      }
+    });
+
+    return contracts;
+  }, [address, vaultsWithPositions]);
+
+  // Fetch all balances in a single batch call
+  const { data: balancesData } = useReadContracts({
+    contracts: balanceContracts,
+    query: {
+      enabled: !!address && balanceContracts.length > 0,
+      staleTime: 30000,
+    }
+  });
+
+  // Parse balances data into a usable map
+  const onChainBalances = useMemo(() => {
+    const map = new Map<string, { stickyShares: bigint; stickyTotalSupply: bigint; autoWinShares?: bigint }>();
+
+    if (!balancesData || !vaultsWithPositions || vaultsWithPositions.length === 0) return map;
+
+    let dataIndex = 0;
+    vaultsWithPositions.forEach((vault: any) => {
+      const vaultId = vault.id.toLowerCase();
+
+      // Get sticky balance (index 0, 1 for each vault)
+      const stickyBalance = balancesData[dataIndex]?.result as bigint | undefined;
+      const stickyTotalSupply = balancesData[dataIndex + 1]?.result as bigint | undefined;
+      dataIndex += 2;
+
+      // Get AutoWin balance if vault has AutoWin
+      let autoWinShares: bigint | undefined;
+      if (vault.autoWinVault && vault.autoWinVault !== '0x0000000000000000000000000000000000000000') {
+        autoWinShares = balancesData[dataIndex]?.result as bigint | undefined;
+        dataIndex += 2; // Skip convertToAssets for now (we'll approximate)
+      }
+
+      if (stickyBalance || autoWinShares) {
+        map.set(vaultId, {
+          stickyShares: stickyBalance || 0n,
+          stickyTotalSupply: stickyTotalSupply || 0n,
+          autoWinShares
+        });
+      }
+    });
+
+    return map;
+  }, [balancesData, vaultsWithPositions]);
+
+  // Helper function to calculate total holdings (Sticky + AutoWin)
+  // Uses on-chain balances (same as VaultDetailPage) for accurate values
+  const calculateVaultHoldings = (vault: any): number => {
+    if (!address) return 0;
+
+    let total = 0;
+    let stickyValue = 0;
+    let autoWinValue = 0;
+
+    const vaultId = vault.id.toLowerCase();
+    const stickyTVL = parseFloat(vault.totalValueLockedUSD || '0');
+
+    // Try to get on-chain balances first (most accurate)
+    const onChainData = onChainBalances.get(vaultId);
+
+    if (onChainData) {
+      // Use on-chain balances (same as VaultDetailPage)
+      const stickyShares = parseFloat(formatUnits(onChainData.stickyShares, 18));
+      const totalSupply = parseFloat(formatUnits(onChainData.stickyTotalSupply, 18));
+
+      // Calculate Sticky value: (shares / totalSupply) × TVL
+      if (totalSupply > 0 && stickyShares > 0) {
+        const proportion = stickyShares / totalSupply;
+        stickyValue = proportion * stickyTVL;
+        total += stickyValue;
+      }
+
+      // Calculate AutoWin value if exists
+      if (onChainData.autoWinShares && onChainData.autoWinShares > 0n) {
+        const autoWinSharesDecimal = parseFloat(formatUnits(onChainData.autoWinShares, 18));
+
+        // Approximation: autoWinShares / totalSupply × TVL
+        // Note: Ideally should use convertToAssets, but this is close
+        if (totalSupply > 0) {
+          const proportion = autoWinSharesDecimal / totalSupply;
+          autoWinValue = proportion * stickyTVL;
+          total += autoWinValue;
+        }
+      }
+    } else {
+      // Fallback to indexer data if no on-chain data available
+      const stickyTotalSupply = parseFloat(vault.totalSupply || '0');
+
+      if (vault.positions?.items?.length > 0) {
+        const stickyPosition = vault.positions.items[0];
+        const stickyShares = parseFloat(stickyPosition.shares || '0');
+
+        if (stickyTotalSupply > 0 && stickyShares > 0) {
+          const proportion = stickyShares / stickyTotalSupply;
+          stickyValue = proportion * stickyTVL;
+          total += stickyValue;
+        }
+      }
+
+      if (vault.autoWinVaultRef?.positions?.items?.length > 0) {
+        const autoWinPosition = vault.autoWinVaultRef.positions.items[0];
+        const autoWinShares = parseFloat(autoWinPosition.shares || '0');
+
+        if (stickyTotalSupply > 0 && autoWinShares > 0) {
+          const proportion = autoWinShares / stickyTotalSupply;
+          autoWinValue = proportion * stickyTVL;
+          total += autoWinValue;
+        }
+      }
+    }
+
+    return total;
+  };
 
   const filteredVaults = useMemo(() => {
     if (!vaults) return []
@@ -119,19 +307,6 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
 
   const columns: TableColumn[] = [
     {
-      label: '#',
-      key: 'index',
-      className: 'VaultsTable__IndexTd',
-      render: (row) => (
-        <span className="VaultsTable__IndexCell">
-          <span className="Table__Address">
-            {row.poolRef.token0Ref.symbol}/{row.poolRef.token1Ref.symbol}
-          </span>
-          <ExplorerLink address={row.id} />
-        </span>
-      )
-    },
-    {
       label: 'Vault',
       key: 'vault',
       className: 'VaultsTable__VaultTd',
@@ -148,7 +323,10 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
               size={28}
             />
           </span>
-          <span className="VaultsTable__VaultName">{row?.name ? row.name : `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`}</span>
+          <span className="VaultsTable__VaultName">
+            {row?.name ? row.name : `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`}
+          </span>
+          <ExplorerLink address={row.id} />
         </span>
       )
     },
@@ -249,6 +427,28 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
               : "-"}
           </span>
         )
+      }
+    },
+    {
+      label: 'Holdings',
+      key: 'holdings',
+      className: 'VaultsTable__HoldingsTd',
+      sortable: true,
+      sortValue: (row) => {
+        if (!address) return 0;
+        return calculateVaultHoldings(row);
+      },
+      render: (row) => {
+        if (!address) {
+          return <span className="VaultsTable__HoldingsCell">-</span>;
+        }
+
+        const holding = calculateVaultHoldings(row);
+        return (
+          <span className="VaultsTable__HoldingsCell">
+            ${formatNumber(holding)}
+          </span>
+        );
       }
     },
   ];

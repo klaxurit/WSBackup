@@ -113,17 +113,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }));
   }, []);
 
-
-  // Détermine si on doit utiliser les données factices
-  // Utiliser les données factices seulement si on n'a pas d'adresse ou si on a une erreur de configuration
   const shouldUseFakeData = (!poolAddress && !tokenAddress && !vaultAddress) || (error && error.message.includes('environment variable'));
   const chartData = shouldUseFakeData ? fakeData : data;
 
-  // Initialisation et mise à jour du chart
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // Nettoyage sécurisé du chart existant
     if (chartRef.current) {
       try {
         chartRef.current.remove();
@@ -135,7 +130,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       }
     }
 
-    // Création du nouveau chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height,
@@ -163,7 +157,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
     chartRef.current = chart;
 
-    // Ajout du watermark WinnieSwap
     try {
       const firstPane = chart.panes()[0];
       createTextWatermark(firstPane, {
@@ -182,10 +175,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       console.warn('Error creating watermark:', error);
     }
 
-    // Création de la série selon le type
     createSeries(chart, localChartType);
 
-    // Gestion du resize
     const handleResize = () => {
       if (chartRef.current && chartContainerRef.current) {
         try {
@@ -215,7 +206,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     };
   }, [localChartType, height, backgroundColor]);
 
-  // Fonction pour créer la série selon le type
   const createSeries = (chart: IChartApi, type: ChartType) => {
     try {
       switch (type) {
@@ -271,15 +261,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }
   };
 
-  // Mise à jour des données de la série
   useEffect(() => {
 
     if (seriesRef.current && chartData && Array.isArray(chartData)) {
       try {
         if (localChartType === 'candlestick') {
-          // Pour les candlesticks, on doit s'assurer d'avoir le bon format
           if (shouldUseFakeData) {
-            // Convertir les données factices en format candlestick
             const candlestickData = (chartData as LineChartPoint[]).map(point => ({
               time: point.time,
               open: point.value * 0.98,
@@ -292,11 +279,9 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
             seriesRef.current.setData(chartData as CandlestickPoint[]);
           }
         } else {
-          // Pour area et line charts
           if (shouldUseFakeData) {
             seriesRef.current.setData(chartData as LineChartPoint[]);
           } else {
-            // Si les données viennent d'un candlestick, extraire les prix de clôture
             if (chartData.length > 0 && 'close' in chartData[0]) {
               const lineData = (chartData as CandlestickPoint[]).map(candle => ({
                 time: candle.time,
@@ -309,7 +294,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
           }
         }
 
-        // Auto-fit du chart
         if (chartRef.current) {
           try {
             chartRef.current.timeScale().fitContent();
@@ -323,7 +307,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }
   }, [chartData, localChartType, shouldUseFakeData]);
 
-  // Gestionnaires d'événements
   const handleChartTypeChange = (newType: ChartType) => {
     setLocalChartType(newType);
     onChartTypeChange?.(newType);
@@ -336,8 +319,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
   const handleMetricChange = (newMetric: ChartMetric) => {
     setLocalMetric(newMetric);
-    // Si on change vers une métrique autre que 'price' et que le type est 'candlestick',
-    // on force le passage à 'area'
     if (newMetric !== 'price' && localChartType === 'candlestick') {
       setLocalChartType('area');
       onChartTypeChange?.('area');
@@ -345,7 +326,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     onMetricChange?.(newMetric);
   };
 
-  // Affichage du message de chargement ou d'erreur
   const showOverlay = isLoading || showNoDataOverlay || (error && !shouldUseFakeData);
   const overlayMessage = isLoading
     ? 'Loading chart data...'

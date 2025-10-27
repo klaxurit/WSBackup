@@ -51,15 +51,12 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
   onClick,
   noBorder = false
 }) => {
-  // Déterminer la taille en pixels
   const sizeInPx = typeof size === 'number' ? size : SIZE_MAP[size];
 
-  // Déterminer la largeur de bordure
   const borderWidth = typeof size === 'number'
-    ? Math.round(sizeInPx / 16) // Ratio dynamique pour tailles personnalisées
+    ? Math.round(sizeInPx / 16)
     : BORDER_WIDTH_MAP[size];
 
-  // Détecter si c'est un token STICKY ou AutoWin (ils ont déjà une bordure dans leur logo)
   const isStickyToken =
     symbol.toUpperCase().includes('STICKY') ||
     symbol.toUpperCase().startsWith('AW-') ||
@@ -69,13 +66,10 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
       logoUri.toLowerCase().includes('vault')
     ));
 
-  // Désactiver la bordure pour les tokens STICKY ou si noBorder est true
   const shouldHaveBorder = !noBorder && !isStickyToken;
 
-  // Classes CSS - ajouter une classe spécifique si c'est un token sticky
   const tokenLogoClass = `TokenLogo TokenLogo--${typeof size === 'string' ? size : 'custom'} ${isStickyToken ? 'TokenLogo--no-border' : ''} ${className}`.trim();
 
-  // Styles combinés
   const combinedStyle: React.CSSProperties = {
     width: sizeInPx,
     height: sizeInPx,
@@ -87,7 +81,6 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
     ...style,
   };
 
-  // Si pas de logo, afficher le fallback
   if (!logoUri) {
     return (
       <FallbackImg
@@ -101,7 +94,6 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
     );
   }
 
-  // Sinon, afficher l'image avec SafeImage
   return (
     <SafeImage
       src={logoUri}

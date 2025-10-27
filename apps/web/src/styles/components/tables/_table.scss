@@ -230,35 +230,30 @@
 }
 
 .Table--bordered {
-  
+
   border-radius: 20px;
   overflow: hidden;
 
-  // Supprime les bordures entre les colonnes du header
   thead th {
     border-right: none !important;
     border-left: none !important;
-    background: rgba(255, 255, 255, 0.04); // Background subtil pour les en-têtes
+    background: rgba(255, 255, 255, 0.04);
     color: $white-072;
     font-weight: 600;
   }
 
-  // Garde seulement la bordure du bas pour le header
   thead tr {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  // Bordures plus subtiles entre les lignes
   tbody td {
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
 
-  // Dernière ligne sans bordure
   tbody tr:last-child td {
     border-bottom: none;
   }
 
-  // Hover plus subtil
   tbody tr:hover {
     background: rgba(255, 255, 255, 0.02);
   }
@@ -284,33 +279,26 @@
   color: #ff4d4d;
 }
 
-// Aligne verticalement tous les éléments des lignes du tableau
 .Table__Row>td,
 .Table__Row>th {
   vertical-align: middle;
 }
 
-// Pour la cellule du nom du token (TokensTable)
 .TokensTable__NameTd {
-  // S'assurer que la cellule du header n'a pas de hauteur supplémentaire
   vertical-align: middle;
-  padding: 1rem; // Utilise le même padding que les autres headers
+  padding: 1rem;
   height: 60px;
 }
 
-// Pour centrer verticalement les TokenPairLogos dans les tableaux
 .Table td {
 
-  // S'assurer que les TokenPairLogos sont centrés verticalement
   .TokenPairLogos {
     vertical-align: middle;
     display: inline-block;
   }
 }
 
-// Styles spécifiques pour PoolsTable - uniformisation avec TokensTable
 
-// Cellule d'index (colonne #)
 .PoolsTable__IndexTd {
   vertical-align: middle;
   padding: 1rem;
@@ -329,7 +317,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding-right: 24px; // Ajoute de l'espace après la première colonne
+  padding-right: 24px;
 }
 
 
@@ -361,7 +349,7 @@
 .PoolsTable__PoolCell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 8px !important;
   min-width: 0;
 }
 
@@ -380,9 +368,18 @@
 
 .PoolsTable__PoolName {
   font-weight: 600;
-  color: #e0e0e0;
+  color: #e39229;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: none;
+  border: none;
+
+  &:hover {
+    color: #FFD056;
+  }
 }
 
 // Cellule Fee Tier
@@ -479,8 +476,9 @@
 }
 
 .Table__Icon {
-  height: 18px;
-  width: 24px;
+  height: 16px;
+  width: 16px !important;
+  margin-left: -3px;
   background: none;
   border: none;
 }
@@ -538,9 +536,18 @@
 
 .VaultsTable__VaultName {
   font-weight: 600;
-  color: #e0e0e0;
+  color: #e39229;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: none;
+  border: none;
+
+  &:hover {
+    color: #FFD056;
+  }
 }
 
 // Cellule Strategy
@@ -666,10 +673,42 @@
   min-width: 0;
 }
 
+// Cellule Holdings pour Vaults
+.VaultsTable__HoldingsTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.VaultsTable__HoldingsCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  color: #e39229;
+  font-weight: 500;
+}
+
+// Cellule Holdings pour Pools
+.PoolsTable__HoldingsTd {
+  vertical-align: middle;
+  padding: 1rem;
+  height: 60px;
+}
+
+.PoolsTable__HoldingsCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  color: #e39229;
+  font-weight: 500;
+}
+
 .TokensTable__NameCell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 8px !important;
   min-width: 0;
 }
 
@@ -690,9 +729,9 @@
   object-fit: cover;
 }
 
-.TokensTable__NameLink {
+.TokensTable__NameText {
   font-weight: 600;
-  color: #FFD056;
+  color: #e39229;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.15s ease;
@@ -701,13 +740,8 @@
   background: none;
   border: none;
 
-  button {
-    background: none;
-    border: none;
-  }
-
   &:hover {
-    color: #e39229;
+    color: #FFD056;
   }
 }
 
@@ -876,10 +910,6 @@
   .Table__SortIcon {
     font-size: 10px;
     min-width: 10px;
-  }
-
-  .TokensTable__NameCell {
-    gap: 8px;
   }
 
   .TokensTable__Logo {

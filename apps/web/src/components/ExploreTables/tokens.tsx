@@ -286,42 +286,27 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
 
   const columns: TableColumn[] = [
     {
-      label: '#',
-      key: 'index',
-      render: (row) => (
-        <span className="TokensTable__IndexCell">
-          <button
-            type="button"
-            className="Table__Address"
-            onClick={() => navigate(`/tokens/${row.id || ''}`)}
-          >
-            {row.id ? row.id.slice(0, 4) + '...' + row.id.slice(-4) : 'N/A'}
-          </button>
-          <ExplorerLink address={row.id || ''} type="token" />
-        </span>
-      )
-    },
-    {
       label: 'Token name',
       key: 'name',
       className: 'TokensTable__NameTd',
       sortable: true,
       sortValue: (row) => row.name || row.symbol || '',
-      render: (row) => (
-        <span className="TokensTable__NameCell">
-          <span className="TokensTable__LogoWrapper">
-            <TokenLogo logoUri={row.logoUri} symbol={row.symbol} size="medium" className="TokensTable__Logo" />
+      render: (row) => {
+        const isStickyToken = row.symbol?.startsWith('STICKY') || row.name?.includes('Sticky Vault');
+        const displayName = isStickyToken ? row.symbol : `${row.symbol} - ${row.name}`;
+
+        return (
+          <span className="TokensTable__NameCell">
+            <span className="TokensTable__LogoWrapper">
+              <TokenLogo logoUri={row.logoUri} symbol={row.symbol} size="large" className="TokensTable__Logo" />
+            </span>
+            <span className="TokensTable__NameText">
+              {displayName}
+            </span>
+            <ExplorerLink address={row.id || ''} type="token" />
           </span>
-          <button
-            type="button"
-            onClick={() => navigate(`/tokens/${row.id || ''}`)}
-            className="TokensTable__NameLink"
-            title={`View ${row.name || 'Unknown'} details`}
-          >
-            {row.symbol} - {row.name}
-          </button>
-        </span>
-      )
+        );
+      }
     },
     {
       label: 'Price',
