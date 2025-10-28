@@ -4,8 +4,10 @@ import { useDoubleDeposit } from "../../../hooks/vault/useDoubleDeposit";
 import type { Address } from "viem";
 import type { VaultToken } from "../../../pages/VaultDetailPage/page";
 import { ConnectButton } from "../../Buttons/ConnectButton";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import { DoubleSideDepositModal } from "../DoubleSideDepositModal";
+import { useVaultRatio } from "../../../hooks/vault/useVaultRatio";
+import { formatTokenAmount } from "../../../utils/formatTokenAmount";
 
 interface DoubleSideFormProps {
   vault: Address
@@ -16,13 +18,36 @@ interface DoubleSideFormProps {
 }
 
 export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: DoubleSideFormProps) => {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [token0Amount, setToken0Amount] = useState(0n);
   const [token1Amount, setToken1Amount] = useState(0n);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutoWinEnabled, setIsAutoWinEnabled] = useState(!!autoWinVault);
-  const [isEditingToken0, setIsEditingToken0] = useState(false);
-  const [isEditingToken1, setIsEditingToken1] = useState(false);
+  const [initialToken0Amount, setInitialToken0Amount] = useState(0n);
+  const [initialToken1Amount, setInitialToken1Amount] = useState(0n);
+
+  // Get real vault ratio (pre-fetched)
+  const { amount0Current, amount1Current, hasRatio } = useVaultRatio(vault);
+
+  // Get user token balances using Wagmi's useBalance hook
+  const { data: balance0Data } = useBalance({
+    address: address,
+    token: t0.id,
+    query: {
+      enabled: !!address && !!t0.id,
+    }
+  });
+
+  const { data: balance1Data } = useBalance({
+    address: address,
+    token: t1.id,
+    query: {
+      enabled: !!address && !!t1.id,
+    }
+  });
+
+  const balance0 = balance0Data?.value || 0n;
+  const balance1 = balance1Data?.value || 0n;
 
   const { isQuoted, quote, isAllow, t0Allowance, t1Allowance, deposite, isQuoteLoading } = useDoubleDeposit({
     vault,
@@ -44,51 +69,53 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
     }
   }, [deposite.isSuccess])
 
-  useEffect(() => {
-    if (isQuoted && quote && !isQuoteLoading) {
-      if (isEditingToken0 && quote.amount1Max && quote.amount1Max !== token1Amount) {
-        setToken1Amount(quote.amount1Max)
-      } else if (isEditingToken1 && quote.amount0Max && quote.amount0Max !== token0Amount) {
-        setToken0Amount(quote.amount0Max)
-      }
-    }
-  }, [isQuoted, quote, isQuoteLoading, isEditingToken0, isEditingToken1, quote?.amount0Max, quote?.amount1Max])
-
   const calculateToken1FromToken0 = useCallback((token0Amount: bigint): bigint => {
-    if (!token0Amount || token0Amount === 0n || t0.priceUSD === 0 || t1.priceUSD === 0) {
+    if (!token0Amount || token0Amount === 0n) {
       return 0n
     }
 
     try {
+      // Use REAL vault ratio if available
+      if (hasRatio && amount0Current && amount1Current && amount0Current > 0n) {
+        // Calculate using vault ratio: amount1 = (amount0 * amount1Current) / amount0Current
+        return (token0Amount * amount1Current) / amount0Current
+      }
+
+      // Fallback to 50/50 USD ratio if vault is empty or ratio unavailable
+      if (t0.priceUSD === 0 || t1.priceUSD === 0) return 0n
       const token0ValueUSD = Number(token0Amount) / Math.pow(10, t0.decimals) * t0.priceUSD
       const token1AmountFloat = token0ValueUSD / t1.priceUSD
-      const token1AmountBigInt = BigInt(Math.floor(token1AmountFloat * Math.pow(10, t1.decimals)))
-
-      return token1AmountBigInt
+      return BigInt(Math.floor(token1AmountFloat * Math.pow(10, t1.decimals)))
     } catch {
       return 0n
     }
-  }, [t0, t1])
+  }, [t0, t1, hasRatio, amount0Current, amount1Current])
   const calculateToken0FromToken1 = useCallback((token1Amount: bigint): bigint => {
-    if (!token1Amount || token1Amount === 0n || t0.priceUSD === 0 || t1.priceUSD === 0) {
+    if (!token1Amount || token1Amount === 0n) {
       return 0n
     }
 
     try {
+      // Use REAL vault ratio if available
+      if (hasRatio && amount0Current && amount1Current && amount1Current > 0n) {
+        // Calculate using vault ratio: amount0 = (amount1 * amount0Current) / amount1Current
+        return (token1Amount * amount0Current) / amount1Current
+      }
+
+      // Fallback to 50/50 USD ratio if vault is empty or ratio unavailable
+      if (t0.priceUSD === 0 || t1.priceUSD === 0) return 0n
       const token1ValueUSD = Number(token1Amount) / Math.pow(10, t1.decimals) * t1.priceUSD
       const token0AmountFloat = token1ValueUSD / t0.priceUSD
-      const token0AmountBigInt = BigInt(Math.floor(token0AmountFloat * Math.pow(10, t0.decimals)))
-
-      return token0AmountBigInt
+      return BigInt(Math.floor(token0AmountFloat * Math.pow(10, t0.decimals)))
     } catch {
       return 0n
     }
-  }, [t0, t1])
+  }, [t0, t1, hasRatio, amount0Current, amount1Current])
 
   const handleToken0AmountChange = useCallback((amount: bigint) => {
     setToken0Amount(amount)
-    setIsEditingToken0(true)
-    setIsEditingToken1(false)
+    setInitialToken0Amount(0n)
+    setInitialToken1Amount(0n)
     if (amount && amount !== 0n && t0.priceUSD > 0 && t1.priceUSD > 0) {
       const calculatedToken1Amount = calculateToken1FromToken0(amount)
       setToken1Amount(calculatedToken1Amount)
@@ -99,8 +126,8 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
 
   const handleToken1AmountChange = useCallback((amount: bigint) => {
     setToken1Amount(amount)
-    setIsEditingToken1(true)
-    setIsEditingToken0(false)
+    setInitialToken0Amount(0n)
+    setInitialToken1Amount(0n)
     if (amount && amount !== 0n && t0.priceUSD > 0 && t1.priceUSD > 0) {
       const calculatedToken0Amount = calculateToken0FromToken1(amount)
       setToken0Amount(calculatedToken0Amount)
@@ -108,6 +135,11 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
       setToken0Amount(0n)
     }
   }, [calculateToken0FromToken1, t0.priceUSD, t1.priceUSD])
+
+  // Check if user has enough balance
+  const hasEnoughToken0 = token0Amount === 0n || token0Amount <= balance0
+  const hasEnoughToken1 = token1Amount === 0n || token1Amount <= balance1
+  const hasInsufficientBalance = !hasEnoughToken0 || !hasEnoughToken1
 
   return (
     <div className="VaultDetailPage__DoubleSideForm">
@@ -128,6 +160,25 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
         />
       </div>
 
+      {hasInsufficientBalance && token0Amount > 0n && token1Amount > 0n && (
+        <div className="VaultDetailPage__InsufficientBalance">
+          {!hasEnoughToken0 && (
+            <p className="error-message">
+              Insufficient {t0.symbol} balance.
+              You need {formatTokenAmount(token0Amount, t0.decimals, 4)} {t0.symbol} but only have {formatTokenAmount(balance0, t0.decimals, 4)} {t0.symbol}.
+            </p>
+          )}
+          {!hasEnoughToken1 && (
+            <p className="error-message">
+              Insufficient {t1.symbol} balance.
+              You need {formatTokenAmount(token1Amount, t1.decimals, 4)} {t1.symbol} but only have {formatTokenAmount(balance1, t1.decimals, 4)} {t1.symbol}.
+              <br />
+              Please reduce your {t0.symbol} amount.
+            </p>
+          )}
+        </div>
+      )}
+
       {!isConnected ? (
         <ConnectButton
           size={'large'}
@@ -140,6 +191,13 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
           disabled
         >
           Enter an amount
+        </button>
+      ) : hasInsufficientBalance ? (
+        <button
+          className={`btn btn--large btn__disabled`.trim()}
+          disabled
+        >
+          Insufficient {!hasEnoughToken0 ? t0.symbol : t1.symbol} balance
         </button>
       ) : (
         <button
@@ -158,6 +216,8 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
         token1={t1}
         amount0={token0Amount}
         amount1={token1Amount}
+        initialAmount0={initialToken0Amount}
+        initialAmount1={initialToken1Amount}
         vaultAddress={vault}
         isAutoWinEnabled={isAutoWinEnabled}
         onToggleAutoWin={setIsAutoWinEnabled}

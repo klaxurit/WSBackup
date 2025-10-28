@@ -15,6 +15,8 @@ interface DoubleSideDepositModalProps {
   token1: VaultToken;
   amount0: bigint;
   amount1: bigint;
+  initialAmount0: bigint;
+  initialAmount1: bigint;
   vaultAddress: string;
   isAutoWinEnabled: boolean;
   onToggleAutoWin: (enabled: boolean) => void;
@@ -33,6 +35,8 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
   token1,
   amount0,
   amount1,
+  initialAmount0,
+  initialAmount1,
   vaultAddress,
   isAutoWinEnabled,
   onToggleAutoWin,
@@ -172,6 +176,8 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
             token1={token1Display}
             amount0={depositHook.quote.amount0Max || amount0}
             amount1={depositHook.quote.amount1Max || amount1}
+            initialAmount0={initialAmount0}
+            initialAmount1={initialAmount1}
             expectedShares={depositHook.quote.minShares || 0n}
             minShares={depositHook.quote.minShares || 0n}
             hasAutoWinVault={!!autoWinVault}

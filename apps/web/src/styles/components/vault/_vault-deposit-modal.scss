@@ -165,6 +165,108 @@
 // ========================================
 // Styles pour ConfirmDepositStep
 // ========================================
+
+// Warning Banner for Pool Ratio Adjustment
+.VaultDepositModal__WarningBanner {
+  background: linear-gradient(135deg, rgba(255, 145, 0, 0.12) 0%, rgba(255, 180, 70, 0.08) 100%);
+  border: 1px solid rgba(255, 145, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle glow effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 145, 0, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .warning-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+
+    svg {
+      color: rgba(255, 145, 0, 0.9);
+      flex-shrink: 0;
+    }
+
+    .warning-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: rgba(255, 145, 0, 0.95);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .warning-message {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+    margin: 0 0 14px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .warning-details {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 145, 0, 0.15);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8125rem;
+
+      &:not(:last-child) {
+        margin-bottom: 8px;
+      }
+
+      .detail-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+      }
+
+      .detail-value {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        text-align: right;
+
+        &--highlighted {
+          color: rgba(255, 145, 0, 0.95);
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  .warning-note {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    font-style: italic;
+  }
+}
+
 .VaultDepositModal__AutoCompoundBanner {
   background: linear-gradient(135deg, rgba(227, 146, 41, 0.12) 0%, rgba(240, 168, 65, 0.08) 100%);
   border: 1px solid rgba(227, 146, 41, 0.25);

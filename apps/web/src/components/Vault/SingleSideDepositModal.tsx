@@ -114,13 +114,14 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
         );
 
       case VaultModalStep.CONFIRM_DEPOSIT:
-        // For single-sided, we show simplified confirm with estimated shares
         return (
           <ConfirmDepositStep
             token0={tokenInDisplay}
             token1={tokenOutDisplay}
             amount0={depositHook.swapQuote.amountIn}
             amount1={depositHook.swapQuote.amountOut || 0n}
+            initialAmount0={depositHook.swapQuote.amountIn}
+            initialAmount1={depositHook.swapQuote.amountOut || 0n}
             expectedShares={depositHook.vaultQuote.minShares || 0n}
             minShares={depositHook.vaultQuote.minShares || 0n}
             hasAutoWinVault={!!autoWinVault}

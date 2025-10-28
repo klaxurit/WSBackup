@@ -18,6 +18,8 @@ interface ConfirmDepositStepProps {
   token1: Token;
   amount0: bigint;
   amount1: bigint;
+  initialAmount0: bigint;
+  initialAmount1: bigint;
   expectedShares: bigint;
   minShares: bigint; // Kept for future use, not currently displayed
   hasAutoWinVault?: boolean; // Does this vault have an AutoWin vault?
@@ -36,6 +38,8 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
   token1,
   amount0,
   amount1,
+  initialAmount0,
+  initialAmount1,
   expectedShares,
   hasAutoWinVault = false,
   isAutoWinEnabled = false,
@@ -58,9 +62,57 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
     }
   })
 
+  // Check if amounts were adjusted by comparing initial vs final amounts
+  // Use 1% threshold to avoid showing warning for tiny rounding differences
+  const hasAmountAdjustment = React.useMemo(() => {
+    if (initialAmount0 === 0n || initialAmount1 === 0n) return false
+
+    const token0Diff = initialAmount0 > amount0
+      ? Number((initialAmount0 - amount0) * 10000n / initialAmount0) / 100
+      : Number((amount0 - initialAmount0) * 10000n / amount0) / 100
+
+    const token1Diff = initialAmount1 > amount1
+      ? Number((initialAmount1 - amount1) * 10000n / initialAmount1) / 100
+      : Number((amount1 - initialAmount1) * 10000n / amount1) / 100
+
+    return token0Diff > 1 || token1Diff > 1
+  }, [initialAmount0, initialAmount1, amount0, amount1])
+
 
   return (
     <div className="VaultDepositModal__StepContent">
+      {/* Pool Ratio Adjustment Warning */}
+      {hasAmountAdjustment && (
+        <div className="VaultDepositModal__WarningBanner">
+          <div className="warning-header">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="currentColor"/>
+            </svg>
+            <span className="warning-title">Pool Ratio Adjustment</span>
+          </div>
+          <p className="warning-message">
+            Your input amounts were adjusted to match the current pool liquidity ratio.
+          </p>
+          <div className="warning-details">
+            <div className="detail-row">
+              <span className="detail-label">You entered:</span>
+              <span className="detail-value">
+                {formatTokenAmount(initialAmount0, token0.decimals)} {token0.symbol} + {formatTokenAmount(initialAmount1, token1.decimals)} {token1.symbol}
+              </span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Actual deposit:</span>
+              <span className="detail-value detail-value--highlighted">
+                {formatTokenAmount(amount0, token0.decimals)} {token0.symbol} + {formatTokenAmount(amount1, token1.decimals)} {token1.symbol}
+              </span>
+            </div>
+          </div>
+          <p className="warning-note">
+            The vault automatically adjusts amounts to maintain the optimal ratio. Total value remains approximately the same.
+          </p>
+        </div>
+      )}
+
       {/* AutoWin Banner (always shown if vault has AutoWin) */}
       {hasAutoWinVault && (
         <div className="VaultDepositModal__AutoCompoundBanner">
