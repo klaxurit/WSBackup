@@ -33,6 +33,7 @@ export interface UseDoubleDepositReturn {
     minShares: bigint | null
   }
   isQuoted: boolean
+  isQuoteLoading: boolean
 
   // Allowances
   t0Allowance: {
@@ -81,13 +82,12 @@ export const useDoubleDeposit = ({
   const isReady = !!address && !!vault && !!token0 && !!token1 && amount0 > 0n && amount1 > 0n
 
   // Get vault quote
-  const { quote } = useVaultQuote({
+  const { quote, isLoading: isQuoteLoading } = useVaultQuote({
     vaultAddress: vault,
     amount0,
     amount1,
     enabled: isReady
   })
-
   // Calculate minimum amounts with slippage
   const [amount0Min, amount1Min, minShares] = useMemo(() => {
     if (!quote) return [null, null, null]
@@ -163,8 +163,8 @@ export const useDoubleDeposit = ({
       }
     }
   }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount0, amount1, amount0Min, amount1Min, minShares, routerAddress, routerABI])
-
   // Simulate and execute deposit transaction
+
   const { data: depositConfig } = useSimulateContract({
     ...transactionConfig,
     chainId: currentChain.id,
@@ -202,13 +202,14 @@ export const useDoubleDeposit = ({
 
   return {
     quote: {
-      amount0Max: amount0,
+      amount0Max: quote?.amount0 || amount0,
       amount0Min,
-      amount1Max: amount1,
+      amount1Max: quote?.amount1 || amount1,
       amount1Min,
       minShares
     },
     isQuoted,
+    isQuoteLoading,
     t0Allowance: {
       isNeed: t0Allowance.isNeedApproval,
       current: t0Allowance.allowance,
