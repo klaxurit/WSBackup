@@ -517,7 +517,7 @@
 .VaultsTable__VaultCell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 8px !important;
   min-width: 0;
 }
 

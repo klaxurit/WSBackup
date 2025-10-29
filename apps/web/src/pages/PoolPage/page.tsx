@@ -294,7 +294,7 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">TVL</h4>
                 <p className="Pool__StatCardLabel">
-                  {tvl === null || isNaN(tvl) ? 'N/A' : formatNumber(tvl)}
+                  ${tvl === null || isNaN(tvl) ? 'N/A' : formatNumber(tvl)}
                 </p>
               </div>
               <div className="Pool__StatCard">
@@ -306,13 +306,13 @@ const PoolDetailPage: React.FC = () => {
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">24h Volume</h4>
                 <p className="Pool__StatCardLabel">
-                  {volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d)}
+                  ${volume1d === null || isNaN(volume1d) ? 'N/A' : formatNumber(volume1d)}
                 </p>
               </div>
               <div className="Pool__StatCard">
                 <h4 className="Pool__StatCardTitle">30d Volume</h4>
                 <p className="Pool__StatCardLabel">
-                  {volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d)}
+                  ${volume30d === null || isNaN(volume30d) ? 'N/A' : formatNumber(volume30d)}
                 </p>
               </div>
               <div className="Pool__StatCard">
@@ -332,7 +332,7 @@ const PoolDetailPage: React.FC = () => {
                 <div className="Pool__StatCard">
                   <h4 className="Pool__StatCardTitle">TVL</h4>
                   <p className="Pool__StatCardLabel">
-                    {vault === null ? 'N/A' : formatNumber(vault.totalValueLockedUSD)}
+                    ${vault === null ? 'N/A' : formatNumber(vault.totalValueLockedUSD)}
                   </p>
                 </div>
                 <div className="Pool__StatCard">
