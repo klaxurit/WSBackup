@@ -349,7 +349,6 @@
     &Title {
       color: #8A8984;
       font-size: 14px;
-      margin: 0 0 8px 0;
     }
 
     &Label {
@@ -508,7 +507,6 @@
       color: #fff;
       font-size: 20px;
       font-weight: 700;
-      margin: 0 0 8px 0;
     }
 
     &Links {
@@ -607,7 +605,7 @@
   &__QuickAccess {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 
     @media (max-width: 600px) {
       margin-top: 16px;

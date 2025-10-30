@@ -505,7 +505,7 @@ const TokenPage: React.FC = () => {
               {/* Pools Section */}
               {pools?.data && pools.data.length > 0 && (
                 <div className="Token__QuickAccessSection">
-                  <h4 className="Token__QuickAccessSubtitle">Top Pools</h4>
+                  {/* <h4 className="Token__QuickAccessSubtitle">Top Pools</h4> */}
                   <div className="Token__QuickAccessList" ref={poolsCarouselRef}>
                     {pools.data.slice(0, 5).map((pool: any) => (
                       <div
