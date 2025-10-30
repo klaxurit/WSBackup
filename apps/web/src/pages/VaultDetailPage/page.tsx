@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon, ExplorerChevronIcon } from '../../components/SVGs';
-import { formatNumber } from '../../utils/formatNumber';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { useQuery } from '@tanstack/react-query';
 import { type Address, formatUnits } from 'viem';
