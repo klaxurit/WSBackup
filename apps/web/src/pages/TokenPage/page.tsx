@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useMemo, useRef, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SwapForm from '../../components/SwapForm/SwapForm';
 import { ExplorerChevronIcon, ExplorerIcon, WebsiteIcon, TwitterIcon, ShareIcon } from '../../components/SVGs';
@@ -10,13 +10,20 @@ import { ChartWidget } from '../../components/Charts/ChartWidget';
 import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import { PageContentTransition } from '../../components/Transitions';
 import { Loader } from '../../components/Loader/Loader';
+import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
+  const navigate = useNavigate();
 
   const [chartType, setChartType] = React.useState<ChartType>('area');
   const [interval, setInterval] = React.useState<ChartInterval>('1D');
   const [metric, setMetric] = React.useState<ChartMetric>('price');
+
+  // Refs pour les carousels de drag
+  const poolsCarouselRef = useRef<HTMLDivElement>(null);
+  const vaultsCarouselRef = useRef<HTMLDivElement>(null);
+
   const { data: tokens, isLoading: tokensLoading } = useQuery({
     queryKey: ['tokensStats'],
     queryFn: async () => {
@@ -43,6 +50,9 @@ const TokenPage: React.FC = () => {
                 { token1: "${tokenAddressLower}" }
               ]
             }
+            orderBy: "totalValueLockedUSD"
+            orderDirection: "desc"
+            limit: 5
           ) {
             items {
               id
@@ -50,17 +60,20 @@ const TokenPage: React.FC = () => {
               token1
               totalValueLockedUSD
               volumeUSD
+              feeTier
               token0Ref {
                 id
                 symbol
                 name
                 decimals
+                logoUri
               }
               token1Ref {
                 id
                 symbol
                 name
                 decimals
+                logoUri
               }
               poolDayData(
                 orderBy: "date"
@@ -72,6 +85,7 @@ const TokenPage: React.FC = () => {
                   volumeUSD
                   volumeUSD1D
                   tvlUSD
+                  apr
                 }
               }
             }
@@ -105,11 +119,157 @@ const TokenPage: React.FC = () => {
     },
   });
 
+  const { data: vaults } = useQuery({
+    queryKey: ['vaults-for-token', tokenAddress],
+    enabled: !!tokenAddress,
+    queryFn: async () => {
+      if (!tokenAddress) return { data: [] };
+
+      const tokenAddressLower = tokenAddress.toLowerCase();
+
+      const query = `
+        query GetVaultsForToken {
+          stickyVaults(
+            where: {
+              OR: [
+                { poolRef: { token0: "${tokenAddressLower}" } }
+                { poolRef: { token1: "${tokenAddressLower}" } }
+              ]
+            }
+            orderBy: "totalValueLockedUSD"
+            orderDirection: "desc"
+            limit: 5
+          ) {
+            items {
+              id
+              name
+              totalValueLockedUSD
+              autoWinVault
+              vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+                items {
+                  maxPotentialAPR
+                }
+              }
+              poolRef {
+                feeTier
+                token0Ref {
+                  id
+                  symbol
+                  logoUri
+                }
+                token1Ref {
+                  id
+                  symbol
+                  logoUri
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      try {
+        const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query }),
+        });
+
+        if (!response.ok) {
+          return { data: [] };
+        }
+
+        const result = await response.json();
+
+        if (result.errors) {
+          return { data: [] };
+        }
+
+        const vaultsData = result.data?.stickyVaults?.items || [];
+        return { data: vaultsData };
+      } catch (error) {
+        return { data: [] };
+      }
+    },
+  });
+
   const token = useMemo(() => {
     if (!tokens || !tokenAddress) return null;
     return tokens.find((t: any) => t.address?.toLowerCase() === tokenAddress.toLowerCase());
   }, [tokens, tokenAddress]);
   const { data: coingeckoTokenData } = useCoingeckoTokenData(token?.coingeckoId);
+
+  // Hook pour activer le drag-to-scroll sur les carousels
+  useEffect(() => {
+    const setupDragScroll = (element: HTMLDivElement) => {
+      let isDown = false;
+      let startX: number;
+      let scrollLeft: number;
+      let hasDragged = false;
+
+      const handleMouseDown = (e: MouseEvent) => {
+        isDown = true;
+        hasDragged = false;
+        element.style.cursor = 'grabbing';
+        startX = e.pageX - element.offsetLeft;
+        scrollLeft = element.scrollLeft;
+      };
+
+      const handleMouseLeave = () => {
+        isDown = false;
+        element.style.cursor = 'grab';
+      };
+
+      const handleMouseUp = () => {
+        isDown = false;
+        element.style.cursor = 'grab';
+      };
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - element.offsetLeft;
+        const walk = (x - startX) * 2;
+        if (Math.abs(walk) > 5) hasDragged = true;
+        element.scrollLeft = scrollLeft - walk;
+      };
+
+      const handleClick = (e: MouseEvent) => {
+        if (hasDragged) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+
+      element.addEventListener('mousedown', handleMouseDown);
+      element.addEventListener('mouseleave', handleMouseLeave);
+      element.addEventListener('mouseup', handleMouseUp);
+      element.addEventListener('mousemove', handleMouseMove);
+      element.addEventListener('click', handleClick, true);
+
+      return () => {
+        element.removeEventListener('mousedown', handleMouseDown);
+        element.removeEventListener('mouseleave', handleMouseLeave);
+        element.removeEventListener('mouseup', handleMouseUp);
+        element.removeEventListener('mousemove', handleMouseMove);
+        element.removeEventListener('click', handleClick, true);
+      };
+    };
+
+    const cleanups: (() => void)[] = [];
+
+    if (poolsCarouselRef.current) {
+      cleanups.push(setupDragScroll(poolsCarouselRef.current));
+    }
+
+    if (vaultsCarouselRef.current) {
+      cleanups.push(setupDragScroll(vaultsCarouselRef.current));
+    }
+
+    return () => {
+      cleanups.forEach(cleanup => cleanup());
+    };
+  }, [pools?.data, vaults?.data]);
 
 
   const tvl = useMemo(() => {
@@ -336,6 +496,135 @@ const TokenPage: React.FC = () => {
               initialFromToken={token}
             />
           </div>
+
+          {/* Quick Access Section - Pools & Vaults */}
+          {((pools?.data && pools.data.length > 0) || (vaults?.data && vaults.data.length > 0)) && (
+            <div className="Token__QuickAccess">
+              <h3 className="Token__QuickAccessTitle">Quick Access</h3>
+
+              {/* Pools Section */}
+              {pools?.data && pools.data.length > 0 && (
+                <div className="Token__QuickAccessSection">
+                  <h4 className="Token__QuickAccessSubtitle">Top Pools</h4>
+                  <div className="Token__QuickAccessList" ref={poolsCarouselRef}>
+                    {pools.data.slice(0, 5).map((pool: any) => (
+                      <div
+                        key={pool.id}
+                        className="Token__QuickAccessCard Token__QuickAccessCard--pool"
+                        onClick={() => navigate(`/pool/${pool.id}`)}
+                      >
+                        <div className="Token__QuickAccessCardHeader">
+                          <TokenPairLogos
+                            token0={{
+                              id: pool.token0Ref.id,
+                              address: pool.token0Ref.id,
+                              symbol: pool.token0Ref.symbol,
+                              logoUri: pool.token0Ref.logoUri
+                            }}
+                            token1={{
+                              id: pool.token1Ref.id,
+                              address: pool.token1Ref.id,
+                              symbol: pool.token1Ref.symbol,
+                              logoUri: pool.token1Ref.logoUri
+                            }}
+                            size={24}
+                            gap={2}
+                            borderWidth={2}
+                            separatorWidth={1}
+                          />
+                          <div className="Token__QuickAccessCardInfo">
+                            <span className="Token__QuickAccessCardPair">
+                              {pool.token0Ref.symbol}/{pool.token1Ref.symbol}
+                            </span>
+                            <span className="Token__QuickAccessCardFee">
+                              {(pool.feeTier / 10000).toFixed(2)}% fee
+                            </span>
+                          </div>
+                        </div>
+                        <div className="Token__QuickAccessCardStats">
+                          <div className="Token__QuickAccessCardStat">
+                            <span className="Token__QuickAccessCardStatLabel">TVL</span>
+                            <span className="Token__QuickAccessCardStatValue">
+                              ${formatNumber(pool.totalValueLockedUSD)}
+                            </span>
+                          </div>
+                          {pool.poolDayData?.items?.[0]?.apr && (
+                            <div className="Token__QuickAccessCardStat">
+                              <span className="Token__QuickAccessCardStatLabel">APR</span>
+                              <span className="Token__QuickAccessCardStatValue Token__QuickAccessCardStatValue--highlight">
+                                {pool.poolDayData.items[0].apr}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Vaults Section */}
+              {vaults?.data && vaults.data.length > 0 && (
+                <div className="Token__QuickAccessSection">
+                  <h4 className="Token__QuickAccessSubtitle">Top Vaults</h4>
+                  <div className="Token__QuickAccessList" ref={vaultsCarouselRef}>
+                    {vaults.data.slice(0, 5).map((vault: any) => (
+                      <div
+                        key={vault.id}
+                        className="Token__QuickAccessCard Token__QuickAccessCard--vault"
+                        onClick={() => navigate(`/vault/${vault.id}`)}
+                      >
+                        <div className="Token__QuickAccessCardHeader">
+                          <TokenPairLogos
+                            token0={{
+                              id: vault.poolRef.token0Ref.id,
+                              address: vault.poolRef.token0Ref.id,
+                              symbol: vault.poolRef.token0Ref.symbol,
+                              logoUri: vault.poolRef.token0Ref.logoUri
+                            }}
+                            token1={{
+                              id: vault.poolRef.token1Ref.id,
+                              address: vault.poolRef.token1Ref.id,
+                              symbol: vault.poolRef.token1Ref.symbol,
+                              logoUri: vault.poolRef.token1Ref.logoUri
+                            }}
+                            size={24}
+                            gap={2}
+                            borderWidth={2}
+                            separatorWidth={1}
+                          />
+                          <div className="Token__QuickAccessCardInfo">
+                            <span className="Token__QuickAccessCardPair">
+                              {vault.poolRef.token0Ref.symbol}/{vault.poolRef.token1Ref.symbol}
+                            </span>
+                            <span className="Token__QuickAccessCardFee">
+                              {vault.autoWinVault ? 'Auto-Win' : 'Sticky'} • {(vault.poolRef.feeTier / 10000).toFixed(2)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="Token__QuickAccessCardStats">
+                          <div className="Token__QuickAccessCardStat">
+                            <span className="Token__QuickAccessCardStatLabel">TVL</span>
+                            <span className="Token__QuickAccessCardStatValue">
+                              ${formatNumber(vault.totalValueLockedUSD)}
+                            </span>
+                          </div>
+                          {vault.vaultDayData?.items?.[0]?.maxPotentialAPR && (
+                            <div className="Token__QuickAccessCardStat">
+                              <span className="Token__QuickAccessCardStatLabel">APR</span>
+                              <span className="Token__QuickAccessCardStatValue Token__QuickAccessCardStatValue--highlight">
+                                {vault.vaultDayData.items[0].maxPotentialAPR}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Information Section */}
           <div data-testid="token-details-info-section" className="Token__InfoSection">
