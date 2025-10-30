@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
-import { ExplorerIcon } from '../../components/SVGs';
+import { ExplorerIcon, ExplorerChevronIcon } from '../../components/SVGs';
 import { formatNumber } from '../../utils/formatNumber';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { useQuery } from '@tanstack/react-query';
@@ -278,12 +278,23 @@ export const VaultDetailPage = () => {
 
   return (
     <PageContentTransition className="VaultDetailPage">
+      {/* Breadcrumbs */}
+      <div className="VaultDetailPage__Breadcrumbs">
+        <Link to="/explore" className="VaultDetailPage__BreadcrumbsLink">Explore</Link>
+        <ExplorerChevronIcon />
+        <Link to="/explore?tab=vaults" className="VaultDetailPage__BreadcrumbsLink">Vaults</Link>
+        <ExplorerChevronIcon />
+        <span className="VaultDetailPage__BreadcrumbsLink__3">
+          {vault.name || `${token0.symbol}/${token1.symbol}`}
+        </span>
+        <span className="VaultDetailPage__BreadcrumbsAddress">
+          {vault.id.slice(0, 6) + '...' + vault.id.slice(-4)}
+        </span>
+      </div>
+
       {/* Header */}
       <div className="VaultDetailPage__Header">
         <div className="VaultDetailPage__HeaderLeft">
-          <Link to="/explore?tab=vaults" className="VaultDetailPage__BackLink">
-            ← Back to vaults
-          </Link>
           <div className="VaultDetailPage__VaultInfo">
             <TokenPairLogos
               token0={token0}

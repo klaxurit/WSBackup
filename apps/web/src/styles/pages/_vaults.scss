@@ -103,6 +103,49 @@
     border: 1px solid #e39229;
   }
 
+  &__Breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8A8984;
+    font-size: 14px;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
+
+    &Link {
+      color: #8A8984;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        color: #fff;
+      }
+
+      &__3 {
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+
+    &Address {
+      color: #8A8984;
+      font-size: 12px;
+      margin-left: 8px;
+      padding: 2px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+      fill: #8A8984;
+    }
+  }
+
   &--loading,
   &--error {
     display: flex;
@@ -138,18 +181,6 @@
     p {
       color: #aaa;
       margin-bottom: 2rem;
-    }
-  }
-
-  &__BackLink {
-    color: #e39229;
-    text-decoration: none;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    display: inline-block;
-
-    &:hover {
-      text-decoration: underline;
     }
   }
 
