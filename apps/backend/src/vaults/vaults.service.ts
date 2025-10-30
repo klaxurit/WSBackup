@@ -11,7 +11,7 @@ export interface StickyVaultFromIndexer {
   pool: string;
   totalValueLockedUSD: string;
   apy: string;
-  stakingAPR: string;
+  netAPR: string; // Net APR after management fees (from indexer)
 }
 
 export interface InfraRedVault {
@@ -26,6 +26,25 @@ export interface InfraRedVault {
   slug: string;
   name: string;
   type: string;
+}
+
+export interface AutoWinVault {
+  id: string; // AutoWin vault address
+  stakingToken: string; // StickyVault address
+  estimatedAPR: string; // BGT injection APR calculated by indexer
+  totalBgtClaimed: string;
+  avgBgtPerClaim: string;
+  claimCount: number;
+  lastClaimTimestamp: bigint;
+}
+
+export interface BGTPoolData {
+  token0: string;
+  token1: string;
+  token0Price: string;
+  token1Price: string;
+  totalValueLockedToken0: string;
+  totalValueLockedToken1: string;
 }
 
 export interface SyncResult {
@@ -47,6 +66,14 @@ export class VaultsService implements OnModuleInit {
   private readonly graphqlUrl: string;
   private readonly infraRedApiUrl: string;
 
+  // In-memory cache for staking APRs (avoids touching indexer DB)
+  private stakingAPRCache: Map<string, { apr: number; slug: string; lastUpdate: number }> = new Map();
+  private readonly CACHE_TTL = 3600000; // 1 hour in milliseconds
+
+  // In-memory cache for BGT price
+  private bgtPriceCache: { price: number; lastUpdate: number } | null = null;
+  private readonly BGT_PRICE_CACHE_TTL = 300000; // 5 minutes in milliseconds
+
   constructor(
     private readonly httpService: HttpService,
     private config: ConfigService,
@@ -64,8 +91,9 @@ export class VaultsService implements OnModuleInit {
 
   async onModuleInit() {
     this.logger.log('VaultsService initialized');
-    // Initial sync on startup (optional - uncomment to enable)
-    // await this.compareAndUpdateStakingAPR();
+    // Initial sync on startup
+    this.logger.log('🚀 Running initial staking APR sync...');
+    await this.compareAndUpdateStakingAPR();
   }
 
   // ============ PUBLIC METHODS (for controller) ============
@@ -87,6 +115,155 @@ export class VaultsService implements OnModuleInit {
     return this.fetchOneInfraRedVault(slug);
   }
 
+  /**
+   * Get staking APR from cache for a vault
+   */
+  getStakingAPR(vaultAddress: string): { apr: number; slug: string } | null {
+    return this.getStakingAPRFromCache(vaultAddress);
+  }
+
+  /**
+   * Get AutoWin vault data from indexer
+   */
+  async getAutoWinVault(autoWinVaultAddress: string): Promise<AutoWinVault | null> {
+    const query = `
+      query GetAutoWinVault($id: String!) {
+        autoWinVault(id: $id) {
+          id
+          stakingToken
+          estimatedAPR
+          totalBgtClaimed
+          avgBgtPerClaim
+          claimCount
+          lastClaimTimestamp
+        }
+      }
+    `;
+
+    try {
+      const response = await this.httpService.axiosRef.post(
+        this.graphqlUrl,
+        { query, variables: { id: autoWinVaultAddress } },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 10000,
+        },
+      );
+
+      if (response.data.errors) {
+        this.logger.error(
+          'GraphQL errors while fetching AutoWin vault:',
+          JSON.stringify(response.data.errors),
+        );
+        return null;
+      }
+
+      const autoWinVault = response.data?.data?.autoWinVault || null;
+
+      if (autoWinVault) {
+        this.logger.debug(`✅ Fetched AutoWin vault ${autoWinVaultAddress}`);
+      }
+
+      return autoWinVault;
+    } catch (error: any) {
+      this.logger.error(
+        `Error fetching AutoWin vault ${autoWinVaultAddress}:`,
+        error?.message || error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Get BGT price from BERA-BGT pool
+   * Uses cache to avoid frequent indexer queries
+   */
+  async getBGTPrice(): Promise<number> {
+    // Check cache first
+    if (this.bgtPriceCache) {
+      const now = Date.now();
+      if (now - this.bgtPriceCache.lastUpdate < this.BGT_PRICE_CACHE_TTL) {
+        this.logger.debug(`Using cached BGT price: $${this.bgtPriceCache.price}`);
+        return this.bgtPriceCache.price;
+      }
+    }
+
+    // Fetch BGT price from pool
+    const query = `
+      query GetBGTPrice {
+        pools(where: {
+          or: [
+            { token0: "0x0E4aaF1351de4c0264C5c7056Ef3777b41BD8e03", token1: "0x7507c1dc16935B82698e4C63f2746A2fCf994dF8" },
+            { token0: "0x7507c1dc16935B82698e4C63f2746A2fCf994dF8", token1: "0x0E4aaF1351de4c0264C5c7056Ef3777b41BD8e03" }
+          ]
+        }) {
+          items {
+            id
+            token0
+            token1
+            token0Price
+            token1Price
+            totalValueLockedToken0
+            totalValueLockedToken1
+          }
+        }
+      }
+    `;
+
+    try {
+      const response = await this.httpService.axiosRef.post(
+        this.graphqlUrl,
+        { query },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 10000,
+        },
+      );
+
+      if (response.data.errors) {
+        this.logger.error(
+          'GraphQL errors while fetching BGT price:',
+          JSON.stringify(response.data.errors),
+        );
+        return 0.50; // Fallback price
+      }
+
+      const pools = response.data?.data?.pools?.items || [];
+
+      if (pools.length === 0) {
+        this.logger.warn('No BERA-BGT pool found, using fallback price $0.50');
+        return 0.50;
+      }
+
+      // Get the first pool (should be BERA-BGT)
+      const pool = pools[0];
+      const BGT_ADDRESS = '0x0E4aaF1351de4c0264C5c7056Ef3777b41BD8e03'.toLowerCase();
+
+      // Determine which token is BGT and get its price
+      let bgtPrice: number;
+      if (pool.token0.toLowerCase() === BGT_ADDRESS) {
+        bgtPrice = parseFloat(pool.token0Price) || 0.50;
+      } else {
+        bgtPrice = parseFloat(pool.token1Price) || 0.50;
+      }
+
+      // Cache the result
+      this.bgtPriceCache = {
+        price: bgtPrice,
+        lastUpdate: Date.now(),
+      };
+
+      this.logger.log(`✅ Fetched BGT price from pool: $${bgtPrice.toFixed(4)}`);
+      return bgtPrice;
+    } catch (error: any) {
+      this.logger.error(
+        'Error fetching BGT price from pool:',
+        error?.message || error,
+      );
+      return 0.50; // Fallback price
+    }
+  }
+
   // ============ PRIVATE METHODS ============
 
   /**
@@ -102,7 +279,7 @@ export class VaultsService implements OnModuleInit {
             pool
             totalValueLockedUSD
             apy
-            stakingAPR
+            netAPR
           }
         }
       }
@@ -226,43 +403,55 @@ export class VaultsService implements OnModuleInit {
   }
 
   /**
-   * Updates a vault's staking APR directly in the database
-   * Uses direct SQL query to bypass Ponder's read-only API
+   * Updates a vault's staking APR in the in-memory cache
+   * This avoids touching the indexer database (no resync needed)
    */
-  private async updateVaultStakingAPRInternal(
+  private updateVaultStakingAPRInternal(
     vaultAddress: string,
     stakingAPR: number,
     slug: string
-  ): Promise<boolean> {
+  ): boolean {
     try {
-      const response = await this.httpService.axiosRef.post(
-        `${this.indexerApiUrl}/api/vaults/update-staking-apr`,
-        {
-          vaultAddress: vaultAddress.toLowerCase(),
-          stakingAPR,
-          slug
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 5000,
-        }
+      const normalizedAddress = vaultAddress.toLowerCase();
+      this.stakingAPRCache.set(normalizedAddress, {
+        apr: stakingAPR,
+        slug: slug,
+        lastUpdate: Date.now(),
+      });
+
+      this.logger.log(
+        `✅ Cached stakingAPR for vault ${vaultAddress}: ${stakingAPR.toFixed(2)}% (slug: ${slug})`
       );
-
-      if (response.data.success) {
-        this.logger.log(
-          `Successfully updated stakingAPR for vault ${vaultAddress}: ${stakingAPR}%`
-        );
-        return true;
-      }
-
-      return false;
+      return true;
     } catch (error) {
       this.logger.error(
-        `Error updating stakingAPR for vault ${vaultAddress}:`,
+        `❌ Error caching stakingAPR for vault ${vaultAddress}:`,
         error.message
       );
       return false;
     }
+  }
+
+  /**
+   * Gets staking APR from cache for a specific vault
+   * Returns null if not found or expired
+   */
+  private getStakingAPRFromCache(vaultAddress: string): { apr: number; slug: string } | null {
+    const normalizedAddress = vaultAddress.toLowerCase();
+    const cached = this.stakingAPRCache.get(normalizedAddress);
+
+    if (!cached) {
+      return null;
+    }
+
+    // Check if cache is expired
+    const now = Date.now();
+    if (now - cached.lastUpdate > this.CACHE_TTL) {
+      this.stakingAPRCache.delete(normalizedAddress);
+      return null;
+    }
+
+    return { apr: cached.apr, slug: cached.slug };
   }
 
   /**
@@ -317,7 +506,7 @@ export class VaultsService implements OnModuleInit {
 
       if (infraRedData) {
         // This vault exists on InfraRed
-        const success = await this.updateVaultStakingAPRInternal(
+        const success = this.updateVaultStakingAPRInternal(
           vaultAddress,
           infraRedData.apr,
           infraRedData.slug
@@ -372,19 +561,19 @@ export class VaultsService implements OnModuleInit {
    * - EVERY_HOUR
    * - EVERY_6_HOURS
    */
-  // @Cron(CronExpression.EVERY_HOUR)
-  // async scheduledStakingAPRUpdate() {
-  //   this.logger.log('⏰ Running scheduled staking APR update...');
-  //   const result = await this.compareAndUpdateStakingAPR();
+  @Cron(CronExpression.EVERY_HOUR)
+  async scheduledStakingAPRUpdate() {
+    this.logger.log('⏰ Running scheduled staking APR update...');
+    const result = await this.compareAndUpdateStakingAPR();
 
-  //   if (result.success) {
-  //     this.logger.log(
-  //       `✅ Scheduled update successful: ${result.updated} vaults updated`,
-  //     );
-  //   } else {
-  //     this.logger.warn(
-  //       `⚠️ Scheduled update completed with errors: ${result.failed} failures`,
-  //     );
-  //   }
-  // }
+    if (result.success) {
+      this.logger.log(
+        `✅ Scheduled update successful: ${result.updated} vaults updated`,
+      );
+    } else {
+      this.logger.warn(
+        `⚠️ Scheduled update completed with errors: ${result.failed} failures`,
+      );
+    }
+  }
 }

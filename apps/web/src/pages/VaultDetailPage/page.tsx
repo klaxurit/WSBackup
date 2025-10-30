@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon } from '../../components/SVGs';
-import { formatNumber } from '../../utils/formatNumber';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { useQuery } from '@tanstack/react-query';
 import { type Address, formatUnits } from 'viem';
@@ -11,6 +10,7 @@ import { PageContentTransition } from '../../components/Transitions';
 import { Loader } from '../../components/Loader/Loader';
 import { UserVaultDetail } from '../../components/Vault/UserVaultDetail';
 import { UserPositionsTable } from '../../components/Vault/UserPositionsTable';
+import { VaultStatsGrid } from '../../components/Vault/VaultStatsGrid';
 import { useStickyVaultBalance } from '../../hooks/vault/useStickyVaultBalance';
 import { useAutoWinPosition } from '../../hooks/vault/useAutoWinPosition';
 
@@ -319,32 +319,12 @@ export const VaultDetailPage = () => {
       <div className="VaultDetailPage__MainContent">
         {/* Left Column - 70% width */}
         <div className="VaultDetailPage__LeftColumn">
-          {/* Stats Grid */}
-          <div className="VaultDetailPage__StatsGrid">
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Vault TVL</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault.totalValueLockedUSD)}</span>
-            </div>
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Collected Fees</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault?.collectedFeesUSD)}</span>
-            </div>
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">BGT APR</span>
-              {/* <span className="VaultDetailPage__StatValue">{vault?.rewardsApr || "0"}%</span> */}
-              <span className="VaultDetailPage__StatValue">-</span>
-            </div>
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Vault APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%</span>
-            </div>
-            <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
-              <span className="VaultDetailPage__StatLabel">Total APR</span>
-              <span className="VaultDetailPage__StatValue VaultDetailPage__StatValue--highlight">
-                {vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%
-              </span>
-            </div>
-          </div>
+          {/* Stats Grid - 2x3 Layout */}
+          <VaultStatsGrid
+            vaultAddress={vault.id as Address}
+            totalValueLockedUSD={vault.totalValueLockedUSD}
+            collectedFeesUSD={vault.collectedFeesUSD}
+          />
 
           {/* Chart Section */}
           <div className="VaultDetailPage__ChartSection">

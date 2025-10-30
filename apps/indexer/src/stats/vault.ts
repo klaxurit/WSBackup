@@ -46,6 +46,13 @@ export async function updateVaultStats(
       maxPotentialAPR,
       context,
     );
+
+    // Update the main stickyVault table with calculated APRs
+    // This ensures the backend can fetch the latest APR values directly from the vault
+    await context.db.update(stickyVault, { id: vault.id }).set({
+      apy: aprResults.grossAPR,
+      netAPR: aprResults.netAPR,
+    });
   } catch (error: any) {
     console.warn("Error when update vault stats", error?.message)
   }
