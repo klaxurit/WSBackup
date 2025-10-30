@@ -3,9 +3,9 @@ import type { UseSwapReturn } from '../../hooks/swap/useSwap';
 import { formatEther, formatUnits } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { TokenLogo } from '../Common/TokenLogo';
-import { usePrice } from '../../hooks/usePrice';
+import { useTokensInPool } from '../../hooks/useTokensInPool';
 import { formatTokenAmount, formatUsdAmount } from '../../utils/format';
-import { getUsdAmount, getPoolFeesInBera } from '../../utils/transaction';
+import { getUsdAmount } from '../../utils/transaction';
 import { Modal } from '../Common/Modal';
 import { Loader } from '../Loader/Loader';
 import { processSwapError, type ErrorAction } from '../../utils/errorMapping';
@@ -34,25 +34,61 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [shouldRenderDetails, setShouldRenderDetails] = useState(false);
-  const { data: usdValueIn = 0 } = usePrice(inputToken)
-  const { data: usdValueOut = 0 } = usePrice(outputToken)
   const { quote } = swap
+  const { data: tokensData } = useTokensInPool();
+  const inputTokenData = useMemo(() => {
+    if (!inputToken || !tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === inputToken.address.toLowerCase()
+    );
+  }, [inputToken, tokensData]);
+
+  const outputTokenData = useMemo(() => {
+    if (!outputToken || !tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === outputToken.address.toLowerCase()
+    );
+  }, [outputToken, tokensData]);
+
+  const usdValueIn = inputTokenData?.priceUSD || 0;
+  const usdValueOut = outputTokenData?.priceUSD || 0;
+  const beraTokenData = useMemo(() => {
+    if (!tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === '0x0000000000000000000000000000000000000000' ||
+      token.address.toLowerCase() === '0x6969696969696969696969696969696969696969'
+    );
+  }, [tokensData]);
+
+  const beraUsdPrice = beraTokenData?.priceUSD || 0;
 
   const usdAmountIn = useMemo(() => {
     if (inputAmount === 0n) return 0
     return (usdValueIn * +formatUnits(inputAmount, inputToken?.decimals || 18)).toFixed(2)
-  }, [usdValueIn, inputAmount])
+  }, [usdValueIn, inputAmount, inputToken?.decimals])
+
   const usdAmountOut = useMemo(() => {
     if (!quote || quote?.amountOut === 0n) return 0
     return (usdValueOut * +formatUnits(quote.amountOut, outputToken?.decimals || 18)).toFixed(2)
-  }, [usdValueOut, quote])
+  }, [usdValueOut, quote, outputToken?.decimals])
 
-  const poolFeesInBera = useMemo(() => getPoolFeesInBera(swap.optimizedRoute), [swap.optimizedRoute]);
-  const poolFeesUsd = useMemo(() => getUsdAmount(usdValueIn, BigInt(poolFeesInBera)), [usdValueIn, poolFeesInBera]);
+  const poolFeesUsd = useMemo(() => {
+    if (!swap.optimizedRoute || inputAmount === 0n) return 0;
+
+    const totalFeeBasisPoints = swap.optimizedRoute.routes.reduce((total, { route }) => {
+      const routeFees = route.pools.reduce((sum, pool) => sum + pool.fee, 0);
+      return total + routeFees;
+    }, 0);
+
+    const feeAmountInToken = (inputAmount * BigInt(totalFeeBasisPoints)) / 1_000_000n;
+
+    return getUsdAmount(usdValueIn, feeAmountInToken, inputToken?.decimals || 18);
+  }, [swap.optimizedRoute, inputAmount, usdValueIn, inputToken?.decimals]);
+
   const gasFeesUsd = useMemo(() => {
-    if (!usdValueIn) return 0;
-    return usdValueIn * +formatEther(quote?.gasEstimate || 0n);
-  }, [usdValueIn, quote]);
+    if (!beraUsdPrice || !quote?.gasEstimate) return 0;
+    return beraUsdPrice * +formatEther(quote.gasEstimate);
+  }, [beraUsdPrice, quote?.gasEstimate]);
 
   useEffect(() => {
     if (isDetailsOpen) {
@@ -76,11 +112,11 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   }, [swap.status, swap.needsApproval, inputToken?.symbol])
 
   const rateValue = useMemo(() => {
-    if (!swap?.quote) return "0"
+    if (!swap?.quote || !inputAmount || inputAmount === 0n || !swap.quote.amountOut || swap.quote.amountOut === 0n) return "0"
     const inputDecimals = inputToken?.decimals || 18;
     const outputDecimals = outputToken?.decimals || 18;
     return parseFloat(formatUnits((inputAmount * (10n ** BigInt(outputDecimals))) / swap.quote.amountOut, inputDecimals)).toFixed(2)
-  }, [swap.quote, inputAmount])
+  }, [swap.quote, inputAmount, inputToken?.decimals, outputToken?.decimals])
 
   const priceImpact = useMemo(() => {
     if (!quote?.priceImpact) return "0"
@@ -224,7 +260,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountIn}</span>
               </div>
-              <TokenLogo logoUri={inputToken.logoUri} symbol={inputToken.symbol} size="medium" className="TransactionModal__tokenLogo" />
+              <TokenLogo logoUri={inputToken.logoUri} symbol={inputToken.symbol} size="large" className="TransactionModal__tokenLogo" />
             </div>
           </div>
           <div className="TransactionModal__arrowDown">↓</div>
@@ -236,7 +272,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountOut}</span>
               </div>
-              <TokenLogo logoUri={outputToken.logoUri} symbol={outputToken.symbol} size="medium" className="TransactionModal__tokenLogo" />
+              <TokenLogo logoUri={outputToken.logoUri} symbol={outputToken.symbol} size="large" className="TransactionModal__tokenLogo" />
             </div>
           </div>
           <div className="TransactionModal__moreRow">
@@ -262,12 +298,12 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                     <span className="TransactionModal__infoLabel">Rate</span>
                     <span className="TransactionModal__infoContent">
                       1 {outputToken.symbol} &#8776; {rateValue} {inputToken.symbol}
-                      <span className="TransactionModal__rateUsd">(${usdValueOut.toFixed(2)})</span>
+                      <span className="TransactionModal__rateUsd">(${usdValueOut > 0 ? usdValueOut.toFixed(2) : 'N/A'})</span>
                     </span>
                   </div>
                   <div className="TransactionModal__infoRow">
                     <span className="TransactionModal__infoLabel">Max slippage</span>
-                    <span className="TransactionModal__infoContent">{swap.slippageTolerance}%</span>
+                    <span className="TransactionModal__infoContent">{(swap.slippageTolerance * 100).toFixed(2)}%</span>
                   </div>
                   <div className="TransactionModal__infoRow">
                     <span className="TransactionModal__infoLabel">Min amount</span>

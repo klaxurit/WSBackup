@@ -123,61 +123,52 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
     }
   });
 
-  // Get vaults where user has positions (for on-chain balance fetching)
-  const vaultsWithPositions = useMemo(() => {
-    if (!vaults || !address) return [];
 
-    return vaults.filter((vault: any) =>
-      (vault.positions?.items?.length > 0) ||
-      (vault.autoWinVaultRef?.positions?.items?.length > 0)
-    );
-  }, [vaults, address]);
-
-  // Create contracts array for batch balance fetching
-  const balanceContracts = useMemo(() => {
-    if (!address || vaultsWithPositions.length === 0) return [];
+  const { balanceContracts, vaultIndexMap } = useMemo(() => {
+    if (!address || !vaults || vaults.length === 0) {
+      return { balanceContracts: [], vaultIndexMap: new Map() };
+    }
 
     const contracts: any[] = [];
+    const indexMap = new Map<string, { stickyIndex: number; totalSupplyIndex: number; autoWinIndex?: number }>();
 
-    vaultsWithPositions.forEach((vault: any) => {
-      // Sticky vault balance
+    vaults.forEach((vault: any) => {
+      const vaultId = vault.id.toLowerCase();
+      const stickyIndex = contracts.length;
+
       contracts.push({
         address: vault.id as Address,
         abi: StickyVaultWithRouter,
         functionName: 'balanceOf',
-        args: [address]
+        args: [address],
       });
 
-      // Sticky vault total supply
+      const totalSupplyIndex = contracts.length;
+
       contracts.push({
         address: vault.id as Address,
         abi: StickyVaultWithRouter,
         functionName: 'totalSupply',
       });
 
-      // AutoWin vault balance (if exists)
+      let autoWinIndex: number | undefined;
+
       if (vault.autoWinVault && vault.autoWinVault !== '0x0000000000000000000000000000000000000000') {
+        autoWinIndex = contracts.length;
         contracts.push({
           address: vault.autoWinVault as Address,
           abi: AutowinABI,
           functionName: 'balanceOf',
-          args: [address]
-        });
-
-        // AutoWin convertToAssets
-        contracts.push({
-          address: vault.autoWinVault as Address,
-          abi: AutowinABI,
-          functionName: 'convertToAssets',
-          args: [0n] // Placeholder, will be updated after getting balance
+          args: [address],
         });
       }
+
+      indexMap.set(vaultId, { stickyIndex, totalSupplyIndex, autoWinIndex });
     });
 
-    return contracts;
-  }, [address, vaultsWithPositions]);
+    return { balanceContracts: contracts, vaultIndexMap: indexMap };
+  }, [address, vaults]);
 
-  // Fetch all balances in a single batch call
   const { data: balancesData } = useReadContracts({
     contracts: balanceContracts,
     query: {
@@ -186,108 +177,94 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
     }
   });
 
-  // Parse balances data into a usable map
-  const onChainBalances = useMemo(() => {
-    const map = new Map<string, { stickyShares: bigint; stickyTotalSupply: bigint; autoWinShares?: bigint }>();
+  const { convertContracts, convertIndexMap } = useMemo(() => {
+    if (!balancesData || !address || !vaults || vaults.length === 0 || vaultIndexMap.size === 0) {
+      return { convertContracts: [], convertIndexMap: new Map() };
+    }
 
-    if (!balancesData || !vaultsWithPositions || vaultsWithPositions.length === 0) return map;
+    const contracts: any[] = [];
+    const indexMap = new Map<string, number>();
 
-    let dataIndex = 0;
-    vaultsWithPositions.forEach((vault: any) => {
+    vaults.forEach((vault: any) => {
       const vaultId = vault.id.toLowerCase();
+      const indices = vaultIndexMap.get(vaultId);
 
-      // Get sticky balance (index 0, 1 for each vault)
-      const stickyBalance = balancesData[dataIndex]?.result as bigint | undefined;
-      const stickyTotalSupply = balancesData[dataIndex + 1]?.result as bigint | undefined;
-      dataIndex += 2;
+      if (!indices || indices.autoWinIndex === undefined) return;
 
-      // Get AutoWin balance if vault has AutoWin
-      let autoWinShares: bigint | undefined;
-      if (vault.autoWinVault && vault.autoWinVault !== '0x0000000000000000000000000000000000000000') {
-        autoWinShares = balancesData[dataIndex]?.result as bigint | undefined;
-        dataIndex += 2; // Skip convertToAssets for now (we'll approximate)
-      }
+      const autoWinBalance = balancesData[indices.autoWinIndex]?.result as bigint | undefined;
 
-      if (stickyBalance || autoWinShares) {
-        map.set(vaultId, {
-          stickyShares: stickyBalance || 0n,
-          stickyTotalSupply: stickyTotalSupply || 0n,
-          autoWinShares
+      if (autoWinBalance && autoWinBalance > 0n) {
+        indexMap.set(vaultId, contracts.length);
+        contracts.push({
+          address: vault.autoWinVault as Address,
+          abi: AutowinABI,
+          functionName: 'convertToAssets' as const,
+          args: [autoWinBalance],
         });
       }
     });
 
-    return map;
-  }, [balancesData, vaultsWithPositions]);
+    return { convertContracts: contracts, convertIndexMap: indexMap };
+  }, [balancesData, address, vaults, vaultIndexMap]);
 
-  // Helper function to calculate total holdings (Sticky + AutoWin)
-  // Uses on-chain balances (same as VaultDetailPage) for accurate values
-  const calculateVaultHoldings = (vault: any): number => {
-    if (!address) return 0;
+  const { data: convertData } = useReadContracts({
+    contracts: convertContracts,
+    query: {
+      enabled: convertContracts.length > 0,
+      staleTime: 30000,
+    },
+  });
 
-    let total = 0;
-    let stickyValue = 0;
-    let autoWinValue = 0;
+  const getVaultHolding = useMemo(() => {
+    return (vaultId: string): number => {
+      if (!address || !vaults || !balancesData || vaultIndexMap.size === 0) return 0;
 
-    const vaultId = vault.id.toLowerCase();
-    const stickyTVL = parseFloat(vault.totalValueLockedUSD || '0');
+      const vaultIdLower = vaultId.toLowerCase();
 
-    // Try to get on-chain balances first (most accurate)
-    const onChainData = onChainBalances.get(vaultId);
+      const indices = vaultIndexMap.get(vaultIdLower);
+      if (!indices) return 0;
 
-    if (onChainData) {
-      // Use on-chain balances (same as VaultDetailPage)
-      const stickyShares = parseFloat(formatUnits(onChainData.stickyShares, 18));
-      const totalSupply = parseFloat(formatUnits(onChainData.stickyTotalSupply, 18));
+      const vault = vaults.find((v: any) => v.id.toLowerCase() === vaultIdLower);
+      if (!vault) return 0;
 
-      // Calculate Sticky value: (shares / totalSupply) × TVL
-      if (totalSupply > 0 && stickyShares > 0) {
-        const proportion = stickyShares / totalSupply;
-        stickyValue = proportion * stickyTVL;
-        total += stickyValue;
+      const tvl = parseFloat(vault.totalValueLockedUSD || '0');
+
+
+      const stickyBalance = balancesData[indices.stickyIndex]?.result as bigint | undefined;
+      const stickyTotalSupply = balancesData[indices.totalSupplyIndex]?.result as bigint | undefined;
+      const autoWinBalance = indices.autoWinIndex !== undefined
+        ? balancesData[indices.autoWinIndex]?.result as bigint | undefined
+        : undefined;
+
+      let total = 0;
+
+      // Sticky value (formule de useStickyVaultBalance)
+      if (stickyBalance && stickyBalance > 0n && stickyTotalSupply && stickyTotalSupply > 0n) {
+        const sharesDecimal = parseFloat(formatUnits(stickyBalance, 18));
+        const totalSupplyDecimal = parseFloat(formatUnits(stickyTotalSupply, 18));
+        const proportion = sharesDecimal / totalSupplyDecimal;
+        total += proportion * tvl;
       }
 
-      // Calculate AutoWin value if exists
-      if (onChainData.autoWinShares && onChainData.autoWinShares > 0n) {
-        const autoWinSharesDecimal = parseFloat(formatUnits(onChainData.autoWinShares, 18));
 
-        // Approximation: autoWinShares / totalSupply × TVL
-        // Note: Ideally should use convertToAssets, but this is close
-        if (totalSupply > 0) {
-          const proportion = autoWinSharesDecimal / totalSupply;
-          autoWinValue = proportion * stickyTVL;
-          total += autoWinValue;
+      if (autoWinBalance && autoWinBalance > 0n && stickyTotalSupply && stickyTotalSupply > 0n) {
+        const convertIndex = convertIndexMap.get(vaultIdLower);
+
+        if (convertIndex !== undefined && convertData && convertData[convertIndex]) {
+          const convertedAssets = convertData[convertIndex]?.result as bigint | undefined;
+
+          if (convertedAssets) {
+            const assetsDecimal = parseFloat(formatUnits(convertedAssets, 18));
+            const totalSupplyDecimal = parseFloat(formatUnits(stickyTotalSupply, 18));
+            const proportion = assetsDecimal / totalSupplyDecimal;
+            total += proportion * tvl;
+          }
         }
       }
-    } else {
-      // Fallback to indexer data if no on-chain data available
-      const stickyTotalSupply = parseFloat(vault.totalSupply || '0');
 
-      if (vault.positions?.items?.length > 0) {
-        const stickyPosition = vault.positions.items[0];
-        const stickyShares = parseFloat(stickyPosition.shares || '0');
-
-        if (stickyTotalSupply > 0 && stickyShares > 0) {
-          const proportion = stickyShares / stickyTotalSupply;
-          stickyValue = proportion * stickyTVL;
-          total += stickyValue;
-        }
-      }
-
-      if (vault.autoWinVaultRef?.positions?.items?.length > 0) {
-        const autoWinPosition = vault.autoWinVaultRef.positions.items[0];
-        const autoWinShares = parseFloat(autoWinPosition.shares || '0');
-
-        if (stickyTotalSupply > 0 && autoWinShares > 0) {
-          const proportion = autoWinShares / stickyTotalSupply;
-          autoWinValue = proportion * stickyTVL;
-          total += autoWinValue;
-        }
-      }
-    }
-
-    return total;
-  };
+      return total;
+    };
+  }, [address, vaults, balancesData, convertData, vaultIndexMap, convertIndexMap]);
 
   const filteredVaults = useMemo(() => {
     if (!vaults) return []
@@ -436,14 +413,14 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       sortable: true,
       sortValue: (row) => {
         if (!address) return 0;
-        return calculateVaultHoldings(row);
+        return getVaultHolding(row.id);
       },
       render: (row) => {
         if (!address) {
           return <span className="VaultsTable__HoldingsCell">-</span>;
         }
 
-        const holding = calculateVaultHoldings(row);
+        const holding = getVaultHolding(row.id);
         return (
           <span className="VaultsTable__HoldingsCell">
             ${formatNumber(holding)}
