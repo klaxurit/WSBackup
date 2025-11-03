@@ -395,6 +395,7 @@ const PoolDetailPage: React.FC = () => {
                 logoUri: t1.logoUri,
                 decimals: 18
               } as any}
+              showTitle={true}
             />
           </div>
 

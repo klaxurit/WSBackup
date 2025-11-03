@@ -494,13 +494,14 @@ const TokenPage: React.FC = () => {
             <SwapForm
               toggleSidebar={() => { }}
               initialFromToken={token}
+              showTitle={true}
             />
           </div>
 
           {/* Quick Access Section - Pools & Vaults */}
           {((pools?.data && pools.data.length > 0) || (vaults?.data && vaults.data.length > 0)) && (
             <div className="Token__QuickAccess">
-              <h3 className="Token__QuickAccessTitle">Quick Access</h3>
+              <h3 className="Token__QuickAccessTitle">Deposit Liquidity</h3>
 
               {/* Pools Section */}
               {pools?.data && pools.data.length > 0 && (

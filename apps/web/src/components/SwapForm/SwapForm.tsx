@@ -22,6 +22,7 @@ interface FormProps {
   customClassName?: string;
   isHomePage?: boolean;
   isSticky?: boolean;
+  showTitle?: boolean;
   onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
   initialFromToken?: BerachainToken | null;
   initialToToken?: BerachainToken | null;
@@ -38,6 +39,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     customClassName,
     isHomePage,
     isSticky = false,
+    showTitle = false,
     onPoolChange,
     initialFromToken,
     initialToToken
@@ -300,7 +302,8 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     return (
       <div className={formClasses}>
         <div className="Form__box">
-          <div className="Form__head">
+          <div className={`Form__head ${showTitle ? 'Form__head--with-title' : ''}`}>
+            {showTitle && <h3 className="Form__title">Swap</h3>}
             <button className="iconLink" onClick={handleClickParams}>
               {!slippageConfig.isAuto ? slippageConfig.display : ""}
               <Nut />

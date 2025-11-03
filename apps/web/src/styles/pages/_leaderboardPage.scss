@@ -1,0 +1,761 @@
+@use "../utils" as *;
+
+.Leaderboard {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 80vh;
+
+  @media (max-width: 600px) {
+    padding: 8px;
+    gap: 24px;
+  }
+}
+
+// Hero Section
+.Leaderboard__Hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.Leaderboard__Title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+
+  @media (max-width: 600px) {
+    font-size: 24px;
+  }
+}
+
+.Leaderboard__Description {
+  font-size: 15px;
+  color: $white-064;
+  line-height: 1.6;
+  margin: 0;
+
+  @media (max-width: 600px) {
+    font-size: 14px;
+  }
+}
+
+// Section Title
+.Leaderboard__SectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.3px;
+
+  @media (max-width: 600px) {
+    font-size: 16px;
+  }
+
+  // Quand il n'est pas dans le header Portfolio
+  &:not(.Leaderboard__PortfolioHeader *) {
+    margin-bottom: 12px;
+
+    @media (max-width: 600px) {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+// Layout 2 colonnes
+.Leaderboard__Content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.Leaderboard__MainColumn {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.Leaderboard__Sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 80px;
+  align-self: start;
+
+  @media (max-width: 900px) {
+    position: static;
+    top: 0;
+  }
+}
+
+// Portfolio Section
+.Leaderboard__Portfolio {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Portfolio Row : 3 stats en ligne horizontale
+.Leaderboard__PortfolioRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+// Top Boosted Section
+.Leaderboard__TopBoosted {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.Leaderboard__TopBoostedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+// Styles pour les stats cards
+.Leaderboard__StatCardTitle {
+  font-size: 10px;
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.Leaderboard__StatCardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.Leaderboard__StatCardValue {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+
+  &--xlarge {
+    font-size: 32px;
+  }
+
+  &--highlight {
+    color: $beryl-pure;
+  }
+}
+
+.Leaderboard__StatCardSecondary {
+  font-size: 11px;
+  font-weight: 500;
+  color: $white-040;
+  line-height: 1.3;
+  text-align: center;
+}
+
+// Position Card Stat Label (réutilisé dans Boosted)
+.Leaderboard__PositionCardStatLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__BoostedCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  height: 100%;
+  min-width: 0;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08);
+    border-color: #E39229;
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(227, 146, 41, 0.1);
+  }
+}
+
+// Stats cards spécifiques (sans hover pour les stats)
+.Leaderboard__StatCard {
+  cursor: default;
+
+  &:hover {
+    transform: none;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: none;
+  }
+}
+
+.Leaderboard__BoostedCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Leaderboard__BoostedCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.Leaderboard__BoostedCardPair {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 14px;
+}
+
+.Leaderboard__BoostedCardType {
+  font-size: 11px;
+  font-weight: 500;
+  color: $white-056;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 14px;
+}
+
+.Leaderboard__BoostedCardAPR {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.Leaderboard__BoostedCardStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.Leaderboard__BoostedCardAPRValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &--large {
+    font-size: 18px;
+  }
+
+  &--highlight {
+    color: #E39229;
+  }
+}
+
+.Leaderboard__BoostedCardBoost {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: $beryl-pure;
+}
+
+.Leaderboard__WinnieIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// Trending Section - Même structure que Portfolio
+.Leaderboard__Trending {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.Leaderboard__TrendingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.Leaderboard__TrendingColumn {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+.Leaderboard__TrendingCards {
+  display: contents;
+}
+
+.Leaderboard__TrendingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  height: 100%;
+  min-width: 0;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08);
+    border-color: #E39229;
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(227, 146, 41, 0.1);
+  }
+}
+
+.Leaderboard__TrendingCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Leaderboard__TrendingCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.Leaderboard__TrendingCardPair {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 14px;
+}
+
+.Leaderboard__TrendingCardFee {
+  font-size: 11px;
+  font-weight: 500;
+  color: $white-056;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 14px;
+}
+
+.Leaderboard__TrendingCardAPR {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.Leaderboard__TrendingCardAPRLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__BestAPRBadge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(227, 146, 41, 0.15);
+  color: #E39229;
+  animation: bestAprPulse 2s ease-in-out infinite;
+}
+
+// Animation pour le badge BEST APR
+@keyframes bestAprPulse {
+
+  0%,
+  100% {
+    background: rgba(227, 146, 41, 0.15);
+    color: #E39229;
+  }
+
+  50% {
+    background: rgba(227, 146, 41, 0.25);
+    color: #FFD056;
+  }
+}
+
+.Leaderboard__TrendingCardAPRValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E39229;
+
+  @media (max-width: 600px) {
+    font-size: 16px;
+  }
+}
+
+.Leaderboard__TrendingCardStats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.Leaderboard__TrendingCardStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.Leaderboard__TrendingCardStatLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.Leaderboard__TrendingCardStatValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Leaderboard Table Section
+.Leaderboard__TableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.Leaderboard__TableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.Leaderboard__FilterButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Leaderboard__TableNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 13px;
+  color: $white-056;
+  line-height: 1.5;
+
+  span:first-child {
+    font-size: 16px;
+  }
+}
+
+// Table Cells
+.Leaderboard__RankCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.Leaderboard__Rank {
+  font-weight: 600;
+  color: #fff;
+
+  &--top {
+    font-size: 15px;
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__Badge {
+  font-size: 14px;
+}
+
+.Leaderboard__UserCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &--current {
+    .Leaderboard__Address {
+      font-weight: 700;
+      color: #E39229;
+    }
+  }
+}
+
+.Leaderboard__Address {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  color: $white-072;
+}
+
+.Leaderboard__YouBadge {
+  padding: 2px 6px;
+  background: rgba(227, 146, 41, 0.2);
+  color: #E39229;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.Leaderboard__ChangeCell {
+  font-weight: 600;
+
+  &--positive {
+    color: $success-pure;
+  }
+
+  &--negative {
+    color: $carmel-pure;
+  }
+}
+
+// Table Row Highlight - Current User
+.Leaderboard__TableRow--current {
+  background: rgba(227, 146, 41, 0.15) !important;
+  border: 2px solid rgba(227, 146, 41, 0.8) !important;
+  border-left: 4px solid #E39229 !important;
+  box-shadow:
+    0 0 0 1px rgba(227, 146, 41, 0.3),
+    0 4px 12px rgba(227, 146, 41, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.2) !important;
+    border-color: rgba(227, 146, 41, 1) !important;
+    box-shadow:
+      0 0 0 1px rgba(227, 146, 41, 0.5),
+      0 6px 16px rgba(227, 146, 41, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: scale(1.002);
+  }
+}
+
+// Gradient pour les Top 10 - Intensité décroissante
+.Leaderboard__TableRow--rank1 {
+  background: rgba(227, 146, 41, 0.12) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.16) !important;
+  }
+
+  .Leaderboard__Rank {
+    font-size: 16px;
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableRow--rank2 {
+  background: rgba(227, 146, 41, 0.10) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.14) !important;
+  }
+
+  .Leaderboard__Rank {
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableRow--rank3 {
+  background: rgba(227, 146, 41, 0.08) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.12) !important;
+  }
+
+  .Leaderboard__Rank {
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableRow--rank4 {
+  background: rgba(227, 146, 41, 0.07) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.11) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank5 {
+  background: rgba(227, 146, 41, 0.06) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.10) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank6 {
+  background: rgba(227, 146, 41, 0.05) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.09) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank7 {
+  background: rgba(227, 146, 41, 0.04) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank8 {
+  background: rgba(227, 146, 41, 0.03) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.07) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank9 {
+  background: rgba(227, 146, 41, 0.02) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.06) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank10 {
+  background: rgba(227, 146, 41, 0.015) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.05) !important;
+  }
+}
+
+// Si l'utilisateur est dans le top 10, on combine les styles
+.Leaderboard__TableRow--current {
+  // On garde le border pour l'utilisateur même s'il est dans le top 10
+  border: 2px solid rgba(227, 146, 41, 0.8) !important;
+  border-left: 4px solid #E39229 !important;
+  box-shadow:
+    0 0 0 1px rgba(227, 146, 41, 0.3),
+    0 4px 12px rgba(227, 146, 41, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+
+  // Si pas de rank class, on applique le background
+  &:not([class*="--rank"]) {
+    background: rgba(227, 146, 41, 0.15) !important;
+  }
+
+  &:hover {
+    border-color: rgba(227, 146, 41, 1) !important;
+    box-shadow:
+      0 0 0 1px rgba(227, 146, 41, 0.5),
+      0 6px 16px rgba(227, 146, 41, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: scale(1.002);
+  }
+
+  &:hover:not([class*="--rank"]) {
+    background: rgba(227, 146, 41, 0.2) !important;
+  }
+}
+
+// Empty & Loading States
+.Leaderboard__EmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  text-align: center;
+
+  p {
+    color: $white-056;
+    font-size: 15px;
+    margin: 0;
+  }
+}
+
+.Leaderboard__LoadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}

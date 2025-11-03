@@ -31,6 +31,7 @@
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
 @use 'components/chart/chart-toolbar';
+@use 'components/charts/mobileTokenChart';
 
 @use 'components/common/link';
 @use 'components/common/iconLink';
@@ -60,6 +61,8 @@
 @use 'pages/poolViewPage';
 @use 'pages/poolPage';
 @use 'pages/vaults';
+@use 'pages/leaderboardPage';
+@use 'pages/mobileChartTestPage';
 
 
 // @import 'themes/dark';
