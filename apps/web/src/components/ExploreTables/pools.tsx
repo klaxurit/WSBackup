@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo, useState } from "react";
@@ -382,7 +381,6 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
           <span className="PoolsTable__PoolName">
             {row.token0Ref.symbol}/{row.token1Ref.symbol}
           </span>
-          <ExplorerLink address={row.id || ''} />
         </span>
       )
     },

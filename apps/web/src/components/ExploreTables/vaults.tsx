@@ -1,6 +1,5 @@
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
@@ -303,7 +302,6 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
           <span className="VaultsTable__VaultName">
             {row?.name ? row.name : `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`}
           </span>
-          <ExplorerLink address={row.id} />
         </span>
       )
     },

@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenLogo } from '../Common/TokenLogo';
-import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
@@ -303,7 +302,6 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
             <span className="TokensTable__NameText">
               {displayName}
             </span>
-            <ExplorerLink address={row.id || ''} type="token" />
           </span>
         );
       }
