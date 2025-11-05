@@ -10,9 +10,15 @@
 
   .SearchBar {
     width: 42px;
+    flex-shrink: 0;
 
     &.expanded {
       width: 220px;
+
+      @media (max-width: 600px) {
+        width: 100%;
+        flex: 1 1 100%;
+      }
     }
   }
 
@@ -20,10 +26,27 @@
     gap: 32px;
   }
 
+  &__Header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    @media (max-width: 600px) {
+      flex-wrap: wrap;
+    }
+  }
+
   &__Tabs {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 1;
+    min-width: 0;
+
+    @media (max-width: 600px) {
+      flex: 1 1 auto;
+    }
   }
 
   &__Search {

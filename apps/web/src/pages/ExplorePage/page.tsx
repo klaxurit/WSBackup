@@ -31,8 +31,8 @@ const ExplorePage: React.FC = () => {
     <PageContentTransition className="ExplorePage">
       <NewBanner title="Explore" subtitle="Discover your next trading opportunities" image={beeIcon} />
 
-      <div className="ExplorePage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className="ExplorePage__Tabs" style={{ display: 'flex', gap: 8 }}>
+      <div className="ExplorePage__Header">
+        <div className="ExplorePage__Tabs">
           {TABS.map(tab => (
             <button
               key={tab.key}
