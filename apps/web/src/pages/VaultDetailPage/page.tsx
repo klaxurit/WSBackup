@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon, ExplorerChevronIcon } from '../../components/SVGs';
@@ -129,6 +129,8 @@ export interface VaultToken {
 export const VaultDetailPage = () => {
   const { address } = useAccount()
   const { vaultAddress } = useParams<{ vaultAddress: Address }>();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: vault, isLoading, refetch } = useQuery({
     queryKey: ['stickyVault', vaultAddress],
@@ -150,6 +152,23 @@ export const VaultDetailPage = () => {
       return data.data.stickyVault
     }
   });
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const { token0, token1, autoWinVault } = useMemo(() => {
     if (!vault?.poolRef) return { token0: null, token1: null, autoWinVault: undefined }
@@ -315,14 +334,49 @@ export const VaultDetailPage = () => {
                 <span className={`VaultDetailPage__Strategy VaultDetailPage__Strategy--${vault.autoWinVault ? 'autowin' : 'sticky'}`}>
                   {vault.autoWinVault ? 'Auto-Win' : 'Sticky'}
                 </span>
-                <a
-                  href={`https://berascan.com/address/${vault.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="VaultDetailPage__ExplorerLink"
-                >
-                  <ExplorerIcon />
-                </a>
+                {vault.autoWinVault ? (
+                  <div className="VaultDetailPage__ExplorerDropdown" ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="VaultDetailPage__ExplorerLink"
+                      title="View Contracts"
+                    >
+                      <ExplorerIcon />
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="VaultDetailPage__DropdownMenu">
+                        <a
+                          href={`https://berascan.com/address/${vault.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="VaultDetailPage__DropdownItem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Sticky Vault Contract
+                        </a>
+                        <a
+                          href={`https://berascan.com/address/${vault.autoWinVault}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="VaultDetailPage__DropdownItem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          AutoWin Contract
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <a
+                    href={`https://berascan.com/address/${vault.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="VaultDetailPage__ExplorerLink"
+                    title="Sticky Vault Contract"
+                  >
+                    <ExplorerIcon />
+                  </a>
+                )}
               </div>
             </div>
           </div>
