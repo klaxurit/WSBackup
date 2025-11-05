@@ -349,7 +349,6 @@
 .PoolsTable__PoolCell {
   display: flex;
   align-items: center;
-  gap: 8px !important;
   min-width: 0;
 }
 
@@ -357,7 +356,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  width: 32px;
   flex-shrink: 0;
 
   .TokenPairLogos {
@@ -517,7 +516,6 @@
 .VaultsTable__VaultCell {
   display: flex;
   align-items: center;
-  gap: 8px !important;
   min-width: 0;
 }
 
@@ -525,7 +523,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 32px;
   flex-shrink: 0;
 
   .TokenPairLogos {
@@ -705,10 +703,12 @@
   font-weight: 500;
 }
 
-.TokensTable__NameCell {
+.TokensTable__NameCell,
+.PoolsTable__PoolCell,
+.VaultsTable__VaultCell {
   display: flex;
   align-items: center;
-  gap: 8px !important;
+  gap: 10px !important;
   min-width: 0;
 }
 
@@ -716,7 +716,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  width: 32px;
   flex-shrink: 0;
 }
 
