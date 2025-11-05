@@ -6,6 +6,7 @@
   box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.04);
   overflow: hidden;
   margin-bottom: 20px;
+  position: relative;
 
   // Quand il y a une pagination, on retire le border-radius du bas du scroll
   &.Table__Wrapper--with-pagination {
@@ -189,6 +190,29 @@
   span {
     color: #888;
     font-size: 15px;
+  }
+}
+
+.Table__LoadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(29, 28, 26, 0.75); // Warm brown/beige overlay matching onyx-darker-ters with transparency
+  backdrop-filter: blur(8px); // Enhanced blur effect for smooth transition
+  z-index: 10; // Above table content
+  border-radius: 16px; // Match the table wrapper border radius
+  min-height: 300px; // Ensure minimum height for loading overlay
+
+  .Table__LoadingContainer {
+    padding: 0; // Remove default padding in overlay
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
