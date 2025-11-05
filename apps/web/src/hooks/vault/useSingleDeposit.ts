@@ -2,7 +2,6 @@ import { type Address, type Hex, encodeFunctionData } from "viem"
 import { useAccount, useSimulateContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { useMemo } from "react"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
-import { StickyVaultRouter } from "../../config/abis/StickyVaultRouter"
 import { autowinABI } from "../../config/abis/AutowinRouter"
 import { useTokenAllowance } from "./useTokenAllowance"
 import { useVaultQuote } from "./useVaultQuote"
@@ -132,9 +131,9 @@ export const useSingleDeposit = ({
     slippageBps: autoWin?.slippageBps || 100
   })
 
-  // Determine router and spender based on AutoWin configuration
-  const routerAddress = autoWin ? CONTRACTS_ADDRESS.AUTOWIN_ROUTER : CONTRACTS_ADDRESS.STICKYVAULT_ROUTER
-  const routerABI = autoWin ? autowinABI : StickyVaultRouter
+  // Always use AutoWin router (it exposes same methods as StickyVault router)
+  const routerAddress = CONTRACTS_ADDRESS.AUTOWIN_ROUTER
+  const routerABI = autowinABI
 
   // Token allowance management
   const tokenAllowance = useTokenAllowance({
@@ -151,7 +150,7 @@ export const useSingleDeposit = ({
     if (!isQuoted || !isAllow || !address) return null
 
     if (autoWin && autoWin.vaultAddress && minAutoWinShares) {
-      // Prepare multicall for AutoWin
+      // Prepare multicall for AutoWin: addLiquiditySingle + depositIntoAutoWin
       const addLiquiditySingleCalldata = encodeFunctionData({
         abi: autowinABI,
         functionName: 'addLiquiditySingle',
@@ -171,15 +170,15 @@ export const useSingleDeposit = ({
         args: [[addLiquiditySingleCalldata, depositIntoAutoWinCalldata]] as const
       }
     } else {
-      // Standard StickyVault deposit
+      // Standard StickyVault deposit using AutoWin router
       return {
-        address: routerAddress,
-        abi: routerABI,
+        address: CONTRACTS_ADDRESS.AUTOWIN_ROUTER,
+        abi: autowinABI,
         functionName: 'addLiquiditySingle' as const,
         args: [vault, amount, minShares!, BigInt(slippageBps), swapData!, address] as const
       }
     }
-  }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount, minShares, slippageBps, swapData, routerAddress, routerABI])
+  }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount, minShares, slippageBps, swapData])
 
   // Simulate and execute single-sided deposit
   const {

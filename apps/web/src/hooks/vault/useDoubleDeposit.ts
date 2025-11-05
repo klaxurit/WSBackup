@@ -3,7 +3,6 @@ import { useAccount, useSimulateContract, useWaitForTransactionReceipt, useWrite
 import { useMemo } from "react"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
 import { currentChain } from "../../config/wagmi"
-import { StickyVaultRouter } from "../../config/abis/StickyVaultRouter"
 import { autowinABI } from "../../config/abis/AutowinRouter"
 import { useTokenAllowance } from "./useTokenAllowance"
 import { useVaultQuote } from "./useVaultQuote"
@@ -107,9 +106,9 @@ export const useDoubleDeposit = ({
     slippageBps: autoWin?.slippageBps || 100
   })
 
-  // Determine router and spender based on AutoWin configuration
-  const routerAddress = autoWin ? CONTRACTS_ADDRESS.AUTOWIN_ROUTER : CONTRACTS_ADDRESS.STICKYVAULT_ROUTER
-  const routerABI = autoWin ? autowinABI : StickyVaultRouter
+  // Always use AutoWin router (it exposes same methods as StickyVault router)
+  const routerAddress = CONTRACTS_ADDRESS.AUTOWIN_ROUTER
+  const routerABI = autowinABI
 
   // Token0 allowance management
   const t0Allowance = useTokenAllowance({
@@ -134,7 +133,7 @@ export const useDoubleDeposit = ({
     if (!isQuoted || !isAllow || !address) return null
 
     if (autoWin && autoWin.vaultAddress && minAutoWinShares) {
-      // Prepare multicall for AutoWin
+      // Prepare multicall for AutoWin: addLiquidity + depositIntoAutoWin
       const addLiquidityCalldata = encodeFunctionData({
         abi: autowinABI,
         functionName: 'addLiquidity',
@@ -154,15 +153,15 @@ export const useDoubleDeposit = ({
         args: [[addLiquidityCalldata, depositIntoAutoWinCalldata]] as const
       }
     } else {
-      // Standard StickyVault deposit
+      // Standard StickyVault deposit using AutoWin router
       return {
-        address: routerAddress,
-        abi: routerABI,
+        address: CONTRACTS_ADDRESS.AUTOWIN_ROUTER,
+        abi: autowinABI,
         functionName: 'addLiquidity' as const,
         args: [vault, amount0, amount1, amount0Min!, amount1Min!, minShares!, address] as const
       }
     }
-  }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount0, amount1, amount0Min, amount1Min, minShares, routerAddress, routerABI])
+  }, [isQuoted, isAllow, address, autoWin, minAutoWinShares, vault, amount0, amount1, amount0Min, amount1Min, minShares])
   // Simulate and execute deposit transaction
 
   const { data: depositConfig } = useSimulateContract({
