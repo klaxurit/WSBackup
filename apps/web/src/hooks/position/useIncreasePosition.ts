@@ -40,7 +40,7 @@ export const useIncreasePosition = ({ position, pool, isModalOpen }: UseIncrease
   const token1Address = pool.token1Ref.id as Address
 
   // Get user balances
-  const { data: balances } = useReadContracts({
+  const { data: balances, refetch: refetchBalances } = useReadContracts({
     contracts: [
       {
         address: token0Address,
@@ -286,6 +286,13 @@ export const useIncreasePosition = ({ position, pool, isModalOpen }: UseIncrease
   const { data: increaseLiquidityReceipt, isLoading: waitingIncreaseReceipt } = useWaitForTransactionReceipt({
     hash: increaseLiquidityHash
   })
+
+  // Refetch balances after successful increase liquidity transaction
+  useEffect(() => {
+    if (increaseLiquidityReceipt) {
+      refetchBalances()
+    }
+  }, [increaseLiquidityReceipt, refetchBalances])
 
   const handleIncreaseLiquidity = useCallback(() => {
     if (!increaseLiquidityConfig?.request) return

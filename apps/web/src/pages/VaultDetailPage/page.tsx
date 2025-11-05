@@ -193,6 +193,13 @@ export const VaultDetailPage = () => {
     vaultTVL_USD: vault?.totalValueLockedUSD
   })
 
+  // Function to refetch all balances after a transaction
+  const refetchAllBalances = () => {
+    refetch() // Refetch GraphQL data (including indexer positions for staking detection)
+    stickyVaultBalance.refetch() // Refetch on-chain sticky vault balance
+    autoWinBalance.refetch() // Refetch on-chain autowin balance
+  }
+
   // Prepare user positions data for the table using on-chain balances
   const userPositions = useMemo(() => {
     if (!vault || !address || !token0 || !token1) return []
@@ -223,8 +230,7 @@ export const VaultDetailPage = () => {
     }
 
     // 3. Staked Externally (Infrared/Berahub)
-    // TODO: Requires Infrared contract address to query staked balance
-    // For now, we show a placeholder if indexer shows more shares than wallet
+    // Check if indexer shows more shares than wallet (indicating staking elsewhere)
     const stickyPositionIndexed = vault.positions?.items?.find((p: any) => p.user === address.toLowerCase())
 
     // Only try to detect staked position if indexer data exists and is recent
@@ -359,7 +365,7 @@ export const VaultDetailPage = () => {
         {/* Right Column - 30% width */}
         <div className="VaultDetailPage__RightColumn">
           {/* User Action Forms */}
-          <UserVaultDetail vault={vault} token0={token0} token1={token1} autoWinVault={autoWinVault} onSuccess={() => refetch()} />
+          <UserVaultDetail vault={vault} token0={token0} token1={token1} autoWinVault={autoWinVault} onSuccess={refetchAllBalances} />
         </div>
       </div>
     </PageContentTransition>

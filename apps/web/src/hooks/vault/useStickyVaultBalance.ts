@@ -14,6 +14,7 @@ interface UseStickyVaultBalanceReturn {
   valueInUSD: number
   pricePerShare: number
   isLoading: boolean
+  refetch: () => void
 }
 
 /**
@@ -29,6 +30,7 @@ export function useStickyVaultBalance({
   const {
     data: userBalance,
     isLoading: isLoadingBalance,
+    refetch: refetchBalance
   } = useReadContract({
     address: vaultAddress,
     abi: StickyVaultWithRouter,
@@ -43,6 +45,7 @@ export function useStickyVaultBalance({
   const {
     data: totalSupply,
     isLoading: isLoadingTotalSupply,
+    refetch: refetchTotalSupply
   } = useReadContract({
     address: vaultAddress,
     abi: StickyVaultWithRouter,
@@ -74,10 +77,17 @@ export function useStickyVaultBalance({
     return { valueInUSD, pricePerShare }
   }, [userBalance, totalSupply, vaultTVL_USD])
 
+  // Function to refetch all balance data
+  const refetch = () => {
+    refetchBalance()
+    refetchTotalSupply()
+  }
+
   return {
     shares: userBalance || 0n,
     valueInUSD,
     pricePerShare,
     isLoading: isLoadingBalance || isLoadingTotalSupply,
+    refetch
   }
 }
