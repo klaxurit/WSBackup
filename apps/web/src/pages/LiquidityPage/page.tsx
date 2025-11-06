@@ -231,6 +231,9 @@ query GetUserVaultPositions($user: String) {
 }
 `;
 
+// Minimum $0.50 USD to consider a position as "open"
+const MIN_POSITION_VALUE_USD = 0.5;
+
 // Interfaces for top pools and vaults
 interface GraphQLPool {
   id: string;
@@ -755,17 +758,64 @@ const LiquidityPage: React.FC = () => {
   const filteredPositions = useMemo(() => {
     if (!allPositions) return []
     return allPositions.filter((p: any) => {
+      let positionValueUSD = 0;
+
       if (p.type === 'vault') {
-        // Pour les vaults, on considère qu'ils sont toujours "ouverts" s'ils ont des shares
-        return statusFilter === "open"
-          ? parseFloat(p.shares) > 0
-          : parseFloat(p.shares) === 0
+        // For vault positions: use currentValueUSD directly
+        positionValueUSD = parseFloat(p.currentValueUSD || '0');
       } else {
-        // Pour les pools, utiliser la logique existante
-        return statusFilter === "open"
-          ? p.liquidity !== "0"
-          : p.liquidity === "0"
+        // For pool positions: calculate USD value using the same logic as sorting
+        try {
+          const pool = p.poolRef;
+          const position = p;
+
+          // If no liquidity, the position value is 0
+          if (position.liquidity === "0" || !pool.sqrtPrice) {
+            positionValueUSD = 0;
+          } else {
+            // Calculate current tick from sqrtPrice
+            const currentTick = pool.tick ? Number(pool.tick) : TickMath.getTickAtSqrtRatio(JSBI.BigInt(pool.sqrtPrice));
+
+            // Create SDK pool
+            const sdkPool = new Pool(
+              new Token(currentChain.id, pool.token0Ref.id, pool.token0Ref.decimals || 18, pool.token0Ref.symbol, pool.token0Ref.name),
+              new Token(currentChain.id, pool.token1Ref.id, pool.token1Ref.decimals || 18, pool.token1Ref.symbol, pool.token1Ref.name),
+              pool.feeTier,
+              pool.sqrtPrice,
+              pool.liquidity,
+              currentTick
+            );
+
+            // Create SDK position
+            const sdkPosition = new Position({
+              pool: sdkPool,
+              tickLower: position.tickLower,
+              tickUpper: position.tickUpper,
+              liquidity: position.liquidity
+            });
+
+            // Get amounts from SDK
+            const amount0 = parseFloat(sdkPosition.amount0.toExact());
+            const amount1 = parseFloat(sdkPosition.amount1.toExact());
+
+            // Calculate total value with token prices
+            const token0Price = pool.token0Ref?.tokenDayData?.items?.[0]?.priceUSD || 0;
+            const token1Price = pool.token1Ref?.tokenDayData?.items?.[0]?.priceUSD || 0;
+
+            const amount0USD = amount0 * parseFloat(token0Price);
+            const amount1USD = amount1 * parseFloat(token1Price);
+            positionValueUSD = amount0USD + amount1USD;
+          }
+        } catch (error) {
+          console.error('Error calculating position USD value for filtering:', error);
+          positionValueUSD = 0;
+        }
       }
+
+      // Filter based on USD value threshold
+      return statusFilter === "open"
+        ? positionValueUSD >= MIN_POSITION_VALUE_USD
+        : positionValueUSD < MIN_POSITION_VALUE_USD;
     })
   }, [allPositions, statusFilter])
 
