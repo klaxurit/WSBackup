@@ -13,6 +13,7 @@ import { UserPositionsTable } from '../../components/Vault/UserPositionsTable';
 import { VaultStatsGrid } from '../../components/Vault/VaultStatsGrid';
 import { useStickyVaultBalance } from '../../hooks/vault/useStickyVaultBalance';
 import { useAutoWinPosition } from '../../hooks/vault/useAutoWinPosition';
+import { cleanTokenName } from '../../utils/tokenDisplay';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -310,7 +311,7 @@ export const VaultDetailPage = () => {
         <Link to="/explore?tab=vaults" className="VaultDetailPage__BreadcrumbsLink">Vaults</Link>
         <ExplorerChevronIcon />
         <span className="VaultDetailPage__BreadcrumbsLink__3">
-          {vault.name || `${token0.symbol}/${token1.symbol}`}
+          {cleanTokenName(vault.name) || `${token0.symbol}/${token1.symbol}`}
         </span>
         <span className="VaultDetailPage__BreadcrumbsAddress">
           {vault.id.slice(0, 6) + '...' + vault.id.slice(-4)}
@@ -329,7 +330,7 @@ export const VaultDetailPage = () => {
               size={32}
             />
             <div className="VaultDetailPage__VaultTitle">
-              <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
+              <h1>{cleanTokenName(vault.name) || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
                 <span className={`VaultDetailPage__Strategy VaultDetailPage__Strategy--${vault.autoWinVault ? 'autowin' : 'sticky'}`}>
                   {vault.autoWinVault ? 'Auto-Win' : 'Sticky'}

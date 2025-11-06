@@ -2,6 +2,7 @@ import React from "react";
 import { TokenLogo } from '../Common/TokenLogo';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import type { OptimizedRoute } from '../../hooks/swap/useSwap';
+import { cleanTokenSymbol, isStickyVaultToken } from '../../utils/tokenDisplay';
 
 interface RouteDisplayProps {
   optimizedRoute: OptimizedRoute | null;
@@ -15,10 +16,14 @@ interface TokenDisplayProps {
 }
 
 const TokenDisplay: React.FC<TokenDisplayProps> = React.memo(({ token, size = 20 }) => {
+  const displaySymbol = isStickyVaultToken(token.name)
+    ? cleanTokenSymbol(token.symbol)
+    : token.symbol;
+
   return (
     <div className="RouteDisplay__Token">
       <TokenLogo logoUri={token.logoUri} symbol={token.symbol} size={size} className="RouteDisplay__TokenIcon" />
-      <span className="RouteDisplay__TokenSymbol">{token.symbol}</span>
+      <span className="RouteDisplay__TokenSymbol">{displaySymbol}</span>
     </div>
   );
 });

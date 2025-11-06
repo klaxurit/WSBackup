@@ -1,6 +1,7 @@
 import React from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { usePopularTokens } from '../../hooks/usePopularTokens';
+import { cleanTokenSymbol, isStickyVaultToken } from '../../utils/tokenDisplay';
 
 interface PopularTokensProps {
   tokens: BerachainToken[];
@@ -46,7 +47,9 @@ export const PopularTokens: React.FC<PopularTokensProps> = ({
                 </div>
               )}
               <span className="PopularTokens__ButtonSymbol">
-                {token.symbol}
+                {isStickyVaultToken(token.name)
+                  ? cleanTokenSymbol(token.symbol)
+                  : token.symbol}
               </span>
             </div>
           </button>

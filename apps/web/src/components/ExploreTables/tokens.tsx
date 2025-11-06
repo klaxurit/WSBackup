@@ -4,6 +4,7 @@ import { TokenLogo } from '../Common/TokenLogo';
 import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatTokenForDisplay } from '../../utils/tokenDisplay';
 
 // Configuration des champs triables pour les tokens
 const TOKEN_SORT_CONFIG = {
@@ -291,8 +292,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       sortable: true,
       sortValue: (row) => row.name || row.symbol || '',
       render: (row) => {
-        const isStickyToken = row.symbol?.startsWith('STICKY') || row.name?.includes('Sticky Vault');
-        const displayName = isStickyToken ? row.symbol : `${row.symbol} - ${row.name}`;
+        const displayToken = formatTokenForDisplay(row);
+        const displayName = `${displayToken.symbol} - ${displayToken.name}`;
 
         return (
           <span className="TokensTable__NameCell">

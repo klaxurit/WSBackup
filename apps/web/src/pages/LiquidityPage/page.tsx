@@ -8,6 +8,7 @@ import { useAccount } from 'wagmi';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
+import { cleanTokenName } from '../../utils/tokenDisplay';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { PageContentTransition } from '../../components/Transitions';
 import { Pool, Position, TickMath } from '@uniswap/v3-sdk';
@@ -418,7 +419,7 @@ const transformVaultPositionToFormattedPosition = (vault: GraphQLVaultWithPositi
   return {
     id: position.id,
     vaultId: vault.id,
-    vaultName: vault.name || `${vault.poolRef.token0Ref.symbol}/${vault.poolRef.token1Ref.symbol}`,
+    vaultName: cleanTokenName(vault.name) || `${vault.poolRef.token0Ref.symbol}/${vault.poolRef.token1Ref.symbol}`,
     token0Symbol: vault.poolRef.token0Ref.symbol,
     token1Symbol: vault.poolRef.token1Ref.symbol,
     token0LogoUri: vault.poolRef.token0Ref.logoUri,
@@ -1024,7 +1025,7 @@ const LiquidityPage: React.FC = () => {
                       size={16}
                     />
                     <span className="LiquidityPage__TopVaultUltraCompact__Symbol">
-                      {vault.name.replace('Sticky Vault ', '')}
+                      {cleanTokenName(vault.name)}
                     </span>
                     <span className="LiquidityPage__TopVaultUltraCompact__Apr">
                       {vault.apr && typeof vault.apr === 'number' ? vault.apr.toFixed(1) : '0.0'}%
