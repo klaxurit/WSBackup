@@ -4,12 +4,13 @@ interface DividerProps {
   dominantColor?: string;
   secondaryColor?: string;
   onClick?: () => void;
+  isActive: boolean
 }
 
-export const Divider: React.FC<DividerProps> = ({ dominantColor, secondaryColor, onClick }) => {
+export const Divider: React.FC<DividerProps> = ({ dominantColor, secondaryColor, onClick, isActive }) => {
   const dividerStyle = {
     backgroundColor: secondaryColor,
-    cursor: onClick ? 'pointer' : undefined,
+    cursor: onClick && isActive ? 'pointer' : undefined,
   };
 
   return (
