@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, type ChangeEvent } from 'react'
+import React, { useCallback, useRef, useState, useMemo, type ChangeEvent } from 'react'
 import { Modal } from '../Common/Modal'
 import { LiquidityInput } from '../Inputs/LiquidityInput'
 import { useIncreasePosition } from '../../hooks/position/useIncreasePosition'
@@ -6,6 +6,7 @@ import type { Position } from '../../hooks/position/usePositionDatas'
 import type { Pool } from '../../pages/PoolPage/page'
 import { transformGraphQLTokenToLegacyToken } from '../../types/api'
 import { Nut } from '../SVGs/ProductSVGs'
+import { processTransactionError } from '../../utils/errorMapping'
 
 interface IncreaseLiquidityModalProps {
   isOpen: boolean
@@ -323,11 +324,49 @@ export const IncreaseLiquidityModal: React.FC<IncreaseLiquidityModalProps> = ({
           )} */}
 
         {/* Error Messages */}
-        {(errors.simulate || errors.increase) && (
-          <div className="PoolView__FormError">
-            <p>{errors.simulate?.message || errors.increase?.message}</p>
-          </div>
-        )}
+        {(errors.simulate || errors.increase || errors.approveToken0 || errors.approveToken1) && (() => {
+          const currentError = errors.increase || errors.simulate || errors.approveToken0 || errors.approveToken1;
+
+          if (!currentError) return null;
+
+          const errorInfo = processTransactionError(currentError, {
+            onRetry: () => {
+              if (canIncrease) {
+                increaseLiquidity();
+              }
+            },
+            onClose: handleClose,
+            onApprove: () => {
+              if (token0NeedsApproval && canApproveToken0) {
+                approveToken0();
+              } else if (token1NeedsApproval && canApproveToken1) {
+                approveToken1();
+              }
+            }
+          });
+
+          return (
+            <div className="PoolView__FormError">
+              <h4 style={{ color: '#FF6B6B', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                {errorInfo.title}
+              </h4>
+              <p style={{ marginBottom: '12px', fontSize: '13px', lineHeight: '1.5' }}>
+                {errorInfo.description}
+              </p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {errorInfo.actions.map((action, index) => (
+                  <button
+                    key={index}
+                    className={`btn btn--small ${action.type === 'primary' ? 'btn__main' : 'btn__shade'}`}
+                    onClick={action.action}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </Modal>
   )

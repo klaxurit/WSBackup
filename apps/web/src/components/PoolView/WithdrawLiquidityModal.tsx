@@ -5,6 +5,7 @@ import type { Position } from '../../hooks/position/usePositionDatas'
 import type { Pool } from '../../pages/PoolPage/page'
 import { formatUnits } from 'viem'
 import { Nut } from '../SVGs/ProductSVGs'
+import { processTransactionError } from '../../utils/errorMapping'
 
 interface WithdrawLiquidityModalProps {
   isOpen: boolean
@@ -310,11 +311,45 @@ export const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({
         )}
 
         {/* Error Messages */}
-        {(errors.simulate || errors.decrease) && (
-          <div className="PoolView__FormError">
-            <p>{errors.simulate?.message || errors.decrease?.message}</p>
-          </div>
-        )}
+        {(errors.simulate || errors.decrease) && (() => {
+          const currentError = errors.decrease || errors.simulate;
+
+          if (!currentError) return null;
+
+          const errorInfo = processTransactionError(currentError, {
+            onRetry: () => {
+              if (canDecrease) {
+                decreaseLiquidity();
+              }
+            },
+            onAdjustSettings: () => {
+              setParamOpen(true);
+            },
+            onClose: handleClose
+          });
+
+          return (
+            <div className="PoolView__FormError">
+              <h4 style={{ color: '#FF6B6B', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                {errorInfo.title}
+              </h4>
+              <p style={{ marginBottom: '12px', fontSize: '13px', lineHeight: '1.5' }}>
+                {errorInfo.description}
+              </p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {errorInfo.actions.map((action, index) => (
+                  <button
+                    key={index}
+                    className={`btn btn--small ${action.type === 'primary' ? 'btn__main' : 'btn__shade'}`}
+                    onClick={action.action}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </Modal>
   )
