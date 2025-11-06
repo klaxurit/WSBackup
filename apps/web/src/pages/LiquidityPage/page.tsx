@@ -22,7 +22,7 @@ import type { Address } from 'viem';
 // GraphQL queries for top pools and vaults
 const GET_TOP_POOLS = `
   query GetTopPools {
-    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 4) {
+    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 50) {
       totalCount
       pageInfo {
         endCursor
@@ -65,7 +65,7 @@ const GET_TOP_POOLS = `
 
 const GET_TOP_VAULTS = `
   query GetTopVaults {
-    stickyVaults(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 4) {
+    stickyVaults(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 50) {
       items {
         name
         txCount
@@ -927,15 +927,21 @@ const LiquidityPage: React.FC = () => {
   const topPools: FormattedPool[] = useMemo(() => {
     if (!topPoolsData?.pools?.items) return []
     const pools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool)
-    // Trier par APR décroissant (plus haut APR en premier)
-    return pools.sort((a: FormattedPool, b: FormattedPool) => b.apr - a.apr)
+    // Filter pools with TVL >= 250 and valid APR, then sort by APR descending and take top 4
+    return pools
+      .filter((p: FormattedPool) => p.tvlUSD >= 250 && p.apr > 0 && !isNaN(p.apr) && isFinite(p.apr))
+      .sort((a: FormattedPool, b: FormattedPool) => b.apr - a.apr)
+      .slice(0, 4)
   }, [topPoolsData]);
 
   const topVaults: FormattedVault[] = useMemo(() => {
     if (!topVaultsData?.stickyVaults?.items) return []
     const vaults = topVaultsData.stickyVaults.items.map(transformGraphQLVaultToFormattedVault)
-    // Trier par APR décroissant (plus haut APR en premier)
-    return vaults.sort((a: FormattedVault, b: FormattedVault) => b.apr - a.apr)
+    // Filter vaults with TVL >= 250 and valid APR, then sort by APR descending and take top 4
+    return vaults
+      .filter((v: FormattedVault) => v.tvlUSD >= 250 && v.apr > 0 && !isNaN(v.apr) && isFinite(v.apr))
+      .sort((a: FormattedVault, b: FormattedVault) => b.apr - a.apr)
+      .slice(0, 4)
   }, [topVaultsData]);
 
   return (
