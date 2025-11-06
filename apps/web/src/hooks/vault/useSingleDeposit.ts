@@ -133,7 +133,6 @@ export const useSingleDeposit = ({
 
   // Always use AutoWin router (it exposes same methods as StickyVault router)
   const routerAddress = CONTRACTS_ADDRESS.AUTOWIN_ROUTER
-  const routerABI = autowinABI
 
   // Token allowance management
   const tokenAllowance = useTokenAllowance({

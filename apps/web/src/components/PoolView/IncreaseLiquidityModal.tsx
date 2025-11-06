@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useMemo, type ChangeEvent } from 'react'
+import React, { useCallback, useRef, useState, type ChangeEvent } from 'react'
 import { Modal } from '../Common/Modal'
 import { LiquidityInput } from '../Inputs/LiquidityInput'
 import { useIncreasePosition } from '../../hooks/position/useIncreasePosition'
