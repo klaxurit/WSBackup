@@ -4,7 +4,7 @@ import { usePublicClient } from "wagmi"
 import { useTokenCache } from "../useTokenCache"
 import { type SingleRoute, type OptimizedRoute } from "./types"
 import { ORDER_SPLIT_THRESHOLD, DEFAULT_GAS_PRICE } from "./constants"
-import { calculatePriceImpact } from "../../utils/swap"
+import { calculatePriceImpact, calculateWeightedPriceImpact } from "../../utils/swap"
 import { encodePath } from "../../utils/swap"
 import { QuoterV2ABI } from "../../config/abis/QuoterV2"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
@@ -149,19 +149,33 @@ export const useSwapOptimizer = (params: UseSwapOptimizerParams): UseSwapOptimiz
 
           // Get output token info for formatting
           const outputTokenInfo = topRoutes[0].path[topRoutes[0].path.length - 1]
+          const inputTokenInfo = topRoutes[0].path[0]
+
+          // Calculate weighted price impact for split routes
+          // This provides more accurate representation than using just the first pool
+          const priceImpact = calculateWeightedPriceImpact(
+            [
+              {
+                amountIn: amount1,
+                quote: quote1.quote,
+                sqrtPriceX96: topRoutes[0].pools[0]?.sqrtPriceX96 || 1n
+              },
+              {
+                amountIn: amount2,
+                quote: quote2.quote,
+                sqrtPriceX96: topRoutes[1].pools[0]?.sqrtPriceX96 || 1n
+              }
+            ],
+            inputTokenInfo.decimals,
+            outputTokenInfo.decimals
+          )
 
           const splitRoute: OptimizedRoute = {
             type: "split",
             totalQuote,
             totalGasEstimate: totalGas,
             quoteFormatted: formatUnits(totalQuote, outputTokenInfo.decimals),
-            priceImpact: calculatePriceImpact(
-              amountToSplit,
-              totalQuote,
-              topRoutes[0].pools[0]?.sqrtPriceX96 || 1n,
-              topRoutes[0].path[0].decimals,
-              outputTokenInfo.decimals
-            ),
+            priceImpact,
             routes: [
               {
                 route: topRoutes[0],
