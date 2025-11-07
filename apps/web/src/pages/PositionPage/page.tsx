@@ -13,6 +13,7 @@ import { FallbackImg } from '../../components/utils/FallbackImg';
 import { PageContentTransition, StaggerTransition, HoverScale } from '../../components/Transitions';
 import type { Address } from 'viem';
 import { Pool, Position, TickMath } from '@uniswap/v3-sdk';
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
 import { Token } from '@uniswap/sdk-core';
 import { currentChain } from '../../config/wagmi';
 import JSBI from 'jsbi';
@@ -374,7 +375,9 @@ const PoolPage: React.FC = () => {
       return [];
     }
 
-    const transformedPools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool);
+    const transformedPools = topPoolsData.pools.items
+      .map(transformGraphQLPoolToFormattedPool)
+      .filter((pool: FormattedPool) => !isPoolBlacklisted(pool.address));
     return transformedPools;
   }, [topPoolsData]);
 

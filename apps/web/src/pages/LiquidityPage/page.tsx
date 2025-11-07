@@ -8,6 +8,7 @@ import { useAccount } from 'wagmi';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
 import { cleanTokenName } from '../../utils/tokenDisplay';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { PageContentTransition } from '../../components/Transitions';
@@ -977,9 +978,9 @@ const LiquidityPage: React.FC = () => {
   const topPools: FormattedPool[] = useMemo(() => {
     if (!topPoolsData?.pools?.items) return []
     const pools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool)
-    // Filter pools with TVL >= 250 and valid APR, then sort by APR descending and take top 4
+    // Filter pools with TVL >= 250, valid APR, and not blacklisted
     return pools
-      .filter((p: FormattedPool) => p.tvlUSD >= 250 && p.apr > 0 && !isNaN(p.apr) && isFinite(p.apr))
+      .filter((p: FormattedPool) => p.tvlUSD >= 250 && p.apr > 0 && !isNaN(p.apr) && isFinite(p.apr) && !isPoolBlacklisted(p.address))
       .sort((a: FormattedPool, b: FormattedPool) => b.apr - a.apr)
       .slice(0, 4)
   }, [topPoolsData]);
