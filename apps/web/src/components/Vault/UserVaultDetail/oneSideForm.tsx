@@ -6,7 +6,6 @@ import type { VaultToken } from "../../../pages/VaultDetailPage/page"
 import { ConnectButton } from "../../Buttons/ConnectButton"
 import { useAccount } from "wagmi"
 import { SingleSideDepositModal } from "../SingleSideDepositModal"
-import { TabTransition } from "../../Transitions"
 
 // Helper to format with max 4 decimals
 const formatSwapAmount = (amount: bigint, decimals: number): string => {
@@ -70,42 +69,39 @@ export const OneSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: OneSideF
         {/* Token Selector */}
         <div className="VaultDetailPage__TokenSelector">
           <button
-            className={`btn btn--tiny ${selectedToken === 'token0' ? 'btn__main' : 'btn__shade'}`}
+            className={`btn btn--tiny ${selectedToken === 'token0' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
             onClick={() => setSelectedToken('token0')}
+            type="button"
           >
             {t0.symbol}
           </button>
           <button
-            className={`btn btn--tiny ${selectedToken === 'token1' ? 'btn__main' : 'btn__shade'}`}
+            className={`btn btn--tiny ${selectedToken === 'token1' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
             onClick={() => setSelectedToken('token1')}
+            type="button"
           >
             {t1.symbol}
           </button>
         </div>
 
-        {/* Input and Swap Info with Transition */}
-        <TabTransition activeTab={selectedToken}>
-          <>
-            <LiquidityInput
-              selectedToken={tokenIn}
-              onAmountChange={setAmount}
-              value={amount}
-              isOverBalance={false}
-              customUsdValue={tokenIn.priceUSD}
-            />
+        <LiquidityInput
+          selectedToken={tokenIn}
+          onAmountChange={setAmount}
+          value={amount}
+          isOverBalance={false}
+          customUsdValue={tokenIn.priceUSD}
+        />
 
-            {/* Swap Info */}
-            {singleDeposit.swapQuote.amountOut && amount > 0n && (
-              <div className="VaultDetailPage__SwapInfo">
-                <p>Your deposit will be split:</p>
-                <ul>
-                  <li>{formatSwapAmount(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} kept</li>
-                  <li>{formatSwapAmount(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} → {formatSwapAmount(singleDeposit.swapQuote.amountOut, tokenOut.decimals)} {tokenOut.symbol}</li>
-                </ul>
-              </div>
-            )}
-          </>
-        </TabTransition>
+        {/* Swap Info */}
+        {singleDeposit.swapQuote.amountOut && amount > 0n && (
+          <div className="VaultDetailPage__SwapInfo">
+            <p>Your deposit will be split:</p>
+            <ul>
+              <li>{formatSwapAmount(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} kept</li>
+              <li>{formatSwapAmount(singleDeposit.swapQuote.amountIn, tokenIn.decimals)} {tokenIn.symbol} → {formatSwapAmount(singleDeposit.swapQuote.amountOut, tokenOut.decimals)} {tokenOut.symbol}</li>
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Action Button - Opens Modal */}

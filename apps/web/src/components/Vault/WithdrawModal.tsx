@@ -165,14 +165,29 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
           )
         }
 
-      case VaultModalStep.WAITING_WITHDRAW:
+      case VaultModalStep.WAITING_WITHDRAW: {
+        const hasWithdrawTx = Boolean(withdrawHook.withdraw.hash);
+        const hasApprovalTx = Boolean(withdrawHook.allowance.hash);
+        const isWaitingApproval = hasApprovalTx && !hasWithdrawTx;
+
+        const waitingTitle = isWaitingApproval ? 'Waiting For Approval' : 'Waiting For Confirmation';
+        const waitingDescription = isWaitingApproval
+          ? `Approve withdrawal for ${vaultType} ${token0.symbol}-${token1.symbol}`
+          : `Withdraw from ${vaultType} ${token0.symbol}-${token1.symbol}`;
+        const waitingMessage = isWaitingApproval
+          ? 'Approval submitted. Waiting for blockchain confirmation…'
+          : hasWithdrawTx
+            ? 'Withdrawal submitted. Waiting for blockchain confirmation…'
+            : 'Confirm this transaction in your wallet';
+
         return (
           <WaitingStep
-            title="Waiting For Confirmation"
-            description={`Withdraw from ${vaultType} ${token0.symbol}-${token1.symbol}`}
-            message="Confirm this transaction in your wallet"
+            title={waitingTitle}
+            description={waitingDescription}
+            message={waitingMessage}
           />
         );
+      }
 
       case VaultModalStep.SUCCESS:
         return (

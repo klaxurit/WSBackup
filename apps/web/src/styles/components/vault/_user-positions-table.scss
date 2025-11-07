@@ -5,7 +5,7 @@
   margin-top: 24px;
 
   .UserPositionsTable__Title {
-    font-size: 1.25rem;
+    @include typography('heading-lg');
     font-weight: 600;
     color: $white-080;
     margin-bottom: 16px;
@@ -32,7 +32,7 @@
     background: rgba(255, 255, 255, 0.04);
     color: $white-072;
     font-weight: 600;
-    font-size: 0.875rem;
+    @include typography('body-sm');
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -81,7 +81,7 @@
   align-items: center;
   padding: 4px 12px;
   border-radius: 8px;
-  font-size: 0.75rem;
+  @include typography('caption');
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -101,7 +101,7 @@
 
 // Value Column
 .UserPositionsTable__ValueCell {
-  font-size: 1rem;
+  @include typography('body-lg');
   font-weight: 600;
   color: $white-080;
 }
@@ -125,18 +125,18 @@
 .UserPositionsTable__TokenName {
   font-weight: 600;
   color: $white-080;
-  font-size: 0.875rem;
+  @include typography('body-sm');
 }
 
 .UserPositionsTable__TokenAmount {
-  font-size: 0.875rem;
+  @include typography('body-sm');
   color: $white-064;
   margin-left: auto;
 }
 
 // APR Column
 .UserPositionsTable__AprCell {
-  font-size: 1rem;
+  @include typography('body-lg');
   font-weight: 600;
   color: $beryl-pure;
 }
@@ -152,7 +152,7 @@
     th,
     td {
       padding: 12px 8px;
-      font-size: 0.875rem;
+      @include typography('body-sm');
 
       &:first-child {
         padding-left: 12px;
@@ -172,11 +172,11 @@
 
   .UserPositionsTable__TokenAmount {
     margin-left: 0;
-    font-size: 0.75rem;
+    @include typography('caption');
   }
 
   .UserPositionsTable__TypeBadge {
     padding: 3px 8px;
-    font-size: 0.6875rem;
+    @include typography('caption');
   }
 }

@@ -77,7 +77,7 @@
 
   &__Title {
     margin: 0;
-    font-size: 2rem;
+    @include typography('heading-3xl');
     font-weight: 700;
     color: $beryl-pure;
   }
@@ -100,7 +100,7 @@
     td {
       padding: 1rem;
       text-align: left;
-      font-size: 15px;
+      @include typography('body-md');
     }
 
     thead th {
@@ -130,7 +130,7 @@
     font-weight: 600;
     cursor: pointer;
     margin-top: 12px;
-    font-size: 15px;
+    @include typography('body-md');
     transition: background 0.2s, color 0.2s;
 
     &:hover {
@@ -158,7 +158,7 @@
 
   &__TopTitle {
     margin-top: 0;
-    font-size: 1.3rem;
+    @include typography('heading-lg');
     font-weight: 700;
     margin-bottom: 18px;
     color: #fff;
@@ -185,23 +185,23 @@
 
   &__TopPair {
     font-weight: 600;
-    font-size: 1.1rem;
+    @include typography('body-lg');
     color: #fff;
 
     .PoolPage__TopVersion {
       color: #888;
-      font-size: 0.9rem;
+      @include typography('body-sm');
       margin-left: 8px;
     }
   }
 
   &__TopFee {
-    font-size: 13px;
+    @include typography('body-sm');
     color: #aaa;
   }
 
   &__TopApr {
-    font-size: 13px;
+    @include typography('body-sm');
     color: #aaa;
 
     &--positive {
@@ -280,12 +280,12 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       margin-right: 4px;
     }
 
     .PoolPage__StepLabel {
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 600;
       color: #fff;
     }
@@ -305,14 +305,14 @@
     }
 
     .PoolPage__CreateTitle {
-      font-size: 1.2rem;
+      @include typography('heading-md');
       font-weight: 600;
       color: var(--accent1, #e39229);
       margin-left: 18px;
     }
 
     .PoolPage__CreateSectionTitle {
-      font-size: 1.1rem;
+      @include typography('heading-md');
       font-weight: 700;
       color: #fff;
       margin-bottom: 6px;
@@ -320,7 +320,7 @@
 
     .PoolPage__CreateSectionDesc {
       color: #aaa;
-      font-size: 0.98rem;
+      @include typography('body-md');
       margin-bottom: 12px;
     }
 
@@ -332,7 +332,7 @@
     }
 
     .PoolPage__TokenSeparator {
-      font-size: 1.5rem;
+      @include typography('heading-xl');
       color: #888;
       font-weight: 700;
       margin: 0 8px;
@@ -351,7 +351,7 @@
       border: 1.5px solid #232323;
       color: #fff;
       font-weight: 600;
-      font-size: 1rem;
+      @include typography('body-lg');
       padding: 18px 18px;
       display: flex;
       flex-direction: column;
@@ -376,7 +376,7 @@
         background: none;
         border: 1.5px dashed #888;
         color: #aaa;
-        font-size: 0.98rem;
+        @include typography('body-md');
         font-weight: 500;
         padding: 10px 14px;
         margin-left: 8px;
@@ -387,26 +387,26 @@
 
         .PoolPage__FeeTierAdvanced {
           color: #888;
-          font-size: 0.95rem;
+          @include typography('body-md');
           margin-left: 6px;
         }
       }
     }
 
     .PoolPage__FeeTierLabel {
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 700;
       margin-bottom: 2px;
     }
 
     .PoolPage__FeeTierDesc {
-      font-size: 0.8rem;
+      @include typography('caption');
       color: #aaa;
       margin-bottom: 2px;
     }
 
     .PoolPage__FeeTierTVL {
-      font-size: 0.95rem;
+      @include typography('body-md');
       color: #888;
     }
 
@@ -424,7 +424,7 @@
       color: #e39229;
       padding: 4px 8px;
       border-radius: 6px;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 600;
     }
 
@@ -447,14 +447,14 @@
 
     .PoolPage__PriceLabel {
       color: #aaa;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 600;
       min-width: 100px;
     }
 
     .PoolPage__PriceValue {
       color: #fff;
-      font-size: 16px;
+      @include typography('body-lg');
       font-weight: 600;
       flex: 1;
     }
@@ -465,7 +465,7 @@
       border-radius: 8px;
       color: #fff;
       padding: 8px 12px;
-      font-size: 14px;
+      @include typography('body-sm');
       width: 120px;
       outline: none;
 
@@ -476,7 +476,7 @@
 
     .PoolPage__PriceUnit {
       color: #aaa;
-      font-size: 12px;
+      @include typography('caption');
       min-width: 150px;
     }
 
@@ -502,7 +502,7 @@
     border-radius: 6px;
     padding: 8px 12px;
     margin-bottom: 8px;
-    font-size: 14px;
+    @include typography('body-sm');
     color: #b45309;
     display: flex;
     align-items: center;

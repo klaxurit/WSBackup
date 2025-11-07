@@ -40,13 +40,13 @@
 
 .VaultDepositModal__Title {
   justify-self: center;
-  font-size: 17px;
+  @include typography('heading-lg');
   font-weight: 600;
   color: #fff;
   margin: 0;
 
   @media (max-width: 768px) {
-    font-size: 1.1rem;
+    @include typography('heading-md');
   }
 }
 
@@ -55,7 +55,7 @@
   background: none;
   border: none;
   color: #fff;
-  font-size: 20px;
+  @include typography('heading-lg');
   cursor: pointer;
   z-index: 2;
   transition: color 0.15s;
@@ -99,12 +99,12 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 
   .label {
-    font-size: 0.875rem;
+    @include typography('body-sm');
     color: rgba(255, 255, 255, 0.6);
   }
 
   .value {
-    font-size: 0.875rem;
+    @include typography('body-sm');
     font-weight: 600;
     color: #fff;
   }
@@ -129,14 +129,14 @@
   }
 
   .amount {
-    font-size: 1.5rem;
+    @include typography('heading-3xl');
     font-weight: 700;
     color: #fff;
     margin-right: 8px;
   }
 
   .symbol {
-    font-size: 1.125rem;
+    @include typography('heading-md');
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
   }
@@ -145,7 +145,7 @@
 // Les boutons utilisent les classes existantes de l'app (btn btn--large btn__main, etc.)
 
 .VaultDepositModal__Description {
-  font-size: 0.875rem;
+  @include typography('body-sm');
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
   margin: 12px 0;
@@ -202,8 +202,8 @@
     }
 
     .warning-title {
-      font-size: 0.9rem;
-      font-weight: 700;
+    @include typography('body-sm');
+    font-weight: 700;
       color: rgba(255, 145, 0, 0.95);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -211,7 +211,7 @@
   }
 
   .warning-message {
-    font-size: 0.875rem;
+    @include typography('body-sm');
     color: rgba(255, 255, 255, 0.85);
     line-height: 1.5;
     margin: 0 0 14px 0;
@@ -232,7 +232,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8125rem;
+      @include typography('caption');
 
       &:not(:last-child) {
         margin-bottom: 8px;
@@ -257,7 +257,7 @@
   }
 
   .warning-note {
-    font-size: 0.8125rem;
+    @include typography('caption');
     color: rgba(255, 255, 255, 0.7);
     line-height: 1.5;
     margin: 0;
@@ -297,7 +297,7 @@
     z-index: 1;
 
     .label {
-      font-size: 0.9rem;
+      @include typography('body-sm');
       font-weight: 700;
       color: $beryl-pure;
       text-transform: uppercase;
@@ -308,7 +308,7 @@
     }
 
     .status {
-      font-size: 0.85rem;
+      @include typography('body-sm');
       color: $beryl-pure;
       font-weight: 600;
       background: rgba(227, 146, 41, 0.15);
@@ -322,7 +322,7 @@
   }
 
   .description {
-    font-size: 0.85rem;
+    @include typography('body-sm');
     color: $white-072;
     line-height: 1.6;
     margin-top: 12px;
@@ -354,7 +354,7 @@
     box-sizing: border-box;
 
     .apr-label {
-      font-size: 0.75rem;
+      @include typography('caption');
       color: rgba(255, 255, 255, 0.6);
       font-weight: 500;
       line-height: 1.2;
@@ -362,7 +362,7 @@
     }
 
     .apr-value {
-      font-size: 1rem;
+      @include typography('body-lg');
       color: $beryl-pure;
       font-weight: 700;
       transition: color 0.3s ease;
@@ -371,7 +371,7 @@
       &--shiny {
         color: $beryl-pure;
         font-weight: 800;
-        font-size: 1.1rem;
+        @include typography('heading-md');
         text-shadow: 0 0 12px rgba(255, 208, 86, 0.6);
         animation: shinyValue 2s;
         position: relative;
@@ -502,7 +502,7 @@
 
   .section {
     h4 {
-      font-size: 0.875rem;
+      @include typography('body-sm');
       font-weight: 500;
       color: rgba(255, 255, 255, 0.6);
       margin: 0 0 12px 0;
@@ -527,14 +527,14 @@
         }
 
         .symbol {
-          font-size: 0.9375rem;
+          @include typography('body-md');
           font-weight: 600;
           color: #fff;
         }
       }
 
       .amount {
-        font-size: 0.9375rem;
+        @include typography('body-md');
         font-weight: 600;
         color: rgba(255, 255, 255, 0.9);
       }
@@ -551,12 +551,12 @@
       padding: 10px 0 0 0;
 
       .label {
-        font-size: 0.875rem;
+        @include typography('body-sm');
         color: rgba(255, 255, 255, 0.7);
       }
 
       .value {
-        font-size: 0.875rem;
+        @include typography('body-sm');
         font-weight: 600;
         color: #fff;
         display: flex;
@@ -621,20 +621,20 @@
 }
 
 .VaultDepositModal__WaitingTitle {
-  font-size: 1.125rem;
+  @include typography('heading-md');
   font-weight: 600;
   color: #fff;
   margin: 16px 0 12px 0;
 }
 
 .VaultDepositModal__WaitingDescription {
-  font-size: 0.875rem;
+  @include typography('body-sm');
   color: rgba(255, 255, 255, 0.8);
   margin: 0 0 8px 0;
 }
 
 .VaultDepositModal__WaitingMessage {
-  font-size: 0.875rem;
+  @include typography('body-sm');
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
 }
@@ -649,14 +649,14 @@
 }
 
 .VaultDepositModal__SuccessTitle {
-  font-size: 1.25rem;
+  @include typography('heading-lg');
   font-weight: 600;
   color: #fff;
   margin: 0 0 12px 0;
 }
 
 .VaultDepositModal__SuccessMessage {
-  font-size: 0.875rem;
+  @include typography('body-sm');
   color: rgba(255, 255, 255, 0.8);
   margin: 0 0 20px 0;
 }
@@ -668,7 +668,7 @@
   border-radius: 8px;
   color: #fff;
   text-decoration: underline;
-  font-size: 0.875rem;
+  @include typography('body-sm');
   font-weight: 500;
   margin-bottom: 24px;
   transition: all 0.2s ease;
@@ -697,38 +697,79 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  gap: 16px;
 
-  .staking-prompt {
-    font-size: 0.875rem;
+  .staking-description {
+    @include typography('body-sm');
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 12px;
+    margin: 0 0 12px 0;
   }
+}
 
-  .staking-buttons {
+.VaultDepositModal__StakingOptionList {
+  display: grid;
+  gap: 10px;
+
+  .staking-option-card {
     display: flex;
-    gap: 80px;
+    align-items: center;
     justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 
-    .staking-btn {
-      flex: 1;
-      font-size: 0.875rem;
-      padding: 0.6rem 1rem;
-      text-decoration: none;
+    .option-left {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 12px;
 
-      // Infrared logo button
-      &.infrared-btn {
-        padding: 0.8rem 1.2rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+      .option-icons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
 
-        .infrared-logo {
-          height: 24px;
-          width: auto;
-          max-width: 100%;
-          object-fit: contain;
+      .option-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        .option-title {
+          @include typography('body-md');
+          font-weight: 600;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          gap: 4px;
         }
+
+        .option-subtitle {
+          @include typography('body-sm');
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+
+    .option-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+
+      .option-apr {
+        @include typography('body-md');
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .option-status {
+        @include typography('caption');
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
       }
     }
   }
@@ -871,7 +912,7 @@
 }
 
 .VaultDepositModal__ErrorTitle {
-  font-size: 1.25rem;
+  @include typography('heading-lg');
   font-weight: 600;
   color: #F44336;
   margin: 0 0 16px 0;
@@ -885,14 +926,14 @@
   margin-bottom: 24px;
 
   p {
-    font-size: 0.875rem;
+    @include typography('body-sm');
     color: rgba(255, 255, 255, 0.9);
     margin: 0 0 8px 0;
   }
 
   .error-code {
     display: block;
-    font-size: 0.75rem;
+    @include typography('caption');
     font-family: monospace;
     color: rgba(255, 255, 255, 0.6);
     background: rgba(0, 0, 0, 0.3);
@@ -921,7 +962,7 @@
   padding: 20px 16px;
 
   h4 {
-    font-size: 0.875rem;
+    @include typography('body-sm');
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
     margin: 0 0 12px 0;
@@ -936,24 +977,15 @@
     gap: 8px;
 
     .amount {
-      font-size: 2rem;
+      @include typography('display-lg');
       font-weight: 700;
       color: #fff;
     }
 
     .symbol {
-      font-size: 1.125rem;
+      @include typography('heading-md');
       font-weight: 600;
       color: rgba(255, 255, 255, 0.8);
-    }
-
-    .StickyIcon {
-      width: 20px;
-      height: 20px;
-      background: black;
-      border-radius: 50%;
-      border: 1px solid #e39229;
-      margin-top: 4px;
     }
   }
 }
@@ -967,7 +999,7 @@
 
   .section {
     h4 {
-      font-size: 0.875rem;
+      @include typography('body-sm');
       font-weight: 500;
       color: rgba(255, 255, 255, 0.6);
       margin: 0 0 12px 0;
@@ -992,14 +1024,14 @@
         }
 
         .symbol {
-          font-size: 0.9375rem;
+          @include typography('body-md');
           font-weight: 600;
           color: #fff;
         }
       }
 
       .amount {
-        font-size: 0.9375rem;
+        @include typography('body-md');
         font-weight: 600;
         color: rgba(255, 255, 255, 0.9);
       }
@@ -1037,7 +1069,7 @@
   margin-bottom: 16px;
 
   h4 {
-    font-size: 0.875rem;
+    @include typography('body-sm');
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
     margin: 0 0 12px 0;
@@ -1062,14 +1094,14 @@
       }
 
       .symbol {
-        font-size: 0.9375rem;
+        @include typography('body-md');
         font-weight: 500;
         color: rgba(255, 255, 255, 0.9);
       }
     }
 
     .amount {
-      font-size: 0.9375rem;
+      @include typography('body-md');
       font-weight: 600;
       color: #fff;
     }

@@ -1098,12 +1098,14 @@ const LiquidityPage: React.FC = () => {
             <h2 className="LiquidityPage__Title">Your positions</h2>
             <div className="LiquidityPage__FilterButtons" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
-                className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main' : 'btn__shade'}`}
+                className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
                 onClick={() => setStatusFilter('open')}
+                type="button"
               >Open</button>
               <button
-                className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main' : 'btn__shade'}`}
+                className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
                 onClick={() => setStatusFilter('closed')}
+                type="button"
               >Closed</button>
               {isConnected && (
                 <Link className="btn btn--tiny btn__accent" to="/liquidity/create">New</Link>

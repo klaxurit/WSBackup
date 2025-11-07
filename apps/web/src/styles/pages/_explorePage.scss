@@ -87,7 +87,7 @@
 
   &__SearchInput {
     font-family: inherit;
-    font-size: 1rem;
+    @include typography('body-lg');
     font-weight: 500;
     line-height: 1.2;
     color: var(--neutral2, #e0e0e0);
@@ -203,7 +203,7 @@
 
     &__input {
       font-family: inherit;
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 500;
       color: var(--neutral2, #e0e0e0);
       background: transparent;

@@ -35,7 +35,7 @@
     align-items: center;
     gap: 8px;
     color: #8A8984;
-    font-size: 14px;
+    @include typography('body-sm');
 
     @media (max-width: 600px) {
       margin-bottom: 24px;
@@ -123,21 +123,19 @@
     &Title {
       margin: 0;
       color: #fff;
-      font-size: 24px;
-      font-weight: 600;
+      @include typography('heading-lg');
     }
   }
 
   &__TitleLabels {
     margin: 0;
     color: #fff;
-    font-size: 24px;
-    font-weight: 600;
+    @include typography('heading-lg');
   }
 
   &__SubtitleLabel {
     color: #8A8984;
-    font-size: 16px;
+    @include typography('body-lg');
     margin-left: 8px;
   }
 
@@ -157,20 +155,21 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    height: 40px;
     min-height: 40px;
     width: 100%;
+    @include typography('heading-lg');
+    color: #fff;
 
     @media (max-width: 600px) {
-      font-size: 18px;
+      @include typography('heading-md');
     }
   }
 
   &__SectionHeadTitleLeft {
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 40px;
+    gap: 8px;
+    min-height: 40px;
   }
 
   &__Logo {
@@ -183,39 +182,48 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    @include typography('body-md');
+    margin-bottom: 2px;
 
     @media (max-width: 600px) {
       width: 28px;
       height: 28px;
-      font-size: 15px;
+      @include typography('body-md');
     }
 
     &--placeholder {
       color: #888;
-      font-size: 18px;
+      @include typography('heading-md');
     }
+  }
+
+  &__Name,
+  &__Ticker {
+    display: inline-flex;
+    align-items: baseline;
   }
 
   &__Name {
     font-weight: 700;
-    font-size: 16px;
-    line-height: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
+    @include typography('heading-2xl');
+    display: inline-flex;
+    align-items: baseline;
+    line-height: 1;
     color: #fff;
     white-space: nowrap;
+
+    @media (max-width: 600px) {
+      @include typography('heading-xl');
+    }
   }
 
   &__Ticker {
     color: #aaa;
     font-weight: 600;
-    font-size: 16px;
-    margin-left: 4px;
-    line-height: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
+    @include typography('heading-md');
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: baseline;
   }
 
   &__SectionHeadTitleRight {
@@ -246,8 +254,7 @@
   &__TokenPrice {
     margin: 0;
     color: #fff;
-    font-size: 24px;
-    font-weight: 600;
+    @include typography('heading-lg');
     font-family: "TT Hoves", system-ui, sans-serif;
   }
 
@@ -256,7 +263,7 @@
     align-items: center;
     gap: 4px;
     color: #00FFA3;
-    font-size: 14px;
+    @include typography('body-sm');
     margin-top: 4px;
 
     &Value {
@@ -324,7 +331,7 @@
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       margin-bottom: 16px;
     }
   }
@@ -348,13 +355,12 @@
 
     &Title {
       color: #8A8984;
-      font-size: 14px;
+      @include typography('body-sm');
     }
 
     &Label {
       color: #fff;
-      font-size: 20px;
-      font-weight: 600;
+      @include typography('heading-lg');
       margin: 0;
     }
   }
@@ -385,7 +391,7 @@
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       margin-bottom: 16px;
     }
 
@@ -408,7 +414,7 @@
         padding: 12px;
         text-align: left;
         color: #8A8984;
-        font-size: 14px;
+        @include typography('body-sm');
       }
 
       th {
@@ -454,7 +460,7 @@
     outline: none;
     background: none;
     color: #aaa;
-    font-size: 13px;
+    @include typography('body-sm');
     font-weight: 600;
     border-radius: 999px;
     width: 38px;
@@ -470,7 +476,8 @@
     @media (max-width: 600px) {
       width: 100%;
       min-width: 0;
-      font-size: 12px;
+      @include typography('caption');
+      font-weight: 600;
     }
 
     &.active {
@@ -505,7 +512,7 @@
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       font-weight: 700;
     }
 
@@ -530,7 +537,7 @@
       border-radius: 10px;
       padding: 7px 10px 7px 10px;
       color: #fff;
-      font-size: 15px;
+      @include typography('body-md');
       font-weight: 600;
       text-decoration: none;
       transition: background 0.15s, color 0.15s, opacity 0.15s;
@@ -541,7 +548,8 @@
       @media (max-width: 600px) {
         width: 100%;
         justify-content: flex-start;
-        font-size: 14px;
+        @include typography('body-sm');
+        font-weight: 600;
         padding: 7px 10px;
       }
 
@@ -558,7 +566,7 @@
 
     &Description {
       color: #e0e0e0;
-      font-size: 15px;
+      @include typography('body-md');
       line-height: 1.7;
       margin: 0;
       white-space: pre-line;
@@ -566,7 +574,7 @@
       position: relative;
 
       @media (max-width: 600px) {
-        font-size: 14px;
+        @include typography('body-sm');
       }
     }
 
@@ -574,7 +582,7 @@
       background: none;
       border: none;
       color: #e39229;
-      font-size: 15px;
+      @include typography('body-md');
       font-weight: 600;
       cursor: pointer;
       margin-top: 6px;
@@ -614,7 +622,7 @@
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       font-weight: 700;
       margin: 0;
       letter-spacing: -0.3px;
@@ -628,7 +636,7 @@
 
     &Subtitle {
       color: $white-064;
-      font-size: 13px;
+      @include typography('body-sm');
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -727,7 +735,7 @@
 
       &Pair {
         color: #fff;
-        font-size: 13px;
+        @include typography('body-sm');
         font-weight: 700;
         line-height: 1.2;
         white-space: nowrap;
@@ -737,7 +745,7 @@
 
       &Fee {
         color: $white-056;
-        font-size: 11px;
+        @include typography('caption');
         font-weight: 500;
         line-height: 1.3;
         white-space: nowrap;
@@ -761,7 +769,7 @@
 
         &Label {
           color: $white-048;
-          font-size: 10px;
+          @include typography('caption');
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.3px;
@@ -770,7 +778,7 @@
 
         &Value {
           color: #fff;
-          font-size: 12px;
+          @include typography('body-xs');
           font-weight: 700;
           text-align: right;
           white-space: nowrap;

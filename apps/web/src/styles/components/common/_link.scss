@@ -102,7 +102,7 @@
   }
 
   &--large {
-    font-size: 18px;
+    @include typography('heading-md', 500);
     line-height: 28.8px;
     letter-spacing: 0.36px;
     padding: 1px 6px 2px 6px;
@@ -110,7 +110,7 @@
   }
 
   &--medium {
-    font-size: 16px;
+    @include typography('body-lg', 500);
     line-height: 25.6px;
     padding: 1px 6px 2px 6px;
     border-radius: 6px;
@@ -119,13 +119,13 @@
   &--small {
     padding: 0.75px 6px 0px 6px;
     border-radius: 4px;
-    font-size: 14px;
+    @include typography('body-sm', 500);
     line-height: 140%;
     letter-spacing: -0.034px;
   }
 
   &--xsmall {
-    font-size: 10px;
+    @include typography('caption', 500);
     line-height: 16px;
     padding: 0px 4px 1px 4px;
     border-radius: 4px;

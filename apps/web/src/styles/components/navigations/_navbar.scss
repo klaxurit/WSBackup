@@ -210,8 +210,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  @include typography('body-md');
   font-weight: 600;
-  font-size: 15px;
   word-break: break-all;
   margin-bottom: 10px;
 }
@@ -231,7 +231,7 @@
 }
 
 .Navbar__DropdownWalletName {
-  font-size: 13px;
+  @include typography('body-xs');
   color: #aaa;
   margin-bottom: 14px;
 }
@@ -279,13 +279,13 @@
   border: none;
   border-radius: 8px;
   padding: 10px 12px;
-  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 15px;
+  @include typography('body-md');
+  font-weight: 500;
   transition: background-color 0.15s ease;
   margin-bottom: 6px;
 
@@ -308,8 +308,8 @@
 }
 
 .Navbar__DropdownTitle {
+  @include typography('body-md');
   font-weight: 600;
-  font-size: 15px;
   color: $beryl-pure;
   margin-bottom: 10px;
   padding: 0 4px;
@@ -334,7 +334,7 @@
 .Navbar__DropdownError {
   color: #ff6b6b;
   margin-top: 8px;
-  font-size: 13px;
+  @include typography('body-xs');
   padding: 0 4px 8px;
 }
 

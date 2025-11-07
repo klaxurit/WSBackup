@@ -26,6 +26,7 @@
   &__img {
     width: 80px;
     height: 80px;
+
     @media (min-width: 768px) {
       width: 104px;
       height: 104px;
@@ -35,17 +36,18 @@
   &__title {
     color: #FFC372;
     text-shadow:
-        0px 1.5px 1px #100A25,
-        -0.5px 0px 0px #180E00,
-        0.5px 0px 0px #180E00,
-        0px -0.5px 0px #180E00;
+      0px 1.5px 1px #100A25,
+      -0.5px 0px 0px #180E00,
+      0.5px 0px 0px #180E00,
+      0px -0.5px 0px #180E00;
     font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
-    font-size: 28px;
-    font-style: normal;
+    @include typography('heading-2xl');
     font-weight: 700;
     line-height: 110%;
+
     @media (min-width: 768px) {
-      font-size: 32px;
+      @include typography('heading-3xl');
+      font-weight: 700;
     }
   }
 
@@ -53,8 +55,7 @@
     color: var(--White-Glass-White-064, rgba(255, 255, 255, 0.64));
     text-shadow: 0px 0.25px 0px #100A25;
     font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
-    font-size: 14px;
-    font-style: normal;
+    @include typography('body-sm');
     font-weight: 400;
     line-height: 160%;
   }

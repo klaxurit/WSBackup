@@ -1,10 +1,11 @@
 @use "../../utils" as *;
 
 .StickyIcon {
-  display: inline-block;
-  vertical-align: middle;
-  border-radius: 4px;
-  filter: brightness(1.1);
+  width: 20px;
+  height: 20px;
+  background: #000;
+  border-radius: 50%;
+  border: 1px solid #e39229;
 }
 
 .VaultDetailPage__PositionShares {

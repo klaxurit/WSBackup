@@ -128,10 +128,10 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
       case VaultModalStep.APPROVE_TOKEN0:
         return (
           <ApprovalStep
-            tokenSymbol={token0Display.symbol}
-            tokenLogoUri={token0Display.logoUri}
+            tokenSymbol={token0.symbol}
+            tokenLogoUri={token0.logoUri || ''}
             amount={amount0}
-            decimals={token0Display.decimals}
+            decimals={token0.decimals}
             currentAllowance={depositHook.t0Allowance.current}
             isApproving={depositHook.t0Allowance.isApprove}
             onApprove={depositHook.t0Allowance.allow}
@@ -141,10 +141,10 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
       case VaultModalStep.APPROVE_TOKEN1:
         return (
           <ApprovalStep
-            tokenSymbol={token1Display.symbol}
-            tokenLogoUri={token1Display.logoUri}
+            tokenSymbol={token1.symbol}
+            tokenLogoUri={token1.logoUri || ''}
             amount={amount1}
-            decimals={token1Display.decimals}
+            decimals={token1.decimals}
             currentAllowance={depositHook.t1Allowance.current}
             isApproving={depositHook.t1Allowance.isApprove}
             onApprove={depositHook.t1Allowance.allow}

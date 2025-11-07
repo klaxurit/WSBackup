@@ -3,7 +3,7 @@
 // Position ID styling for the modal header - using PoolView modal classes
 .IncreaseLiquidityModal__PositionId {
   color: #888;
-  font-size: 14px;
+  @include typography('body-sm');
   font-weight: 500;
   position: absolute;
   top: 50px;

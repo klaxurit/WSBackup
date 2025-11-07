@@ -37,7 +37,7 @@
 }
 
 .TransactionModal__title {
-  font-size: 1rem;
+  @include typography('heading-md');
   font-weight: 600;
   color: $white;
 }
@@ -46,7 +46,7 @@
   background: none;
   border: none;
   color: #fff;
-  font-size: 16px;
+  @include typography('body-lg');
   cursor: pointer;
   z-index: 2;
   transition: color 0.15s;
@@ -80,13 +80,13 @@
 
 .TransactionModal__tokenAmount {
   color: #fff;
-  font-size: 1.25rem;
+  @include typography('heading-xl');
   font-weight: 700;
 }
 
 .TransactionModal__tokenPrice {
   color: $onyx-light;
-  font-size: 1rem;
+  @include typography('body-md');
   margin-top: 2px;
   font-weight: 400;
 }
@@ -104,7 +104,7 @@
 .TransactionModal__arrowDown {
   width: 100%;
   text-align: center;
-  font-size: 1.5rem;
+  @include typography('display-lg');
   color: $onyx-pure;
   line-height: 1;
 }
@@ -121,7 +121,7 @@
   background: none;
   border: none;
   color: $beryl-pure;
-  font-size: 0.9rem;
+  @include typography('body-sm');
   text-decoration: none;
   cursor: pointer;
   margin: 0 8px;
@@ -149,14 +149,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 16px;
+  @include typography('body-lg');
 }
 
 .TransactionModal__infoRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 16px;
+  @include typography('body-lg');
   font-weight: 400;
   margin-bottom: 2px;
 }
@@ -173,7 +173,7 @@
 
 .TransactionModal__rateUsd {
   color: $onyx-pure;
-  font-size: 0.95em;
+  @include typography('body-sm');
   margin-left: 4px;
 }
 
@@ -272,14 +272,14 @@
 
 .TransactionModal__errorMessage {
   color: $white;
-  font-size: 0.95rem;
+  @include typography('body-md');
   line-height: 1.5;
   font-weight: 400;
 }
 
 .TransactionModal__errorDetails {
   color: $onyx-light;
-  font-size: 0.75rem;
+  @include typography('caption');
   font-family: monospace;
   background: rgba($onyx-medium, 0.3);
   padding: 8px 12px;
@@ -321,15 +321,15 @@
   }
 
   .TransactionModal__title {
-    font-size: 1rem;
+    @include typography('body-lg');
   }
 
   .TransactionModal__tokenAmount {
-    font-size: 1rem;
+    @include typography('heading-lg');
   }
 
   .TransactionModal__tokenPrice {
-    font-size: 0.95rem;
+    @include typography('body-sm');
   }
 
   .TransactionModal__tokenLogo {
@@ -442,7 +442,7 @@
   // Design du texte personnalisé
   text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
   font-family: "TT Hoves", system-ui, sans-serif;
-  font-size: 28px;
+  @include typography('heading-3xl');
   font-style: normal;
   font-weight: 700;
   line-height: 110%;

@@ -30,7 +30,7 @@
 
   &__Title {
     h1 {
-      font-size: 2.5rem;
+      @include typography('display-lg');
       font-weight: 700;
       color: #fff;
       margin: 0 0 0.5rem 0;
@@ -38,7 +38,7 @@
 
     p {
       color: #aaa;
-      font-size: 1.1rem;
+      @include typography('body-lg');
       margin: 0;
     }
   }
@@ -109,7 +109,7 @@
     align-items: center;
     gap: 8px;
     color: #8A8984;
-    font-size: 14px;
+    @include typography('body-sm');
     margin-bottom: 1.5rem;
 
     @media (max-width: 600px) {
@@ -133,7 +133,7 @@
 
     &Address {
       color: #8A8984;
-      font-size: 12px;
+      @include typography('caption');
       margin-left: 8px;
       padding: 2px 8px;
       background: rgba(255, 255, 255, 0.1);
@@ -209,7 +209,8 @@
   &__VaultInfo {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 8px;
+    min-height: 40px;
   }
 
   &__VaultTitle {
@@ -218,7 +219,7 @@
     gap: 1rem;
 
     h1 {
-      font-size: 1.5rem;
+      @include typography('heading-2xl');
       font-weight: 700;
       color: #fff;
     }
@@ -235,7 +236,7 @@
     align-items: center;
     padding: 4px 12px;
     border-radius: 8px;
-    font-size: 0.8rem;
+    @include typography('caption');
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -314,7 +315,7 @@
     padding: 12px 16px;
     color: #aaa;
     text-decoration: none;
-    font-size: 0.9rem;
+    @include typography('body-sm');
     font-weight: 500;
     transition: all 0.2s ease;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -340,14 +341,14 @@
     &Label {
       display: block;
       color: #aaa;
-      font-size: 0.9rem;
+      @include typography('body-sm');
       margin-bottom: 0.25rem;
     }
 
     &Value {
       display: block;
       color: #00ffa3;
-      font-size: 1.5rem;
+      @include typography('heading-xl');
       font-weight: 700;
     }
   }
@@ -374,7 +375,7 @@
     border: none;
     color: #aaa;
     padding: 1rem 1.5rem;
-    font-size: 1rem;
+    @include typography('body-lg');
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
@@ -401,10 +402,9 @@
 
   &__StatsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
 
-    // Grid 2x3 layout for strategy cards
     &--twoRows {
       grid-template-columns: repeat(3, 1fr);
 
@@ -419,72 +419,71 @@
   }
 
   &__StatCard {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    align-items: stretch;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px 18px;
+    min-width: 0;
+    position: relative;
 
-    // APR cards with breakdown
     &--apr {
-      align-items: stretch;
-      text-align: left;
-      gap: 0.75rem;
+      gap: 10px;
     }
 
-    &Label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #aaa;
-      font-size: 0.85rem;
-      margin-bottom: 0;
-      font-weight: 600;
-    }
-
-    &Value {
-      display: block;
-      color: #fff;
-      font-size: 1.5rem;
-      font-weight: 800;
-
-      &--main {
-        font-size: 2rem;
-        line-height: 1;
-      }
-
-      &--loading {
-        color: #aaa;
-        font-size: 1.2rem;
-      }
-
-      &--unavailable {
-        color: #666;
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      &--highlight {
-        color: #e39229;
-      }
-    }
-
-    // Highlighted card for Total APR
     &--highlight {
-      background: rgba(227, 146, 41, 0.1);
-      border: 1px solid rgba(227, 146, 41, 0.2);
+      background: rgba(227, 146, 41, 0.12);
+      border: 1px solid rgba(227, 146, 41, 0.3);
+      box-shadow:
+        0 8px 18px rgba(227, 146, 41, 0.18),
+        0 0 0 1px rgba(227, 146, 41, 0.18);
     }
   }
 
-  &__StatHeader {
+  &__StatLabel {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.65);
+    @include typography('body-sm');
+    margin-bottom: 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    .HelpTooltip {
+      flex-shrink: 0;
+    }
+  }
+
+  &__StatValue {
+    display: block;
+    color: #fff;
+    @include typography('heading-xl');
+    font-weight: 800;
+
+    &--main {
+      @include typography('display-lg');
+      line-height: 1.05;
+    }
+
+    &--loading {
+      color: #aaa;
+      @include typography('heading-md');
+    }
+
+    &--unavailable {
+      color: rgba(255, 255, 255, 0.5);
+      @include typography('body-sm');
+      font-weight: 500;
+    }
+
+    &--highlight {
+      color: #e39229;
+    }
   }
 
   &__APRBreakdown {
@@ -502,7 +501,7 @@
   }
 
   &__APRDetail {
-    font-size: 0.75rem;
+    @include typography('caption');
     color: #aaa;
     font-weight: 500;
     display: flex;
@@ -532,7 +531,7 @@
     span {
       display: block;
       color: #fff;
-      font-size: 1.1rem;
+      @include typography('body-lg');
       margin-bottom: 0.5rem;
 
       &:last-child {
@@ -561,12 +560,12 @@
 
     h4 {
       color: #e39229;
-      font-size: 1.2rem;
+      @include typography('heading-md');
       margin: 0 0 1rem 0;
     }
 
     &APY {
-      font-size: 2rem;
+      @include typography('display-lg');
       font-weight: 700;
       color: #00ffa3;
       margin-bottom: 1rem;
@@ -575,7 +574,7 @@
     p {
       color: #aaa;
       margin: 0 0 0.5rem 0;
-      font-size: 0.9rem;
+      @include typography('body-sm');
 
       &:last-child {
         margin-bottom: 0;
@@ -613,7 +612,7 @@
 
     h3 {
       color: #fff;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       font-weight: 600;
       margin: 0 0 1rem 0;
     }
@@ -628,13 +627,13 @@
 
   &__PositionAmount {
     color: #fff;
-    font-size: 1.5rem;
+    @include typography('heading-xl');
     font-weight: 700;
   }
 
   &__PositionShares {
     color: #aaa;
-    font-size: 0.9rem;
+    @include typography('body-sm');
   }
 
   &__AutoCompound {
@@ -653,7 +652,7 @@
 
       h4 {
         color: $beryl-pure;
-        font-size: 1rem;
+        @include typography('body-md');
         font-weight: 700;
         margin: 0;
         text-transform: uppercase;
@@ -666,7 +665,7 @@
 
     p {
       color: $white-064;
-      font-size: 0.85rem;
+      @include typography('body-sm');
       line-height: 1.5;
       margin: 0;
     }
@@ -700,7 +699,7 @@
     color: $white-056;
     padding: 0.3rem 0.8rem;
     border-radius: 10px;
-    font-size: 0.75rem;
+    @include typography('caption');
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -723,16 +722,16 @@
         0 4px 8px rgba(0, 0, 0, 0.2);
 
       &:hover {
-        background: #F0A841;
+        background: #E39229;
         box-shadow:
-          0 0 20px rgba(227, 146, 41, 0.35),
-          0 6px 12px rgba(0, 0, 0, 0.25);
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
       }
     }
   }
 
   &__APY {
-    font-size: 1.5rem;
+    @include typography('heading-xl');
     font-weight: 700;
     color: #00ffa3;
     margin-bottom: 0.75rem;
@@ -744,7 +743,7 @@
   }
 
   &__MyDepositsTitle {
-    font-size: 0.9rem;
+    @include typography('body-sm');
     font-weight: 600;
     color: #aaa;
     margin-bottom: 1rem;
@@ -810,7 +809,7 @@
   }
 
   &__MyDepositLabel {
-    font-size: 0.75rem;
+    @include typography('caption');
     font-weight: 600;
     color: #aaa;
     text-transform: uppercase;
@@ -821,13 +820,13 @@
   }
 
   &__MyDepositAmount {
-    font-size: 1rem;
+    @include typography('body-lg');
     font-weight: 700;
     color: #fff;
   }
 
   &__MyDepositValue {
-    font-size: 1.25rem;
+    @include typography('heading-lg');
     font-weight: 800;
     color: #e39229;
     text-align: right;
@@ -895,10 +894,10 @@
           0 4px 8px rgba(0, 0, 0, 0.2);
 
         &:hover {
-          background: #F0A841;
+          background: #E39229;
           box-shadow:
-            0 0 20px rgba(227, 146, 41, 0.35),
-            0 6px 12px rgba(0, 0, 0, 0.25);
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
         }
       }
     }
@@ -909,7 +908,7 @@
     border: none;
     color: #aaa;
     padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    @include typography('body-sm');
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
@@ -985,10 +984,10 @@
           0 4px 8px rgba(0, 0, 0, 0.2);
 
         &:hover {
-          background: #F0A841;
+          background: #E39229;
           box-shadow:
-            0 0 20px rgba(227, 146, 41, 0.35),
-            0 6px 12px rgba(0, 0, 0, 0.25);
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
         }
       }
     }
@@ -1001,7 +1000,7 @@
     color: #aaa;
     padding: 0.5rem;
     border-radius: 6px;
-    font-size: 0.8rem;
+    @include typography('body-sm');
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -1039,7 +1038,7 @@
       border: 1px solid rgba(255, 77, 77, 0.3);
       border-radius: 8px;
       color: #ff4d4d;
-      font-size: 14px;
+      @include typography('body-sm');
       line-height: 1.5;
 
       &:not(:last-child) {
@@ -1056,7 +1055,7 @@
     margin-top: 12px;
 
     p {
-      font-size: 0.875rem;
+      @include typography('body-sm');
       font-weight: 500;
       color: rgba(255, 255, 255, 0.6);
       margin: 0 0 10px 0;
@@ -1072,7 +1071,7 @@
       gap: 8px;
 
       li {
-        font-size: 0.875rem;
+        @include typography('body-sm');
         font-weight: 500;
       }
     }
@@ -1134,10 +1133,10 @@
           0 4px 8px rgba(0, 0, 0, 0.2);
 
         &:hover {
-          background: #F0A841;
+          background: #E39229;
           box-shadow:
-            0 0 20px rgba(227, 146, 41, 0.35),
-            0 6px 12px rgba(0, 0, 0, 0.25);
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
         }
       }
     }
@@ -1150,7 +1149,7 @@
     color: #aaa;
     padding: 0.5rem;
     border-radius: 6px;
-    font-size: 0.8rem;
+    @include typography('body-sm');
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -1191,7 +1190,7 @@
     }
 
     .networkSelector__symbol {
-      font-size: 12px;
+      @include typography('caption');
     }
 
     .Inputs__From {
@@ -1254,10 +1253,10 @@
           0 4px 8px rgba(0, 0, 0, 0.2);
 
         &:hover {
-          background: #F0A841;
+          background: #E39229;
           box-shadow:
-            0 0 20px rgba(227, 146, 41, 0.35),
-            0 6px 12px rgba(0, 0, 0, 0.25);
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
         }
       }
 
@@ -1278,6 +1277,50 @@
   &__FormButton {
     margin-top: 1rem;
   }
+
+  &__TopFilterButton {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-radius: 10px;
+    @include typography('caption');
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 50px;
+    text-align: center;
+
+    &:hover:not(.active) {
+      background: $white-004;
+      color: $white-080;
+    }
+
+    &.active {
+      background: #E39229;
+      color: rgb(255, 208, 86);
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+      box-shadow:
+        0 0 15px rgba(227, 146, 41, 0.25),
+        0 4px 8px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        background: #E39229;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+}
+
+.VaultDetailPage__Wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem 1rem;
 }
 
 @keyframes spin {

@@ -81,7 +81,7 @@
   }
 
   &__TopLineTitle {
-    font-size: 18px;
+    @include typography('heading-md');
     font-weight: 600;
     color: #fff;
     margin: 0 0 12px 0;
@@ -120,13 +120,13 @@
     }
 
     &__Symbol {
-      font-size: 11px;
+      @include typography('body-xs');
       font-weight: 500;
       color: #fff;
     }
 
     &__Apr {
-      font-size: 10px;
+      @include typography('caption');
       font-weight: 600;
       color: #e39229;
       background: rgba(227, 146, 41, 0.1);
@@ -150,7 +150,7 @@
 
   &__Title {
     margin: 0;
-    font-size: 2rem;
+    @include typography('heading-3xl');
     font-weight: 700;
     color: $beryl-pure;
   }
@@ -172,7 +172,7 @@
     td {
       padding: 1rem;
       text-align: left;
-      font-size: 15px;
+      @include typography('body-md');
     }
 
     thead th {
@@ -201,7 +201,7 @@
     font-weight: 600;
     cursor: pointer;
     margin-top: 12px;
-    font-size: 15px;
+    @include typography('body-md');
     transition: background 0.2s, color 0.2s;
 
     &:hover {
@@ -213,7 +213,7 @@
 
   &__TopTitle {
     margin-top: 0;
-    font-size: 1.3rem;
+    @include typography('heading-lg');
     font-weight: 700;
     margin-bottom: 18px;
     color: #fff;
@@ -246,23 +246,23 @@
 
   &__TopPair {
     font-weight: 600;
-    font-size: 1.1rem;
+    @include typography('body-lg');
     color: #fff;
 
     .LiquidityPage__TopVersion {
       color: #888;
-      font-size: 0.9rem;
+      @include typography('body-sm');
       margin-left: 8px;
     }
   }
 
   &__TopFee {
-    font-size: 13px;
+    @include typography('body-sm');
     color: #aaa;
   }
 
   &__TopApr {
-    font-size: 13px;
+    @include typography('body-sm');
     color: #aaa;
 
     &--positive {
@@ -341,12 +341,12 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       margin-right: 4px;
     }
 
     .LiquidityPage__StepLabel {
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 600;
       color: #fff;
     }
@@ -366,14 +366,14 @@
     }
 
     .LiquidityPage__CreateTitle {
-      font-size: 1.2rem;
+      @include typography('heading-md');
       font-weight: 600;
       color: var(--accent1, #e39229);
       margin-left: 18px;
     }
 
     .LiquidityPage__CreateSectionTitle {
-      font-size: 1.1rem;
+      @include typography('heading-md');
       font-weight: 700;
       color: #fff;
       margin-bottom: 6px;
@@ -381,7 +381,7 @@
 
     .LiquidityPage__CreateSectionDesc {
       color: #aaa;
-      font-size: 0.98rem;
+      @include typography('body-md');
       margin-bottom: 12px;
     }
 
@@ -393,7 +393,7 @@
     }
 
     .LiquidityPage__TokenSeparator {
-      font-size: 1.5rem;
+      @include typography('heading-xl');
       color: #888;
       font-weight: 700;
       margin: 0 8px;
@@ -412,7 +412,7 @@
       border: 1.5px solid #232323;
       color: #fff;
       font-weight: 600;
-      font-size: 1rem;
+      @include typography('body-lg');
       padding: 18px 18px;
       display: flex;
       flex-direction: column;
@@ -437,7 +437,7 @@
         background: none;
         border: 1.5px dashed #888;
         color: #aaa;
-        font-size: 0.98rem;
+        @include typography('body-md');
         font-weight: 500;
         padding: 10px 14px;
         margin-left: 8px;
@@ -448,26 +448,26 @@
 
         .LiquidityPage__FeeTierAdvanced {
           color: #888;
-          font-size: 0.95rem;
+          @include typography('body-md');
           margin-left: 6px;
         }
       }
     }
 
     .LiquidityPage__FeeTierLabel {
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 700;
       margin-bottom: 2px;
     }
 
     .LiquidityPage__FeeTierDesc {
-      font-size: 0.8rem;
+      @include typography('caption');
       color: #aaa;
       margin-bottom: 2px;
     }
 
     .LiquidityPage__FeeTierTVL {
-      font-size: 0.95rem;
+      @include typography('body-md');
       color: #888;
     }
 
@@ -486,7 +486,7 @@
       color: #fff;
       border: none;
       font-weight: 700;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       cursor: pointer;
       transition: background 0.18s;
       width: 100%;
@@ -503,7 +503,7 @@
       color: #fff;
       border: none;
       font-weight: 700;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       cursor: pointer;
       transition: background 0.18s;
       display: flex;
@@ -527,7 +527,7 @@
       color: #e39229;
       padding: 4px 8px;
       border-radius: 6px;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 600;
     }
 
@@ -550,14 +550,14 @@
 
     .LiquidityPage__PriceLabel {
       color: #aaa;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 600;
       min-width: 100px;
     }
 
     .LiquidityPage__PriceValue {
       color: #fff;
-      font-size: 16px;
+      @include typography('body-lg');
       font-weight: 600;
       flex: 1;
     }
@@ -568,7 +568,7 @@
       border-radius: 8px;
       color: #fff;
       padding: 8px 12px;
-      font-size: 14px;
+      @include typography('body-sm');
       width: 120px;
       outline: none;
 
@@ -579,7 +579,7 @@
 
     .LiquidityPage__PriceUnit {
       color: #aaa;
-      font-size: 12px;
+      @include typography('caption');
       min-width: 150px;
     }
 
@@ -605,7 +605,7 @@
     border-radius: 6px;
     padding: 8px 12px;
     margin-bottom: 8px;
-    font-size: 14px;
+    @include typography('body-sm');
     color: #b45309;
     display: flex;
     align-items: center;

@@ -52,7 +52,7 @@ w3m-modal .w3m-modal-header {
 w3m-modal .w3m-modal-title {
   color: #FFFFFF !important;
   font-weight: 600 !important;
-  font-size: 1.1rem !important;
+  font-size: var(--font-size-heading-md, 1.125rem) !important;
 }
 
 // Bouton de fermeture
@@ -106,7 +106,7 @@ w3m-modal .w3m-wallets-section {
 w3m-modal .w3m-wallets-section-title {
   color: $beryl-pure !important;
   font-weight: 600 !important;
-  font-size: 0.9rem !important;
+  font-size: var(--font-size-body-sm, 0.875rem) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
   margin-bottom: 12px !important;

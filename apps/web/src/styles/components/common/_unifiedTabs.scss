@@ -70,7 +70,7 @@
       border: none;
       color: #aaa;
       padding: 12px 16px;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 500;
       border-bottom: 2px solid transparent;
       border-radius: 0;
@@ -111,7 +111,7 @@
       outline: none;
       background: none;
       color: #aaa;
-      font-size: 13px;
+      @include typography('body-xs');
       font-weight: 600;
       border-radius: 999px;
       padding: 6px 12px;
@@ -166,13 +166,13 @@
     gap: 6px;
 
     .btn {
-      font-size: 12px;
+      font-size: var(--font-size-caption, 0.75rem);
       padding: 8px 12px;
     }
 
     &--switch {
       .btn {
-        font-size: 12px;
+        font-size: var(--font-size-caption, 0.75rem);
         padding: 4px 8px;
       }
     }

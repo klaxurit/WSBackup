@@ -232,7 +232,7 @@ $hover-bg: #241500;
     background: transparent;
     border: none;
     color: $onyx-light;
-    font-size: 14px;
+    @include typography('body-sm');
     font-weight: 500;
     font-family: "TT Hoves", system-ui, sans-serif;
     cursor: pointer;
@@ -392,7 +392,7 @@ $hover-bg: #241500;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    font-size: 14px;
+    @include typography('body-sm');
     font-weight: 500;
     font-family: "TT Hoves", system-ui, sans-serif;
 
@@ -423,7 +423,7 @@ $hover-bg: #241500;
   }
 
   &__metrics-trigger-label {
-    font-size: 12px;
+    @include typography('body-xs');
     font-weight: 600;
   }
 
@@ -571,7 +571,7 @@ $hover-bg: #241500;
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    font-size: 14px;
+    @include typography('body-sm');
     font-weight: 600;
     border-radius: 20px;
     border: 1px solid #4B5563;
@@ -611,7 +611,7 @@ $hover-bg: #241500;
   }
 
   &__metrics-trigger-icon {
-    font-size: 14px;
+    @include typography('body-sm');
     line-height: 1;
   }
 
@@ -654,7 +654,7 @@ $hover-bg: #241500;
     background: transparent;
     border: none;
     color: $onyx-light;
-    font-size: 13px;
+    @include typography('body-xs');
     font-weight: 500;
     font-family: "TT Hoves", system-ui, sans-serif;
     cursor: pointer;
@@ -682,7 +682,7 @@ $hover-bg: #241500;
   }
 
   &__metrics-option-icon {
-    font-size: 14px;
+    @include typography('body-sm');
     line-height: 1;
   }
 

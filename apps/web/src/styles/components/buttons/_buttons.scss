@@ -114,7 +114,7 @@
   }
 
   &--large {
-    font-size: 18px;
+    @include typography('heading-md', 500);
     padding: 20px 24px 18px 24px;
     letter-spacing: 0.36px;
     line-height: 140%;
@@ -122,14 +122,14 @@
   }
 
   &--small {
-    font-size: 16px;
+    @include typography('body-lg', 500);
     padding: 10px 14px 10px 14px;
     letter-spacing: 0.32px;
     height: 40px;
   }
 
   &--tiny {
-    font-size: 14px;
+    @include typography('body-sm', 500);
     padding: 6px 10px 6px 10px;
     letter-spacing: 0.28px;
     height: 32px;
@@ -168,7 +168,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 16px;
+  @include typography('body-lg');
   font-weight: bold;
 
   &:hover {
@@ -433,7 +433,7 @@
 
 // Disconnect button in dropdown
 .btn__navbar-disconnect {
-  // accent variant already provides visual; keep class for targeting if needed
+  color: inherit;
 }
 
 // Balance pill button next to connect
@@ -455,16 +455,19 @@
 // Approve button in vault modals
 .btn__vault-approve {
   // variant main already provides the visual
+  color: inherit;
 }
 
 // Confirm deposit button
 .btn__vault-confirm {
   // variant main already provides the visual
+  color: inherit;
 }
 
 // Confirm withdraw button
 .btn__vault-withdraw {
   // variant main already provides the visual
+  color: inherit;
 }
 
 @keyframes bounce {

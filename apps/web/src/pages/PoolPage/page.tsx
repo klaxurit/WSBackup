@@ -409,7 +409,7 @@ const PoolDetailPage: React.FC = () => {
                 className="Pool__InfoLink"
               >
                 <ExplorerIcon />
-                <span>View on Explorer</span>
+                <span className="Pool__InfoLink">View on Explorer</span>
               </a>
             </div>
 

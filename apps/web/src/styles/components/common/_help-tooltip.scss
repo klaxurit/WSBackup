@@ -18,19 +18,22 @@
     bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    padding: 0.5rem 0.75rem;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.6rem 0.75rem;
+    background: rgba(18, 17, 14, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    font-size: 0.8125rem;
-    line-height: 1.4;
-    color: rgba(255, 255, 255, 0.9);
-    white-space: nowrap;
-    max-width: 250px;
+    @include typography('body-xs');
+    color: rgba(255, 255, 255, 0.88);
+    text-transform: none;
+    white-space: normal;
+    line-height: 1.45;
+    max-width: 240px;
+    width: max-content;
+    text-align: left;
     z-index: 1000;
     pointer-events: none;
     animation: tooltipFadeIn 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 
     // Arrow pointing down
     &::after {
@@ -43,7 +46,8 @@
       height: 0;
       border-left: 6px solid transparent;
       border-right: 6px solid transparent;
-      border-top: 6px solid rgba(0, 0, 0, 0.9);
+      border-top: 6px solid rgba(18, 17, 14, 0.92);
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
     }
   }
 }
