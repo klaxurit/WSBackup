@@ -204,17 +204,17 @@
 
   &__Fee {
     display: inline-flex;
-      align-items: center;
-      padding: 4px 12px;
-      border-radius: 8px;
-      @include typography('caption');
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-            background: rgba(227, 146, 41, 0.15);
-              color: $beryl-pure;
-              border: 1px solid rgba(227, 146, 41, 0.3);
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 8px;
+    @include typography('caption');
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    background: rgba(227, 146, 41, 0.15);
+    color: $beryl-pure;
+    border: 1px solid rgba(227, 146, 41, 0.3);
   }
 
   &__IconLink {
