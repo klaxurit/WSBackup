@@ -9,15 +9,12 @@ import { useAccount } from 'wagmi';
 import { Pool as PoolV3, Position as PositionV3 } from "@uniswap/v3-sdk";
 import { Token } from "@uniswap/sdk-core";
 import { currentChain } from "../../config/wagmi";
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
 
 
 interface PoolsTableProps {
   searchValue: string
 }
-
-const BL = [
-  "0xc06aD7fF55D1d53Ed9371C17eDC557C9E1A06B2E".toLowerCase() // WETH-USDC.e 0.05%
-]
 
 const GET_POOLS_STATS = `
   query GetPoolsStats($limit: Int!, $after: String, $orderBy: String!, $orderDirection: String!) {
@@ -234,7 +231,8 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
 
     let allPools = data.pages.flatMap(page => page.items || []);
 
-    allPools = allPools.filter((p: any) => !BL.includes(p.id.toLowerCase()));
+    // Filter out blacklisted pools using centralized config
+    allPools = allPools.filter((p: any) => !isPoolBlacklisted(p.id));
 
     if (isSearching) {
       const searchLower = searchValue.toLowerCase();

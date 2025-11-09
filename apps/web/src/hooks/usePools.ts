@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { isPoolBlacklisted } from '../config/poolBlacklist';
 
 const GET_POOLS = `
   query GetPools {
@@ -87,7 +88,9 @@ export function usePools() {
         throw new Error(data.errors[0].message);
       }
 
-      return data.data.pools.items || [];
+      const pools = data.data.pools.items || [];
+      // Filter out blacklisted pools
+      return pools.filter((pool: Pool) => !isPoolBlacklisted(pool.id));
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false

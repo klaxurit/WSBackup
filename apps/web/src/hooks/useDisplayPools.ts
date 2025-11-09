@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import type { Address } from 'viem'
 import { getPoolDisplayToken } from '../utils/tokenMapping'
 import { useTokenCache } from './useTokenCache'
+import { isPoolBlacklisted } from '../config/poolBlacklist'
 
 interface RawPoolData {
   id: string
@@ -79,7 +80,10 @@ export function useDisplayPools() {
   const displayPools = useMemo(() => {
     if (!poolsQuery.data) return []
 
-    return poolsQuery.data.map((pool): DisplayPool => {
+    // Filter out blacklisted pools before transformation
+    return poolsQuery.data
+      .filter((pool) => !isPoolBlacklisted(pool.address))
+      .map((pool): DisplayPool => {
       try {
         const displayToken0Info = getPoolDisplayToken(pool.token0.address)
         const displayToken1Info = getPoolDisplayToken(pool.token1.address)

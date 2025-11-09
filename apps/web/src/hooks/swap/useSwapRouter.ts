@@ -5,6 +5,7 @@ import { COMMON_BASES, FEE_TIERS, MAX_HOPS } from "./constants"
 import { type RawRoute } from "./types"
 import { v3CoreFactoryContract } from "../../config/abis/v3CoreFactoryContractABI"
 import { CONTRACTS_ADDRESS } from "../../config/contractsAddress"
+import { isPoolBlacklisted } from "../../config/poolBlacklist"
 
 /**
  * Parameters for useSwapRouter hook
@@ -63,7 +64,12 @@ export const useSwapRouter = (params: UseSwapRouterParams): UseSwapRouterReturn 
         args: [tokenA, tokenB, fee]
       })
 
-      return poolAddress === zeroAddress ? null : (poolAddress as Address)
+      // Check if the pool exists and is not blacklisted
+      if (poolAddress === zeroAddress || isPoolBlacklisted(poolAddress as string)) {
+        return null
+      }
+
+      return poolAddress as Address
     } catch {
       return null
     }
