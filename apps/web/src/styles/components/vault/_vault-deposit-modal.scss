@@ -202,8 +202,8 @@
     }
 
     .warning-title {
-    @include typography('body-sm');
-    font-weight: 700;
+      @include typography('body-sm');
+      font-weight: 700;
       color: rgba(255, 145, 0, 0.95);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -699,10 +699,36 @@
   width: 100%;
   gap: 16px;
 
+  .staking-prompt,
   .staking-description {
     @include typography('body-sm');
     color: rgba(255, 255, 255, 0.7);
-    margin: 0 0 12px 0;
+    margin: 0;
+  }
+
+  .staking-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .staking-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 14px 18px;
+    min-height: 52px;
+    width: auto;
+    height: auto;
+  }
+
+  .infrared-logo {
+    display: block;
+    max-width: 148px;
+    width: 100%;
+    height: auto;
+    max-height: 28px;
   }
 }
 

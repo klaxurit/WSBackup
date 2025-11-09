@@ -32,8 +32,20 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
   console.log('SuccessStep: Component rendered with autoCloseDelay:', autoCloseDelay);
 
   // Générer les URLs dynamiquement
-  const infraredUrl = vaultName
-    ? `https://infrared.finance/pol-vaults/winnieswap-${vaultName.toLowerCase().replace(/\s+/g, '-')}`
+  const infraredSlug = React.useMemo(() => {
+    if (!vaultName) return null;
+
+    return vaultName
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .split('-')
+      .filter(Boolean)
+      .filter((segment) => !/^\d+$/.test(segment))
+      .join('-');
+  }, [vaultName]);
+
+  const infraredUrl = infraredSlug
+    ? `https://infrared.finance/pol-vaults/winnieswap-${infraredSlug}`
     : null;
 
   const berahubUrl = vaultAddress
@@ -86,10 +98,10 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
                 href={infraredUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn--large btn__main staking-btn infrared-btn"
+                className="btn btn--small btn__accent staking-btn"
               >
                 <img
-                  src="/src/assets/infrared-wordmark-black.png"
+                  src="/src/assets/infrared-wordmark-white.png"
                   alt="Stake on Infrared"
                   className="infrared-logo"
                 />
@@ -100,7 +112,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
                 href={berahubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn--large btn__main staking-btn"
+                className="btn btn--small btn__main staking-btn"
               >
                 Stake on BeraHub
               </a>

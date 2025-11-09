@@ -6,6 +6,7 @@ import { VaultModalStep } from '../../types/vaultModal';
 import type { UseSingleDepositReturn } from '../../hooks/vault/useSingleDeposit';
 import type { VaultToken } from '../../pages/VaultDetailPage/page';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
+import type { Address } from 'viem';
 
 interface SingleSideDepositModalProps {
   isOpen: boolean;
@@ -14,10 +15,10 @@ interface SingleSideDepositModalProps {
   tokenIn: VaultToken;
   tokenOut: VaultToken;
   amount: bigint;
-  vaultAddress: string;
+  vaultAddress: Address;
   isAutoWinEnabled: boolean;
   onToggleAutoWin: (enabled: boolean) => void;
-  autoWinVault?: string;
+  autoWinVault?: Address;
   onSuccess?: () => void;
 }
 
@@ -129,6 +130,7 @@ export const SingleSideDepositModal: React.FC<SingleSideDepositModalProps> = ({
             onToggleAutoWin={onToggleAutoWin}
             isPending={depositHook.deposit.isPending}
             onConfirm={depositHook.deposit.execute}
+            vaultAddress={vaultAddress}
           />
         );
 

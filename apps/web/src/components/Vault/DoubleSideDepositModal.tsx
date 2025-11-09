@@ -6,6 +6,7 @@ import { VaultModalStep } from '../../types/vaultModal';
 import type { UseDoubleDepositReturn } from '../../hooks/vault/useDoubleDeposit';
 import type { VaultToken } from '../../pages/VaultDetailPage/page';
 import { getPoolDisplayToken } from '../../utils/tokenMapping';
+import type { Address } from 'viem';
 
 interface DoubleSideDepositModalProps {
   isOpen: boolean;
@@ -17,10 +18,10 @@ interface DoubleSideDepositModalProps {
   amount1: bigint;
   initialAmount0: bigint;
   initialAmount1: bigint;
-  vaultAddress: string;
+  vaultAddress: Address;
   isAutoWinEnabled: boolean;
   onToggleAutoWin: (enabled: boolean) => void;
-  autoWinVault?: string;
+  autoWinVault?: Address;
   onSuccess?: () => void;
 }
 
@@ -185,6 +186,7 @@ export const DoubleSideDepositModal: React.FC<DoubleSideDepositModalProps> = ({
             onToggleAutoWin={onToggleAutoWin}
             isPending={depositHook.deposite.isPending}
             onConfirm={depositHook.deposite.depose}
+            vaultAddress={vaultAddress}
           />
         );
 

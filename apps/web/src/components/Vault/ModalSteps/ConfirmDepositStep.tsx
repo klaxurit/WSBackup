@@ -5,7 +5,9 @@ import { formatTokenAmount } from '../../../utils/formatTokenAmount';
 import { TokenLogo } from '../../Common/TokenLogo';
 import { StickyIcon } from '../../Common/StickyIcon';
 import { AutoWinIcon } from '../../Common/AutoWinIcon';
-import { useQuery } from '@tanstack/react-query';
+import { useVaultAPRs } from '../../../hooks/vault/useVaultAPRs';
+import { type Address } from 'viem';
+import { formatNumber } from '../../../utils/formatNumber';
 
 interface Token {
   symbol: string;
@@ -27,6 +29,7 @@ interface ConfirmDepositStepProps {
   onToggleAutoWin?: (enabled: boolean) => void; // Toggle handler
   isPending: boolean;
   onConfirm: () => void;
+  vaultAddress: Address;
 }
 
 /**
@@ -45,22 +48,46 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
   isAutoWinEnabled = false,
   onToggleAutoWin,
   isPending,
-  onConfirm
+  onConfirm,
+  vaultAddress
 }) => {
-  const infraredVaultSlug = `winnieswap-${token0.symbol.toLowerCase()}-${token1.symbol.toLowerCase()}`
-  const { data: infraredApr } = useQuery({
-    queryKey: ["infraredData", infraredVaultSlug],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/vaults/infrared/${infraredVaultSlug}`)
+  const { data: aprData, isLoading: aprLoading } = useVaultAPRs({ vaultAddress, enabled: Boolean(vaultAddress) });
 
-      if (!resp.ok) return "-"
-
-      const { success, vault } = await resp.json()
-      if (!success) return "-"
-
-      return (vault?.apr * 100).toFixed(2) || "-"
+  const strategies = React.useMemo(() => {
+    if (!aprData?.strategies) {
+      return {
+        sticky: undefined,
+        autowin: undefined,
+        infrared: undefined,
+        berahub: undefined
+      } as const;
     }
-  })
+
+    return {
+      sticky: aprData.strategies.find((strategy) => strategy.name === 'sticky'),
+      autowin: aprData.strategies.find((strategy) => strategy.name === 'autowin'),
+      infrared: aprData.strategies.find((strategy) => strategy.name === 'infrared'),
+      berahub: aprData.strategies.find((strategy) => strategy.name === 'berahub')
+    } as const;
+  }, [aprData]);
+
+  const stickyAPR = strategies.sticky?.totalAPR;
+  const autowinAPR = React.useMemo(() => {
+    if (strategies.autowin?.totalAPR && strategies.autowin.totalAPR > 0) {
+      return strategies.autowin.totalAPR;
+    }
+
+    return stickyAPR;
+  }, [strategies.autowin?.totalAPR, stickyAPR]);
+
+  const formatAPRValue = React.useCallback(
+    (value?: number) => {
+      if (aprLoading) return '…';
+      if (value === undefined || value === null) return '-';
+      return formatNumber(value);
+    },
+    [aprLoading]
+  );
 
   // Check if amounts were adjusted by comparing initial vs final amounts
   // Use 1% threshold to avoid showing warning for tiny rounding differences
@@ -155,19 +182,27 @@ export const ConfirmDepositStep: React.FC<ConfirmDepositStepProps> = ({
           >
             <div className={`apr-item apr-item--autowin ${isAutoWinEnabled ? 'apr-item--highlighted' : 'apr-item--dimmed'}`}>
               <span className="apr-label">With AutoWin APR</span>
-              <span className={`apr-value ${!isAutoWinEnabled ? 'apr-value--shiny' : ''}`}>- %</span>
+              <span className={`apr-value ${!isAutoWinEnabled ? 'apr-value--shiny' : ''}`}>
+                {formatAPRValue(autowinAPR)} %
+              </span>
             </div>
             <div className="apr-item apr-item--infrared">
               <span className="apr-label">Staking Infrared APR</span>
-              <span className="apr-value">{infraredApr} %</span>
+              <span className="apr-value">
+                {formatAPRValue(strategies.infrared?.totalAPR)} %
+              </span>
             </div>
             <div className="apr-item apr-item--without">
               <span className="apr-label">Without AutoWin APR</span>
-              <span className="apr-value">- %</span>
+              <span className="apr-value">
+                {formatAPRValue(stickyAPR)} %
+              </span>
             </div>
             <div className="apr-item apr-item--berahub">
               <span className="apr-label">Staking Berahub APR</span>
-              <span className="apr-value">- %</span>
+              <span className="apr-value">
+                {formatAPRValue(strategies.berahub?.totalAPR)} %
+              </span>
             </div>
           </motion.div>
         </div>
