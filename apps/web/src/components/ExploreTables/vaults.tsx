@@ -91,8 +91,9 @@ const GET_STICKYVAULTS = `
 `
 
 const BL = [
-  "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303" // Sticky Vault WETH-USDC.e-0.05%
-]
+  "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303", // Sticky Vault WETH-USDC.e-0.05%
+  "0x01716554a6125db2e140e01a4dc6412813aaf048" // Sticky Vault WBTC-brBTC-0.01%
+].map((address) => address.toLowerCase());
 
 export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   const navigate = useNavigate();
@@ -267,7 +268,7 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
 
   const filteredVaults = useMemo(() => {
     if (!vaults) return []
-    const approvedVaults = vaults.filter((v: any) => !BL.includes(v.id))
+    const approvedVaults = vaults.filter((v: any) => !BL.includes((v.id as string).toLowerCase()))
 
     if (!searchValue) return approvedVaults
     return approvedVaults.filter((vault: any) =>

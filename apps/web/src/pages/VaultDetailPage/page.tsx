@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon, ExplorerChevronIcon } from '../../components/SVGs';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
@@ -14,6 +14,7 @@ import { VaultStatsGrid } from '../../components/Vault/VaultStatsGrid';
 import { useStickyVaultBalance } from '../../hooks/vault/useStickyVaultBalance';
 import { useAutoWinPosition } from '../../hooks/vault/useAutoWinPosition';
 import { cleanTokenName } from '../../utils/tokenDisplay';
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -132,6 +133,7 @@ export const VaultDetailPage = () => {
   const { vaultAddress } = useParams<{ vaultAddress: Address }>();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isBlacklistedVault = vaultAddress ? isPoolBlacklisted(vaultAddress) : false;
 
   const { data: vault, isLoading, refetch } = useQuery({
     queryKey: ['stickyVault', vaultAddress],
@@ -151,8 +153,13 @@ export const VaultDetailPage = () => {
       }
 
       return data.data.stickyVault
-    }
+    },
+    enabled: Boolean(vaultAddress) && !isBlacklistedVault,
   });
+
+  if (isBlacklistedVault) {
+    return <Navigate to="/explore?tab=vaults" replace />;
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
