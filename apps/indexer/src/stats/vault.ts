@@ -228,10 +228,22 @@ async function calculateMaxPotentialAPR(
       return "0";
     }
 
-    // Calculate pool APR using existing logic (reuse pool calculation)
-    const poolAPRResults = await calculatePoolAPR(pool, timestamp, context);
-    const poolGlobalAPR = new Decimal(poolAPRResults.globalAPR || "0");
+    // Get pool APR from the latest poolDayData instead of recalculating
+    // This ensures consistency with the APR shown in the Explore Pools table
+    const dayId = Math.floor(Number(timestamp) / 86400);
+    let poolDayDataRecord = null;
+    let poolGlobalAPR = new Decimal(0);
 
+    // Search for recent poolDayData (up to 7 days back)
+    for (let i = 0; i <= 7 && !poolDayDataRecord; i++) {
+      poolDayDataRecord = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - i}` });
+      if (poolDayDataRecord && poolDayDataRecord.apr) {
+        poolGlobalAPR = new Decimal(poolDayDataRecord.apr);
+        break;
+      }
+    }
+
+    // If no recent poolDayData found, return 0
     if (poolGlobalAPR.lte("0")) {
       return "0";
     }
@@ -260,68 +272,6 @@ async function calculateMaxPotentialAPR(
     return "0";
   }
 }
-
-// Helper function to calculate pool APR - reuses existing pool logic
-async function calculatePoolAPR(
-  pool: typeof sPool.$inferSelect,
-  timestamp: bigint,
-  context: Context
-): Promise<{ globalAPR: string, activeAPR: string }> {
-  const dayId = Math.floor(Number(timestamp) / 86400);
-  const hourId = Math.floor(Number(timestamp) / 3600);
-  let fromPool: any = null;
-  let actualDaysBack = 0;
-  let actualHoursBack = 0;
-
-  if (!pool.totalValueLockedUSD || pool.totalValueLockedUSD === "0") {
-    return { globalAPR: "0.00", activeAPR: "0.00" };
-  }
-
-  // Find historical data (same logic as pool stats)
-  for (let i = 7; i <= 14 && !fromPool; i++) {
-    fromPool = await context.db.find(poolDayData, { id: `${pool.id}-${dayId - i}` });
-    if (fromPool) {
-      actualDaysBack = i;
-      break;
-    }
-  }
-
-  if (!fromPool) {
-    for (let i = 24; i <= 24 * 7 && !fromPool; i += 24) {
-      fromPool = await context.db.find(poolHourData, { id: `${pool.id}-${hourId - i}` });
-      if (fromPool) {
-        actualHoursBack = i;
-        break;
-      }
-    }
-  }
-
-  if (!fromPool) {
-    return { globalAPR: "0.00", activeAPR: "0.00" };
-  }
-
-  const periodFees = new Decimal(pool.feesUSD).minus(fromPool.feesUSD);
-  if (periodFees.lte(0)) return { globalAPR: "0.00", activeAPR: "0.00" };
-
-  // Calculate annual multiplier
-  let annualMultiplier: number;
-  if (actualDaysBack > 0) {
-    annualMultiplier = 365 / actualDaysBack;
-  } else if (actualHoursBack > 0) {
-    annualMultiplier = (365 * 24) / actualHoursBack;
-  } else {
-    annualMultiplier = 52;
-  }
-
-  // Calculate global APR using total pool TVL
-  const globalAPR = periodFees.mul(annualMultiplier).div(pool.totalValueLockedUSD).mul(100);
-
-  return {
-    globalAPR: globalAPR.toFixed(2),
-    activeAPR: globalAPR.toFixed(2) // For simplicity, use same value
-  };
-}
-
 
 async function calculateVolumeForPeriod(
   vault: typeof stickyVault.$inferSelect,

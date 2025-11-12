@@ -35,7 +35,14 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
   }, [aprData]);
 
   const stickyAPRValue = strategies.sticky?.totalAPR;
-  const stickyBaseFees = strategies.sticky?.baseAPR;
+  const stickyPoolAPR = strategies.sticky?.poolAPR; // Pure pool APR from Uniswap V3
+  const stickyRealizedAPR = strategies.sticky?.realizedAPR;
+
+  // Calculate capture rate (realized / pool APR)
+  const captureRate = useMemo(() => {
+    if (!stickyPoolAPR || stickyPoolAPR === 0 || !stickyRealizedAPR) return 0;
+    return (stickyRealizedAPR / stickyPoolAPR) * 100;
+  }, [stickyPoolAPR, stickyRealizedAPR]);
 
   const computedAutoWinAPR = useMemo(() => {
     if (strategies.autowin) {
@@ -73,7 +80,17 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
               {formatAPR(strategies.sticky.totalAPR)}%
             </span>
             <div className="VaultDetailPage__APRDetails">
-              <span className="VaultDetailPage__APRDetail">Fees: {formatAPR(stickyBaseFees)}%</span>
+              {stickyPoolAPR !== undefined && (
+                <span className="VaultDetailPage__APRDetail">Pool APR: {formatAPR(stickyPoolAPR)}%</span>
+              )}
+              {stickyRealizedAPR !== undefined && (
+                <>
+                  <span className="VaultDetailPage__APRDetail">Vault APR: {formatAPR(stickyRealizedAPR)}%</span>
+                  {captureRate > 0 && (
+                    <span className="VaultDetailPage__APRDetail">Capture: {formatAPR(captureRate)}%</span>
+                  )}
+                </>
+              )}
             </div>
           </div>
         ) : (

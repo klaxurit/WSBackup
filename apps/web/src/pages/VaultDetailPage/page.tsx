@@ -247,12 +247,17 @@ export const VaultDetailPage = () => {
 
     // 2. AutoWin position - from on-chain balance
     if (autoWinBalance.shares > 0n) {
+      // AutoWin APR = maxPotentialAPR (base) + estimatedBGT
+      const maxPotentialAPR = parseFloat(vault.vaultDayData?.items?.[0]?.maxPotentialAPR || '0')
+      const estimatedBGT = parseFloat(vault.autoWinVaultRef?.estimatedAPR || '0')
+      const totalAutoWinAPR = maxPotentialAPR + estimatedBGT
+
       positions.push({
         type: 'autowin' as const,
         valueUSD: autoWinBalance.valueInUSD,
         tokenName: `AW-${token0.symbol}-${token1.symbol}`,
         tokenAmount: autoWinBalance.shares,
-        apr: parseFloat(vault.autoWinVaultRef?.estimatedAPR || '0')
+        apr: totalAutoWinAPR
       })
     }
 

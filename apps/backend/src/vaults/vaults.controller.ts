@@ -100,7 +100,9 @@ export class VaultsController {
     // Parse base APRs from vault
     // Use maxPotentialAPR (potential APR from pool) instead of apy (realized gross APR)
     const baseAPR = parseFloat(vault.maxPotentialAPR || '0');
+    const realizedAPR = parseFloat(vault.apy || '0'); // Actual gross APR from fees collected
     const netAPR = parseFloat(vault.netAPR || '0');
+    const poolAPR = parseFloat(vault.poolAPR || '0'); // Pure pool APR from underlying Uniswap V3 pool
 
     // Fetch BGT price for accurate calculations
     const bgtPrice = await this.vaultsService.getBGTPrice();
@@ -113,8 +115,10 @@ export class VaultsController {
       name: 'sticky',
       available: true,
       baseAPR: baseAPR,
+      poolAPR: poolAPR, // Add pure pool APR for display
       bgtAPR: 0,
       totalAPR: baseAPR,
+      realizedAPR: realizedAPR, // Add realized APR for performance comparison
       breakdown: {
         fees: { value: baseAPR, source: 'vault' }
       },

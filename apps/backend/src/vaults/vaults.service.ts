@@ -13,6 +13,7 @@ export interface StickyVaultFromIndexer {
   apy: string;
   netAPR: string; // Net APR after management fees (from indexer)
   maxPotentialAPR: string; // Max potential APR from pool (from vaultDayData)
+  poolAPR: string; // Pure pool APR from underlying Uniswap V3 pool
 }
 
 export interface InfraRedVault {
@@ -286,6 +287,13 @@ export class VaultsService implements OnModuleInit {
                 maxPotentialAPR
               }
             }
+            poolRef {
+              poolDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+                items {
+                  apr
+                }
+              }
+            }
           }
         }
       }
@@ -311,7 +319,7 @@ export class VaultsService implements OnModuleInit {
 
       const vaults = response.data?.data?.stickyVaults?.items || [];
 
-      // Map vaults to include maxPotentialAPR from vaultDayData
+      // Map vaults to include maxPotentialAPR from vaultDayData and poolAPR from poolRef
       return vaults.map((vault: any) => ({
         id: vault.id,
         name: vault.name,
@@ -319,7 +327,8 @@ export class VaultsService implements OnModuleInit {
         totalValueLockedUSD: vault.totalValueLockedUSD,
         apy: vault.apy,
         netAPR: vault.netAPR,
-        maxPotentialAPR: vault.vaultDayData?.items?.[0]?.maxPotentialAPR || '0'
+        maxPotentialAPR: vault.vaultDayData?.items?.[0]?.maxPotentialAPR || '0',
+        poolAPR: vault.poolRef?.poolDayData?.items?.[0]?.apr || '0'
       }));
     } catch (error: any) {
       this.logger.error(

@@ -412,24 +412,6 @@ export const PoolsTable = ({ searchValue }: PoolsTableProps) => {
         )
       }
     },
-    // {
-    //   label: 'Active APR',
-    //   key: 'apr_active',
-    //   className: 'PoolsTable__AprTd',
-    //   sortable: true,
-    //   sortValue: (row) => {
-    //     return row.poolDayData?.items?.[0]?.activeRangeAPR || "0";
-    //   },
-    //   render: (row) => {
-    //     return (
-    //       <span className="PoolsTable__AprCell">
-    //         {row.poolDayData?.items?.length > 0 && Number(row.poolDayData.items[0].activeRangeAPR) > 0
-    //           ? `${row.poolDayData.items[0].activeRangeAPR}%`
-    //           : "-"}
-    //       </span>
-    //     )
-    //   }
-    // },
     {
       label: 'APR',
       key: 'apr_global',

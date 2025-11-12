@@ -18,8 +18,10 @@ export interface VaultStrategy {
   name: 'sticky' | 'autowin' | 'infrared' | 'berahub';
   available: true;
   baseAPR: number;
+  poolAPR?: number; // Pure pool APR from underlying Uniswap V3 pool
   bgtAPR: number;
   totalAPR: number;
+  realizedAPR?: number; // Actual gross APR from fees collected (for performance comparison)
   breakdown: APRBreakdown;
   description: string;
   // Strategy-specific fields
