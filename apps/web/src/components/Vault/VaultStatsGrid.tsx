@@ -62,7 +62,7 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
         <div className="VaultDetailPage__StatHeader">
           <span className="VaultDetailPage__StatLabel">
             Sticky APR
-            <HelpTooltip text="Deposit in StickyVault and earn fees from Uniswap V3 swaps" />
+            <HelpTooltip text="Potential APR based on the underlying Uniswap V3 pool performance. Deposit in StickyVault to earn trading fees automatically." />
           </span>
         </div>
         {aprLoading ? (
@@ -85,7 +85,7 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
         <div className="VaultDetailPage__StatHeader">
           <span className="VaultDetailPage__StatLabel">
             AutoWin APR
-            <HelpTooltip text="Stake StickyVault tokens in AutoWin for automatic BGT harvesting and auto-compounding" />
+            <HelpTooltip text="Potential APR from pool trading fees + BGT rewards. Stake StickyVault tokens in AutoWin for automatic BGT harvesting and auto-compounding." />
           </span>
         </div>
         {aprLoading ? (

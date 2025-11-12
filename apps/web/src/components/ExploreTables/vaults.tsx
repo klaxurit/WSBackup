@@ -349,7 +349,10 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
-        return row?.apr || 0;
+        const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;
+        const maxPotentialAPR = dayData?.maxPotentialAPR || 0;
+        const currentAPR = dayData?.apr || 0;
+        return maxPotentialAPR || currentAPR || 0;
       },
       render: (row) => {
         const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;

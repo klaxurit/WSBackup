@@ -98,7 +98,8 @@ export class VaultsController {
     }
 
     // Parse base APRs from vault
-    const baseAPR = parseFloat(vault.apy || '0');
+    // Use maxPotentialAPR (potential APR from pool) instead of apy (realized gross APR)
+    const baseAPR = parseFloat(vault.maxPotentialAPR || '0');
     const netAPR = parseFloat(vault.netAPR || '0');
 
     // Fetch BGT price for accurate calculations
@@ -117,7 +118,7 @@ export class VaultsController {
       breakdown: {
         fees: { value: baseAPR, source: 'vault' }
       },
-      description: 'Deposit in StickyVault and earn fees from Uniswap V3 swaps'
+      description: 'Deposit in StickyVault and earn fees from Uniswap V3 swaps (potential APR based on pool)'
     });
 
     // Strategy 2: AutoWin (if vault has AutoWin)

@@ -12,6 +12,7 @@ export interface StickyVaultFromIndexer {
   totalValueLockedUSD: string;
   apy: string;
   netAPR: string; // Net APR after management fees (from indexer)
+  maxPotentialAPR: string; // Max potential APR from pool (from vaultDayData)
 }
 
 export interface InfraRedVault {
@@ -280,6 +281,11 @@ export class VaultsService implements OnModuleInit {
             totalValueLockedUSD
             apy
             netAPR
+            vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+              items {
+                maxPotentialAPR
+              }
+            }
           }
         }
       }
@@ -303,7 +309,18 @@ export class VaultsService implements OnModuleInit {
         return [];
       }
 
-      return response.data?.data?.stickyVaults?.items || [];
+      const vaults = response.data?.data?.stickyVaults?.items || [];
+
+      // Map vaults to include maxPotentialAPR from vaultDayData
+      return vaults.map((vault: any) => ({
+        id: vault.id,
+        name: vault.name,
+        pool: vault.pool,
+        totalValueLockedUSD: vault.totalValueLockedUSD,
+        apy: vault.apy,
+        netAPR: vault.netAPR,
+        maxPotentialAPR: vault.vaultDayData?.items?.[0]?.maxPotentialAPR || '0'
+      }));
     } catch (error: any) {
       this.logger.error(
         'Error fetching vaults from indexer:',
