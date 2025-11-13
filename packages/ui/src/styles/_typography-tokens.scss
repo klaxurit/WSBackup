@@ -1,0 +1,74 @@
+@use 'sass:map';
+
+$typography-tokens: (
+  'display-2xl': (font-size: 3.2rem, line-height: 1.1, font-weight: 600),
+  'display-xl': (font-size: 2.8rem, line-height: 1.15, font-weight: 600),
+  'display-lg': (font-size: 2.4rem, line-height: 1.2, font-weight: 600),
+  'heading-3xl': (font-size: 2rem, line-height: 1.2, font-weight: 600),
+  'heading-2xl': (font-size: 1.75rem, line-height: 1.25, font-weight: 600),
+  'heading-xl': (font-size: 1.5rem, line-height: 1.3, font-weight: 600),
+  'heading-lg': (font-size: 1.25rem, line-height: 1.3, font-weight: 600),
+  'heading-md': (font-size: 1.125rem, line-height: 1.35, font-weight: 600),
+  'body-lg': (font-size: 1rem, line-height: 1.5, font-weight: 400),
+  'body-md': (font-size: 0.9375rem, line-height: 1.5, font-weight: 400),
+  'body-sm': (font-size: 0.875rem, line-height: 1.5, font-weight: 400),
+  'body-xs': (font-size: 0.8125rem, line-height: 1.5, font-weight: 400),
+  'body-2xs': (font-size: 0.625rem, line-height: 1.6, font-weight: 400),
+  'caption': (font-size: 0.75rem, line-height: 1.4, font-weight: 500, letter-spacing: 0.02em),
+  'mono': (font-size: 0.9375rem, line-height: 1.45, font-weight: 500, letter-spacing: 0.01em)
+);
+
+@function typography-token($variant, $key) {
+  @if not map.has-key($typography-tokens, $variant) {
+    @error 'Variant `#{$variant}` non défini dans $typography-tokens.';
+  }
+
+  $token: map.get($typography-tokens, $variant);
+
+  @if not map.has-key($token, $key) {
+    @error 'Clé `#{$key}` absente pour la variante `#{$variant}`.';
+  }
+
+  @return map.get($token, $key);
+}
+
+@mixin typography($variant, $weight: null) {
+  font-size: typography-token($variant, font-size);
+  line-height: typography-token($variant, line-height);
+
+  $font-weight: typography-token($variant, font-weight);
+
+  @if $weight !=null {
+    $font-weight: $weight;
+  }
+
+  font-weight: $font-weight;
+
+  $token: map.get($typography-tokens, $variant);
+
+  @if $token ==null {
+    @error 'Variant `#{$variant}` non défini dans $typography-tokens.';
+  }
+
+  @if map.has-key($token, letter-spacing) {
+    $letter-spacing: map.get($token, letter-spacing);
+
+    @if $letter-spacing !=null {
+      letter-spacing: $letter-spacing;
+    }
+  }
+}
+
+@mixin declare-typography-css-variables() {
+  @each $variant, $token in $typography-tokens {
+    --font-size-#{$variant}: map.get($token, font-size);
+    --line-height-#{$variant}: map.get($token, line-height);
+    --font-weight-#{$variant}: map.get($token, font-weight);
+
+    $letter-spacing: map.get($token, letter-spacing);
+
+    @if $letter-spacing !=null {
+      --letter-spacing-#{$variant}: $letter-spacing;
+    }
+  }
+}

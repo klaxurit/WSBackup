@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { usePoolByTokens } from './usePonderChartData';
 import type { BerachainToken } from './useBerachainTokenList';
+import { isPoolBlacklisted } from '../config/poolBlacklist';
 
 interface PoolSelectionResult {
   poolAddress: string | null;
@@ -66,6 +67,16 @@ export function usePoolSelection(
       };
     }
 
+    // Check if the pool is blacklisted
+    if (isPoolBlacklisted(poolData.id)) {
+      return {
+        poolAddress: null,
+        isLoading: false,
+        error: `La pool ${fromToken.symbol}/${toToken.symbol} n'est pas disponible`,
+        poolInfo: null,
+      };
+    }
+
     return {
       poolAddress: poolData.id,
       isLoading: false,
@@ -107,12 +118,18 @@ export function usePoolSelectionWithFallback(
   );
 
   const isUsingFallback = useMemo(() => {
-    return !poolSelection.poolAddress && !poolSelection.isLoading && fallbackPoolData;
+    // Check if fallback pool exists and is not blacklisted
+    return !poolSelection.poolAddress &&
+           !poolSelection.isLoading &&
+           fallbackPoolData &&
+           !isPoolBlacklisted(fallbackPoolData.id);
   }, [poolSelection.poolAddress, poolSelection.isLoading, fallbackPoolData]);
 
   return {
     ...poolSelection,
     isUsingFallback,
-    fallbackPoolAddress: fallbackPoolData?.id || null,
+    fallbackPoolAddress: (fallbackPoolData?.id && !isPoolBlacklisted(fallbackPoolData.id))
+                         ? fallbackPoolData.id
+                         : null,
   };
 }

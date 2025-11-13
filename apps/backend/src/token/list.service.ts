@@ -22,35 +22,63 @@ export class TokenListService implements OnModuleInit {
 
   async onModuleInit() {
     await this.updateGeneralList();
-    // this.updateInPoolStatus();
+    await this.updateInPoolStatus();
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async updateInPoolStatus() {
-    const currentPools = await this.ponder.database.select().from(pool);
-    const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
-      if (!tokensAddr.includes(pool.token0.toLowerCase())) {
-        tokensAddr.push(pool.token0.toLowerCase());
-      }
-      if (!tokensAddr.includes(pool.token1.toLowerCase())) {
-        tokensAddr.push(pool.token1.toLowerCase());
-      }
-      return tokensAddr;
-    }, [] as string[]);
+    try {
+      this.logger.log('Starting IN_POOL status update...');
 
-    await this.db.client.$transaction(async (tx) => {
+      const currentPools = await this.ponder.database.select().from(pool);
+      const tokensInPools: string[] = currentPools.reduce((tokensAddr, pool) => {
+        if (!tokensAddr.includes(pool.token0.toLowerCase())) {
+          tokensAddr.push(pool.token0.toLowerCase());
+        }
+        if (!tokensAddr.includes(pool.token1.toLowerCase())) {
+          tokensAddr.push(pool.token1.toLowerCase());
+        }
+        return tokensAddr;
+      }, [] as string[]);
+
+      this.logger.log(`Found ${tokensInPools.length} unique tokens in ${currentPools.length} pools`);
+
+      let updatedCount = 0;
+      let errorCount = 0;
+
       for (const tokenAddr of tokensInPools) {
-        const onChainSupply = await this.getTotalSupply(tokenAddr);
+        try {
+          const onChainSupply = await this.getTotalSupply(tokenAddr);
 
-        await tx.token.update({
-          where: { address: tokenAddr },
-          data: {
-            totalSupply: onChainSupply?.toString(),
-            status: 'IN_POOL',
-          },
-        });
+          await this.db.client.token.upsert({
+            where: { address: tokenAddr },
+            update: {
+              totalSupply: onChainSupply?.toString() || '0',
+              status: 'IN_POOL',
+              lastActivityAt: new Date(),
+            },
+            create: {
+              address: tokenAddr,
+              symbol: 'UNKNOWN',
+              name: 'Unknown Token',
+              decimals: 18,
+              totalSupply: onChainSupply?.toString() || '0',
+              status: 'IN_POOL',
+              lastActivityAt: new Date(),
+            },
+          });
+
+          updatedCount++;
+        } catch (error) {
+          errorCount++;
+          this.logger.warn(`Failed to update token ${tokenAddr}: ${error.message}`);
+        }
       }
-    });
+
+      this.logger.log(`IN_POOL status update completed: ${updatedCount} updated, ${errorCount} errors`);
+    } catch (error) {
+      this.logger.error('Failed to update IN_POOL status', error);
+    }
   }
 
   // Fetch all tokens from berachain metadata

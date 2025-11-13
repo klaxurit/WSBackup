@@ -166,20 +166,20 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
         const txTime = new Date(parseInt(row.timestamp) * 1000);
         const diffMs = now.getTime() - txTime.getTime();
         const diffMin = Math.floor(diffMs / 60000);
-        if (diffMin < 1) return 'Just now';
-        if (diffMin < 60) return `${diffMin} min ago`;
+        if (diffMin < 1) return <span className="Table__CellText">Just now</span>;
+        if (diffMin < 60) return <span className="Table__CellText">{`${diffMin} min ago`}</span>;
         const diffH = Math.floor(diffMin / 60);
-        return `${diffH}h ago`;
+        return <span className="Table__CellText">{`${diffH}h ago`}</span>;
       },
     },
     {
       label: 'Type',
       key: 'type',
       render: (row) => (
-        <span>
-          Swap
+        <span className="Table__CellText">
+          <span className="Table__CellLabel">Swap</span>
           <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
-          for
+          <span className="Table__CellLabel">for</span>
           <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
         </span>
       ),
@@ -199,12 +199,24 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
           const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
           const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
 
-          if (tokenOutValueUSD < 0.01) return "<0.01$";
-          return `$${tokenOutValueUSD.toFixed(2)}`;
+          if (tokenOutValueUSD < 0.01) {
+            return <span className="Table__CellValue Table__CellValue--usd">&lt;0.01$</span>;
+          }
+          return (
+            <span className="Table__CellValue Table__CellValue--usd">
+              ${tokenOutValueUSD.toFixed(2)}
+            </span>
+          );
         }
 
-        if (tokenInValueUSD < 0.01) return "<0.01$";
-        return `$${tokenInValueUSD.toFixed(2)}`;
+        if (tokenInValueUSD < 0.01) {
+          return <span className="Table__CellValue Table__CellValue--usd">&lt;0.01$</span>;
+        }
+        return (
+          <span className="Table__CellValue Table__CellValue--usd">
+            ${tokenInValueUSD.toFixed(2)}
+          </span>
+        );
       }
     },
     {
@@ -213,8 +225,10 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals || 18))
         return (
-          <span>
-            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+          <span className="Table__CellText">
+            <span className="Table__CellValue">
+              {amount < 0.01 ? '<0.01' : amount.toFixed(2)}
+            </span>
             <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           </span>
         )
@@ -226,8 +240,10 @@ export const TokenTransactionsTable = ({ tokenAddress }: { tokenAddress: string 
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
         return (
-          <span>
-            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+          <span className="Table__CellText">
+            <span className="Table__CellValue">
+              {amount < 0.01 ? '<0.01' : amount.toFixed(2)}
+            </span>
             <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
           </span>
         )

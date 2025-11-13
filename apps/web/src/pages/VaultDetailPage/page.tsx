@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useMemo, useState, useEffect, useRef } from 'react';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import { ExplorerIcon, ExplorerChevronIcon } from '../../components/SVGs';
-import { formatNumber } from '../../utils/formatNumber';
 import { ChartWidget } from '../../components/Charts/ChartWidget';
 import { useQuery } from '@tanstack/react-query';
 import { type Address, formatUnits } from 'viem';
@@ -11,8 +10,11 @@ import { PageContentTransition } from '../../components/Transitions';
 import { Loader } from '../../components/Loader/Loader';
 import { UserVaultDetail } from '../../components/Vault/UserVaultDetail';
 import { UserPositionsTable } from '../../components/Vault/UserPositionsTable';
+import { VaultStatsGrid } from '../../components/Vault/VaultStatsGrid';
 import { useStickyVaultBalance } from '../../hooks/vault/useStickyVaultBalance';
 import { useAutoWinPosition } from '../../hooks/vault/useAutoWinPosition';
+import { cleanTokenName } from '../../utils/tokenDisplay';
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
 
 const GET_STICKYVAULT = `
   query GetStickyVaults($id: String = "", $user: String = "") {
@@ -129,6 +131,9 @@ export interface VaultToken {
 export const VaultDetailPage = () => {
   const { address } = useAccount()
   const { vaultAddress } = useParams<{ vaultAddress: Address }>();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isBlacklistedVault = vaultAddress ? isPoolBlacklisted(vaultAddress) : false;
 
   const { data: vault, isLoading, refetch } = useQuery({
     queryKey: ['stickyVault', vaultAddress],
@@ -148,8 +153,30 @@ export const VaultDetailPage = () => {
       }
 
       return data.data.stickyVault
-    }
+    },
+    enabled: Boolean(vaultAddress) && !isBlacklistedVault,
   });
+
+  if (isBlacklistedVault) {
+    return <Navigate to="/explore?tab=vaults" replace />;
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const { token0, token1, autoWinVault } = useMemo(() => {
     if (!vault?.poolRef) return { token0: null, token1: null, autoWinVault: undefined }
@@ -193,6 +220,13 @@ export const VaultDetailPage = () => {
     vaultTVL_USD: vault?.totalValueLockedUSD
   })
 
+  // Function to refetch all balances after a transaction
+  const refetchAllBalances = () => {
+    refetch() // Refetch GraphQL data (including indexer positions for staking detection)
+    stickyVaultBalance.refetch() // Refetch on-chain sticky vault balance
+    autoWinBalance.refetch() // Refetch on-chain autowin balance
+  }
+
   // Prepare user positions data for the table using on-chain balances
   const userPositions = useMemo(() => {
     if (!vault || !address || !token0 || !token1) return []
@@ -213,18 +247,22 @@ export const VaultDetailPage = () => {
 
     // 2. AutoWin position - from on-chain balance
     if (autoWinBalance.shares > 0n) {
+      // AutoWin APR = maxPotentialAPR (base) + estimatedBGT
+      const maxPotentialAPR = parseFloat(vault.vaultDayData?.items?.[0]?.maxPotentialAPR || '0')
+      const estimatedBGT = parseFloat(vault.autoWinVaultRef?.estimatedAPR || '0')
+      const totalAutoWinAPR = maxPotentialAPR + estimatedBGT
+
       positions.push({
         type: 'autowin' as const,
         valueUSD: autoWinBalance.valueInUSD,
         tokenName: `AW-${token0.symbol}-${token1.symbol}`,
         tokenAmount: autoWinBalance.shares,
-        apr: parseFloat(vault.autoWinVaultRef?.estimatedAPR || '0')
+        apr: totalAutoWinAPR
       })
     }
 
     // 3. Staked Externally (Infrared/Berahub)
-    // TODO: Requires Infrared contract address to query staked balance
-    // For now, we show a placeholder if indexer shows more shares than wallet
+    // Check if indexer shows more shares than wallet (indicating staking elsewhere)
     const stickyPositionIndexed = vault.positions?.items?.find((p: any) => p.user === address.toLowerCase())
 
     // Only try to detect staked position if indexer data exists and is recent
@@ -285,7 +323,7 @@ export const VaultDetailPage = () => {
         <Link to="/explore?tab=vaults" className="VaultDetailPage__BreadcrumbsLink">Vaults</Link>
         <ExplorerChevronIcon />
         <span className="VaultDetailPage__BreadcrumbsLink__3">
-          {vault.name || `${token0.symbol}/${token1.symbol}`}
+          {cleanTokenName(vault.name) || `${token0.symbol}/${token1.symbol}`}
         </span>
         <span className="VaultDetailPage__BreadcrumbsAddress">
           {vault.id.slice(0, 6) + '...' + vault.id.slice(-4)}
@@ -304,19 +342,54 @@ export const VaultDetailPage = () => {
               size={32}
             />
             <div className="VaultDetailPage__VaultTitle">
-              <h1>{vault.name || `${token0.symbol}/${token1.symbol}`}</h1>
+              <h1>{cleanTokenName(vault.name) || `${token0.symbol}/${token1.symbol}`}</h1>
               <div className="VaultDetailPage__VaultMeta">
                 <span className={`VaultDetailPage__Strategy VaultDetailPage__Strategy--${vault.autoWinVault ? 'autowin' : 'sticky'}`}>
                   {vault.autoWinVault ? 'Auto-Win' : 'Sticky'}
                 </span>
-                <a
-                  href={`https://berascan.com/address/${vault.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="VaultDetailPage__ExplorerLink"
-                >
-                  <ExplorerIcon />
-                </a>
+                {vault.autoWinVault ? (
+                  <div className="VaultDetailPage__ExplorerDropdown" ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="VaultDetailPage__ExplorerLink"
+                      title="View Contracts"
+                    >
+                      <ExplorerIcon />
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="VaultDetailPage__DropdownMenu">
+                        <a
+                          href={`https://berascan.com/address/${vault.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="VaultDetailPage__DropdownItem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Sticky Vault Contract
+                        </a>
+                        <a
+                          href={`https://berascan.com/address/${vault.autoWinVault}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="VaultDetailPage__DropdownItem"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          AutoWin Contract
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <a
+                    href={`https://berascan.com/address/${vault.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="VaultDetailPage__ExplorerLink"
+                    title="Sticky Vault Contract"
+                  >
+                    <ExplorerIcon />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -330,32 +403,12 @@ export const VaultDetailPage = () => {
       <div className="VaultDetailPage__MainContent">
         {/* Left Column - 70% width */}
         <div className="VaultDetailPage__LeftColumn">
-          {/* Stats Grid */}
-          <div className="VaultDetailPage__StatsGrid">
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Vault TVL</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault.totalValueLockedUSD)}</span>
-            </div>
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Collected Fees</span>
-              <span className="VaultDetailPage__StatValue">${formatNumber(vault?.collectedFeesUSD)}</span>
-            </div>
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">BGT APR</span>
-              {/* <span className="VaultDetailPage__StatValue">{vault?.rewardsApr || "0"}%</span> */}
-              <span className="VaultDetailPage__StatValue">-</span>
-            </div>
-            <div className="VaultDetailPage__StatCard">
-              <span className="VaultDetailPage__StatLabel">Vault APR</span>
-              <span className="VaultDetailPage__StatValue">{vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%</span>
-            </div>
-            <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--highlight">
-              <span className="VaultDetailPage__StatLabel">Total APR</span>
-              <span className="VaultDetailPage__StatValue VaultDetailPage__StatValue--highlight">
-                {vault?.vaultDayData.items && vault.vaultDayData.items.length > 0 ? vault.vaultDayData.items[0].maxPotentialAPR || "0" : "0"}%
-              </span>
-            </div>
-          </div>
+          {/* Stats Grid - 2x3 Layout */}
+          <VaultStatsGrid
+            vaultAddress={vault.id as Address}
+            totalValueLockedUSD={vault.totalValueLockedUSD}
+            collectedFeesUSD={vault.collectedFeesUSD}
+          />
 
           {/* Chart Section */}
           <div className="VaultDetailPage__ChartSection">
@@ -379,7 +432,7 @@ export const VaultDetailPage = () => {
         {/* Right Column - 30% width */}
         <div className="VaultDetailPage__RightColumn">
           {/* User Action Forms */}
-          <UserVaultDetail vault={vault} token0={token0} token1={token1} autoWinVault={autoWinVault} onSuccess={() => refetch()} />
+          <UserVaultDetail vault={vault} token0={token0} token1={token1} autoWinVault={autoWinVault} onSuccess={refetchAllBalances} />
         </div>
       </div>
     </PageContentTransition>

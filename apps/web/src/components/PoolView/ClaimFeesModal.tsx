@@ -4,6 +4,7 @@ import { useClaimFees } from '../../hooks/position/useClaimFees'
 import type { Position, usePositionDatas } from '../../hooks/position/usePositionDatas'
 import type { Pool } from '../../pages/PoolPage/page'
 import { TokenLogo } from '../Common/TokenLogo'
+import { processTransactionError } from '../../utils/errorMapping'
 
 interface ClaimFeesModalProps {
   isOpen: boolean
@@ -153,16 +154,42 @@ export const ClaimFeesModal: React.FC<ClaimFeesModalProps> = ({
           )}
 
           {/* Transaction Error */}
-          {(errors.claim || errors.receipt || errors.simulation) && (
-            <div className="PoolView__FormError">
-              <p>
-                {errors.claim?.message ||
-                  errors.receipt?.message ||
-                  errors.simulation?.message ||
-                  'Transaction failed'}
-              </p>
-            </div>
-          )}
+          {(errors.claim || errors.receipt || errors.simulation) && (() => {
+            const currentError = errors.claim || errors.receipt || errors.simulation;
+
+            if (!currentError) return null;
+
+            const errorInfo = processTransactionError(currentError, {
+              onRetry: () => {
+                if (canSubmit) {
+                  claimFees();
+                }
+              },
+              onClose: handleClose
+            });
+
+            return (
+              <div className="PoolView__FormError">
+                <h4 style={{ color: '#FF6B6B', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>
+                  {errorInfo.title}
+                </h4>
+                <p style={{ marginBottom: '12px', fontSize: '13px', lineHeight: '1.5' }}>
+                  {errorInfo.description}
+                </p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {errorInfo.actions.map((action, index) => (
+                    <button
+                      key={index}
+                      className={`btn btn--small ${action.type === 'primary' ? 'btn__main' : 'btn__shade'}`}
+                      onClick={action.action}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Action Buttons */}
           <button

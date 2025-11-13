@@ -59,7 +59,7 @@
   background: none;
   border: none;
   color: $white;
-  font-size: 20px;
+  @include typography('heading-lg');
   cursor: pointer;
   z-index: 2;
   transition: color 0.15s;
@@ -93,7 +93,7 @@
 
   p {
     color: $error-pure;
-    font-size: 14px;
+    @include typography('body-sm');
     margin: 0;
     font-weight: 500;
   }
@@ -110,12 +110,12 @@
 }
 
 .PoolView__SuccessIcon {
-  font-size: 2rem;
+  @include typography('display-lg');
   margin-bottom: 8px;
 }
 
 .PoolView__SuccessTitle {
-  font-size: 1.25rem;
+  @include typography('heading-md');
   font-weight: 600;
   color: $white;
   margin: 0;
@@ -123,7 +123,7 @@
 
 .PoolView__SuccessMessage {
   color: $onyx-light;
-  font-size: 14px;
+  @include typography('body-sm');
   margin: 0;
 }
 
@@ -175,7 +175,7 @@
 // Styles pour les messages de confirmation
 .PoolView__ConfirmationMessage {
   color: $white;
-  font-size: 16px;
+  @include typography('body-lg');
   font-weight: 500;
   text-align: center;
   margin-bottom: 16px;
@@ -191,7 +191,7 @@
 
 .PoolView__InfoTitle {
   color: $white;
-  font-size: 14px;
+  @include typography('body-sm');
   font-weight: 600;
   margin: 0 0 12px 0;
 }
@@ -209,13 +209,13 @@
 
 .PoolView__InfoLabel {
   color: $onyx-light;
-  font-size: 14px;
+  @include typography('body-sm');
   font-weight: 400;
 }
 
 .PoolView__InfoValue {
   color: $white;
-  font-size: 14px;
+  @include typography('body-sm');
   font-weight: 500;
 }
 
@@ -238,7 +238,7 @@
   border: none;
   background: transparent;
   color: $onyx-light;
-  font-size: 14px;
+  @include typography('body-sm');
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -452,7 +452,7 @@
   display: flex;
   justify-content: space-between;
   color: $onyx-light;
-  font-size: 12px;
+  @include typography('caption');
   margin-top: 4px;
 }
 
@@ -468,7 +468,7 @@
   color: $beryl-pure;
   padding: 12px;
   border-radius: 8px;
-  font-size: 14px;
+  @include typography('body-sm');
   text-align: center;
   margin-top: 16px;
 }
@@ -484,7 +484,7 @@
   color: $error-pure;
   padding: 8px 12px;
   border-radius: 6px;
-  font-size: 13px;
+  @include typography('body-sm');
   margin-bottom: 8px;
 
   &:last-child {
@@ -498,7 +498,7 @@
   padding: 12px 24px;
   border-radius: 12px;
   border: none;
-  font-size: 1rem;
+  @include typography('body-lg');
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -527,7 +527,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.05);
   color: $white;
-  font-size: 1rem;
+  @include typography('body-lg');
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -545,7 +545,7 @@
 
 // Styles pour les informations de note
 .PoolView__InfoNote {
-  font-size: 12px;
+  @include typography('caption');
   color: $onyx-light;
   text-align: center;
   padding: 8px;
@@ -561,7 +561,7 @@
   }
 
   .PoolView__ModalTitle {
-    font-size: 1.1rem;
+    @include typography('heading-md');
   }
 
   .PoolView__PercentageButtons {
@@ -571,7 +571,7 @@
 
   .PoolView__PercentageButton {
     padding: 10px 6px;
-    font-size: 13px;
+    @include typography('body-sm');
   }
 }
 

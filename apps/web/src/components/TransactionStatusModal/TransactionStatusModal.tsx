@@ -119,9 +119,10 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   }, [swap.quote, inputAmount, inputToken?.decimals, outputToken?.decimals])
 
   const priceImpact = useMemo(() => {
-    if (!quote?.priceImpact) return "0"
-    if (quote.priceImpact <= 100) return `-${(100 - quote.priceImpact).toFixed(2)}`
-    if (quote.priceImpact > 100) return `+${(quote.priceImpact - 100).toFixed(2)}`
+    if (!quote?.priceImpact || quote.priceImpact === 0) return "<0.01"
+    // Price impact is already a percentage (e.g., 0.5 means 0.5%)
+    // Display with negative sign to indicate loss
+    return `-${quote.priceImpact.toFixed(2)}`
   }, [quote])
 
   const handleToggleDetails = () => setIsDetailsOpen((v) => !v);

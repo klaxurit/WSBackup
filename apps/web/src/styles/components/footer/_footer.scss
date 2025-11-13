@@ -1,4 +1,3 @@
-
 @use '../../utils' as *;
 
 .Footer {
@@ -53,14 +52,12 @@
   &__PoweredBy {
     color: rgba(255, 255, 255, 0.8);
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 10px;
-    font-weight: 500;
+    @include typography('body-2xs');
     line-height: 160%;
     text-shadow: none;
     white-space: nowrap;
   }
 
-  // Section Navigation
   &__Center {
     order: 0;
     display: flex;
@@ -89,8 +86,7 @@
   &__Link {
     color: rgba(255, 255, 255, 0.8);
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 10px;
-    font-weight: 500;
+    @include typography('body-2xs');
     line-height: 160%;
     text-decoration: none;
     text-shadow: none;
@@ -99,10 +95,6 @@
 
     &:hover {
       color: rgba(255, 255, 255, 1);
-    }
-
-    @media (min-width: 768px) {
-      font-size: 10px;
     }
   }
 
@@ -119,7 +111,6 @@
     }
   }
 
-  // Section Réseaux Sociaux
   &__Right {
     order: 2;
     display: flex;
@@ -183,7 +174,7 @@
     }
 
     &__Link {
-      font-size: 9px;
+      @include typography('body-2xs');
     }
 
     &__Social {

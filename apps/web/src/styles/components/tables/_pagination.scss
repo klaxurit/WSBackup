@@ -13,7 +13,7 @@
 
 .Table__PaginationInfo {
   color: #aaa;
-  font-size: 14px;
+  @include typography('body-sm');
   font-weight: 500;
 }
 
@@ -45,8 +45,8 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e0e0e0;
+  @include typography('body-sm');
   font-weight: 500;
-  font-size: 14px;
   border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
@@ -103,11 +103,13 @@
   }
 
   .Table__PaginationInfo {
-    font-size: 13px;
+    @include typography('body-xs');
+    font-weight: 500;
   }
 
   .Table__PaginationBtn {
-    font-size: 13px;
+    @include typography('body-xs');
+    font-weight: 500;
     padding: 6px 10px;
     min-width: 36px;
   }

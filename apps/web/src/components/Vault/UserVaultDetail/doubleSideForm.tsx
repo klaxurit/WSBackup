@@ -30,7 +30,7 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
   const { amount0Current, amount1Current, hasRatio } = useVaultRatio(vault);
 
   // Get user token balances using Wagmi's useBalance hook
-  const { data: balance0Data } = useBalance({
+  const { data: balance0Data, refetch: refetchBalance0 } = useBalance({
     address: address,
     token: t0.id,
     query: {
@@ -38,7 +38,7 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
     }
   });
 
-  const { data: balance1Data } = useBalance({
+  const { data: balance1Data, refetch: refetchBalance1 } = useBalance({
     address: address,
     token: t1.id,
     query: {
@@ -66,8 +66,11 @@ export const DoubleSideForm = ({ vault, t0, t1, autoWinVault, onSuccess }: Doubl
     if (deposite.isSuccess) {
       setToken0Amount(0n)
       setToken1Amount(0n)
+      // Refetch token balances after successful deposit
+      refetchBalance0()
+      refetchBalance1()
     }
-  }, [deposite.isSuccess])
+  }, [deposite.isSuccess, refetchBalance0, refetchBalance1])
 
   const calculateToken1FromToken0 = useCallback((token0Amount: bigint): bigint => {
     if (!token0Amount || token0Amount === 0n) {

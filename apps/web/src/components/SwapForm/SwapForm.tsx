@@ -73,8 +73,6 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       enableDebounce: true,
     })
 
-    console.log(swap)
-
     const { poolAddress } = usePoolAddress(
       fromToken?.address as `0x${string}` | undefined,
       toToken?.address as `0x${string}` | undefined
@@ -103,6 +101,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     // Simplified handlers for this version
 
     const handleSwitchTokens = useCallback(() => {
+      if (!fromToken || !toToken) return
       const currentFromToken = fromToken;
       const currentToToken = toToken;
       const currentFromAmount = fromAmount;
@@ -357,6 +356,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
               onClick={handleSwitchTokens}
+              isActive={(!!fromToken && !!toToken)}
             />
             <SwapToInput
               steps={{ totalRatio: 0, steps: [] }}

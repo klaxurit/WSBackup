@@ -118,6 +118,34 @@ export class TokenController {
     }
   }
 
+  @Get('/sync/in-pool')
+  async syncInPoolTokens() {
+    try {
+      await this.tokenListService.updateInPoolStatus();
+
+      const inPoolTokens = await this.db.token.findMany({
+        where: { status: 'IN_POOL' },
+        select: {
+          address: true,
+          symbol: true,
+          name: true,
+          status: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'IN_POOL status sync completed',
+        data: {
+          count: inPoolTokens.length,
+          tokens: inPoolTokens,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Post('/')
   async createToken(@Body() newTokenDTO: NewTokenDTO) {
     return this.db.token.create({

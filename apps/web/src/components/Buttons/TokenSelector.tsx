@@ -4,6 +4,7 @@ import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { TokenLogo } from '../Common/TokenLogo';
 import { useTokensInPool } from '../../hooks/useTokensInPool';
 import { Loader } from "../Loader/Loader";
+import { cleanTokenSymbol, isStickyVaultToken } from '../../utils/tokenDisplay';
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -93,7 +94,11 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
           <span className="networkSelector__logoWrapper">
             <TokenLogo logoUri={selectedToken.logoUri} symbol={selectedToken.symbol} size="large" />
           </span>
-          <span className="networkSelector__symbol">{selectedToken.symbol}</span>
+          <span className="networkSelector__symbol">
+            {isStickyVaultToken(selectedToken.name)
+              ? cleanTokenSymbol(selectedToken.symbol)
+              : selectedToken.symbol}
+          </span>
         </>
       ) : (
         <span className="networkSelector__symbol">

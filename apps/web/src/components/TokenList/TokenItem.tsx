@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { TokenLogo } from '../Common/TokenLogo';
+import { formatTokenForDisplay } from '../../utils/tokenDisplay';
 
 interface NetworkItemProps {
   token: BerachainToken;
@@ -23,6 +24,9 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
   const balance = token.balance || '';
   const balanceUsd = token.balanceUSD || 0;
 
+  // Apply Sticky Vault formatting if needed
+  const displayToken = formatTokenForDisplay(token);
+
   return (
     <div
       className={`Modal__Item${isSelected ? ' selected' : ''}`}
@@ -33,9 +37,9 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         <TokenLogo logoUri={!displayFallback ? token.logoUri : null} symbol={token.symbol} size="large" className="Modal__ItemImage" />
       </div>
       <div className="Modal__ItemInfo">
-        <span className="Modal__ItemName">{token.name}</span>
+        <span className="Modal__ItemName">{displayToken.name}</span>
         <div className="Modal__ItemDetails">
-          <span className="Modal__ItemSymbol">{token.symbol}</span>
+          <span className="Modal__ItemSymbol">{displayToken.symbol}</span>
           {token.address && (
             <a href={`${baseExplorer}${token.address}`} target='_blank' onClick={(e) => e.stopPropagation()}>
               <span className="Modal__ItemAddress">

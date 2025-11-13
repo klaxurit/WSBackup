@@ -11,6 +11,7 @@ import type { ChartType, ChartInterval, ChartMetric } from '../../types/chart';
 import { PageContentTransition } from '../../components/Transitions';
 import { Loader } from '../../components/Loader/Loader';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
 
 const TokenPage: React.FC = () => {
   const { tokenAddress } = useParams<{ tokenAddress: string }>();
@@ -112,7 +113,9 @@ const TokenPage: React.FC = () => {
         }
 
         const poolsData = result.data?.pools?.items || [];
-        return { data: poolsData };
+        // Filter out blacklisted pools
+        const filteredPools = poolsData.filter((pool: any) => !isPoolBlacklisted(pool.id));
+        return { data: filteredPools };
       } catch (error) {
         return { data: [] };
       }

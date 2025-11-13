@@ -31,6 +31,15 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedPercentage, setSelectedPercentage] = useState<10 | 25 | 50 | 100 | null>(null);
   const [withdrawTokenType, setWithdrawTokenType] = useState<'sticky' | 'autowin'>('sticky');
+  const hasAutoWin = Boolean(autoWinVault);
+
+  useEffect(() => {
+    if (!hasAutoWin && withdrawTokenType !== 'sticky') {
+      setWithdrawTokenType('sticky');
+    }
+  }, [hasAutoWin, withdrawTokenType]);
+
+  const effectiveWithdrawType = hasAutoWin ? withdrawTokenType : 'sticky';
 
   // Get user balances for both vault types
   const stickyBalance = useStickyVaultBalance({
@@ -49,13 +58,13 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
 
   // Get current balance based on selected token type
   const currentBalance = useMemo(() => {
-    return withdrawTokenType === 'sticky' ? stickyBalance : autoWinBalance
-  }, [withdrawTokenType, stickyBalance, autoWinBalance])
+    return effectiveWithdrawType === 'sticky' ? stickyBalance : autoWinBalance
+  }, [effectiveWithdrawType, stickyBalance, autoWinBalance])
 
   // Calculate price per share for the selected token type
   // Use currentValueUSD from GraphQL (indexer) for consistency with LiquidityPage
   const currentPricePerShare = useMemo(() => {
-    if (withdrawTokenType === 'sticky') {
+    if (effectiveWithdrawType === 'sticky') {
       // Get currentValueUSD from GraphQL position data
       const stickyPosition = vault?.positions?.items?.find((p: any) => p.user === address?.toLowerCase())
       const currentValueUSD = stickyPosition?.currentValueUSD ? parseFloat(stickyPosition.currentValueUSD) : 0
@@ -74,7 +83,7 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
     if (!autoWinBalance.valueInUSD || !autoWinBalance.shares) return 0
     const sharesDecimal = parseFloat(autoWinBalance.shares.toString()) / Math.pow(10, 18)
     return sharesDecimal > 0 ? autoWinBalance.valueInUSD / sharesDecimal : 0
-  }, [withdrawTokenType, vault?.positions, address, stickyBalance.pricePerShare, autoWinBalance.valueInUSD, autoWinBalance.shares])
+  }, [effectiveWithdrawType, vault?.positions, address, stickyBalance.pricePerShare, autoWinBalance.valueInUSD, autoWinBalance.shares])
 
   // Convert pooled token amounts to bigint for modal (simplified for now)
   const pooledAmounts = useMemo(() => {
@@ -87,7 +96,7 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
     vaultAddress: vault?.id as Address,
     burnAmount: withdrawAmount,
     slippageBps: 100, // 1%
-    enabled: activeTab === 'withdraw' && withdrawTokenType === 'sticky'
+    enabled: activeTab === 'withdraw' && effectiveWithdrawType === 'sticky'
   })
 
   // AutoWin withdraw hook
@@ -95,7 +104,7 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
     autoWinVault: autoWinVault,
     burnAmount: withdrawAmount,
     slippageBps: 100, // 1%
-    enabled: activeTab === 'withdraw' && withdrawTokenType === 'autowin'
+    enabled: activeTab === 'withdraw' && effectiveWithdrawType === 'autowin'
   })
 
   // Handle successful deposit - call parent callback
@@ -106,18 +115,18 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
   // Handle percentage button clicks
   const handlePercentageClick = (percentage: 10 | 25 | 50 | 100) => {
     // Use correct balance based on selected token type
-    const currentBalance = withdrawTokenType === 'sticky' ? stickyBalance.shares : autoWinBalance.shares
-    if (!currentBalance || currentBalance === 0n) return
+    const currentBalanceValue = effectiveWithdrawType === 'sticky' ? stickyBalance.shares : autoWinBalance.shares
+    if (!currentBalanceValue || currentBalanceValue === 0n) return
 
     const multiplier = percentage === 100 ? 1 : percentage / 100
-    const amount = BigInt(Math.floor(Number(currentBalance) * multiplier))
+    const amount = BigInt(Math.floor(Number(currentBalanceValue) * multiplier))
     setWithdrawAmount(amount)
     setSelectedPercentage(percentage)
   }
 
   // Reset form and refetch data after successful withdraw (for both Sticky and AutoWin)
   useEffect(() => {
-    const isSuccess = withdrawTokenType === 'sticky'
+    const isSuccess = effectiveWithdrawType === 'sticky'
       ? withdrawManager.withdraw.isSuccess
       : autoWinWithdrawManager.withdraw.isSuccess
 
@@ -127,7 +136,7 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
       setIsWithdrawModalOpen(false)
       onSuccess?.()
     }
-  }, [withdrawManager.withdraw.isSuccess, autoWinWithdrawManager.withdraw.isSuccess, withdrawTokenType, onSuccess])
+  }, [withdrawManager.withdraw.isSuccess, autoWinWithdrawManager.withdraw.isSuccess, effectiveWithdrawType, onSuccess])
 
   return (
     <>
@@ -181,14 +190,16 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
         {/* Tab Navigation */}
         <div className="VaultDetailPage__FormTabs">
           <button
-            className={`btn btn--tiny ${activeTab === 'deposit' ? 'btn__main' : 'btn__shade'}`}
+            className={`btn btn--tiny ${activeTab === 'deposit' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
             onClick={() => setActiveTab('deposit')}
+            type="button"
           >
             Deposit
           </button>
           <button
-            className={`btn btn--tiny ${activeTab === 'withdraw' ? 'btn__main' : 'btn__shade'}`}
+            className={`btn btn--tiny ${activeTab === 'withdraw' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
             onClick={() => setActiveTab('withdraw')}
+            type="button"
           >
             Withdraw
           </button>
@@ -200,50 +211,57 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
             <DepositForm vault={vault?.id} t0={token0} t1={token1} autoWinVault={autoWinVault} onSuccess={handleDepositSuccess} />
           ) : (
             <div className="VaultDetailPage__WithdrawForm">
-              {/* Token Type Selection */}
-              <div className="VaultDetailPage__FormTabs" style={{ marginBottom: '0.05rem' }}>
-                <button
-                  className={`btn btn--tiny ${withdrawTokenType === 'sticky' ? 'btn__main' : 'btn__shade'}`}
-                  onClick={() => {
-                    setWithdrawTokenType('sticky')
-                    setWithdrawAmount(0n)
-                    setSelectedPercentage(null)
-                  }}
-                  style={{ fontSize: '0.7rem' }}
-                >
-                  <img src={stickyVaultIcon} alt="Sticky" style={{ marginRight: '6px' }} className="StickyIcon" /> Sticky-Token
-                </button>
-                <button
-                  className={`btn btn--tiny ${withdrawTokenType === 'autowin' ? 'btn__main' : 'btn__shade'}`}
-                  onClick={() => {
-                    setWithdrawTokenType('autowin')
-                    setWithdrawAmount(0n)
-                    setSelectedPercentage(null)
-                  }}
-                  style={{ fontSize: '0.7rem' }}
-                >
-                  <img src={autoWinVaultIcon} alt="AutoWin" style={{ marginRight: '6px' }} className="AWStickyIcon" />
-                  AW-Sticky-Token
-                </button>
-              </div>
+              {hasAutoWin && (
+                <div className="VaultDetailPage__FormTabs" style={{ marginBottom: '0.05rem' }}>
+                  <button
+                    className={`btn btn--tiny ${effectiveWithdrawType === 'sticky' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
+                    onClick={() => {
+                      setWithdrawTokenType('sticky')
+                      setWithdrawAmount(0n)
+                      setSelectedPercentage(null)
+                    }}
+                    style={{ fontSize: '0.7rem' }}
+                    type="button"
+                  >
+                    <img src={stickyVaultIcon} alt="Sticky" style={{ marginRight: '6px' }} className="StickyIcon" /> Sticky-Token
+                  </button>
+                  <button
+                    className={`btn btn--tiny ${effectiveWithdrawType === 'autowin' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
+                    onClick={() => {
+                      setWithdrawTokenType('autowin')
+                      setWithdrawAmount(0n)
+                      setSelectedPercentage(null)
+                    }}
+                    style={{ fontSize: '0.7rem' }}
+                    type="button"
+                  >
+                    <img src={autoWinVaultIcon} alt="AutoWin" style={{ marginRight: '6px' }} className="AWStickyIcon" />
+                    AW-Sticky-Token
+                  </button>
+                </div>
+              )}
 
-
-              {/* Withdraw Input */}
               <div className="VaultDetailPage__WithdrawInput">
                 <LiquidityInput
-                  selectedToken={{
-                    address: withdrawTokenType === 'sticky' ? vault.address as `0x${string}` : autoWinVault as `0x${string}`,
-                    symbol: withdrawTokenType === 'sticky' ? `${token0.symbol}-${token1.symbol}` : `AW-${token0.symbol}-${token1.symbol}`,
-                    name: withdrawTokenType === 'sticky' ? `${token0.symbol}-${token1.symbol}` : `AW-${token0.symbol}-${token1.symbol}`,
+                  selectedToken={effectiveWithdrawType === 'autowin' && autoWinVault ? {
+                    address: autoWinVault as `0x${string}`,
+                    symbol: `AW-${token0.symbol}-${token1.symbol}`,
+                    name: `AW-${token0.symbol}-${token1.symbol}`,
                     decimals: 18,
-                    logoUri: withdrawTokenType === 'sticky' ? stickyVaultIcon : autoWinVaultIcon
+                    logoUri: autoWinVaultIcon
+                  } : {
+                    address: vault.address as `0x${string}`,
+                    symbol: `${token0.symbol}-${token1.symbol}`,
+                    name: `${token0.symbol}-${token1.symbol}`,
+                    decimals: 18,
+                    logoUri: stickyVaultIcon
                   }}
                   onAmountChange={setWithdrawAmount}
                   value={withdrawAmount}
                   isOverBalance={false}
                   showMaxButton={true}
                   customUsdValue={currentPricePerShare}
-                  customBalance={currentBalance.shares}
+                  customBalance={effectiveWithdrawType === 'autowin' ? autoWinBalance.shares : currentBalance.shares}
                 />
               </div>
 
@@ -252,28 +270,28 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
                 <button
                   className={`btn btn--tiny ${selectedPercentage === 10 ? 'btn__main' : 'btn__shade'}`}
                   onClick={() => handlePercentageClick(10)}
-                  disabled={withdrawTokenType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
+                  disabled={effectiveWithdrawType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
                 >
                   10%
                 </button>
                 <button
                   className={`btn btn--tiny ${selectedPercentage === 25 ? 'btn__main' : 'btn__shade'}`}
                   onClick={() => handlePercentageClick(25)}
-                  disabled={withdrawTokenType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
+                  disabled={effectiveWithdrawType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
                 >
                   25%
                 </button>
                 <button
                   className={`btn btn--tiny ${selectedPercentage === 50 ? 'btn__main' : 'btn__shade'}`}
                   onClick={() => handlePercentageClick(50)}
-                  disabled={withdrawTokenType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
+                  disabled={effectiveWithdrawType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
                 >
                   50%
                 </button>
                 <button
                   className={`btn btn--tiny ${selectedPercentage === 100 ? 'btn__main' : 'btn__shade'}`}
                   onClick={() => handlePercentageClick(100)}
-                  disabled={withdrawTokenType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
+                  disabled={effectiveWithdrawType === 'sticky' ? !stickyBalance.shares || stickyBalance.shares === 0n : !autoWinBalance.shares || autoWinBalance.shares === 0n}
                 >
                   MAX
                 </button>
@@ -308,15 +326,15 @@ export const UserVaultDetail = ({ vault, token0, token1, autoWinVault, onSuccess
               <WithdrawModal
                 isOpen={isWithdrawModalOpen}
                 onClose={() => setIsWithdrawModalOpen(false)}
-                withdrawHook={withdrawTokenType === 'sticky' ? withdrawManager : autoWinWithdrawManager}
+                withdrawHook={effectiveWithdrawType === 'sticky' ? withdrawManager : autoWinWithdrawManager}
                 token0={token0}
                 token1={token1}
                 withdrawAmount={withdrawAmount}
-                pooledAmount0={withdrawTokenType === 'sticky' ? pooledAmounts.amount0 : undefined}
-                pooledAmount1={withdrawTokenType === 'sticky' ? pooledAmounts.amount1 : undefined}
-                vaultAddress={withdrawTokenType === 'sticky' ? vault?.id : autoWinVault}
+                pooledAmount0={effectiveWithdrawType === 'sticky' ? pooledAmounts.amount0 : undefined}
+                pooledAmount1={effectiveWithdrawType === 'sticky' ? pooledAmounts.amount1 : undefined}
+                vaultAddress={effectiveWithdrawType === 'sticky' ? vault?.id : autoWinVault}
                 onSuccess={onSuccess}
-                tokenType={withdrawTokenType}
+                tokenType={effectiveWithdrawType}
               />
             </div>
           )}

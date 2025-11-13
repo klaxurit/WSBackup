@@ -154,7 +154,7 @@ export const useSwap = (params: SwapParams): UseSwapReturn => {
     tokenOut,
     amountIn,
     slippageTolerance = 0.05,
-    deadline = 20,
+    deadline = 5,
     recipient,
   } = params
 

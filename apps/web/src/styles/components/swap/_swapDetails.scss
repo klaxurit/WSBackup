@@ -83,20 +83,16 @@
   &__PriceFee {
     color: $white;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
+    @include typography('caption');
     font-weight: 400;
-    line-height: 140%;
     letter-spacing: -0.029px;
   }
 
   &__PriceFeeInUSD {
     color: $onyx-pure;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
+    @include typography('caption');
     font-weight: 400;
-    line-height: 140%;
     letter-spacing: -0.029px;
   }
 
@@ -144,10 +140,8 @@
     gap: 4px;
     color: $onyx-pure;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
+    @include typography('caption');
     font-weight: 400;
-    line-height: 140%;
     letter-spacing: -0.029px;
   }
 
@@ -157,10 +151,8 @@
     color: $white;
     text-align: right;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
+    @include typography('caption');
     font-weight: 400;
-    line-height: 140%;
     letter-spacing: -0.029px;
     display: flex;
     justify-content: flex-end;
@@ -186,10 +178,8 @@
     color: $onyx-pure;
     text-align: right;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
+    @include typography('caption');
     font-weight: 500;
-    line-height: 140%;
     letter-spacing: -0.029px;
   }
 

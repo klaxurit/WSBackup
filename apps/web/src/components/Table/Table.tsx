@@ -324,6 +324,13 @@ export function Table<T = any>({
 
   return (
     <div className={wrapperClasses}>
+      {isLoading && (
+        <div className="Table__LoadingOverlay">
+          <div className="Table__LoadingContainer">
+            <Loader size="desktop" />
+          </div>
+        </div>
+      )}
       <div className={scrollClassName}>
         <table className={`${tableClassName} Table--bordered`}>
           <thead>
@@ -351,10 +358,8 @@ export function Table<T = any>({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={columns.length} className="Table__Empty">
-                  <div className="Table__LoadingContainer">
-                    <Loader size="desktop" />
-                  </div>
+                <td colSpan={columns.length} className="Table__Empty" style={{ height: '300px' }}>
+                  {/* Empty cell to maintain table structure and minimum height */}
                 </td>
               </tr>
             ) : sortedData.length === 0 ? (

@@ -2,7 +2,6 @@ import React from 'react';
 import Table, { type TableColumn } from '../Table/Table';
 import { StickyIcon } from '../Common/StickyIcon';
 import { AutoWinIcon } from '../Common/AutoWinIcon';
-import { formatNumber } from '../../utils/formatNumber';
 import { formatTokenAmount } from '../../utils/formatTokenAmount';
 
 interface UserPosition {
@@ -43,7 +42,7 @@ export const UserPositionsTable: React.FC<UserPositionsTableProps> = ({
       sortValue: (row) => row.valueUSD,
       render: (row) => (
         <span className="UserPositionsTable__ValueCell">
-          ${formatNumber(row.valueUSD)}
+          ${Number(row.valueUSD).toFixed(2)}
         </span>
       )
     },
@@ -63,9 +62,18 @@ export const UserPositionsTable: React.FC<UserPositionsTableProps> = ({
           <span className="UserPositionsTable__TokenName">
             {row.tokenName}
           </span>
-          <span className="UserPositionsTable__TokenAmount">
-            {formatTokenAmount(row.tokenAmount, 18)}
-          </span>
+        </span>
+      )
+    },
+    {
+      label: 'Amount',
+      key: 'amount',
+      className: 'UserPositionsTable__AmountTd',
+      sortable: true,
+      sortValue: (row) => Number(formatTokenAmount(row.tokenAmount, 18)),
+      render: (row) => (
+        <span className="UserPositionsTable__AmountCell">
+          {formatTokenAmount(row.tokenAmount, 18)}
         </span>
       )
     },
@@ -77,7 +85,7 @@ export const UserPositionsTable: React.FC<UserPositionsTableProps> = ({
       sortValue: (row) => row.apr,
       render: (row) => (
         <span className="UserPositionsTable__AprCell">
-          {row.apr > 0 ? `${row.apr}%` : '-'}
+          {row.apr > 0 ? `${Number(row.apr).toFixed(2)}%` : '-'}
         </span>
       )
     }

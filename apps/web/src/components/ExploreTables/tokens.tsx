@@ -1,10 +1,10 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenLogo } from '../Common/TokenLogo';
-import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from "react";
 import { formatNumber } from "../../utils/formatNumber";
+import { formatTokenForDisplay } from '../../utils/tokenDisplay';
 
 // Configuration des champs triables pour les tokens
 const TOKEN_SORT_CONFIG = {
@@ -292,8 +292,8 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
       sortable: true,
       sortValue: (row) => row.name || row.symbol || '',
       render: (row) => {
-        const isStickyToken = row.symbol?.startsWith('STICKY') || row.name?.includes('Sticky Vault');
-        const displayName = isStickyToken ? row.symbol : `${row.symbol} - ${row.name}`;
+        const displayToken = formatTokenForDisplay(row);
+        const displayName = `${displayToken.symbol} - ${displayToken.name}`;
 
         return (
           <span className="TokensTable__NameCell">
@@ -303,7 +303,6 @@ export const TokensTable = ({ searchValue }: { searchValue: string }) => {
             <span className="TokensTable__NameText">
               {displayName}
             </span>
-            <ExplorerLink address={row.id || ''} type="token" />
           </span>
         );
       }

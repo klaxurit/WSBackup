@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 type SearchBarProps = {
   searchValue: string;
@@ -19,6 +19,38 @@ export const SearchBar = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const cleanSearchBar = () => setSearchValue("");
+
+  // Add keyboard shortcut handler for "/" key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle "/" key when not in an input/textarea and when the component is visible
+      if (
+        e.key === "/" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA" &&
+        !document.activeElement?.hasAttribute("contenteditable")
+      ) {
+        // Check if this input is visible before trying to focus it
+        const inputElement = inputRef.current;
+        if (!inputElement) return;
+
+        // Check if the input or its parent container is visible
+        const isVisible = inputElement.offsetParent !== null;
+        if (!isVisible) return;
+
+        e.preventDefault(); // Prevent "/" from being typed
+        inputElement.focus();
+
+        // If in compact mode and not expanded, expand it
+        if (mode === 'compact' && !isExpanded) {
+          setIsExpanded(true);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, isExpanded]);
 
   const handleIconClick = () => {
     if (mode === 'compact' && !isExpanded) {

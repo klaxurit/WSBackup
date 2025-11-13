@@ -1,6 +1,5 @@
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import { ExplorerLink } from '../Common/ExplorerLink';
 import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
@@ -47,6 +46,7 @@ const GET_STICKYVAULTS = `
       }
       autoWinVaultRef {
         id
+        estimatedAPR
         positions(where: {user: $user}) {
           items {
             shares
@@ -92,8 +92,9 @@ const GET_STICKYVAULTS = `
 `
 
 const BL = [
-  "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303" // Sticky Vault WETH-USDC.e-0.05%
-]
+  "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303", // Sticky Vault WETH-USDC.e-0.05%
+  "0x01716554a6125db2e140e01a4dc6412813aaf048" // Sticky Vault WBTC-brBTC-0.01%
+].map((address) => address.toLowerCase());
 
 export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   const navigate = useNavigate();
@@ -268,7 +269,7 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
 
   const filteredVaults = useMemo(() => {
     if (!vaults) return []
-    const approvedVaults = vaults.filter((v: any) => !BL.includes(v.id))
+    const approvedVaults = vaults.filter((v: any) => !BL.includes((v.id as string).toLowerCase()))
 
     if (!searchValue) return approvedVaults
     return approvedVaults.filter((vault: any) =>
@@ -303,7 +304,6 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
           <span className="VaultsTable__VaultName">
             {row?.name ? row.name : `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`}
           </span>
-          <ExplorerLink address={row.id} />
         </span>
       )
     },
@@ -350,19 +350,41 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
-        return row?.apr || 0;
+        const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;
+        const maxPotentialAPR = parseFloat(dayData?.maxPotentialAPR || '0');
+        const currentAPR = parseFloat(dayData?.apr || '0');
+
+        // Check if this vault has AutoWin
+        const hasAutoWin = row.autoWinVault && row.autoWinVault !== '0x0000000000000000000000000000000000000000';
+        const autoWinEstimatedAPR = hasAutoWin ? parseFloat(row.autoWinVaultRef?.estimatedAPR || '0') : 0;
+
+        // For AutoWin vaults, sort by: maxPotentialAPR + estimatedBGT
+        const sortAPR = hasAutoWin && autoWinEstimatedAPR > 0
+          ? maxPotentialAPR + autoWinEstimatedAPR
+          : maxPotentialAPR || currentAPR;
+
+        return sortAPR || 0;
       },
       render: (row) => {
         const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;
-        const currentAPR = dayData?.apr || 0;
-        const maxPotentialAPR = dayData?.maxPotentialAPR || 0;
+        const currentAPR = parseFloat(dayData?.apr || '0');
+        const maxPotentialAPR = parseFloat(dayData?.maxPotentialAPR || '0');
+
+        // Check if this vault has AutoWin
+        const hasAutoWin = row.autoWinVault && row.autoWinVault !== '0x0000000000000000000000000000000000000000';
+        const autoWinEstimatedAPR = hasAutoWin ? parseFloat(row.autoWinVaultRef?.estimatedAPR || '0') : 0;
+
+        // For AutoWin vaults, display: maxPotentialAPR + estimatedBGT
+        const displayAPR = hasAutoWin && autoWinEstimatedAPR > 0
+          ? maxPotentialAPR + autoWinEstimatedAPR
+          : maxPotentialAPR || currentAPR;
 
         return (
           <span className="VaultsTable__AprCell">
-            {dayData && (maxPotentialAPR !== 0 || currentAPR !== 0)
+            {dayData && (displayAPR !== 0 || currentAPR !== 0)
               ? (
                 <div className="VaultsTable__AprWrapper">
-                  <div className="VaultsTable__CurrentApr">{maxPotentialAPR ?? currentAPR}%</div>
+                  <div className="VaultsTable__CurrentApr">{Number(displayAPR).toFixed(2)}%</div>
                 </div>
               )
               : "-"}

@@ -15,6 +15,13 @@
     gap: 0;
   }
 
+  &__SectionHeadTitleLeft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+  }
+
   &__AddLiquidityBtn {
     margin-bottom: 12px;
 
@@ -59,7 +66,7 @@
     align-items: center;
     gap: 8px;
     color: #8A8984;
-    font-size: 14px;
+    @include typography('body-sm');
 
     @media (max-width: 600px) {
       margin-bottom: 24px;
@@ -82,7 +89,7 @@
 
     &Address {
       color: #8A8984;
-      font-size: 12px;
+      @include typography('caption');
       margin-left: 8px;
       padding: 2px 8px;
       background: rgba(255, 255, 255, 0.1);
@@ -157,8 +164,7 @@
     &Title {
       margin: 0;
       color: #fff;
-      font-size: 24px;
-      font-weight: 600;
+      @include typography('heading-lg');
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -168,15 +174,8 @@
       width: 100%;
 
       @media (max-width: 600px) {
-        font-size: 18px;
+        @include typography('heading-md');
       }
-    }
-
-    &TitleLeft {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      height: 40px;
     }
 
     &TitleRight {
@@ -188,8 +187,8 @@
   }
 
   &__Name {
+    @include typography('heading-2xl');
     font-weight: 700;
-    font-size: 20px;
     line-height: 40px;
     height: 40px;
     display: flex;
@@ -198,22 +197,24 @@
     white-space: nowrap;
 
     @media (max-width: 600px) {
-      font-size: 18px;
+      @include typography('heading-xl');
+      font-weight: 700;
     }
   }
 
   &__Fee {
-    color: #E39229;
-    font-weight: 600;
-    font-size: 16px;
-    margin-left: 8px;
-    line-height: 40px;
-    height: 40px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     padding: 4px 12px;
+    border-radius: 8px;
+    @include typography('caption');
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
     background: rgba(227, 146, 41, 0.15);
-    border-radius: 20px;
+    color: $beryl-pure;
+    border: 1px solid rgba(227, 146, 41, 0.3);
   }
 
   &__IconLink {
@@ -251,13 +252,12 @@
     }
 
     &Title {
-      font-size: 20px;
-      font-weight: 600;
+      @include typography('heading-md');
       color: #fff;
       margin-bottom: 16px;
 
       @media (max-width: 600px) {
-        font-size: 18px;
+        @include typography('heading-md');
         margin-bottom: 12px;
       }
     }
@@ -277,25 +277,24 @@
   &__StatCard {
 
     &Title {
-      font-size: 14px;
+      @include typography('body-sm');
       color: #8A8984;
       margin-bottom: 8px;
       font-weight: 500;
 
       @media (max-width: 600px) {
-        font-size: 13px;
         margin-bottom: 6px;
       }
     }
 
     &Label {
-      font-size: 18px;
-      font-weight: 600;
+      @include typography('heading-md');
       color: #fff;
       margin: 0;
 
       @media (max-width: 600px) {
-        font-size: 16px;
+        @include typography('body-lg');
+        font-weight: 600;
       }
     }
   }
@@ -310,13 +309,12 @@
 
   &__TransactionsSection {
     &Title {
-      font-size: 20px;
-      font-weight: 600;
+      @include typography('heading-md');
       color: #fff;
       margin-bottom: 16px;
 
       @media (max-width: 600px) {
-        font-size: 18px;
+        @include typography('heading-md');
         margin-bottom: 12px;
       }
     }
@@ -333,13 +331,13 @@
     }
 
     &Title {
-      font-size: 18px;
-      font-weight: 600;
+      @include typography('heading-md');
       color: #fff;
       margin: 0;
 
       @media (max-width: 600px) {
-        font-size: 16px;
+        @include typography('body-lg');
+        font-weight: 600;
       }
     }
   }
@@ -357,8 +355,9 @@
       gap: 6px;
       color: #8A8984;
       text-decoration: none;
-      font-size: 14px;
+      @include typography('body-sm');
       transition: color 0.15s;
+      line-height: 1.3;
 
       &:hover {
         color: #fff;
@@ -461,13 +460,13 @@
   }
 
   &__InfoLabel {
-    font-size: 14px;
+    @include typography('body-sm');
     color: #8A8984;
     font-weight: 500;
   }
 
   &__InfoValue {
-    font-size: 14px;
+    @include typography('body-sm');
     color: #fff;
     font-weight: 600;
     width: 100%;

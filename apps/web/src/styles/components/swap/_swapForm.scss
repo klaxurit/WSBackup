@@ -44,8 +44,7 @@
 
       .Form__head {
         h5 {
-          font-size: 1.25rem;
-          font-weight: 600;
+          @include typography('heading-lg');
           margin: 0;
         }
       }
@@ -77,7 +76,7 @@
       color: $beryl-pure;
       border: 1px solid $onyx-pure;
       border-radius: 8px;
-      font-size: 0.875rem;
+      @include typography('body-sm');
       cursor: pointer;
       transition: all 0.2s ease;
       text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
@@ -97,7 +96,8 @@
     align-self: stretch;
 
     h5 {
-      font-size: 16px;
+      @include typography('body-lg');
+      font-weight: 600;
       margin: 0;
       color: var(--Neutral-White, #fff);
     }
@@ -218,7 +218,8 @@
     p {
       color: #8a8984;
       margin: 0;
-      font-size: 12px;
+      @include typography('caption');
+      font-weight: 400;
     }
   }
 

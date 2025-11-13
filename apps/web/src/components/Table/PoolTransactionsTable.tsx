@@ -333,10 +333,10 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Type',
       key: 'type',
       render: (row: Transaction) => (
-        <span>
-          Swap
+        <span className="Table__CellText">
+          <span className="Table__CellLabel">Swap</span>
           <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
-          for
+          <span className="Table__CellLabel">for</span>
           <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
         </span>
       ),
@@ -355,17 +355,21 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
           const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
           const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
 
-          if (tokenOutValueUSD < 0.01) return "<0.01$";
+          if (tokenOutValueUSD < 0.01) {
+            return <span className="Table__CellValue Table__CellValue--usd">&lt;0.01$</span>;
+          }
           return (
-            <span>
+            <span className="Table__CellValue Table__CellValue--usd">
               ${tokenOutValueUSD.toFixed(2)}
             </span>
           );
         }
 
-        if (tokenInValueUSD < 0.01) return "<0.01$";
+        if (tokenInValueUSD < 0.01) {
+          return <span className="Table__CellValue Table__CellValue--usd">&lt;0.01$</span>;
+        }
         return (
-          <span>
+          <span className="Table__CellValue Table__CellValue--usd">
             ${tokenInValueUSD.toFixed(2)}
           </span>
         );
@@ -377,8 +381,10 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals))
         return (
-          <span>
-            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+          <span className="Table__CellText">
+            <span className="Table__CellValue">
+              {amount < 0.01 ? '<0.01' : amount.toFixed(2)}
+            </span>
             <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           </span>
         )
@@ -390,8 +396,10 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals))
         return (
-          <span>
-            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
+          <span className="Table__CellText">
+            <span className="Table__CellValue">
+              {amount < 0.01 ? '<0.01' : amount.toFixed(2)}
+            </span>
             <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
           </span>
         )

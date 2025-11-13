@@ -70,7 +70,7 @@ body {
   background-image: url("/background.svg");
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  font-size: 16px;
+  @include typography('body-lg');
   font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
   color: $white;
   position: relative;
@@ -87,14 +87,13 @@ body {
   h3,
   h4,
   h5 {
-    line-height: 120%;
     font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
     font-weight: 700;
     color: $white;
   }
 
   p {
-    line-height: 160%;
+    @include typography('body-md');
     margin: 0;
   }
 
@@ -102,11 +101,9 @@ body {
     text-decoration: none;
     color: $white;
     font-family: "TT Hoves", system-ui, sans-serif, system-ui, sans-serif;
-    font-size: 14px;
-    font-style: normal;
+    @include typography('body-sm');
     font-weight: 500;
-    line-height: 22.4px;
-    letter-spacing: 0.28px;
+    letter-spacing: 0.02em;
   }
 
   button {
@@ -115,28 +112,23 @@ body {
 
   // Heading sizes
   h1 {
-    letter-spacing: 0.96px;
-    font-size: 48px;
+    @include typography('display-2xl');
   }
 
   h2 {
-    font-size: 40px;
-    letter-spacing: 0.8px;
+    @include typography('display-lg');
   }
 
   h3 {
-    font-size: 32px;
-    letter-spacing: 0.64px;
+    @include typography('heading-3xl');
   }
 
   h4 {
-    font-size: 28px;
-    letter-spacing: 0.56px;
+    @include typography('heading-2xl');
   }
 
   h5 {
-    font-size: 24px;
-    letter-spacing: 0.48px;
+    @include typography('heading-xl');
   }
 }
 
@@ -163,23 +155,23 @@ body {
 @media (max-width: 768px) {
   body {
     h1 {
-      font-size: 36px;
+      @include typography('display-lg');
     }
 
     h2 {
-      font-size: 32px;
+      @include typography('heading-3xl');
     }
 
     h3 {
-      font-size: 28px;
+      @include typography('heading-2xl');
     }
 
     h4 {
-      font-size: 24px;
+      @include typography('heading-xl');
     }
 
     h5 {
-      font-size: 20px;
+      @include typography('heading-lg');
     }
   }
 }

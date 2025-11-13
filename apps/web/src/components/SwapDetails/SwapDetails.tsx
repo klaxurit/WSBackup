@@ -138,7 +138,7 @@ export const SwapDetails = ({ swap, fromToken, toToken, fromAmount }: SwapDetail
               onMouseEnter={() => setCurrentTooltip("priceImpact")}
               onMouseLeave={() => setHoveringTooltip(false)}
             >
-              {swap.quote.priceImpact > 0 ? `${(swap.quote.priceImpact * 100).toFixed(2)}%` : '<0.01%'}
+              {swap.quote.priceImpact > 0.01 ? `${swap.quote.priceImpact.toFixed(2)}%` : '<0.01%'}
             </p>
             {currentTooltip === "priceImpact" && (
               <Tooltip

@@ -3,10 +3,8 @@
 .tooltip {
   color: $onyx-light;
   font-family: "TT Hoves", system-ui, sans-serif;
-  font-size: 12px;
-  font-style: normal;
+  @include typography('caption');
   font-weight: 400;
-  line-height: 140%;
   letter-spacing: -0.029px;
   position: absolute;
   transform: translate(146%);
@@ -19,8 +17,7 @@
     text-decoration: none;
     color: $beryl-pure;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 12px;
-    font-style: normal;
+    @include typography('caption');
     font-weight: 500;
     line-height: 140%;
   }

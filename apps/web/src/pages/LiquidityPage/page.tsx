@@ -8,6 +8,8 @@ import { useAccount } from 'wagmi';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
 import honeyIcon from '../../assets/honey_icon.png';
 import NewBanner from '../../components/Common/NewBanner';
+import { isPoolBlacklisted } from '../../config/poolBlacklist';
+import { cleanTokenName } from '../../utils/tokenDisplay';
 import { FallbackImg } from '../../components/utils/FallbackImg';
 import { PageContentTransition } from '../../components/Transitions';
 import { Pool, Position, TickMath } from '@uniswap/v3-sdk';
@@ -21,7 +23,7 @@ import type { Address } from 'viem';
 // GraphQL queries for top pools and vaults
 const GET_TOP_POOLS = `
   query GetTopPools {
-    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 4) {
+    pools(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 50) {
       totalCount
       pageInfo {
         endCursor
@@ -64,7 +66,7 @@ const GET_TOP_POOLS = `
 
 const GET_TOP_VAULTS = `
   query GetTopVaults {
-    stickyVaults(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 4) {
+    stickyVaults(orderBy: "totalValueLockedUSD", orderDirection: "desc", limit: 50) {
       items {
         name
         txCount
@@ -229,6 +231,9 @@ query GetUserVaultPositions($user: String) {
   }
 }
 `;
+
+// Minimum $0.50 USD to consider a position as "open"
+const MIN_POSITION_VALUE_USD = 0.5;
 
 // Interfaces for top pools and vaults
 interface GraphQLPool {
@@ -418,7 +423,7 @@ const transformVaultPositionToFormattedPosition = (vault: GraphQLVaultWithPositi
   return {
     id: position.id,
     vaultId: vault.id,
-    vaultName: vault.name || `${vault.poolRef.token0Ref.symbol}/${vault.poolRef.token1Ref.symbol}`,
+    vaultName: cleanTokenName(vault.name) || `${vault.poolRef.token0Ref.symbol}/${vault.poolRef.token1Ref.symbol}`,
     token0Symbol: vault.poolRef.token0Ref.symbol,
     token1Symbol: vault.poolRef.token1Ref.symbol,
     token0LogoUri: vault.poolRef.token0Ref.logoUri,
@@ -754,17 +759,64 @@ const LiquidityPage: React.FC = () => {
   const filteredPositions = useMemo(() => {
     if (!allPositions) return []
     return allPositions.filter((p: any) => {
+      let positionValueUSD = 0;
+
       if (p.type === 'vault') {
-        // Pour les vaults, on considère qu'ils sont toujours "ouverts" s'ils ont des shares
-        return statusFilter === "open"
-          ? parseFloat(p.shares) > 0
-          : parseFloat(p.shares) === 0
+        // For vault positions: use currentValueUSD directly
+        positionValueUSD = parseFloat(p.currentValueUSD || '0');
       } else {
-        // Pour les pools, utiliser la logique existante
-        return statusFilter === "open"
-          ? p.liquidity !== "0"
-          : p.liquidity === "0"
+        // For pool positions: calculate USD value using the same logic as sorting
+        try {
+          const pool = p.poolRef;
+          const position = p;
+
+          // If no liquidity, the position value is 0
+          if (position.liquidity === "0" || !pool.sqrtPrice) {
+            positionValueUSD = 0;
+          } else {
+            // Calculate current tick from sqrtPrice
+            const currentTick = pool.tick ? Number(pool.tick) : TickMath.getTickAtSqrtRatio(JSBI.BigInt(pool.sqrtPrice));
+
+            // Create SDK pool
+            const sdkPool = new Pool(
+              new Token(currentChain.id, pool.token0Ref.id, pool.token0Ref.decimals || 18, pool.token0Ref.symbol, pool.token0Ref.name),
+              new Token(currentChain.id, pool.token1Ref.id, pool.token1Ref.decimals || 18, pool.token1Ref.symbol, pool.token1Ref.name),
+              pool.feeTier,
+              pool.sqrtPrice,
+              pool.liquidity,
+              currentTick
+            );
+
+            // Create SDK position
+            const sdkPosition = new Position({
+              pool: sdkPool,
+              tickLower: position.tickLower,
+              tickUpper: position.tickUpper,
+              liquidity: position.liquidity
+            });
+
+            // Get amounts from SDK
+            const amount0 = parseFloat(sdkPosition.amount0.toExact());
+            const amount1 = parseFloat(sdkPosition.amount1.toExact());
+
+            // Calculate total value with token prices
+            const token0Price = pool.token0Ref?.tokenDayData?.items?.[0]?.priceUSD || 0;
+            const token1Price = pool.token1Ref?.tokenDayData?.items?.[0]?.priceUSD || 0;
+
+            const amount0USD = amount0 * parseFloat(token0Price);
+            const amount1USD = amount1 * parseFloat(token1Price);
+            positionValueUSD = amount0USD + amount1USD;
+          }
+        } catch (error) {
+          console.error('Error calculating position USD value for filtering:', error);
+          positionValueUSD = 0;
+        }
       }
+
+      // Filter based on USD value threshold
+      return statusFilter === "open"
+        ? positionValueUSD >= MIN_POSITION_VALUE_USD
+        : positionValueUSD < MIN_POSITION_VALUE_USD;
     })
   }, [allPositions, statusFilter])
 
@@ -926,15 +978,21 @@ const LiquidityPage: React.FC = () => {
   const topPools: FormattedPool[] = useMemo(() => {
     if (!topPoolsData?.pools?.items) return []
     const pools = topPoolsData.pools.items.map(transformGraphQLPoolToFormattedPool)
-    // Trier par APR décroissant (plus haut APR en premier)
-    return pools.sort((a: FormattedPool, b: FormattedPool) => b.apr - a.apr)
+    // Filter pools with TVL >= 250, valid APR, and not blacklisted
+    return pools
+      .filter((p: FormattedPool) => p.tvlUSD >= 250 && p.apr > 0 && !isNaN(p.apr) && isFinite(p.apr) && !isPoolBlacklisted(p.address))
+      .sort((a: FormattedPool, b: FormattedPool) => b.apr - a.apr)
+      .slice(0, 4)
   }, [topPoolsData]);
 
   const topVaults: FormattedVault[] = useMemo(() => {
     if (!topVaultsData?.stickyVaults?.items) return []
     const vaults = topVaultsData.stickyVaults.items.map(transformGraphQLVaultToFormattedVault)
-    // Trier par APR décroissant (plus haut APR en premier)
-    return vaults.sort((a: FormattedVault, b: FormattedVault) => b.apr - a.apr)
+    // Filter vaults with TVL >= 250 and valid APR, then sort by APR descending and take top 4
+    return vaults
+      .filter((v: FormattedVault) => v.tvlUSD >= 250 && v.apr > 0 && !isNaN(v.apr) && isFinite(v.apr))
+      .sort((a: FormattedVault, b: FormattedVault) => b.apr - a.apr)
+      .slice(0, 4)
   }, [topVaultsData]);
 
   return (
@@ -1024,7 +1082,7 @@ const LiquidityPage: React.FC = () => {
                       size={16}
                     />
                     <span className="LiquidityPage__TopVaultUltraCompact__Symbol">
-                      {vault.name.replace('Sticky Vault ', '')}
+                      {cleanTokenName(vault.name)}
                     </span>
                     <span className="LiquidityPage__TopVaultUltraCompact__Apr">
                       {vault.apr && typeof vault.apr === 'number' ? vault.apr.toFixed(1) : '0.0'}%
@@ -1041,12 +1099,14 @@ const LiquidityPage: React.FC = () => {
             <h2 className="LiquidityPage__Title">Your positions</h2>
             <div className="LiquidityPage__FilterButtons" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
-                className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main' : 'btn__shade'}`}
+                className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
                 onClick={() => setStatusFilter('open')}
+                type="button"
               >Open</button>
               <button
-                className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main' : 'btn__shade'}`}
+                className={`btn btn--tiny ${statusFilter === 'closed' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
                 onClick={() => setStatusFilter('closed')}
+                type="button"
               >Closed</button>
               {isConnected && (
                 <Link className="btn btn--tiny btn__accent" to="/liquidity/create">New</Link>

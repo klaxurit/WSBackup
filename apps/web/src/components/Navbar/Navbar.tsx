@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { TokenLogo } from '../Common/TokenLogo';
 import { SafeImage } from '../utils/SafeImage';
 import { ensureArray } from '../../utils/dataValidation';
+import { formatTokenForDisplay } from '../../utils/tokenDisplay';
 
 const Navbar = () => {
   const [searchValue, setSearchValue] = useState<string>("");
@@ -80,8 +81,8 @@ const Navbar = () => {
                               />
                               : <TokenLogo logoUri={null} symbol={token.symbol} size={22} />}
                           </div>
-                          <span className="GlobalSearch__TokenSymbol">{token.symbol}</span>
-                          <span className="GlobalSearch__TokenName">{token.name}</span>
+                          <span className="GlobalSearch__TokenSymbol">{formatTokenForDisplay(token).symbol}</span>
+                          <span className="GlobalSearch__TokenName">{formatTokenForDisplay(token).name}</span>
                         </div>
                       </Link>
                     ))}

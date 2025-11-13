@@ -98,7 +98,7 @@
   background: none;
   border: none;
   color: $white-064;
-  font-size: 20px;
+  font-size: var(--font-size-heading-lg, 1.25rem);
   cursor: pointer;
   z-index: 3;
   width: 32px;
@@ -131,7 +131,7 @@
 
 .MobileMenuModal__Link {
   color: $beryl-medium;
-  font-size: 1.7rem;
+  @include typography('heading-2xl');
   font-weight: 600;
   opacity: 0.85;
   margin-top: 0;

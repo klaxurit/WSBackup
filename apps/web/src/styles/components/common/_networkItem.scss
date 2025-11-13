@@ -30,8 +30,8 @@
 }
 
 .Modal__ItemName {
+  @include typography('body-lg');
   font-weight: 700;
-  font-size: 16px;
 }
 
 .Modal__ItemDetails {
@@ -42,13 +42,12 @@
 
 .Modal__ItemSymbol {
   color: #8a8984;
-  font-size: 14px;
+  @include typography('body-sm');
 }
 
 .Modal__ItemAddress {
   color: #bdbdbd;
-  font-size: 13px;
-  font-family: monospace;
+  @include typography('mono');
   margin-left: 4px;
 }
 
@@ -61,14 +60,14 @@
 }
 
 .Modal__ItemPrice {
-  font-size: 14px;
   color: #bdbdbd;
+  @include typography('body-sm');
   font-weight: 500;
   margin-bottom: 2px;
 }
 
 .Modal__ItemBalance {
-  font-size: 15px;
   color: #FFD056;
+  @include typography('body-md');
   font-weight: 600;
 }

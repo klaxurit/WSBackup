@@ -19,6 +19,7 @@ interface UseAutoWinPositionReturn {
   valueInUSD: number
   isLoading: boolean
   error: Error | null
+  refetch: () => void
 }
 
 export function useAutoWinPosition({
@@ -110,11 +111,19 @@ export function useAutoWinPosition({
     return proportion * tvlUSD
   }, [assetsValue, vaultTotalSupply, vaultTVL_USD])
 
+  // Function to refetch all balance data
+  const refetch = () => {
+    refetchBalance()
+    refetchAssets()
+    refetchTotalSupply()
+  }
+
   return {
     shares: userBalance || sharesBigInt || 0n,
     valueInAssets: assetsValue,
     valueInUSD,
     isLoading: isLoadingBalance || isLoadingAssets || isLoadingTotalSupply,
     error: null,
+    refetch
   }
 }

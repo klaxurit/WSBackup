@@ -22,14 +22,16 @@ export const DepositForm = ({ vault, t0, t1, autoWinVault, onSuccess }: DepositF
       {/* Deposit Mode Tabs */}
       <div className="VaultDetailPage__DepositModeTabs">
         <button
-          className={`btn btn--tiny ${depositMode === 'double' ? 'btn__main' : 'btn__shade'}`}
+          className={`btn btn--tiny ${depositMode === 'double' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
           onClick={() => setDepositMode('double')}
+          type="button"
         >
           Double-sided
         </button>
         <button
-          className={`btn btn--tiny ${depositMode === 'single' ? 'btn__main' : 'btn__shade'}`}
+          className={`btn btn--tiny ${depositMode === 'single' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
           onClick={() => setDepositMode('single')}
+          type="button"
         >
           Single-sided
         </button>

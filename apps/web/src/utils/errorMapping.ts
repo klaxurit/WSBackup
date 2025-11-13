@@ -37,35 +37,102 @@ export interface ErrorMappingParams {
 
 /**
  * Common error patterns to match against error messages
+ * Enhanced with Viem/Wagmi specific error patterns
+ *
+ * IMPORTANT: Pattern matching order is defined by ERROR_PRIORITY array below
+ * to ensure most specific errors are detected first
  */
 const ERROR_PATTERNS: Record<ErrorType, string[]> = {
-  INSUFFICIENT_BALANCE: [
-    'insufficient balance',
-    'balance too low',
-    'not enough',
-    'transfer amount exceeds balance',
-    'insufficient funds'
-  ],
-  SLIPPAGE_EXCEEDED: [
-    'slippage tolerance exceeded',
-    'price slippage',
-    'too much slippage',
-    'slippage too high',
-    'price moved too much'
-  ],
-  EXECUTION_REVERTED: [
-    'execution reverted',
-    'transaction reverted',
-    'revert',
-    'call exception',
-    'failed to execute'
-  ],
   USER_REJECTED: [
     'user rejected',
     'user denied',
     'cancelled by user',
     'transaction was cancelled',
-    'rejected transaction'
+    'rejected transaction',
+    // Wagmi/Viem specific patterns
+    'user rejected the request',
+    'userrejectedrequesterror',
+    'user denied transaction signature',
+    'user canceled',
+    'action_rejected',
+    'user cancelled',
+    'rejected by user',
+    'wallet_requestpermissions_rejected'
+  ],
+  INSUFFICIENT_BALANCE: [
+    'insufficient balance',
+    'balance too low',
+    'not enough',
+    'transfer amount exceeds balance',
+    'insufficient funds',
+    // Viem/Wagmi patterns
+    'transferfrom failed',
+    'erc20: transfer amount exceeds balance',
+    'insufficient eth balance',
+    'balance is insufficient'
+  ],
+  APPROVAL_NEEDED: [
+    'approval needed',
+    'allowance',
+    'approve token',
+    'insufficient allowance',
+    // ERC20 specific patterns
+    'erc20: insufficient allowance',
+    'transfer amount exceeds allowance'
+  ],
+  SLIPPAGE_EXCEEDED: [
+    'slippage tolerance exceeded',
+    'price slippage check',
+    'too much slippage',
+    'slippage too high',
+    'price moved too much',
+    // Uniswap V3 specific patterns
+    'too little received',
+    'too much requested',
+    'price impact too high',
+    'spr', // Slippage Protection Required
+    'amount0min',
+    'amount1min'
+  ],
+  INSUFFICIENT_LIQUIDITY: [
+    'insufficient liquidity',
+    'not enough liquidity',
+    'liquidity too low',
+    'no liquidity',
+    // Uniswap V3 specific patterns
+    'liquidity underflow',
+    'loc', // Lack of Liquidity
+    'pool has insufficient liquidity'
+  ],
+  DEADLINE_EXCEEDED: [
+    'deadline exceeded',
+    'transaction too old',
+    'expired',
+    'deadline passed',
+    // Uniswap specific patterns
+    'transaction too old',
+    'deadline has passed'
+  ],
+  INVALID_AMOUNT: [
+    'invalid amount',
+    'amount too small',
+    'amount too large',
+    'zero amount',
+    // Contract specific patterns
+    'amount cannot be zero',
+    'invalid input amount',
+    'amounts must be greater than 0'
+  ],
+  GAS_ESTIMATION_FAILED: [
+    'gas estimation failed',
+    'cannot estimate gas',
+    'gas limit exceeded',
+    'out of gas',
+    // Viem specific patterns
+    'transaction may fail',
+    'gas required exceeds allowance',
+    'intrinsic gas too low',
+    'base fee exceeds gas limit'
   ],
   NETWORK_ERROR: [
     'network error',
@@ -73,50 +140,70 @@ const ERROR_PATTERNS: Record<ErrorType, string[]> = {
     'timeout',
     'rpc error',
     'network timeout',
-    'fetch failed'
+    'fetch failed',
+    // Viem/Web3 specific patterns
+    'rpc request failed',
+    'could not detect network',
+    'network changed',
+    'provider error',
+    'chain mismatch',
+    'unsupported chain'
   ],
-  APPROVAL_NEEDED: [
-    'approval needed',
-    'allowance',
-    'approve token',
-    'insufficient allowance'
-  ],
-  INSUFFICIENT_LIQUIDITY: [
-    'insufficient liquidity',
-    'not enough liquidity',
-    'liquidity too low',
-    'no liquidity'
-  ],
-  DEADLINE_EXCEEDED: [
-    'deadline exceeded',
-    'transaction too old',
-    'expired',
-    'deadline passed'
-  ],
-  INVALID_AMOUNT: [
-    'invalid amount',
-    'amount too small',
-    'amount too large',
-    'zero amount'
-  ],
-  GAS_ESTIMATION_FAILED: [
-    'gas estimation failed',
-    'cannot estimate gas',
-    'gas limit exceeded',
-    'out of gas'
+  EXECUTION_REVERTED: [
+    'execution reverted',
+    'transaction reverted',
+    'revert',
+    'call exception',
+    'failed to execute',
+    // Viem specific patterns
+    'contractfunctionrevertederror',
+    'contract function reverted',
+    'transaction failed'
   ],
   UNKNOWN_ERROR: []
 };
 
 /**
+ * Priority order for error pattern matching
+ * Most specific errors are checked first to prevent false matches
+ *
+ * Priority rationale:
+ * 1. USER_REJECTED - Most specific user action, should never be misclassified
+ * 2. INSUFFICIENT_BALANCE - Clear wallet state issue
+ * 3. APPROVAL_NEEDED - Specific token permission issue
+ * 4. SLIPPAGE_EXCEEDED - Specific trade condition
+ * 5. INSUFFICIENT_LIQUIDITY - Specific pool condition
+ * 6. DEADLINE_EXCEEDED - Specific timing issue
+ * 7. INVALID_AMOUNT - Specific input validation
+ * 8. GAS_ESTIMATION_FAILED - Gas-related issues
+ * 9. NETWORK_ERROR - Network connectivity issues
+ * 10. EXECUTION_REVERTED - Generic contract revert (catch-all for contract errors)
+ */
+const ERROR_PRIORITY: ErrorType[] = [
+  'USER_REJECTED',
+  'INSUFFICIENT_BALANCE',
+  'APPROVAL_NEEDED',
+  'SLIPPAGE_EXCEEDED',
+  'INSUFFICIENT_LIQUIDITY',
+  'DEADLINE_EXCEEDED',
+  'INVALID_AMOUNT',
+  'GAS_ESTIMATION_FAILED',
+  'NETWORK_ERROR',
+  'EXECUTION_REVERTED'
+];
+
+/**
  * Classify error based on error message
+ * Uses priority-based matching to ensure most specific errors are detected first
  */
 export function classifyError(errorMessage: string): ErrorType {
   const message = errorMessage.toLowerCase();
 
-  for (const [errorType, patterns] of Object.entries(ERROR_PATTERNS)) {
+  // Check errors in priority order to prevent false matches
+  for (const errorType of ERROR_PRIORITY) {
+    const patterns = ERROR_PATTERNS[errorType];
     if (patterns.some(pattern => message.includes(pattern))) {
-      return errorType as ErrorType;
+      return errorType;
     }
   }
 
@@ -330,24 +417,89 @@ export function mapErrorToUserMessage(
 }
 
 /**
+ * Extract error message from various error types including Viem errors
+ */
+function extractErrorMessage(error: Error | string | unknown): string {
+  // Direct string error
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  // Standard Error object
+  if (error instanceof Error) {
+    let message = error.message;
+
+    // Check for Viem-specific error properties
+    const viemError = error as any;
+
+    // Extract cause message if available (Viem often nests errors)
+    if (viemError.cause?.message) {
+      message += ' ' + viemError.cause.message;
+    }
+
+    // Extract shortMessage if available (Viem user-friendly message)
+    if (viemError.shortMessage) {
+      message += ' ' + viemError.shortMessage;
+    }
+
+    // Extract details if available
+    if (viemError.details) {
+      message += ' ' + viemError.details;
+    }
+
+    // Extract reason from contract revert
+    if (viemError.reason) {
+      message += ' ' + viemError.reason;
+    }
+
+    // Extract data.message if available (some wallets return this)
+    if (viemError.data?.message) {
+      message += ' ' + viemError.data.message;
+    }
+
+    return message;
+  }
+
+  // Object with message property
+  if ((error as any)?.message) {
+    let message = (error as any).message;
+
+    // Check for nested error properties
+    if ((error as any)?.cause?.message) {
+      message += ' ' + (error as any).cause.message;
+    }
+
+    if ((error as any)?.shortMessage) {
+      message += ' ' + (error as any).shortMessage;
+    }
+
+    return message;
+  }
+
+  // Fallback
+  return 'Unknown error occurred';
+}
+
+/**
  * Main function to process any error and return mapped error info
+ * Works with standard errors, Viem errors, and Wagmi errors
  */
 export function processSwapError(
   error: Error | string | unknown,
   params: ErrorMappingParams
 ): MappedError {
-  let errorMessage = '';
-
-  if (error instanceof Error) {
-    errorMessage = error.message;
-  } else if (typeof error === 'string') {
-    errorMessage = error;
-  } else if ((error as any)?.message) {
-    errorMessage = (error as any).message
-  } else {
-    errorMessage = 'Unknown error occurred';
-  }
-
+  const errorMessage = extractErrorMessage(error);
   const errorType = classifyError(errorMessage);
   return mapErrorToUserMessage(errorType, params);
+}
+
+/**
+ * Alias for processSwapError to use in other contexts (position, vault, etc.)
+ * Same functionality but with a more generic name
+ */
+export function processTransactionError(
+  error: Error | string | unknown,
+  params: ErrorMappingParams
+): MappedError {
+  return processSwapError(error, params);
 }
