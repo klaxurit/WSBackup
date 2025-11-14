@@ -5,7 +5,7 @@ import { SwapPageLayout } from './components/Layout/SwapPageLayout'
 import { WalletConnect } from './components/WalletConnect/WalletConnect'
 import TokenPage from './pages/TokenPage/page'
 import ExplorePage from './pages/ExplorePage/page'
-import LiquidityPage from './pages/LiquidityPage/page'
+import PortfolioPage from './pages/PortfolioPage/page'
 import CreatePoolPage from './pages/PositionPage/create/page'
 import LeaderboardPage from './pages/LeaderboardPage/page'
 import MobileChartTestPage from './pages/MobileChartTestPage/page'
@@ -49,7 +49,8 @@ function AppContent() {
               </div>
             } />
             <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/liquidity" element={<LiquidityPage />} />
+            <Route path="/liquidity" element={<PortfolioPage />} />
+            <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/liquidity/create" element={<CreatePoolPage />} />
             <Route path="/vault/:vaultAddress" element={<VaultDetailPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />

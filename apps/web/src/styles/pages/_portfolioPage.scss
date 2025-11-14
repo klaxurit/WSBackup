@@ -1,0 +1,561 @@
+@use "../utils" as *;
+
+.PortfolioPage {
+  padding: 0 1rem;
+  max-width: 1192px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 80vh;
+
+  &__FilterButtons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    // Désactiver les animations sur les boutons de filtrage
+    .btn {
+      transition: none !important;
+
+      &:hover {
+        transition: none !important;
+      }
+
+      &:active {
+        transition: none !important;
+      }
+
+      &:focus-visible {
+        transition: none !important;
+      }
+    }
+  }
+
+  &__ContentWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  &__MainRow {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    align-items: start;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+  }
+
+  &__Main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__TopSection {
+    width: 100%;
+    position: sticky;
+    top: 24px;
+
+    @media (max-width: 1200px) {
+      position: static;
+    }
+  }
+
+  &__Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+
+  &__Title {
+    margin: 0;
+    @include typography('heading-2xl');
+    font-weight: 700;
+    color: $beryl-pure;
+
+    @media (max-width: 600px) {
+      @include typography('heading-xl');
+    }
+  }
+
+  &__TableWrapper {
+    margin-bottom: 16px;
+    overflow-x: auto;
+    background: none;
+  }
+
+  &__Table {
+    // Hérite du style Table/Table--bordered
+    background: none;
+    color: #e0e0e0;
+    border-radius: 12px;
+    width: 100%;
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      @include typography('body-md');
+    }
+
+    thead th {
+      background: $white-004;
+      color: #aaa;
+      font-weight: 700;
+      border-bottom: 1px solid #232323;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #232323;
+      transition: background 0.13s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+    }
+  }
+
+  // StickyIcon styling for vault positions in PortfolioPage
+  &__VaultStickyIcon {
+    width: 18px;
+    height: 18px;
+    background: black;
+    border: 1px solid #e39229;
+    border-radius: 50%;
+  }
+
+  // Stats Header - Overview Section (Points, Referrals, Multiplier)
+  &__StatsHeader {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__StatsHeaderTitle {
+    @include typography('heading-lg');
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+
+  &__StatsHeaderEmpty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    p {
+      @include typography('body-md');
+      color: $white-056;
+      margin: 0;
+    }
+  }
+
+  &__StatsHeaderContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
+  &__StatsHeaderGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  &__StatCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  &__StatCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  &__StatCardLabel {
+    @include typography('body-sm');
+    font-weight: 600;
+    color: $white-064;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  &__StatCardValue {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include typography('heading-2xl');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    margin-top: 4px;
+
+    &--highlight {
+      color: $beryl-pure;
+    }
+  }
+
+  &__StatCardSubtext {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include typography('body-xs');
+    font-weight: 500;
+    color: $white-048;
+    margin-top: 4px;
+  }
+
+  &__StatCardRank {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__StatCardRankLabel {
+    @include typography('body-xs');
+    font-weight: 600;
+    color: $white-048;
+  }
+
+  &__StatCardRankValue {
+    @include typography('body-md');
+    font-weight: 700;
+    color: $beryl-pure;
+  }
+
+  &__StatCardButton {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  &__StatCardReferralInput {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+  }
+
+  &__StatCardInput {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    border-radius: 40px;
+    border: 1px solid var(--surface3, #232323);
+    background: $white-004;
+    padding: 0 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    @include typography('body-sm');
+
+    &:hover {
+      border-color: var(--surface4, #2a2a2a);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent1, #e39229);
+      box-shadow: 0px 0px 0px 4px rgba(227, 146, 41, 0.08);
+    }
+  }
+
+  &__StatCardBreakdown {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__StatCardBreakdownItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__StatCardBreakdownLabel {
+    @include typography('body-2xs');
+    font-weight: 600;
+    color: $white-048;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  &__StatCardBreakdownValue {
+    @include typography('body-sm');
+    font-weight: 700;
+    color: #fff;
+  }
+
+  &__StatCardBreakdownDivider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  // Referral Link Section
+  &__ReferralLink {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  &__ReferralLinkHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__ReferralLinkLabel {
+    @include typography('body-md');
+    font-weight: 600;
+    color: #fff;
+  }
+
+  &__ReferralLinkSubtext {
+    @include typography('body-xs');
+    color: $white-056;
+  }
+
+  &__ReferralLinkInputWrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  &__ReferralLinkInput {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    @include typography('body-sm');
+    color: #fff;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: $beryl-pure;
+    }
+
+    &::selection {
+      background: rgba(227, 146, 41, 0.3);
+    }
+  }
+
+  &__ReferralLinkButton {
+    padding: 10px 20px;
+    background: $beryl-pure;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    @include typography('body-sm');
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: $beryl-medium;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &--copied {
+      background: $success-pure;
+      color: #fff;
+    }
+  }
+
+  &__ReferralLinkNote {
+    @include typography('body-xs');
+    color: $white-048;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__ReferralLinkBeraname {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: $beryl-pure;
+    font-weight: 600;
+  }
+
+  // Balance Card
+  &__BalanceCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__BalanceCardContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
+  &__BalanceCardEmpty {
+    @include typography('body-md');
+    color: $white-056;
+    text-align: center;
+    margin: 0;
+  }
+
+  &__BalanceCardHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__BalanceCardTitle {
+    @include typography('body-md');
+    font-weight: 600;
+    color: $white-064;
+    margin: 0;
+  }
+
+  &__BalanceCardTotal {
+    @include typography('heading-3xl');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+
+    @media (max-width: 600px) {
+      @include typography('heading-xl');
+    }
+  }
+
+  &__BalanceCardBreakdown {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+  }
+
+  &__BalanceCardItem {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__BalanceCardLabel {
+    @include typography('body-xs');
+    font-weight: 600;
+    color: $white-048;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  &__BalanceCardValue {
+    @include typography('heading-lg');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  &__BalanceCardCount {
+    @include typography('body-xs');
+    color: $white-048;
+  }
+
+  &__BalanceCardDivider {
+    width: 1px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.08);
+
+    @media (max-width: 600px) {
+      width: 100%;
+      height: 1px;
+    }
+  }
+
+  &__BalanceCardFees {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__BalanceCardFeesLabel {
+    @include typography('body-sm');
+    font-weight: 600;
+    color: $white-064;
+  }
+
+  &__BalanceCardFeesValue {
+    @include typography('heading-md');
+    font-weight: 700;
+    color: $beryl-pure;
+  }
+}

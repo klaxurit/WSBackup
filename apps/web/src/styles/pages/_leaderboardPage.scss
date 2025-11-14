@@ -1,60 +1,38 @@
 @use "../utils" as *;
 
 .Leaderboard {
-  width: 100%;
-  max-width: 1400px;
+  padding: 0 1rem;
+  max-width: 1192px;
   margin: 0 auto;
-  padding: 1rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 32px;
   min-height: 80vh;
 
   @media (max-width: 600px) {
-    padding: 8px;
+    padding: 0 8px;
     gap: 24px;
   }
 }
 
-// Hero Section
-.Leaderboard__Hero {
+.Leaderboard__ContentWrapper {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.Leaderboard__Title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-
-  @media (max-width: 600px) {
-    font-size: 24px;
-  }
-}
-
-.Leaderboard__Description {
-  font-size: 15px;
-  color: $white-064;
-  line-height: 1.6;
-  margin: 0;
-
-  @media (max-width: 600px) {
-    font-size: 14px;
-  }
+  gap: 32px;
 }
 
 // Section Title
 .Leaderboard__SectionTitle {
-  font-size: 18px;
+  @include typography('heading-lg');
   font-weight: 700;
   color: #fff;
   margin: 0;
   letter-spacing: -0.3px;
 
   @media (max-width: 600px) {
-    font-size: 16px;
+    @include typography('body-lg');
+    font-weight: 700;
   }
 
   // Quand il n'est pas dans le header Portfolio
@@ -145,12 +123,11 @@
 
 // Styles pour les stats cards
 .Leaderboard__StatCardTitle {
-  font-size: 10px;
+  @include typography('body-2xs');
   font-weight: 600;
   color: $white-048;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  line-height: 1.2;
   text-align: center;
 }
 
@@ -164,13 +141,14 @@
 }
 
 .Leaderboard__StatCardValue {
-  font-size: 26px;
+  @include typography('heading-2xl');
   font-weight: 700;
   color: #fff;
   line-height: 1;
 
   &--xlarge {
-    font-size: 32px;
+    @include typography('heading-xl');
+    font-weight: 700;
   }
 
   &--highlight {
@@ -179,16 +157,15 @@
 }
 
 .Leaderboard__StatCardSecondary {
-  font-size: 11px;
+  @include typography('body-xs');
   font-weight: 500;
   color: $white-040;
-  line-height: 1.3;
   text-align: center;
 }
 
 // Position Card Stat Label (réutilisé dans Boosted)
 .Leaderboard__PositionCardStatLabel {
-  font-size: 10px;
+  @include typography('body-2xs');
   font-weight: 600;
   color: $white-048;
   text-transform: uppercase;
@@ -246,19 +223,17 @@
 }
 
 .Leaderboard__BoostedCardPair {
-  font-size: 13px;
+  @include typography('body-sm');
   font-weight: 700;
   color: #fff;
-  line-height: 14px;
 }
 
 .Leaderboard__BoostedCardType {
-  font-size: 11px;
+  @include typography('body-xs');
   font-weight: 500;
   color: $white-056;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  line-height: 14px;
 }
 
 .Leaderboard__BoostedCardAPR {
@@ -277,7 +252,7 @@
 }
 
 .Leaderboard__BoostedCardAPRValue {
-  font-size: 12px;
+  @include typography('body-xs');
   font-weight: 700;
   color: #fff;
   text-align: right;
@@ -286,7 +261,8 @@
   text-overflow: ellipsis;
 
   &--large {
-    font-size: 18px;
+    @include typography('body-lg');
+    font-weight: 700;
   }
 
   &--highlight {
@@ -299,7 +275,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  font-size: 10px;
+  @include typography('body-2xs');
   font-weight: 700;
   color: $beryl-pure;
 }
@@ -379,19 +355,17 @@
 }
 
 .Leaderboard__TrendingCardPair {
-  font-size: 13px;
+  @include typography('body-sm');
   font-weight: 700;
   color: #fff;
-  line-height: 14px;
 }
 
 .Leaderboard__TrendingCardFee {
-  font-size: 11px;
+  @include typography('body-xs');
   font-weight: 500;
   color: $white-056;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  line-height: 14px;
 }
 
 .Leaderboard__TrendingCardAPR {
@@ -406,7 +380,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  @include typography('body-2xs');
   font-weight: 600;
   color: $white-048;
   text-transform: uppercase;
@@ -414,7 +388,7 @@
 }
 
 .Leaderboard__BestAPRBadge {
-  font-size: 9px;
+  @include typography('body-2xs');
   font-weight: 700;
   letter-spacing: 0.5px;
   padding: 3px 6px;
@@ -440,12 +414,13 @@
 }
 
 .Leaderboard__TrendingCardAPRValue {
-  font-size: 18px;
+  @include typography('heading-md');
   font-weight: 700;
   color: #E39229;
 
   @media (max-width: 600px) {
-    font-size: 16px;
+    @include typography('body-lg');
+    font-weight: 700;
   }
 }
 
@@ -463,7 +438,7 @@
 }
 
 .Leaderboard__TrendingCardStatLabel {
-  font-size: 10px;
+  @include typography('body-2xs');
   font-weight: 600;
   color: $white-048;
   text-transform: uppercase;
@@ -472,7 +447,7 @@
 }
 
 .Leaderboard__TrendingCardStatValue {
-  font-size: 12px;
+  @include typography('body-xs');
   font-weight: 700;
   color: #fff;
   text-align: right;
@@ -515,12 +490,11 @@
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  font-size: 13px;
+  @include typography('body-sm');
   color: $white-056;
-  line-height: 1.5;
 
   span:first-child {
-    font-size: 16px;
+    @include typography('body-lg');
   }
 }
 
@@ -532,18 +506,19 @@
 }
 
 .Leaderboard__Rank {
+  @include typography('body-md');
   font-weight: 600;
   color: #fff;
 
   &--top {
-    font-size: 15px;
+    @include typography('body-lg');
     font-weight: 700;
     color: #E39229;
   }
 }
 
 .Leaderboard__Badge {
-  font-size: 14px;
+  @include typography('body-sm');
 }
 
 .Leaderboard__UserCell {
@@ -561,7 +536,7 @@
 
 .Leaderboard__Address {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 13px;
+  @include typography('body-sm');
   color: $white-072;
 }
 
@@ -569,7 +544,7 @@
   padding: 2px 6px;
   background: rgba(227, 146, 41, 0.2);
   color: #E39229;
-  font-size: 10px;
+  @include typography('body-2xs');
   font-weight: 700;
   border-radius: 4px;
   text-transform: uppercase;
@@ -577,6 +552,7 @@
 }
 
 .Leaderboard__ChangeCell {
+  @include typography('body-sm');
   font-weight: 600;
 
   &--positive {
@@ -619,7 +595,7 @@
   }
 
   .Leaderboard__Rank {
-    font-size: 16px;
+    @include typography('body-lg');
     font-weight: 700;
     color: #E39229;
   }
@@ -748,7 +724,7 @@
 
   p {
     color: $white-056;
-    font-size: 15px;
+    @include typography('body-md');
     margin: 0;
   }
 }
