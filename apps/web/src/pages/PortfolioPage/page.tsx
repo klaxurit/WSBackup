@@ -6,7 +6,7 @@ import '../../styles/pages/_positionPage.scss';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import { TokenPairLogos } from '../../components/Common/TokenPairLogos';
-import honeyIcon from '../../assets/honey_icon.png';
+import portfolioIcon from '../../assets/portfolio.png';
 import NewBanner from '../../components/Common/NewBanner';
 import { cleanTokenName } from '../../utils/tokenDisplay';
 import { FallbackImg } from '../../components/utils/FallbackImg';
@@ -17,10 +17,11 @@ import { currentChain } from '../../config/wagmi';
 import JSBI from 'jsbi';
 import { Loader } from '../../components/Loader/Loader';
 import { StickyIcon } from '../../components/Common/StickyIcon';
-import { TrendingSection } from '../../components/Leaderboard/TrendingSection';
-import { PortfolioStatsHeader } from '../../components/Portfolio/PortfolioStatsHeader';
+// import { TrendingSection } from '../../components/Leaderboard/TrendingSection';
+// import { PortfolioStatsHeader } from '../../components/Portfolio/PortfolioStatsHeader';
+import { YourPortfolioCard } from '../../components/Portfolio/YourPortfolioCard';
+import { LeaderboardTable } from '../../components/Leaderboard/LeaderboardTable';
 
-// ... existing code ...
 
 const GET_USER_POSITIONS = `
 query GetTransactions($owner: String) {
@@ -218,7 +219,7 @@ const transformVaultPositionToFormattedPosition = (vault: GraphQLVaultWithPositi
 const VaultPositionSizeCell: React.FC<{ row: FormattedVaultPosition }> = ({ row }) => {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8  }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontSize: '14px', fontWeight: '500' }}>
           {parseFloat(row.shares).toFixed(4)}
         </span>
@@ -719,17 +720,22 @@ const PortfolioPage: React.FC = () => {
 
   return (
     <PageContentTransition className="PortfolioPage">
-      <NewBanner title="Portfolio" subtitle="Manage your liquidity positions and discover opportunities" image={honeyIcon} />
+      <NewBanner title="Portfolio" subtitle="Manage your liquidity positions and discover opportunities" image={portfolioIcon} />
       <div className="PortfolioPage__ContentWrapper">
-        {/* Stats Header - Overview (Points, Referrals, Multiplier) */}
-        <PortfolioStatsHeader />
+        {/* Two columns: Your Portfolio (left) and Your Position (right) */}
+        <div className="PortfolioPage__TwoColumns">
+          {/* Left column: Your Portfolio Card */}
+          <div className="PortfolioPage__LeftColumn">
+            <div className="PortfolioPage__Header">
+              <h2 className="PortfolioPage__Title">Your Portfolio</h2>
+            </div>
+            <YourPortfolioCard />
+          </div>
 
-        {/* Main Content - Positions Table and Top Pools/Vaults in Row */}
-        <div className="PortfolioPage__MainRow">
-          {/* Positions Table */}
-          <div className="PortfolioPage__Main">
+          {/* Right column: Your Position Table */}
+          <div className="PortfolioPage__RightColumn">
             <div className="PortfolioPage__Header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-              <h2 className="PortfolioPage__Title">Your positions</h2>
+              <h2 className="PortfolioPage__Title">Your Position</h2>
               <div className="PortfolioPage__FilterButtons" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <button
                   className={`btn btn--tiny ${statusFilter === 'open' ? 'btn__main btn__tab-active' : 'btn__shade'}`}
@@ -772,11 +778,17 @@ const PortfolioPage: React.FC = () => {
                 </div>
               )}
           </div>
+        </div>
 
-          {/* Top Pools & Vaults - Using TrendingSection Component */}
-          <div className="PortfolioPage__TopSection">
-            <TrendingSection />
+        {/* Leaderboard Section */}
+        <div className="PortfolioPage__LeaderboardSection">
+          <div className="PortfolioPage__LeaderboardHeader">
+            <h2 className="PortfolioPage__LeaderboardTitle">Leaderboard</h2>
+            <Link to="/leaderboard" className="btn btn--tiny btn__accent">
+              View more
+            </Link>
           </div>
+          <LeaderboardTable limit={5} showFilters={false} showTitle={false} />
         </div>
       </div>
     </PageContentTransition>

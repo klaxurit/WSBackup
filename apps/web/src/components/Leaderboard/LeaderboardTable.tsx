@@ -14,13 +14,25 @@ const formatAddress = (address: string, beraname?: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-export const LeaderboardTable: React.FC = () => {
+interface LeaderboardTableProps {
+  limit?: number; // Limite le nombre de lignes affichées
+  showFilters?: boolean; // Affiche ou cache les filtres temporels
+  showTitle?: boolean; // Affiche ou cache le titre "Global Rankings"
+}
+
+export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ 
+  limit, 
+  showFilters = true,
+  showTitle = true 
+}) => {
   const { address } = useAccount();
   const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('7d');
 
   const leaderboardData = useMemo(() => {
-    return MOCK_LEADERBOARD_DATA;
-  }, [timeFilter]);
+    const data = MOCK_LEADERBOARD_DATA;
+    // Si limit est défini, limiter les données
+    return limit ? data.slice(0, limit) : data;
+  }, [timeFilter, limit]);
 
   const columns: TableColumn<LeaderboardUser>[] = [
     {
@@ -95,30 +107,36 @@ export const LeaderboardTable: React.FC = () => {
 
   return (
     <div className="Leaderboard__TableSection">
-      <div className="Leaderboard__TableHeader">
-        <h2 className="Leaderboard__SectionTitle">Global Rankings</h2>
+      {(showTitle || showFilters) && (
+        <div className="Leaderboard__TableHeader">
+          {showTitle && (
+            <h2 className="Leaderboard__SectionTitle">Global Rankings</h2>
+          )}
 
-        <div className="Leaderboard__FilterButtons">
-          <button
-            className={`btn btn--tiny ${timeFilter === '7d' ? 'btn__main' : 'btn__shade'}`}
-            onClick={() => setTimeFilter('7d')}
-          >
-            7D
-          </button>
-          <button
-            className={`btn btn--tiny ${timeFilter === '30d' ? 'btn__main' : 'btn__shade'}`}
-            onClick={() => setTimeFilter('30d')}
-          >
-            30D
-          </button>
-          <button
-            className={`btn btn--tiny ${timeFilter === 'all' ? 'btn__main' : 'btn__shade'}`}
-            onClick={() => setTimeFilter('all')}
-          >
-            All Time
-          </button>
+          {showFilters && (
+            <div className="Leaderboard__FilterButtons">
+              <button
+                className={`btn btn--tiny ${timeFilter === '7d' ? 'btn__main' : 'btn__shade'}`}
+                onClick={() => setTimeFilter('7d')}
+              >
+                7D
+              </button>
+              <button
+                className={`btn btn--tiny ${timeFilter === '30d' ? 'btn__main' : 'btn__shade'}`}
+                onClick={() => setTimeFilter('30d')}
+              >
+                30D
+              </button>
+              <button
+                className={`btn btn--tiny ${timeFilter === 'all' ? 'btn__main' : 'btn__shade'}`}
+                onClick={() => setTimeFilter('all')}
+              >
+                All Time
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       <Table
         columns={columns}

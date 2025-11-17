@@ -9,6 +9,29 @@
   gap: 32px;
   min-height: 80vh;
 
+  // Fond circulaire pour l'image de la bannière (comme bee_icon.png)
+  .swap-banner__content {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(5%, -50%);
+      width: 90px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      z-index: 0;
+    }
+  }
+
+  .swap-banner__img {
+    position: relative;
+    z-index: 1;
+  }
+
   &__FilterButtons {
     display: flex;
     align-items: center;
@@ -91,9 +114,33 @@
 
   &__TableWrapper {
     margin-bottom: 16px;
-    overflow-x: auto;
     background: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 200px; 
+    min-height: 200px;
+
+    .Table__Wrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+      max-height: 100%;
+    }
+
+    // Le Table__Scroll doit avoir le scroll vertical
+    .Table__Scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto !important; // Force le scroll vertical
+      overflow-x: auto;
+      max-height: 100%; // Ne dépasse pas la hauteur du parent
+    }
   }
+
 
   &__Table {
     // Hérite du style Table/Table--bordered
@@ -557,5 +604,267 @@
     @include typography('heading-md');
     font-weight: 700;
     color: $beryl-pure;
+  }
+
+  // Two columns layout (50% each)
+  &__TwoColumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start; // Les colonnes commencent en haut, ne s'étirent pas ensemble
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+  }
+
+  &__LeftColumn {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__RightColumn {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Align headers on the same line
+  &__TwoColumns &__LeftColumn &__Header,
+  &__TwoColumns &__RightColumn &__Header {
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  // Your Portfolio Card
+  &__YourPortfolioCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    // La card ne doit pas s'étirer, elle garde sa hauteur naturelle
+    height: fit-content;
+  }
+
+  &__YourPortfolioEmpty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+
+    p {
+      @include typography('body-md');
+      color: $white-056;
+      margin: 0;
+    }
+  }
+
+  &__YourPortfolioContent {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: stretch; // Stretch pour occuper toute la hauteur
+    flex: 1; // Prend toute la hauteur disponible dans la card
+    min-height: 0;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  &__YourPortfolioLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: space-between; // Répartit l'espace verticalement
+  }
+
+  &__YourPortfolioTotalBalance {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__YourPortfolioTotalBalanceLabel {
+    @include typography('body-sm');
+    font-weight: 600;
+    color: $white-064;
+  }
+
+  &__YourPortfolioTotalBalanceValue {
+    @include typography('heading-3xl');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  &__YourPortfolioBalanceRow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+
+  &__YourPortfolioBalanceItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__YourPortfolioBalanceLabel {
+    @include typography('body-xs');
+    font-weight: 600;
+    color: $white-048;
+  }
+
+  &__YourPortfolioBalanceValue {
+    @include typography('heading-lg');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  &__YourPortfolioBalanceDivider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &__YourPortfolioVerticalDivider {
+    width: 1px;
+    align-self: stretch; // Prend toute la hauteur disponible
+    background: rgba(255, 255, 255, 0.08);
+
+    @media (max-width: 600px) {
+      width: 100%;
+      height: 1px;
+      align-self: auto;
+    }
+  }
+
+  &__YourPortfolioRight {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: space-between; // Répartit l'espace verticalement
+  }
+
+  &__YourPortfolioPointsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__YourPortfolioPointsLabel {
+    @include typography('body-sm');
+    font-weight: 600;
+    color: $white-064;
+  }
+
+  &__YourPortfolioRank {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__YourPortfolioRankLabel {
+    @include typography('body-xs');
+    font-weight: 600;
+    color: $white-048;
+  }
+
+  &__YourPortfolioRankValue {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    >span {
+      @include typography('body-md');
+      font-weight: 700;
+      color: $beryl-pure;
+    }
+  }
+
+  &__YourPortfolioRankChange {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    @include typography('body-xs');
+    font-weight: 600;
+
+    &--gain {
+      color: #4ade80; // green
+    }
+
+    &--loss {
+      color: #f87171; // red
+    }
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  &__YourPortfolioPointsValue {
+    @include typography('heading-2xl');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  &__YourPortfolioPointsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  &__YourPortfolioPointsItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__YourPortfolioPointsItemLabel {
+    @include typography('body-xs');
+    font-weight: 600;
+    color: $white-048;
+  }
+
+  &__YourPortfolioPointsItemValue {
+    @include typography('body-md');
+    font-weight: 700;
+    color: #fff;
+  }
+
+  // Leaderboard Section
+  &__LeaderboardSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__LeaderboardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__LeaderboardTitle {
+    @include typography('heading-lg');
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
   }
 }

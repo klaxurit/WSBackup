@@ -13,6 +13,29 @@
     padding: 0 8px;
     gap: 24px;
   }
+
+  // Fond circulaire pour l'image de la bannière (comme bee_icon.png)
+  .swap-banner__content {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(5%, -50%);
+      width: 90px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      z-index: 0;
+    }
+  }
+
+  .swap-banner__img {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .Leaderboard__ContentWrapper {

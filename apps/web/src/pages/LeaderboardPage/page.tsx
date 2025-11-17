@@ -4,7 +4,7 @@ import { PortfolioSection, TopBoostedSection } from '../../components/Leaderboar
 import { TrendingSection } from '../../components/Leaderboard/TrendingSection';
 import { LeaderboardTable } from '../../components/Leaderboard/LeaderboardTable';
 import { NewBanner } from '../../components/Common/NewBanner';
-import honeyIcon from '../../assets/honey_icon.png';
+import leaderboardIcon from '../../assets/leaderboard.png';
 
 const LeaderboardPage: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ const LeaderboardPage: React.FC = () => {
       <NewBanner 
         title="Leaderboard" 
         subtitle="Track top traders, discover trending pools, and manage your portfolio in one place" 
-        image={honeyIcon} 
+        image={leaderboardIcon} 
       />
       <div className="Leaderboard__ContentWrapper">
         <div className="Leaderboard__Content">
