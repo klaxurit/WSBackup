@@ -161,10 +161,10 @@ model LeaderboardEntry {
   stickyVaultsLiquidityUSD Float @default(0) // Sticky Vault deposits
   autoWinVaultsLiquidityUSD Float @default(0) // AutoWin deposits
 
-  // Points and ranking
-  volumePoints    Float @default(0) // 1.2 × totalVolumeUSD
-  liquidityPoints Float @default(0) // 1.0 × currentLiquidityUSD
-  totalPoints     Float @default(0) // sum of all points
+  // Points and ranking (integers - rounded)
+  volumePoints    Int @default(0) // round(1.2 × totalVolumeUSD)
+  liquidityPoints Int @default(0) // round(1.0 × currentLiquidityUSD)
+  totalPoints     Int @default(0) // sum of all points
   rank            Int // Current ranking position
   previousRank    Int? // Rank from last update
 
@@ -188,7 +188,7 @@ model LeaderboardSnapshot {
   timestamp DateTime @default(now())
 
   rank                Int
-  totalPoints         Float
+  totalPoints         Int
   totalVolumeUSD      Float
   currentLiquidityUSD Float
   positionsCount      Int

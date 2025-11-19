@@ -99,7 +99,7 @@ export class PonderGraphqlService {
   async getSwapVolumeByWallet(): Promise<Map<string, number>> {
     const query = `
       query {
-        swaps(orderBy: "origin") {
+        swaps(limit: 100000) {
           items {
             origin
             amountUSD
@@ -112,16 +112,27 @@ export class PonderGraphqlService {
       swaps: { items: Array<{ origin: string; amountUSD: string }> };
     }>(query);
 
+    this.logger.log(`Fetched ${data.swaps.items.length} total swaps from Ponder`);
+
     // Aggregate volumes by wallet
     const volumeMap = new Map<string, number>();
+    let totalVolume = 0;
+    let swapsWithVolume = 0;
+
     for (const swap of data.swaps.items) {
       const wallet = swap.origin.toLowerCase();
       const volume = parseFloat(swap.amountUSD || '0');
+
+      if (volume > 0) {
+        swapsWithVolume++;
+        totalVolume += volume;
+      }
+
       volumeMap.set(wallet, (volumeMap.get(wallet) || 0) + volume);
     }
 
     this.logger.log(
-      `Fetched swap volumes for ${volumeMap.size} unique wallets`,
+      `Swap volume stats: ${volumeMap.size} unique wallets, ${swapsWithVolume}/${data.swaps.items.length} swaps with volume > 0, total volume: $${totalVolume.toFixed(2)}`,
     );
     return volumeMap;
   }

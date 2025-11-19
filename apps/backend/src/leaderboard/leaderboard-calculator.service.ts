@@ -109,10 +109,13 @@ export class LeaderboardCalculatorService {
         const positionsCount =
           v3Data.count + vaultData.count + autoWinData.count;
 
-        // Calculate points
-        const volumePoints = totalVolumeUSD * this.VOLUME_MULTIPLIER;
-        const liquidityPoints =
-          currentLiquidityUSD * this.LIQUIDITY_MULTIPLIER;
+        // Calculate points (rounded to integers)
+        const volumePoints = Math.round(
+          totalVolumeUSD * this.VOLUME_MULTIPLIER,
+        );
+        const liquidityPoints = Math.round(
+          currentLiquidityUSD * this.LIQUIDITY_MULTIPLIER,
+        );
         const totalPoints = volumePoints + liquidityPoints;
 
         walletMetrics.push({
