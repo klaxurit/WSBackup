@@ -11,6 +11,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { PonderModule } from './ponder/ponder.module';
 import { TokenModule } from './token/token.module';
 import { VaultsModule } from './vaults/vaults.module';
+import { LeaderboardModule } from './leaderboard/leaderboard.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { VaultsModule } from './vaults/vaults.module';
     PonderModule,
     TokenModule,
     VaultsModule,
+    LeaderboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

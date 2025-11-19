@@ -33,6 +33,16 @@ export type TokenDailyStats = $Result.DefaultSelection<Prisma.$TokenDailyStatsPa
  * 
  */
 export type PoolStats = $Result.DefaultSelection<Prisma.$PoolStatsPayload>
+/**
+ * Model LeaderboardEntry
+ * 
+ */
+export type LeaderboardEntry = $Result.DefaultSelection<Prisma.$LeaderboardEntryPayload>
+/**
+ * Model LeaderboardSnapshot
+ * 
+ */
+export type LeaderboardSnapshot = $Result.DefaultSelection<Prisma.$LeaderboardSnapshotPayload>
 
 /**
  * Enums
@@ -229,6 +239,26 @@ export class PrismaClient<
     * ```
     */
   get poolStats(): Prisma.PoolStatsDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leaderboardEntry`: Exposes CRUD operations for the **LeaderboardEntry** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeaderboardEntries
+    * const leaderboardEntries = await prisma.leaderboardEntry.findMany()
+    * ```
+    */
+  get leaderboardEntry(): Prisma.LeaderboardEntryDelegate<ExtArgs>;
+
+  /**
+   * `prisma.leaderboardSnapshot`: Exposes CRUD operations for the **LeaderboardSnapshot** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LeaderboardSnapshots
+    * const leaderboardSnapshots = await prisma.leaderboardSnapshot.findMany()
+    * ```
+    */
+  get leaderboardSnapshot(): Prisma.LeaderboardSnapshotDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -673,7 +703,9 @@ export namespace Prisma {
     Token: 'Token',
     TokenPrice: 'TokenPrice',
     TokenDailyStats: 'TokenDailyStats',
-    PoolStats: 'PoolStats'
+    PoolStats: 'PoolStats',
+    LeaderboardEntry: 'LeaderboardEntry',
+    LeaderboardSnapshot: 'LeaderboardSnapshot'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -689,7 +721,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "token" | "tokenPrice" | "tokenDailyStats" | "poolStats"
+      modelProps: "token" | "tokenPrice" | "tokenDailyStats" | "poolStats" | "leaderboardEntry" | "leaderboardSnapshot"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -973,6 +1005,146 @@ export namespace Prisma {
           }
         }
       }
+      LeaderboardEntry: {
+        payload: Prisma.$LeaderboardEntryPayload<ExtArgs>
+        fields: Prisma.LeaderboardEntryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeaderboardEntryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeaderboardEntryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>
+          }
+          findFirst: {
+            args: Prisma.LeaderboardEntryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeaderboardEntryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>
+          }
+          findMany: {
+            args: Prisma.LeaderboardEntryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>[]
+          }
+          create: {
+            args: Prisma.LeaderboardEntryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>
+          }
+          createMany: {
+            args: Prisma.LeaderboardEntryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeaderboardEntryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>[]
+          }
+          delete: {
+            args: Prisma.LeaderboardEntryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>
+          }
+          update: {
+            args: Prisma.LeaderboardEntryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeaderboardEntryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeaderboardEntryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeaderboardEntryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardEntryPayload>
+          }
+          aggregate: {
+            args: Prisma.LeaderboardEntryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeaderboardEntry>
+          }
+          groupBy: {
+            args: Prisma.LeaderboardEntryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeaderboardEntryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeaderboardEntryCountArgs<ExtArgs>
+            result: $Utils.Optional<LeaderboardEntryCountAggregateOutputType> | number
+          }
+        }
+      }
+      LeaderboardSnapshot: {
+        payload: Prisma.$LeaderboardSnapshotPayload<ExtArgs>
+        fields: Prisma.LeaderboardSnapshotFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LeaderboardSnapshotFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LeaderboardSnapshotFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>
+          }
+          findFirst: {
+            args: Prisma.LeaderboardSnapshotFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LeaderboardSnapshotFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>
+          }
+          findMany: {
+            args: Prisma.LeaderboardSnapshotFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>[]
+          }
+          create: {
+            args: Prisma.LeaderboardSnapshotCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>
+          }
+          createMany: {
+            args: Prisma.LeaderboardSnapshotCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LeaderboardSnapshotCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>[]
+          }
+          delete: {
+            args: Prisma.LeaderboardSnapshotDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>
+          }
+          update: {
+            args: Prisma.LeaderboardSnapshotUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>
+          }
+          deleteMany: {
+            args: Prisma.LeaderboardSnapshotDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LeaderboardSnapshotUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LeaderboardSnapshotUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LeaderboardSnapshotPayload>
+          }
+          aggregate: {
+            args: Prisma.LeaderboardSnapshotAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLeaderboardSnapshot>
+          }
+          groupBy: {
+            args: Prisma.LeaderboardSnapshotGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LeaderboardSnapshotGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LeaderboardSnapshotCountArgs<ExtArgs>
+            result: $Utils.Optional<LeaderboardSnapshotCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1184,6 +1356,37 @@ export namespace Prisma {
    */
   export type TokenCountOutputTypeCountPoolStatsAsToken1Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PoolStatsWhereInput
+  }
+
+
+  /**
+   * Count Type LeaderboardEntryCountOutputType
+   */
+
+  export type LeaderboardEntryCountOutputType = {
+    snapshots: number
+  }
+
+  export type LeaderboardEntryCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    snapshots?: boolean | LeaderboardEntryCountOutputTypeCountSnapshotsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LeaderboardEntryCountOutputType without action
+   */
+  export type LeaderboardEntryCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntryCountOutputType
+     */
+    select?: LeaderboardEntryCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LeaderboardEntryCountOutputType without action
+   */
+  export type LeaderboardEntryCountOutputTypeCountSnapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeaderboardSnapshotWhereInput
   }
 
 
@@ -5621,6 +5824,2199 @@ export namespace Prisma {
 
 
   /**
+   * Model LeaderboardEntry
+   */
+
+  export type AggregateLeaderboardEntry = {
+    _count: LeaderboardEntryCountAggregateOutputType | null
+    _avg: LeaderboardEntryAvgAggregateOutputType | null
+    _sum: LeaderboardEntrySumAggregateOutputType | null
+    _min: LeaderboardEntryMinAggregateOutputType | null
+    _max: LeaderboardEntryMaxAggregateOutputType | null
+  }
+
+  export type LeaderboardEntryAvgAggregateOutputType = {
+    swapVolumeUSD: number | null
+    liquidityDepositVolumeUSD: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+    v3PoolsLiquidityUSD: number | null
+    stickyVaultsLiquidityUSD: number | null
+    autoWinVaultsLiquidityUSD: number | null
+    volumePoints: number | null
+    liquidityPoints: number | null
+    totalPoints: number | null
+    rank: number | null
+    previousRank: number | null
+  }
+
+  export type LeaderboardEntrySumAggregateOutputType = {
+    swapVolumeUSD: number | null
+    liquidityDepositVolumeUSD: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+    v3PoolsLiquidityUSD: number | null
+    stickyVaultsLiquidityUSD: number | null
+    autoWinVaultsLiquidityUSD: number | null
+    volumePoints: number | null
+    liquidityPoints: number | null
+    totalPoints: number | null
+    rank: number | null
+    previousRank: number | null
+  }
+
+  export type LeaderboardEntryMinAggregateOutputType = {
+    id: string | null
+    wallet: string | null
+    swapVolumeUSD: number | null
+    liquidityDepositVolumeUSD: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+    v3PoolsLiquidityUSD: number | null
+    stickyVaultsLiquidityUSD: number | null
+    autoWinVaultsLiquidityUSD: number | null
+    volumePoints: number | null
+    liquidityPoints: number | null
+    totalPoints: number | null
+    rank: number | null
+    previousRank: number | null
+    lastUpdatedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type LeaderboardEntryMaxAggregateOutputType = {
+    id: string | null
+    wallet: string | null
+    swapVolumeUSD: number | null
+    liquidityDepositVolumeUSD: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+    v3PoolsLiquidityUSD: number | null
+    stickyVaultsLiquidityUSD: number | null
+    autoWinVaultsLiquidityUSD: number | null
+    volumePoints: number | null
+    liquidityPoints: number | null
+    totalPoints: number | null
+    rank: number | null
+    previousRank: number | null
+    lastUpdatedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type LeaderboardEntryCountAggregateOutputType = {
+    id: number
+    wallet: number
+    swapVolumeUSD: number
+    liquidityDepositVolumeUSD: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+    v3PoolsLiquidityUSD: number
+    stickyVaultsLiquidityUSD: number
+    autoWinVaultsLiquidityUSD: number
+    volumePoints: number
+    liquidityPoints: number
+    totalPoints: number
+    rank: number
+    previousRank: number
+    lastUpdatedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type LeaderboardEntryAvgAggregateInputType = {
+    swapVolumeUSD?: true
+    liquidityDepositVolumeUSD?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+    v3PoolsLiquidityUSD?: true
+    stickyVaultsLiquidityUSD?: true
+    autoWinVaultsLiquidityUSD?: true
+    volumePoints?: true
+    liquidityPoints?: true
+    totalPoints?: true
+    rank?: true
+    previousRank?: true
+  }
+
+  export type LeaderboardEntrySumAggregateInputType = {
+    swapVolumeUSD?: true
+    liquidityDepositVolumeUSD?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+    v3PoolsLiquidityUSD?: true
+    stickyVaultsLiquidityUSD?: true
+    autoWinVaultsLiquidityUSD?: true
+    volumePoints?: true
+    liquidityPoints?: true
+    totalPoints?: true
+    rank?: true
+    previousRank?: true
+  }
+
+  export type LeaderboardEntryMinAggregateInputType = {
+    id?: true
+    wallet?: true
+    swapVolumeUSD?: true
+    liquidityDepositVolumeUSD?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+    v3PoolsLiquidityUSD?: true
+    stickyVaultsLiquidityUSD?: true
+    autoWinVaultsLiquidityUSD?: true
+    volumePoints?: true
+    liquidityPoints?: true
+    totalPoints?: true
+    rank?: true
+    previousRank?: true
+    lastUpdatedAt?: true
+    createdAt?: true
+  }
+
+  export type LeaderboardEntryMaxAggregateInputType = {
+    id?: true
+    wallet?: true
+    swapVolumeUSD?: true
+    liquidityDepositVolumeUSD?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+    v3PoolsLiquidityUSD?: true
+    stickyVaultsLiquidityUSD?: true
+    autoWinVaultsLiquidityUSD?: true
+    volumePoints?: true
+    liquidityPoints?: true
+    totalPoints?: true
+    rank?: true
+    previousRank?: true
+    lastUpdatedAt?: true
+    createdAt?: true
+  }
+
+  export type LeaderboardEntryCountAggregateInputType = {
+    id?: true
+    wallet?: true
+    swapVolumeUSD?: true
+    liquidityDepositVolumeUSD?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+    v3PoolsLiquidityUSD?: true
+    stickyVaultsLiquidityUSD?: true
+    autoWinVaultsLiquidityUSD?: true
+    volumePoints?: true
+    liquidityPoints?: true
+    totalPoints?: true
+    rank?: true
+    previousRank?: true
+    lastUpdatedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type LeaderboardEntryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeaderboardEntry to aggregate.
+     */
+    where?: LeaderboardEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardEntries to fetch.
+     */
+    orderBy?: LeaderboardEntryOrderByWithRelationInput | LeaderboardEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeaderboardEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeaderboardEntries
+    **/
+    _count?: true | LeaderboardEntryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LeaderboardEntryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LeaderboardEntrySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeaderboardEntryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeaderboardEntryMaxAggregateInputType
+  }
+
+  export type GetLeaderboardEntryAggregateType<T extends LeaderboardEntryAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeaderboardEntry]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeaderboardEntry[P]>
+      : GetScalarType<T[P], AggregateLeaderboardEntry[P]>
+  }
+
+
+
+
+  export type LeaderboardEntryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeaderboardEntryWhereInput
+    orderBy?: LeaderboardEntryOrderByWithAggregationInput | LeaderboardEntryOrderByWithAggregationInput[]
+    by: LeaderboardEntryScalarFieldEnum[] | LeaderboardEntryScalarFieldEnum
+    having?: LeaderboardEntryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeaderboardEntryCountAggregateInputType | true
+    _avg?: LeaderboardEntryAvgAggregateInputType
+    _sum?: LeaderboardEntrySumAggregateInputType
+    _min?: LeaderboardEntryMinAggregateInputType
+    _max?: LeaderboardEntryMaxAggregateInputType
+  }
+
+  export type LeaderboardEntryGroupByOutputType = {
+    id: string
+    wallet: string
+    swapVolumeUSD: number
+    liquidityDepositVolumeUSD: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+    v3PoolsLiquidityUSD: number
+    stickyVaultsLiquidityUSD: number
+    autoWinVaultsLiquidityUSD: number
+    volumePoints: number
+    liquidityPoints: number
+    totalPoints: number
+    rank: number
+    previousRank: number | null
+    lastUpdatedAt: Date
+    createdAt: Date
+    _count: LeaderboardEntryCountAggregateOutputType | null
+    _avg: LeaderboardEntryAvgAggregateOutputType | null
+    _sum: LeaderboardEntrySumAggregateOutputType | null
+    _min: LeaderboardEntryMinAggregateOutputType | null
+    _max: LeaderboardEntryMaxAggregateOutputType | null
+  }
+
+  type GetLeaderboardEntryGroupByPayload<T extends LeaderboardEntryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeaderboardEntryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeaderboardEntryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeaderboardEntryGroupByOutputType[P]>
+            : GetScalarType<T[P], LeaderboardEntryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeaderboardEntrySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    wallet?: boolean
+    swapVolumeUSD?: boolean
+    liquidityDepositVolumeUSD?: boolean
+    totalVolumeUSD?: boolean
+    currentLiquidityUSD?: boolean
+    positionsCount?: boolean
+    v3PoolsLiquidityUSD?: boolean
+    stickyVaultsLiquidityUSD?: boolean
+    autoWinVaultsLiquidityUSD?: boolean
+    volumePoints?: boolean
+    liquidityPoints?: boolean
+    totalPoints?: boolean
+    rank?: boolean
+    previousRank?: boolean
+    lastUpdatedAt?: boolean
+    createdAt?: boolean
+    snapshots?: boolean | LeaderboardEntry$snapshotsArgs<ExtArgs>
+    _count?: boolean | LeaderboardEntryCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leaderboardEntry"]>
+
+  export type LeaderboardEntrySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    wallet?: boolean
+    swapVolumeUSD?: boolean
+    liquidityDepositVolumeUSD?: boolean
+    totalVolumeUSD?: boolean
+    currentLiquidityUSD?: boolean
+    positionsCount?: boolean
+    v3PoolsLiquidityUSD?: boolean
+    stickyVaultsLiquidityUSD?: boolean
+    autoWinVaultsLiquidityUSD?: boolean
+    volumePoints?: boolean
+    liquidityPoints?: boolean
+    totalPoints?: boolean
+    rank?: boolean
+    previousRank?: boolean
+    lastUpdatedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["leaderboardEntry"]>
+
+  export type LeaderboardEntrySelectScalar = {
+    id?: boolean
+    wallet?: boolean
+    swapVolumeUSD?: boolean
+    liquidityDepositVolumeUSD?: boolean
+    totalVolumeUSD?: boolean
+    currentLiquidityUSD?: boolean
+    positionsCount?: boolean
+    v3PoolsLiquidityUSD?: boolean
+    stickyVaultsLiquidityUSD?: boolean
+    autoWinVaultsLiquidityUSD?: boolean
+    volumePoints?: boolean
+    liquidityPoints?: boolean
+    totalPoints?: boolean
+    rank?: boolean
+    previousRank?: boolean
+    lastUpdatedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type LeaderboardEntryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    snapshots?: boolean | LeaderboardEntry$snapshotsArgs<ExtArgs>
+    _count?: boolean | LeaderboardEntryCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LeaderboardEntryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $LeaderboardEntryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeaderboardEntry"
+    objects: {
+      snapshots: Prisma.$LeaderboardSnapshotPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      wallet: string
+      swapVolumeUSD: number
+      liquidityDepositVolumeUSD: number
+      totalVolumeUSD: number
+      currentLiquidityUSD: number
+      positionsCount: number
+      v3PoolsLiquidityUSD: number
+      stickyVaultsLiquidityUSD: number
+      autoWinVaultsLiquidityUSD: number
+      volumePoints: number
+      liquidityPoints: number
+      totalPoints: number
+      rank: number
+      previousRank: number | null
+      lastUpdatedAt: Date
+      createdAt: Date
+    }, ExtArgs["result"]["leaderboardEntry"]>
+    composites: {}
+  }
+
+  type LeaderboardEntryGetPayload<S extends boolean | null | undefined | LeaderboardEntryDefaultArgs> = $Result.GetResult<Prisma.$LeaderboardEntryPayload, S>
+
+  type LeaderboardEntryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeaderboardEntryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeaderboardEntryCountAggregateInputType | true
+    }
+
+  export interface LeaderboardEntryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeaderboardEntry'], meta: { name: 'LeaderboardEntry' } }
+    /**
+     * Find zero or one LeaderboardEntry that matches the filter.
+     * @param {LeaderboardEntryFindUniqueArgs} args - Arguments to find a LeaderboardEntry
+     * @example
+     * // Get one LeaderboardEntry
+     * const leaderboardEntry = await prisma.leaderboardEntry.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeaderboardEntryFindUniqueArgs>(args: SelectSubset<T, LeaderboardEntryFindUniqueArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeaderboardEntry that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeaderboardEntryFindUniqueOrThrowArgs} args - Arguments to find a LeaderboardEntry
+     * @example
+     * // Get one LeaderboardEntry
+     * const leaderboardEntry = await prisma.leaderboardEntry.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeaderboardEntryFindUniqueOrThrowArgs>(args: SelectSubset<T, LeaderboardEntryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeaderboardEntry that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryFindFirstArgs} args - Arguments to find a LeaderboardEntry
+     * @example
+     * // Get one LeaderboardEntry
+     * const leaderboardEntry = await prisma.leaderboardEntry.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeaderboardEntryFindFirstArgs>(args?: SelectSubset<T, LeaderboardEntryFindFirstArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeaderboardEntry that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryFindFirstOrThrowArgs} args - Arguments to find a LeaderboardEntry
+     * @example
+     * // Get one LeaderboardEntry
+     * const leaderboardEntry = await prisma.leaderboardEntry.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeaderboardEntryFindFirstOrThrowArgs>(args?: SelectSubset<T, LeaderboardEntryFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeaderboardEntries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeaderboardEntries
+     * const leaderboardEntries = await prisma.leaderboardEntry.findMany()
+     * 
+     * // Get first 10 LeaderboardEntries
+     * const leaderboardEntries = await prisma.leaderboardEntry.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leaderboardEntryWithIdOnly = await prisma.leaderboardEntry.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeaderboardEntryFindManyArgs>(args?: SelectSubset<T, LeaderboardEntryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeaderboardEntry.
+     * @param {LeaderboardEntryCreateArgs} args - Arguments to create a LeaderboardEntry.
+     * @example
+     * // Create one LeaderboardEntry
+     * const LeaderboardEntry = await prisma.leaderboardEntry.create({
+     *   data: {
+     *     // ... data to create a LeaderboardEntry
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeaderboardEntryCreateArgs>(args: SelectSubset<T, LeaderboardEntryCreateArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeaderboardEntries.
+     * @param {LeaderboardEntryCreateManyArgs} args - Arguments to create many LeaderboardEntries.
+     * @example
+     * // Create many LeaderboardEntries
+     * const leaderboardEntry = await prisma.leaderboardEntry.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeaderboardEntryCreateManyArgs>(args?: SelectSubset<T, LeaderboardEntryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeaderboardEntries and returns the data saved in the database.
+     * @param {LeaderboardEntryCreateManyAndReturnArgs} args - Arguments to create many LeaderboardEntries.
+     * @example
+     * // Create many LeaderboardEntries
+     * const leaderboardEntry = await prisma.leaderboardEntry.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeaderboardEntries and only return the `id`
+     * const leaderboardEntryWithIdOnly = await prisma.leaderboardEntry.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeaderboardEntryCreateManyAndReturnArgs>(args?: SelectSubset<T, LeaderboardEntryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeaderboardEntry.
+     * @param {LeaderboardEntryDeleteArgs} args - Arguments to delete one LeaderboardEntry.
+     * @example
+     * // Delete one LeaderboardEntry
+     * const LeaderboardEntry = await prisma.leaderboardEntry.delete({
+     *   where: {
+     *     // ... filter to delete one LeaderboardEntry
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeaderboardEntryDeleteArgs>(args: SelectSubset<T, LeaderboardEntryDeleteArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeaderboardEntry.
+     * @param {LeaderboardEntryUpdateArgs} args - Arguments to update one LeaderboardEntry.
+     * @example
+     * // Update one LeaderboardEntry
+     * const leaderboardEntry = await prisma.leaderboardEntry.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeaderboardEntryUpdateArgs>(args: SelectSubset<T, LeaderboardEntryUpdateArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeaderboardEntries.
+     * @param {LeaderboardEntryDeleteManyArgs} args - Arguments to filter LeaderboardEntries to delete.
+     * @example
+     * // Delete a few LeaderboardEntries
+     * const { count } = await prisma.leaderboardEntry.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeaderboardEntryDeleteManyArgs>(args?: SelectSubset<T, LeaderboardEntryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeaderboardEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeaderboardEntries
+     * const leaderboardEntry = await prisma.leaderboardEntry.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeaderboardEntryUpdateManyArgs>(args: SelectSubset<T, LeaderboardEntryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeaderboardEntry.
+     * @param {LeaderboardEntryUpsertArgs} args - Arguments to update or create a LeaderboardEntry.
+     * @example
+     * // Update or create a LeaderboardEntry
+     * const leaderboardEntry = await prisma.leaderboardEntry.upsert({
+     *   create: {
+     *     // ... data to create a LeaderboardEntry
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeaderboardEntry we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeaderboardEntryUpsertArgs>(args: SelectSubset<T, LeaderboardEntryUpsertArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeaderboardEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryCountArgs} args - Arguments to filter LeaderboardEntries to count.
+     * @example
+     * // Count the number of LeaderboardEntries
+     * const count = await prisma.leaderboardEntry.count({
+     *   where: {
+     *     // ... the filter for the LeaderboardEntries we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeaderboardEntryCountArgs>(
+      args?: Subset<T, LeaderboardEntryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeaderboardEntryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeaderboardEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeaderboardEntryAggregateArgs>(args: Subset<T, LeaderboardEntryAggregateArgs>): Prisma.PrismaPromise<GetLeaderboardEntryAggregateType<T>>
+
+    /**
+     * Group by LeaderboardEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardEntryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeaderboardEntryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeaderboardEntryGroupByArgs['orderBy'] }
+        : { orderBy?: LeaderboardEntryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeaderboardEntryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeaderboardEntryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeaderboardEntry model
+   */
+  readonly fields: LeaderboardEntryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeaderboardEntry.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeaderboardEntryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    snapshots<T extends LeaderboardEntry$snapshotsArgs<ExtArgs> = {}>(args?: Subset<T, LeaderboardEntry$snapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeaderboardEntry model
+   */ 
+  interface LeaderboardEntryFieldRefs {
+    readonly id: FieldRef<"LeaderboardEntry", 'String'>
+    readonly wallet: FieldRef<"LeaderboardEntry", 'String'>
+    readonly swapVolumeUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly liquidityDepositVolumeUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly totalVolumeUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly currentLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly positionsCount: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly v3PoolsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly stickyVaultsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly autoWinVaultsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly volumePoints: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly liquidityPoints: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly totalPoints: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly rank: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly previousRank: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly lastUpdatedAt: FieldRef<"LeaderboardEntry", 'DateTime'>
+    readonly createdAt: FieldRef<"LeaderboardEntry", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeaderboardEntry findUnique
+   */
+  export type LeaderboardEntryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardEntry to fetch.
+     */
+    where: LeaderboardEntryWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardEntry findUniqueOrThrow
+   */
+  export type LeaderboardEntryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardEntry to fetch.
+     */
+    where: LeaderboardEntryWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardEntry findFirst
+   */
+  export type LeaderboardEntryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardEntry to fetch.
+     */
+    where?: LeaderboardEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardEntries to fetch.
+     */
+    orderBy?: LeaderboardEntryOrderByWithRelationInput | LeaderboardEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeaderboardEntries.
+     */
+    cursor?: LeaderboardEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeaderboardEntries.
+     */
+    distinct?: LeaderboardEntryScalarFieldEnum | LeaderboardEntryScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardEntry findFirstOrThrow
+   */
+  export type LeaderboardEntryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardEntry to fetch.
+     */
+    where?: LeaderboardEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardEntries to fetch.
+     */
+    orderBy?: LeaderboardEntryOrderByWithRelationInput | LeaderboardEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeaderboardEntries.
+     */
+    cursor?: LeaderboardEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeaderboardEntries.
+     */
+    distinct?: LeaderboardEntryScalarFieldEnum | LeaderboardEntryScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardEntry findMany
+   */
+  export type LeaderboardEntryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardEntries to fetch.
+     */
+    where?: LeaderboardEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardEntries to fetch.
+     */
+    orderBy?: LeaderboardEntryOrderByWithRelationInput | LeaderboardEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeaderboardEntries.
+     */
+    cursor?: LeaderboardEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardEntries.
+     */
+    skip?: number
+    distinct?: LeaderboardEntryScalarFieldEnum | LeaderboardEntryScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardEntry create
+   */
+  export type LeaderboardEntryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeaderboardEntry.
+     */
+    data: XOR<LeaderboardEntryCreateInput, LeaderboardEntryUncheckedCreateInput>
+  }
+
+  /**
+   * LeaderboardEntry createMany
+   */
+  export type LeaderboardEntryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeaderboardEntries.
+     */
+    data: LeaderboardEntryCreateManyInput | LeaderboardEntryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeaderboardEntry createManyAndReturn
+   */
+  export type LeaderboardEntryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeaderboardEntries.
+     */
+    data: LeaderboardEntryCreateManyInput | LeaderboardEntryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeaderboardEntry update
+   */
+  export type LeaderboardEntryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeaderboardEntry.
+     */
+    data: XOR<LeaderboardEntryUpdateInput, LeaderboardEntryUncheckedUpdateInput>
+    /**
+     * Choose, which LeaderboardEntry to update.
+     */
+    where: LeaderboardEntryWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardEntry updateMany
+   */
+  export type LeaderboardEntryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeaderboardEntries.
+     */
+    data: XOR<LeaderboardEntryUpdateManyMutationInput, LeaderboardEntryUncheckedUpdateManyInput>
+    /**
+     * Filter which LeaderboardEntries to update
+     */
+    where?: LeaderboardEntryWhereInput
+  }
+
+  /**
+   * LeaderboardEntry upsert
+   */
+  export type LeaderboardEntryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeaderboardEntry to update in case it exists.
+     */
+    where: LeaderboardEntryWhereUniqueInput
+    /**
+     * In case the LeaderboardEntry found by the `where` argument doesn't exist, create a new LeaderboardEntry with this data.
+     */
+    create: XOR<LeaderboardEntryCreateInput, LeaderboardEntryUncheckedCreateInput>
+    /**
+     * In case the LeaderboardEntry was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeaderboardEntryUpdateInput, LeaderboardEntryUncheckedUpdateInput>
+  }
+
+  /**
+   * LeaderboardEntry delete
+   */
+  export type LeaderboardEntryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+    /**
+     * Filter which LeaderboardEntry to delete.
+     */
+    where: LeaderboardEntryWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardEntry deleteMany
+   */
+  export type LeaderboardEntryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeaderboardEntries to delete
+     */
+    where?: LeaderboardEntryWhereInput
+  }
+
+  /**
+   * LeaderboardEntry.snapshots
+   */
+  export type LeaderboardEntry$snapshotsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    where?: LeaderboardSnapshotWhereInput
+    orderBy?: LeaderboardSnapshotOrderByWithRelationInput | LeaderboardSnapshotOrderByWithRelationInput[]
+    cursor?: LeaderboardSnapshotWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LeaderboardSnapshotScalarFieldEnum | LeaderboardSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardEntry without action
+   */
+  export type LeaderboardEntryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardEntry
+     */
+    select?: LeaderboardEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardEntryInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LeaderboardSnapshot
+   */
+
+  export type AggregateLeaderboardSnapshot = {
+    _count: LeaderboardSnapshotCountAggregateOutputType | null
+    _avg: LeaderboardSnapshotAvgAggregateOutputType | null
+    _sum: LeaderboardSnapshotSumAggregateOutputType | null
+    _min: LeaderboardSnapshotMinAggregateOutputType | null
+    _max: LeaderboardSnapshotMaxAggregateOutputType | null
+  }
+
+  export type LeaderboardSnapshotAvgAggregateOutputType = {
+    rank: number | null
+    totalPoints: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+  }
+
+  export type LeaderboardSnapshotSumAggregateOutputType = {
+    rank: number | null
+    totalPoints: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+  }
+
+  export type LeaderboardSnapshotMinAggregateOutputType = {
+    id: string | null
+    wallet: string | null
+    timestamp: Date | null
+    rank: number | null
+    totalPoints: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+  }
+
+  export type LeaderboardSnapshotMaxAggregateOutputType = {
+    id: string | null
+    wallet: string | null
+    timestamp: Date | null
+    rank: number | null
+    totalPoints: number | null
+    totalVolumeUSD: number | null
+    currentLiquidityUSD: number | null
+    positionsCount: number | null
+  }
+
+  export type LeaderboardSnapshotCountAggregateOutputType = {
+    id: number
+    wallet: number
+    timestamp: number
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+    _all: number
+  }
+
+
+  export type LeaderboardSnapshotAvgAggregateInputType = {
+    rank?: true
+    totalPoints?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+  }
+
+  export type LeaderboardSnapshotSumAggregateInputType = {
+    rank?: true
+    totalPoints?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+  }
+
+  export type LeaderboardSnapshotMinAggregateInputType = {
+    id?: true
+    wallet?: true
+    timestamp?: true
+    rank?: true
+    totalPoints?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+  }
+
+  export type LeaderboardSnapshotMaxAggregateInputType = {
+    id?: true
+    wallet?: true
+    timestamp?: true
+    rank?: true
+    totalPoints?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+  }
+
+  export type LeaderboardSnapshotCountAggregateInputType = {
+    id?: true
+    wallet?: true
+    timestamp?: true
+    rank?: true
+    totalPoints?: true
+    totalVolumeUSD?: true
+    currentLiquidityUSD?: true
+    positionsCount?: true
+    _all?: true
+  }
+
+  export type LeaderboardSnapshotAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeaderboardSnapshot to aggregate.
+     */
+    where?: LeaderboardSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardSnapshots to fetch.
+     */
+    orderBy?: LeaderboardSnapshotOrderByWithRelationInput | LeaderboardSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LeaderboardSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LeaderboardSnapshots
+    **/
+    _count?: true | LeaderboardSnapshotCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LeaderboardSnapshotAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LeaderboardSnapshotSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LeaderboardSnapshotMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LeaderboardSnapshotMaxAggregateInputType
+  }
+
+  export type GetLeaderboardSnapshotAggregateType<T extends LeaderboardSnapshotAggregateArgs> = {
+        [P in keyof T & keyof AggregateLeaderboardSnapshot]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLeaderboardSnapshot[P]>
+      : GetScalarType<T[P], AggregateLeaderboardSnapshot[P]>
+  }
+
+
+
+
+  export type LeaderboardSnapshotGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LeaderboardSnapshotWhereInput
+    orderBy?: LeaderboardSnapshotOrderByWithAggregationInput | LeaderboardSnapshotOrderByWithAggregationInput[]
+    by: LeaderboardSnapshotScalarFieldEnum[] | LeaderboardSnapshotScalarFieldEnum
+    having?: LeaderboardSnapshotScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LeaderboardSnapshotCountAggregateInputType | true
+    _avg?: LeaderboardSnapshotAvgAggregateInputType
+    _sum?: LeaderboardSnapshotSumAggregateInputType
+    _min?: LeaderboardSnapshotMinAggregateInputType
+    _max?: LeaderboardSnapshotMaxAggregateInputType
+  }
+
+  export type LeaderboardSnapshotGroupByOutputType = {
+    id: string
+    wallet: string
+    timestamp: Date
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+    _count: LeaderboardSnapshotCountAggregateOutputType | null
+    _avg: LeaderboardSnapshotAvgAggregateOutputType | null
+    _sum: LeaderboardSnapshotSumAggregateOutputType | null
+    _min: LeaderboardSnapshotMinAggregateOutputType | null
+    _max: LeaderboardSnapshotMaxAggregateOutputType | null
+  }
+
+  type GetLeaderboardSnapshotGroupByPayload<T extends LeaderboardSnapshotGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LeaderboardSnapshotGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LeaderboardSnapshotGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LeaderboardSnapshotGroupByOutputType[P]>
+            : GetScalarType<T[P], LeaderboardSnapshotGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LeaderboardSnapshotSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    wallet?: boolean
+    timestamp?: boolean
+    rank?: boolean
+    totalPoints?: boolean
+    totalVolumeUSD?: boolean
+    currentLiquidityUSD?: boolean
+    positionsCount?: boolean
+    leaderboardEntry?: boolean | LeaderboardEntryDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leaderboardSnapshot"]>
+
+  export type LeaderboardSnapshotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    wallet?: boolean
+    timestamp?: boolean
+    rank?: boolean
+    totalPoints?: boolean
+    totalVolumeUSD?: boolean
+    currentLiquidityUSD?: boolean
+    positionsCount?: boolean
+    leaderboardEntry?: boolean | LeaderboardEntryDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["leaderboardSnapshot"]>
+
+  export type LeaderboardSnapshotSelectScalar = {
+    id?: boolean
+    wallet?: boolean
+    timestamp?: boolean
+    rank?: boolean
+    totalPoints?: boolean
+    totalVolumeUSD?: boolean
+    currentLiquidityUSD?: boolean
+    positionsCount?: boolean
+  }
+
+  export type LeaderboardSnapshotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    leaderboardEntry?: boolean | LeaderboardEntryDefaultArgs<ExtArgs>
+  }
+  export type LeaderboardSnapshotIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    leaderboardEntry?: boolean | LeaderboardEntryDefaultArgs<ExtArgs>
+  }
+
+  export type $LeaderboardSnapshotPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LeaderboardSnapshot"
+    objects: {
+      leaderboardEntry: Prisma.$LeaderboardEntryPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      wallet: string
+      timestamp: Date
+      rank: number
+      totalPoints: number
+      totalVolumeUSD: number
+      currentLiquidityUSD: number
+      positionsCount: number
+    }, ExtArgs["result"]["leaderboardSnapshot"]>
+    composites: {}
+  }
+
+  type LeaderboardSnapshotGetPayload<S extends boolean | null | undefined | LeaderboardSnapshotDefaultArgs> = $Result.GetResult<Prisma.$LeaderboardSnapshotPayload, S>
+
+  type LeaderboardSnapshotCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LeaderboardSnapshotFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LeaderboardSnapshotCountAggregateInputType | true
+    }
+
+  export interface LeaderboardSnapshotDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LeaderboardSnapshot'], meta: { name: 'LeaderboardSnapshot' } }
+    /**
+     * Find zero or one LeaderboardSnapshot that matches the filter.
+     * @param {LeaderboardSnapshotFindUniqueArgs} args - Arguments to find a LeaderboardSnapshot
+     * @example
+     * // Get one LeaderboardSnapshot
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LeaderboardSnapshotFindUniqueArgs>(args: SelectSubset<T, LeaderboardSnapshotFindUniqueArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LeaderboardSnapshot that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LeaderboardSnapshotFindUniqueOrThrowArgs} args - Arguments to find a LeaderboardSnapshot
+     * @example
+     * // Get one LeaderboardSnapshot
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LeaderboardSnapshotFindUniqueOrThrowArgs>(args: SelectSubset<T, LeaderboardSnapshotFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LeaderboardSnapshot that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotFindFirstArgs} args - Arguments to find a LeaderboardSnapshot
+     * @example
+     * // Get one LeaderboardSnapshot
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LeaderboardSnapshotFindFirstArgs>(args?: SelectSubset<T, LeaderboardSnapshotFindFirstArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LeaderboardSnapshot that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotFindFirstOrThrowArgs} args - Arguments to find a LeaderboardSnapshot
+     * @example
+     * // Get one LeaderboardSnapshot
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LeaderboardSnapshotFindFirstOrThrowArgs>(args?: SelectSubset<T, LeaderboardSnapshotFindFirstOrThrowArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LeaderboardSnapshots that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LeaderboardSnapshots
+     * const leaderboardSnapshots = await prisma.leaderboardSnapshot.findMany()
+     * 
+     * // Get first 10 LeaderboardSnapshots
+     * const leaderboardSnapshots = await prisma.leaderboardSnapshot.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const leaderboardSnapshotWithIdOnly = await prisma.leaderboardSnapshot.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LeaderboardSnapshotFindManyArgs>(args?: SelectSubset<T, LeaderboardSnapshotFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LeaderboardSnapshot.
+     * @param {LeaderboardSnapshotCreateArgs} args - Arguments to create a LeaderboardSnapshot.
+     * @example
+     * // Create one LeaderboardSnapshot
+     * const LeaderboardSnapshot = await prisma.leaderboardSnapshot.create({
+     *   data: {
+     *     // ... data to create a LeaderboardSnapshot
+     *   }
+     * })
+     * 
+     */
+    create<T extends LeaderboardSnapshotCreateArgs>(args: SelectSubset<T, LeaderboardSnapshotCreateArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LeaderboardSnapshots.
+     * @param {LeaderboardSnapshotCreateManyArgs} args - Arguments to create many LeaderboardSnapshots.
+     * @example
+     * // Create many LeaderboardSnapshots
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LeaderboardSnapshotCreateManyArgs>(args?: SelectSubset<T, LeaderboardSnapshotCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LeaderboardSnapshots and returns the data saved in the database.
+     * @param {LeaderboardSnapshotCreateManyAndReturnArgs} args - Arguments to create many LeaderboardSnapshots.
+     * @example
+     * // Create many LeaderboardSnapshots
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LeaderboardSnapshots and only return the `id`
+     * const leaderboardSnapshotWithIdOnly = await prisma.leaderboardSnapshot.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LeaderboardSnapshotCreateManyAndReturnArgs>(args?: SelectSubset<T, LeaderboardSnapshotCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LeaderboardSnapshot.
+     * @param {LeaderboardSnapshotDeleteArgs} args - Arguments to delete one LeaderboardSnapshot.
+     * @example
+     * // Delete one LeaderboardSnapshot
+     * const LeaderboardSnapshot = await prisma.leaderboardSnapshot.delete({
+     *   where: {
+     *     // ... filter to delete one LeaderboardSnapshot
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LeaderboardSnapshotDeleteArgs>(args: SelectSubset<T, LeaderboardSnapshotDeleteArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LeaderboardSnapshot.
+     * @param {LeaderboardSnapshotUpdateArgs} args - Arguments to update one LeaderboardSnapshot.
+     * @example
+     * // Update one LeaderboardSnapshot
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LeaderboardSnapshotUpdateArgs>(args: SelectSubset<T, LeaderboardSnapshotUpdateArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LeaderboardSnapshots.
+     * @param {LeaderboardSnapshotDeleteManyArgs} args - Arguments to filter LeaderboardSnapshots to delete.
+     * @example
+     * // Delete a few LeaderboardSnapshots
+     * const { count } = await prisma.leaderboardSnapshot.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LeaderboardSnapshotDeleteManyArgs>(args?: SelectSubset<T, LeaderboardSnapshotDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LeaderboardSnapshots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LeaderboardSnapshots
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LeaderboardSnapshotUpdateManyArgs>(args: SelectSubset<T, LeaderboardSnapshotUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LeaderboardSnapshot.
+     * @param {LeaderboardSnapshotUpsertArgs} args - Arguments to update or create a LeaderboardSnapshot.
+     * @example
+     * // Update or create a LeaderboardSnapshot
+     * const leaderboardSnapshot = await prisma.leaderboardSnapshot.upsert({
+     *   create: {
+     *     // ... data to create a LeaderboardSnapshot
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LeaderboardSnapshot we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LeaderboardSnapshotUpsertArgs>(args: SelectSubset<T, LeaderboardSnapshotUpsertArgs<ExtArgs>>): Prisma__LeaderboardSnapshotClient<$Result.GetResult<Prisma.$LeaderboardSnapshotPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LeaderboardSnapshots.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotCountArgs} args - Arguments to filter LeaderboardSnapshots to count.
+     * @example
+     * // Count the number of LeaderboardSnapshots
+     * const count = await prisma.leaderboardSnapshot.count({
+     *   where: {
+     *     // ... the filter for the LeaderboardSnapshots we want to count
+     *   }
+     * })
+    **/
+    count<T extends LeaderboardSnapshotCountArgs>(
+      args?: Subset<T, LeaderboardSnapshotCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LeaderboardSnapshotCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LeaderboardSnapshot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LeaderboardSnapshotAggregateArgs>(args: Subset<T, LeaderboardSnapshotAggregateArgs>): Prisma.PrismaPromise<GetLeaderboardSnapshotAggregateType<T>>
+
+    /**
+     * Group by LeaderboardSnapshot.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LeaderboardSnapshotGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LeaderboardSnapshotGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LeaderboardSnapshotGroupByArgs['orderBy'] }
+        : { orderBy?: LeaderboardSnapshotGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LeaderboardSnapshotGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLeaderboardSnapshotGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LeaderboardSnapshot model
+   */
+  readonly fields: LeaderboardSnapshotFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LeaderboardSnapshot.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LeaderboardSnapshotClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    leaderboardEntry<T extends LeaderboardEntryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LeaderboardEntryDefaultArgs<ExtArgs>>): Prisma__LeaderboardEntryClient<$Result.GetResult<Prisma.$LeaderboardEntryPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LeaderboardSnapshot model
+   */ 
+  interface LeaderboardSnapshotFieldRefs {
+    readonly id: FieldRef<"LeaderboardSnapshot", 'String'>
+    readonly wallet: FieldRef<"LeaderboardSnapshot", 'String'>
+    readonly timestamp: FieldRef<"LeaderboardSnapshot", 'DateTime'>
+    readonly rank: FieldRef<"LeaderboardSnapshot", 'Int'>
+    readonly totalPoints: FieldRef<"LeaderboardSnapshot", 'Float'>
+    readonly totalVolumeUSD: FieldRef<"LeaderboardSnapshot", 'Float'>
+    readonly currentLiquidityUSD: FieldRef<"LeaderboardSnapshot", 'Float'>
+    readonly positionsCount: FieldRef<"LeaderboardSnapshot", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LeaderboardSnapshot findUnique
+   */
+  export type LeaderboardSnapshotFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardSnapshot to fetch.
+     */
+    where: LeaderboardSnapshotWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardSnapshot findUniqueOrThrow
+   */
+  export type LeaderboardSnapshotFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardSnapshot to fetch.
+     */
+    where: LeaderboardSnapshotWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardSnapshot findFirst
+   */
+  export type LeaderboardSnapshotFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardSnapshot to fetch.
+     */
+    where?: LeaderboardSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardSnapshots to fetch.
+     */
+    orderBy?: LeaderboardSnapshotOrderByWithRelationInput | LeaderboardSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeaderboardSnapshots.
+     */
+    cursor?: LeaderboardSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeaderboardSnapshots.
+     */
+    distinct?: LeaderboardSnapshotScalarFieldEnum | LeaderboardSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardSnapshot findFirstOrThrow
+   */
+  export type LeaderboardSnapshotFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardSnapshot to fetch.
+     */
+    where?: LeaderboardSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardSnapshots to fetch.
+     */
+    orderBy?: LeaderboardSnapshotOrderByWithRelationInput | LeaderboardSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LeaderboardSnapshots.
+     */
+    cursor?: LeaderboardSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardSnapshots.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LeaderboardSnapshots.
+     */
+    distinct?: LeaderboardSnapshotScalarFieldEnum | LeaderboardSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardSnapshot findMany
+   */
+  export type LeaderboardSnapshotFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter, which LeaderboardSnapshots to fetch.
+     */
+    where?: LeaderboardSnapshotWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LeaderboardSnapshots to fetch.
+     */
+    orderBy?: LeaderboardSnapshotOrderByWithRelationInput | LeaderboardSnapshotOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LeaderboardSnapshots.
+     */
+    cursor?: LeaderboardSnapshotWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LeaderboardSnapshots from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LeaderboardSnapshots.
+     */
+    skip?: number
+    distinct?: LeaderboardSnapshotScalarFieldEnum | LeaderboardSnapshotScalarFieldEnum[]
+  }
+
+  /**
+   * LeaderboardSnapshot create
+   */
+  export type LeaderboardSnapshotCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LeaderboardSnapshot.
+     */
+    data: XOR<LeaderboardSnapshotCreateInput, LeaderboardSnapshotUncheckedCreateInput>
+  }
+
+  /**
+   * LeaderboardSnapshot createMany
+   */
+  export type LeaderboardSnapshotCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LeaderboardSnapshots.
+     */
+    data: LeaderboardSnapshotCreateManyInput | LeaderboardSnapshotCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LeaderboardSnapshot createManyAndReturn
+   */
+  export type LeaderboardSnapshotCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LeaderboardSnapshots.
+     */
+    data: LeaderboardSnapshotCreateManyInput | LeaderboardSnapshotCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LeaderboardSnapshot update
+   */
+  export type LeaderboardSnapshotUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LeaderboardSnapshot.
+     */
+    data: XOR<LeaderboardSnapshotUpdateInput, LeaderboardSnapshotUncheckedUpdateInput>
+    /**
+     * Choose, which LeaderboardSnapshot to update.
+     */
+    where: LeaderboardSnapshotWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardSnapshot updateMany
+   */
+  export type LeaderboardSnapshotUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LeaderboardSnapshots.
+     */
+    data: XOR<LeaderboardSnapshotUpdateManyMutationInput, LeaderboardSnapshotUncheckedUpdateManyInput>
+    /**
+     * Filter which LeaderboardSnapshots to update
+     */
+    where?: LeaderboardSnapshotWhereInput
+  }
+
+  /**
+   * LeaderboardSnapshot upsert
+   */
+  export type LeaderboardSnapshotUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LeaderboardSnapshot to update in case it exists.
+     */
+    where: LeaderboardSnapshotWhereUniqueInput
+    /**
+     * In case the LeaderboardSnapshot found by the `where` argument doesn't exist, create a new LeaderboardSnapshot with this data.
+     */
+    create: XOR<LeaderboardSnapshotCreateInput, LeaderboardSnapshotUncheckedCreateInput>
+    /**
+     * In case the LeaderboardSnapshot was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LeaderboardSnapshotUpdateInput, LeaderboardSnapshotUncheckedUpdateInput>
+  }
+
+  /**
+   * LeaderboardSnapshot delete
+   */
+  export type LeaderboardSnapshotDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+    /**
+     * Filter which LeaderboardSnapshot to delete.
+     */
+    where: LeaderboardSnapshotWhereUniqueInput
+  }
+
+  /**
+   * LeaderboardSnapshot deleteMany
+   */
+  export type LeaderboardSnapshotDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LeaderboardSnapshots to delete
+     */
+    where?: LeaderboardSnapshotWhereInput
+  }
+
+  /**
+   * LeaderboardSnapshot without action
+   */
+  export type LeaderboardSnapshotDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LeaderboardSnapshot
+     */
+    select?: LeaderboardSnapshotSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LeaderboardSnapshotInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -5711,6 +8107,43 @@ export namespace Prisma {
   };
 
   export type PoolStatsScalarFieldEnum = (typeof PoolStatsScalarFieldEnum)[keyof typeof PoolStatsScalarFieldEnum]
+
+
+  export const LeaderboardEntryScalarFieldEnum: {
+    id: 'id',
+    wallet: 'wallet',
+    swapVolumeUSD: 'swapVolumeUSD',
+    liquidityDepositVolumeUSD: 'liquidityDepositVolumeUSD',
+    totalVolumeUSD: 'totalVolumeUSD',
+    currentLiquidityUSD: 'currentLiquidityUSD',
+    positionsCount: 'positionsCount',
+    v3PoolsLiquidityUSD: 'v3PoolsLiquidityUSD',
+    stickyVaultsLiquidityUSD: 'stickyVaultsLiquidityUSD',
+    autoWinVaultsLiquidityUSD: 'autoWinVaultsLiquidityUSD',
+    volumePoints: 'volumePoints',
+    liquidityPoints: 'liquidityPoints',
+    totalPoints: 'totalPoints',
+    rank: 'rank',
+    previousRank: 'previousRank',
+    lastUpdatedAt: 'lastUpdatedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type LeaderboardEntryScalarFieldEnum = (typeof LeaderboardEntryScalarFieldEnum)[keyof typeof LeaderboardEntryScalarFieldEnum]
+
+
+  export const LeaderboardSnapshotScalarFieldEnum: {
+    id: 'id',
+    wallet: 'wallet',
+    timestamp: 'timestamp',
+    rank: 'rank',
+    totalPoints: 'totalPoints',
+    totalVolumeUSD: 'totalVolumeUSD',
+    currentLiquidityUSD: 'currentLiquidityUSD',
+    positionsCount: 'positionsCount'
+  };
+
+  export type LeaderboardSnapshotScalarFieldEnum = (typeof LeaderboardSnapshotScalarFieldEnum)[keyof typeof LeaderboardSnapshotScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -6276,6 +8709,195 @@ export namespace Prisma {
     tvlUSD?: FloatWithAggregatesFilter<"PoolStats"> | number
   }
 
+  export type LeaderboardEntryWhereInput = {
+    AND?: LeaderboardEntryWhereInput | LeaderboardEntryWhereInput[]
+    OR?: LeaderboardEntryWhereInput[]
+    NOT?: LeaderboardEntryWhereInput | LeaderboardEntryWhereInput[]
+    id?: StringFilter<"LeaderboardEntry"> | string
+    wallet?: StringFilter<"LeaderboardEntry"> | string
+    swapVolumeUSD?: FloatFilter<"LeaderboardEntry"> | number
+    liquidityDepositVolumeUSD?: FloatFilter<"LeaderboardEntry"> | number
+    totalVolumeUSD?: FloatFilter<"LeaderboardEntry"> | number
+    currentLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    positionsCount?: IntFilter<"LeaderboardEntry"> | number
+    v3PoolsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    stickyVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    autoWinVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    volumePoints?: FloatFilter<"LeaderboardEntry"> | number
+    liquidityPoints?: FloatFilter<"LeaderboardEntry"> | number
+    totalPoints?: FloatFilter<"LeaderboardEntry"> | number
+    rank?: IntFilter<"LeaderboardEntry"> | number
+    previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
+    lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
+    createdAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
+    snapshots?: LeaderboardSnapshotListRelationFilter
+  }
+
+  export type LeaderboardEntryOrderByWithRelationInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrderInput | SortOrder
+    lastUpdatedAt?: SortOrder
+    createdAt?: SortOrder
+    snapshots?: LeaderboardSnapshotOrderByRelationAggregateInput
+  }
+
+  export type LeaderboardEntryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    wallet?: string
+    AND?: LeaderboardEntryWhereInput | LeaderboardEntryWhereInput[]
+    OR?: LeaderboardEntryWhereInput[]
+    NOT?: LeaderboardEntryWhereInput | LeaderboardEntryWhereInput[]
+    swapVolumeUSD?: FloatFilter<"LeaderboardEntry"> | number
+    liquidityDepositVolumeUSD?: FloatFilter<"LeaderboardEntry"> | number
+    totalVolumeUSD?: FloatFilter<"LeaderboardEntry"> | number
+    currentLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    positionsCount?: IntFilter<"LeaderboardEntry"> | number
+    v3PoolsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    stickyVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    autoWinVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
+    volumePoints?: FloatFilter<"LeaderboardEntry"> | number
+    liquidityPoints?: FloatFilter<"LeaderboardEntry"> | number
+    totalPoints?: FloatFilter<"LeaderboardEntry"> | number
+    rank?: IntFilter<"LeaderboardEntry"> | number
+    previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
+    lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
+    createdAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
+    snapshots?: LeaderboardSnapshotListRelationFilter
+  }, "id" | "wallet">
+
+  export type LeaderboardEntryOrderByWithAggregationInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrderInput | SortOrder
+    lastUpdatedAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: LeaderboardEntryCountOrderByAggregateInput
+    _avg?: LeaderboardEntryAvgOrderByAggregateInput
+    _max?: LeaderboardEntryMaxOrderByAggregateInput
+    _min?: LeaderboardEntryMinOrderByAggregateInput
+    _sum?: LeaderboardEntrySumOrderByAggregateInput
+  }
+
+  export type LeaderboardEntryScalarWhereWithAggregatesInput = {
+    AND?: LeaderboardEntryScalarWhereWithAggregatesInput | LeaderboardEntryScalarWhereWithAggregatesInput[]
+    OR?: LeaderboardEntryScalarWhereWithAggregatesInput[]
+    NOT?: LeaderboardEntryScalarWhereWithAggregatesInput | LeaderboardEntryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeaderboardEntry"> | string
+    wallet?: StringWithAggregatesFilter<"LeaderboardEntry"> | string
+    swapVolumeUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    liquidityDepositVolumeUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    totalVolumeUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    currentLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    positionsCount?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
+    v3PoolsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    stickyVaultsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    autoWinVaultsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    volumePoints?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    liquidityPoints?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    totalPoints?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    rank?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
+    previousRank?: IntNullableWithAggregatesFilter<"LeaderboardEntry"> | number | null
+    lastUpdatedAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
+  }
+
+  export type LeaderboardSnapshotWhereInput = {
+    AND?: LeaderboardSnapshotWhereInput | LeaderboardSnapshotWhereInput[]
+    OR?: LeaderboardSnapshotWhereInput[]
+    NOT?: LeaderboardSnapshotWhereInput | LeaderboardSnapshotWhereInput[]
+    id?: StringFilter<"LeaderboardSnapshot"> | string
+    wallet?: StringFilter<"LeaderboardSnapshot"> | string
+    timestamp?: DateTimeFilter<"LeaderboardSnapshot"> | Date | string
+    rank?: IntFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: FloatFilter<"LeaderboardSnapshot"> | number
+    totalVolumeUSD?: FloatFilter<"LeaderboardSnapshot"> | number
+    currentLiquidityUSD?: FloatFilter<"LeaderboardSnapshot"> | number
+    positionsCount?: IntFilter<"LeaderboardSnapshot"> | number
+    leaderboardEntry?: XOR<LeaderboardEntryRelationFilter, LeaderboardEntryWhereInput>
+  }
+
+  export type LeaderboardSnapshotOrderByWithRelationInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    timestamp?: SortOrder
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    leaderboardEntry?: LeaderboardEntryOrderByWithRelationInput
+  }
+
+  export type LeaderboardSnapshotWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LeaderboardSnapshotWhereInput | LeaderboardSnapshotWhereInput[]
+    OR?: LeaderboardSnapshotWhereInput[]
+    NOT?: LeaderboardSnapshotWhereInput | LeaderboardSnapshotWhereInput[]
+    wallet?: StringFilter<"LeaderboardSnapshot"> | string
+    timestamp?: DateTimeFilter<"LeaderboardSnapshot"> | Date | string
+    rank?: IntFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: FloatFilter<"LeaderboardSnapshot"> | number
+    totalVolumeUSD?: FloatFilter<"LeaderboardSnapshot"> | number
+    currentLiquidityUSD?: FloatFilter<"LeaderboardSnapshot"> | number
+    positionsCount?: IntFilter<"LeaderboardSnapshot"> | number
+    leaderboardEntry?: XOR<LeaderboardEntryRelationFilter, LeaderboardEntryWhereInput>
+  }, "id">
+
+  export type LeaderboardSnapshotOrderByWithAggregationInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    timestamp?: SortOrder
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    _count?: LeaderboardSnapshotCountOrderByAggregateInput
+    _avg?: LeaderboardSnapshotAvgOrderByAggregateInput
+    _max?: LeaderboardSnapshotMaxOrderByAggregateInput
+    _min?: LeaderboardSnapshotMinOrderByAggregateInput
+    _sum?: LeaderboardSnapshotSumOrderByAggregateInput
+  }
+
+  export type LeaderboardSnapshotScalarWhereWithAggregatesInput = {
+    AND?: LeaderboardSnapshotScalarWhereWithAggregatesInput | LeaderboardSnapshotScalarWhereWithAggregatesInput[]
+    OR?: LeaderboardSnapshotScalarWhereWithAggregatesInput[]
+    NOT?: LeaderboardSnapshotScalarWhereWithAggregatesInput | LeaderboardSnapshotScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LeaderboardSnapshot"> | string
+    wallet?: StringWithAggregatesFilter<"LeaderboardSnapshot"> | string
+    timestamp?: DateTimeWithAggregatesFilter<"LeaderboardSnapshot"> | Date | string
+    rank?: IntWithAggregatesFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: FloatWithAggregatesFilter<"LeaderboardSnapshot"> | number
+    totalVolumeUSD?: FloatWithAggregatesFilter<"LeaderboardSnapshot"> | number
+    currentLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardSnapshot"> | number
+    positionsCount?: IntWithAggregatesFilter<"LeaderboardSnapshot"> | number
+  }
+
   export type TokenCreateInput = {
     address: string
     symbol: string
@@ -6755,6 +9377,226 @@ export namespace Prisma {
     monthVolumeUSD?: FloatFieldUpdateOperationsInput | number
     apr?: FloatFieldUpdateOperationsInput | number
     tvlUSD?: FloatFieldUpdateOperationsInput | number
+  }
+
+  export type LeaderboardEntryCreateInput = {
+    id: string
+    wallet: string
+    swapVolumeUSD?: number
+    liquidityDepositVolumeUSD?: number
+    totalVolumeUSD?: number
+    currentLiquidityUSD?: number
+    positionsCount?: number
+    v3PoolsLiquidityUSD?: number
+    stickyVaultsLiquidityUSD?: number
+    autoWinVaultsLiquidityUSD?: number
+    volumePoints?: number
+    liquidityPoints?: number
+    totalPoints?: number
+    rank: number
+    previousRank?: number | null
+    lastUpdatedAt?: Date | string
+    createdAt?: Date | string
+    snapshots?: LeaderboardSnapshotCreateNestedManyWithoutLeaderboardEntryInput
+  }
+
+  export type LeaderboardEntryUncheckedCreateInput = {
+    id: string
+    wallet: string
+    swapVolumeUSD?: number
+    liquidityDepositVolumeUSD?: number
+    totalVolumeUSD?: number
+    currentLiquidityUSD?: number
+    positionsCount?: number
+    v3PoolsLiquidityUSD?: number
+    stickyVaultsLiquidityUSD?: number
+    autoWinVaultsLiquidityUSD?: number
+    volumePoints?: number
+    liquidityPoints?: number
+    totalPoints?: number
+    rank: number
+    previousRank?: number | null
+    lastUpdatedAt?: Date | string
+    createdAt?: Date | string
+    snapshots?: LeaderboardSnapshotUncheckedCreateNestedManyWithoutLeaderboardEntryInput
+  }
+
+  export type LeaderboardEntryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    swapVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityDepositVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: FloatFieldUpdateOperationsInput | number
+    liquidityPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    snapshots?: LeaderboardSnapshotUpdateManyWithoutLeaderboardEntryNestedInput
+  }
+
+  export type LeaderboardEntryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    swapVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityDepositVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: FloatFieldUpdateOperationsInput | number
+    liquidityPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    snapshots?: LeaderboardSnapshotUncheckedUpdateManyWithoutLeaderboardEntryNestedInput
+  }
+
+  export type LeaderboardEntryCreateManyInput = {
+    id: string
+    wallet: string
+    swapVolumeUSD?: number
+    liquidityDepositVolumeUSD?: number
+    totalVolumeUSD?: number
+    currentLiquidityUSD?: number
+    positionsCount?: number
+    v3PoolsLiquidityUSD?: number
+    stickyVaultsLiquidityUSD?: number
+    autoWinVaultsLiquidityUSD?: number
+    volumePoints?: number
+    liquidityPoints?: number
+    totalPoints?: number
+    rank: number
+    previousRank?: number | null
+    lastUpdatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type LeaderboardEntryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    swapVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityDepositVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: FloatFieldUpdateOperationsInput | number
+    liquidityPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeaderboardEntryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    swapVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityDepositVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: FloatFieldUpdateOperationsInput | number
+    liquidityPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeaderboardSnapshotCreateInput = {
+    id: string
+    timestamp?: Date | string
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+    leaderboardEntry: LeaderboardEntryCreateNestedOneWithoutSnapshotsInput
+  }
+
+  export type LeaderboardSnapshotUncheckedCreateInput = {
+    id: string
+    wallet: string
+    timestamp?: Date | string
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+  }
+
+  export type LeaderboardSnapshotUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    leaderboardEntry?: LeaderboardEntryUpdateOneRequiredWithoutSnapshotsNestedInput
+  }
+
+  export type LeaderboardSnapshotUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeaderboardSnapshotCreateManyInput = {
+    id: string
+    wallet: string
+    timestamp?: Date | string
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+  }
+
+  export type LeaderboardSnapshotUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeaderboardSnapshotUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -7350,6 +10192,189 @@ export namespace Prisma {
     tvlUSD?: SortOrder
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type LeaderboardSnapshotListRelationFilter = {
+    every?: LeaderboardSnapshotWhereInput
+    some?: LeaderboardSnapshotWhereInput
+    none?: LeaderboardSnapshotWhereInput
+  }
+
+  export type LeaderboardSnapshotOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LeaderboardEntryCountOrderByAggregateInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrder
+    lastUpdatedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LeaderboardEntryAvgOrderByAggregateInput = {
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrder
+  }
+
+  export type LeaderboardEntryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrder
+    lastUpdatedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LeaderboardEntryMinOrderByAggregateInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrder
+    lastUpdatedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LeaderboardEntrySumOrderByAggregateInput = {
+    swapVolumeUSD?: SortOrder
+    liquidityDepositVolumeUSD?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+    v3PoolsLiquidityUSD?: SortOrder
+    stickyVaultsLiquidityUSD?: SortOrder
+    autoWinVaultsLiquidityUSD?: SortOrder
+    volumePoints?: SortOrder
+    liquidityPoints?: SortOrder
+    totalPoints?: SortOrder
+    rank?: SortOrder
+    previousRank?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type LeaderboardEntryRelationFilter = {
+    is?: LeaderboardEntryWhereInput
+    isNot?: LeaderboardEntryWhereInput
+  }
+
+  export type LeaderboardSnapshotCountOrderByAggregateInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    timestamp?: SortOrder
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+  }
+
+  export type LeaderboardSnapshotAvgOrderByAggregateInput = {
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+  }
+
+  export type LeaderboardSnapshotMaxOrderByAggregateInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    timestamp?: SortOrder
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+  }
+
+  export type LeaderboardSnapshotMinOrderByAggregateInput = {
+    id?: SortOrder
+    wallet?: SortOrder
+    timestamp?: SortOrder
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+  }
+
+  export type LeaderboardSnapshotSumOrderByAggregateInput = {
+    rank?: SortOrder
+    totalPoints?: SortOrder
+    totalVolumeUSD?: SortOrder
+    currentLiquidityUSD?: SortOrder
+    positionsCount?: SortOrder
+  }
+
   export type TokenPriceCreateNestedManyWithoutTokenInput = {
     create?: XOR<TokenPriceCreateWithoutTokenInput, TokenPriceUncheckedCreateWithoutTokenInput> | TokenPriceCreateWithoutTokenInput[] | TokenPriceUncheckedCreateWithoutTokenInput[]
     connectOrCreate?: TokenPriceCreateOrConnectWithoutTokenInput | TokenPriceCreateOrConnectWithoutTokenInput[]
@@ -7626,6 +10651,70 @@ export namespace Prisma {
     update?: XOR<XOR<TokenUpdateToOneWithWhereWithoutPoolStatsAsToken1Input, TokenUpdateWithoutPoolStatsAsToken1Input>, TokenUncheckedUpdateWithoutPoolStatsAsToken1Input>
   }
 
+  export type LeaderboardSnapshotCreateNestedManyWithoutLeaderboardEntryInput = {
+    create?: XOR<LeaderboardSnapshotCreateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput> | LeaderboardSnapshotCreateWithoutLeaderboardEntryInput[] | LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput[]
+    connectOrCreate?: LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput | LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput[]
+    createMany?: LeaderboardSnapshotCreateManyLeaderboardEntryInputEnvelope
+    connect?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+  }
+
+  export type LeaderboardSnapshotUncheckedCreateNestedManyWithoutLeaderboardEntryInput = {
+    create?: XOR<LeaderboardSnapshotCreateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput> | LeaderboardSnapshotCreateWithoutLeaderboardEntryInput[] | LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput[]
+    connectOrCreate?: LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput | LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput[]
+    createMany?: LeaderboardSnapshotCreateManyLeaderboardEntryInputEnvelope
+    connect?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type LeaderboardSnapshotUpdateManyWithoutLeaderboardEntryNestedInput = {
+    create?: XOR<LeaderboardSnapshotCreateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput> | LeaderboardSnapshotCreateWithoutLeaderboardEntryInput[] | LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput[]
+    connectOrCreate?: LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput | LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput[]
+    upsert?: LeaderboardSnapshotUpsertWithWhereUniqueWithoutLeaderboardEntryInput | LeaderboardSnapshotUpsertWithWhereUniqueWithoutLeaderboardEntryInput[]
+    createMany?: LeaderboardSnapshotCreateManyLeaderboardEntryInputEnvelope
+    set?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    disconnect?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    delete?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    connect?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    update?: LeaderboardSnapshotUpdateWithWhereUniqueWithoutLeaderboardEntryInput | LeaderboardSnapshotUpdateWithWhereUniqueWithoutLeaderboardEntryInput[]
+    updateMany?: LeaderboardSnapshotUpdateManyWithWhereWithoutLeaderboardEntryInput | LeaderboardSnapshotUpdateManyWithWhereWithoutLeaderboardEntryInput[]
+    deleteMany?: LeaderboardSnapshotScalarWhereInput | LeaderboardSnapshotScalarWhereInput[]
+  }
+
+  export type LeaderboardSnapshotUncheckedUpdateManyWithoutLeaderboardEntryNestedInput = {
+    create?: XOR<LeaderboardSnapshotCreateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput> | LeaderboardSnapshotCreateWithoutLeaderboardEntryInput[] | LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput[]
+    connectOrCreate?: LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput | LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput[]
+    upsert?: LeaderboardSnapshotUpsertWithWhereUniqueWithoutLeaderboardEntryInput | LeaderboardSnapshotUpsertWithWhereUniqueWithoutLeaderboardEntryInput[]
+    createMany?: LeaderboardSnapshotCreateManyLeaderboardEntryInputEnvelope
+    set?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    disconnect?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    delete?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    connect?: LeaderboardSnapshotWhereUniqueInput | LeaderboardSnapshotWhereUniqueInput[]
+    update?: LeaderboardSnapshotUpdateWithWhereUniqueWithoutLeaderboardEntryInput | LeaderboardSnapshotUpdateWithWhereUniqueWithoutLeaderboardEntryInput[]
+    updateMany?: LeaderboardSnapshotUpdateManyWithWhereWithoutLeaderboardEntryInput | LeaderboardSnapshotUpdateManyWithWhereWithoutLeaderboardEntryInput[]
+    deleteMany?: LeaderboardSnapshotScalarWhereInput | LeaderboardSnapshotScalarWhereInput[]
+  }
+
+  export type LeaderboardEntryCreateNestedOneWithoutSnapshotsInput = {
+    create?: XOR<LeaderboardEntryCreateWithoutSnapshotsInput, LeaderboardEntryUncheckedCreateWithoutSnapshotsInput>
+    connectOrCreate?: LeaderboardEntryCreateOrConnectWithoutSnapshotsInput
+    connect?: LeaderboardEntryWhereUniqueInput
+  }
+
+  export type LeaderboardEntryUpdateOneRequiredWithoutSnapshotsNestedInput = {
+    create?: XOR<LeaderboardEntryCreateWithoutSnapshotsInput, LeaderboardEntryUncheckedCreateWithoutSnapshotsInput>
+    connectOrCreate?: LeaderboardEntryCreateOrConnectWithoutSnapshotsInput
+    upsert?: LeaderboardEntryUpsertWithoutSnapshotsInput
+    connect?: LeaderboardEntryWhereUniqueInput
+    update?: XOR<XOR<LeaderboardEntryUpdateToOneWithWhereWithoutSnapshotsInput, LeaderboardEntryUpdateWithoutSnapshotsInput>, LeaderboardEntryUncheckedUpdateWithoutSnapshotsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -7897,6 +10986,22 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type TokenPriceCreateWithoutTokenInput = {
@@ -8645,6 +11750,162 @@ export namespace Prisma {
     PoolStatsAsToken0?: PoolStatsUncheckedUpdateManyWithoutToken0NestedInput
   }
 
+  export type LeaderboardSnapshotCreateWithoutLeaderboardEntryInput = {
+    id: string
+    timestamp?: Date | string
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+  }
+
+  export type LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput = {
+    id: string
+    timestamp?: Date | string
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+  }
+
+  export type LeaderboardSnapshotCreateOrConnectWithoutLeaderboardEntryInput = {
+    where: LeaderboardSnapshotWhereUniqueInput
+    create: XOR<LeaderboardSnapshotCreateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput>
+  }
+
+  export type LeaderboardSnapshotCreateManyLeaderboardEntryInputEnvelope = {
+    data: LeaderboardSnapshotCreateManyLeaderboardEntryInput | LeaderboardSnapshotCreateManyLeaderboardEntryInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LeaderboardSnapshotUpsertWithWhereUniqueWithoutLeaderboardEntryInput = {
+    where: LeaderboardSnapshotWhereUniqueInput
+    update: XOR<LeaderboardSnapshotUpdateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedUpdateWithoutLeaderboardEntryInput>
+    create: XOR<LeaderboardSnapshotCreateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedCreateWithoutLeaderboardEntryInput>
+  }
+
+  export type LeaderboardSnapshotUpdateWithWhereUniqueWithoutLeaderboardEntryInput = {
+    where: LeaderboardSnapshotWhereUniqueInput
+    data: XOR<LeaderboardSnapshotUpdateWithoutLeaderboardEntryInput, LeaderboardSnapshotUncheckedUpdateWithoutLeaderboardEntryInput>
+  }
+
+  export type LeaderboardSnapshotUpdateManyWithWhereWithoutLeaderboardEntryInput = {
+    where: LeaderboardSnapshotScalarWhereInput
+    data: XOR<LeaderboardSnapshotUpdateManyMutationInput, LeaderboardSnapshotUncheckedUpdateManyWithoutLeaderboardEntryInput>
+  }
+
+  export type LeaderboardSnapshotScalarWhereInput = {
+    AND?: LeaderboardSnapshotScalarWhereInput | LeaderboardSnapshotScalarWhereInput[]
+    OR?: LeaderboardSnapshotScalarWhereInput[]
+    NOT?: LeaderboardSnapshotScalarWhereInput | LeaderboardSnapshotScalarWhereInput[]
+    id?: StringFilter<"LeaderboardSnapshot"> | string
+    wallet?: StringFilter<"LeaderboardSnapshot"> | string
+    timestamp?: DateTimeFilter<"LeaderboardSnapshot"> | Date | string
+    rank?: IntFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: FloatFilter<"LeaderboardSnapshot"> | number
+    totalVolumeUSD?: FloatFilter<"LeaderboardSnapshot"> | number
+    currentLiquidityUSD?: FloatFilter<"LeaderboardSnapshot"> | number
+    positionsCount?: IntFilter<"LeaderboardSnapshot"> | number
+  }
+
+  export type LeaderboardEntryCreateWithoutSnapshotsInput = {
+    id: string
+    wallet: string
+    swapVolumeUSD?: number
+    liquidityDepositVolumeUSD?: number
+    totalVolumeUSD?: number
+    currentLiquidityUSD?: number
+    positionsCount?: number
+    v3PoolsLiquidityUSD?: number
+    stickyVaultsLiquidityUSD?: number
+    autoWinVaultsLiquidityUSD?: number
+    volumePoints?: number
+    liquidityPoints?: number
+    totalPoints?: number
+    rank: number
+    previousRank?: number | null
+    lastUpdatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type LeaderboardEntryUncheckedCreateWithoutSnapshotsInput = {
+    id: string
+    wallet: string
+    swapVolumeUSD?: number
+    liquidityDepositVolumeUSD?: number
+    totalVolumeUSD?: number
+    currentLiquidityUSD?: number
+    positionsCount?: number
+    v3PoolsLiquidityUSD?: number
+    stickyVaultsLiquidityUSD?: number
+    autoWinVaultsLiquidityUSD?: number
+    volumePoints?: number
+    liquidityPoints?: number
+    totalPoints?: number
+    rank: number
+    previousRank?: number | null
+    lastUpdatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type LeaderboardEntryCreateOrConnectWithoutSnapshotsInput = {
+    where: LeaderboardEntryWhereUniqueInput
+    create: XOR<LeaderboardEntryCreateWithoutSnapshotsInput, LeaderboardEntryUncheckedCreateWithoutSnapshotsInput>
+  }
+
+  export type LeaderboardEntryUpsertWithoutSnapshotsInput = {
+    update: XOR<LeaderboardEntryUpdateWithoutSnapshotsInput, LeaderboardEntryUncheckedUpdateWithoutSnapshotsInput>
+    create: XOR<LeaderboardEntryCreateWithoutSnapshotsInput, LeaderboardEntryUncheckedCreateWithoutSnapshotsInput>
+    where?: LeaderboardEntryWhereInput
+  }
+
+  export type LeaderboardEntryUpdateToOneWithWhereWithoutSnapshotsInput = {
+    where?: LeaderboardEntryWhereInput
+    data: XOR<LeaderboardEntryUpdateWithoutSnapshotsInput, LeaderboardEntryUncheckedUpdateWithoutSnapshotsInput>
+  }
+
+  export type LeaderboardEntryUpdateWithoutSnapshotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    swapVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityDepositVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: FloatFieldUpdateOperationsInput | number
+    liquidityPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LeaderboardEntryUncheckedUpdateWithoutSnapshotsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    wallet?: StringFieldUpdateOperationsInput | string
+    swapVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    liquidityDepositVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+    v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: FloatFieldUpdateOperationsInput | number
+    liquidityPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    rank?: IntFieldUpdateOperationsInput | number
+    previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type TokenPriceCreateManyTokenInput = {
     price: number
     priceSource?: $Enums.PriceSource
@@ -8893,6 +12154,46 @@ export namespace Prisma {
     tvlUSD?: FloatFieldUpdateOperationsInput | number
   }
 
+  export type LeaderboardSnapshotCreateManyLeaderboardEntryInput = {
+    id: string
+    timestamp?: Date | string
+    rank: number
+    totalPoints: number
+    totalVolumeUSD: number
+    currentLiquidityUSD: number
+    positionsCount: number
+  }
+
+  export type LeaderboardSnapshotUpdateWithoutLeaderboardEntryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeaderboardSnapshotUncheckedUpdateWithoutLeaderboardEntryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type LeaderboardSnapshotUncheckedUpdateManyWithoutLeaderboardEntryInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    rank?: IntFieldUpdateOperationsInput | number
+    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
+    currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
+    positionsCount?: IntFieldUpdateOperationsInput | number
+  }
+
 
 
   /**
@@ -8902,6 +12203,10 @@ export namespace Prisma {
      * @deprecated Use TokenCountOutputTypeDefaultArgs instead
      */
     export type TokenCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TokenCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeaderboardEntryCountOutputTypeDefaultArgs instead
+     */
+    export type LeaderboardEntryCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeaderboardEntryCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use TokenDefaultArgs instead
      */
@@ -8918,6 +12223,14 @@ export namespace Prisma {
      * @deprecated Use PoolStatsDefaultArgs instead
      */
     export type PoolStatsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PoolStatsDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeaderboardEntryDefaultArgs instead
+     */
+    export type LeaderboardEntryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeaderboardEntryDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LeaderboardSnapshotDefaultArgs instead
+     */
+    export type LeaderboardSnapshotArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LeaderboardSnapshotDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany
