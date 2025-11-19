@@ -189,6 +189,37 @@ exports.Prisma.PoolStatsScalarFieldEnum = {
   tvlUSD: 'tvlUSD'
 };
 
+exports.Prisma.LeaderboardEntryScalarFieldEnum = {
+  id: 'id',
+  wallet: 'wallet',
+  swapVolumeUSD: 'swapVolumeUSD',
+  liquidityDepositVolumeUSD: 'liquidityDepositVolumeUSD',
+  totalVolumeUSD: 'totalVolumeUSD',
+  currentLiquidityUSD: 'currentLiquidityUSD',
+  positionsCount: 'positionsCount',
+  v3PoolsLiquidityUSD: 'v3PoolsLiquidityUSD',
+  stickyVaultsLiquidityUSD: 'stickyVaultsLiquidityUSD',
+  autoWinVaultsLiquidityUSD: 'autoWinVaultsLiquidityUSD',
+  volumePoints: 'volumePoints',
+  liquidityPoints: 'liquidityPoints',
+  totalPoints: 'totalPoints',
+  rank: 'rank',
+  previousRank: 'previousRank',
+  lastUpdatedAt: 'lastUpdatedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LeaderboardSnapshotScalarFieldEnum = {
+  id: 'id',
+  wallet: 'wallet',
+  timestamp: 'timestamp',
+  rank: 'rank',
+  totalPoints: 'totalPoints',
+  totalVolumeUSD: 'totalVolumeUSD',
+  currentLiquidityUSD: 'currentLiquidityUSD',
+  positionsCount: 'positionsCount'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -232,7 +263,9 @@ exports.Prisma.ModelName = {
   Token: 'Token',
   TokenPrice: 'TokenPrice',
   TokenDailyStats: 'TokenDailyStats',
-  PoolStats: 'PoolStats'
+  PoolStats: 'PoolStats',
+  LeaderboardEntry: 'LeaderboardEntry',
+  LeaderboardSnapshot: 'LeaderboardSnapshot'
 };
 
 /**
