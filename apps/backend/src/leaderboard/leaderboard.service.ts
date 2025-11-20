@@ -17,7 +17,7 @@ export class LeaderboardService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly calculator: LeaderboardCalculatorService,
-  ) {}
+  ) { }
 
   private get prisma() {
     return this.databaseService.client;
@@ -49,11 +49,11 @@ export class LeaderboardService {
     // S'assurer que page et limit sont des nombres entiers
     const page = Number.parseInt(String(query.page || 1), 10);
     const limit = Number.parseInt(String(query.limit || 100), 10);
-    
+
     // Valider les valeurs
     const validPage = Math.max(1, page);
     const validLimit = Math.max(1, Math.min(500, limit)); // Max 500 selon le DTO
-    
+
     const skip = (validPage - 1) * validLimit;
 
     const [entries, total, lastEntry] = await Promise.all([

@@ -152,7 +152,7 @@ export function usePortfolioStats(): {
   
   // Récupérer les données du leaderboard depuis le backend
   // null signifie que le wallet n'est pas dans le leaderboard (pas une erreur)
-  const { data: leaderboardData, isLoading: leaderboardLoading, error: leaderboardError } = useLeaderboardWallet(address);
+  const { data: leaderboardData, isLoading: leaderboardLoading } = useLeaderboardWallet(address);
   
   // Le wallet est dans le leaderboard si on a des données (même avec rank 0)
   const isWalletInLeaderboard = leaderboardData !== null && leaderboardData !== undefined;
