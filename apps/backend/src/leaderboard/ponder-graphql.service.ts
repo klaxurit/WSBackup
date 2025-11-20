@@ -95,65 +95,129 @@ export class PonderGraphqlService {
 
   /**
    * Get total swap volume per wallet (origin)
+   * Uses pagination to handle Ponder's 1000 item limit
    */
   async getSwapVolumeByWallet(): Promise<Map<string, number>> {
-    const query = `
-      query {
-        swaps(orderBy: "origin") {
-          items {
-            origin
-            amountUSD
+    const volumeMap = new Map<string, number>();
+    let totalSwaps = 0;
+    let totalVolume = 0;
+    let swapsWithVolume = 0;
+    let hasMore = true;
+    let after: string | undefined = undefined;
+
+    this.logger.log('Starting to fetch swap volumes with pagination...');
+
+    while (hasMore) {
+      const query = `
+        query {
+          swaps(limit: 1000${after ? `, after: "${after}"` : ''}) {
+            items {
+              id
+              origin
+              amountUSD
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
+      `;
+
+      const data = await this.query<{
+        swaps: {
+          items: Array<{ id: string; origin: string; amountUSD: string }>;
+          pageInfo: { hasNextPage: boolean; endCursor: string };
+        };
+      }>(query);
+
+      totalSwaps += data.swaps.items.length;
+
+      // Aggregate volumes by wallet
+      for (const swap of data.swaps.items) {
+        const wallet = swap.origin.toLowerCase();
+        const volume = parseFloat(swap.amountUSD || '0');
+
+        if (volume > 0) {
+          swapsWithVolume++;
+          totalVolume += volume;
+        }
+
+        volumeMap.set(wallet, (volumeMap.get(wallet) || 0) + volume);
       }
-    `;
 
-    const data = await this.query<{
-      swaps: { items: Array<{ origin: string; amountUSD: string }> };
-    }>(query);
+      hasMore = data.swaps.pageInfo.hasNextPage;
+      after = data.swaps.pageInfo.endCursor;
 
-    // Aggregate volumes by wallet
-    const volumeMap = new Map<string, number>();
-    for (const swap of data.swaps.items) {
-      const wallet = swap.origin.toLowerCase();
-      const volume = parseFloat(swap.amountUSD || '0');
-      volumeMap.set(wallet, (volumeMap.get(wallet) || 0) + volume);
+      if (hasMore) {
+        this.logger.log(
+          `Fetched ${totalSwaps} swaps so far, continuing pagination...`,
+        );
+      }
     }
 
     this.logger.log(
-      `Fetched swap volumes for ${volumeMap.size} unique wallets`,
+      `Swap volume stats: ${totalSwaps} total swaps, ${volumeMap.size} unique wallets, ${swapsWithVolume} swaps with volume > 0, total volume: $${totalVolume.toFixed(2)}`,
     );
     return volumeMap;
   }
 
   /**
    * Get total liquidity deposit volume per wallet (from mint events)
+   * Uses pagination to handle Ponder's 1000 item limit
    */
   async getLiquidityVolumeByWallet(): Promise<Map<string, number>> {
-    const query = `
-      query {
-        mints(orderBy: "owner") {
-          items {
-            owner
-            amountUSD
+    const volumeMap = new Map<string, number>();
+    let totalMints = 0;
+    let hasMore = true;
+    let after: string | undefined = undefined;
+
+    this.logger.log('Starting to fetch liquidity volumes with pagination...');
+
+    while (hasMore) {
+      const query = `
+        query {
+          mints(limit: 1000${after ? `, after: "${after}"` : ''}) {
+            items {
+              id
+              owner
+              amountUSD
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
+      `;
+
+      const data = await this.query<{
+        mints: {
+          items: Array<{ id: string; owner: string; amountUSD: string }>;
+          pageInfo: { hasNextPage: boolean; endCursor: string };
+        };
+      }>(query);
+
+      totalMints += data.mints.items.length;
+
+      for (const mint of data.mints.items) {
+        const wallet = mint.owner.toLowerCase();
+        const volume = parseFloat(mint.amountUSD || '0');
+        volumeMap.set(wallet, (volumeMap.get(wallet) || 0) + volume);
       }
-    `;
 
-    const data = await this.query<{
-      mints: { items: Array<{ owner: string; amountUSD: string }> };
-    }>(query);
+      hasMore = data.mints.pageInfo.hasNextPage;
+      after = data.mints.pageInfo.endCursor;
 
-    const volumeMap = new Map<string, number>();
-    for (const mint of data.mints.items) {
-      const wallet = mint.owner.toLowerCase();
-      const volume = parseFloat(mint.amountUSD || '0');
-      volumeMap.set(wallet, (volumeMap.get(wallet) || 0) + volume);
+      if (hasMore) {
+        this.logger.log(
+          `Fetched ${totalMints} mints so far, continuing pagination...`,
+        );
+      }
     }
 
     this.logger.log(
-      `Fetched liquidity volumes for ${volumeMap.size} unique wallets`,
+      `Fetched ${totalMints} total mints for ${volumeMap.size} unique wallets`,
     );
     return volumeMap;
   }
@@ -205,43 +269,75 @@ export class PonderGraphqlService {
 
   /**
    * Get Sticky Vault positions
+   * Uses pagination to handle Ponder's 1000 item limit
    */
   async getStickyVaultPositions(): Promise<Map<string, { count: number; totalUSD: number }>> {
-    const query = `
-      query {
-        vaultUserPositions(where: { shares_not: "0" }) {
-          items {
-            user
-            currentValueUSD
-            shares
+    const positionsMap = new Map<string, { count: number; totalUSD: number }>();
+    let totalPositions = 0;
+    let hasMore = true;
+    let after: string | undefined = undefined;
+
+    this.logger.log('Starting to fetch Sticky Vault positions with pagination...');
+
+    while (hasMore) {
+      const query = `
+        query {
+          vaultUserPositions(where: { shares_not: "0" }, limit: 1000${after ? `, after: "${after}"` : ''}) {
+            items {
+              id
+              user
+              currentValueUSD
+              shares
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
+      `;
+
+      const data = await this.query<{
+        vaultUserPositions: {
+          items: Array<{
+            id: string;
+            user: string;
+            currentValueUSD: string;
+            shares: string;
+          }>;
+          pageInfo: { hasNextPage: boolean; endCursor: string };
+        };
+      }>(query);
+
+      totalPositions += data.vaultUserPositions.items.length;
+
+      for (const position of data.vaultUserPositions.items) {
+        const wallet = position.user.toLowerCase();
+        const shares = parseFloat(position.shares || '0');
+
+        // Skip positions with 0 shares
+        if (shares === 0) continue;
+
+        const valueUSD = parseFloat(position.currentValueUSD || '0');
+        const current = positionsMap.get(wallet) || { count: 0, totalUSD: 0 };
+        positionsMap.set(wallet, {
+          count: current.count + 1,
+          totalUSD: current.totalUSD + valueUSD,
+        });
       }
-    `;
 
-    const data = await this.query<{
-      vaultUserPositions: { items: VaultPositionResult[] };
-    }>(query);
+      hasMore = data.vaultUserPositions.pageInfo.hasNextPage;
+      after = data.vaultUserPositions.pageInfo.endCursor;
 
-    const positionsMap = new Map<string, { count: number; totalUSD: number }>();
-
-    for (const position of data.vaultUserPositions.items) {
-      const wallet = position.user.toLowerCase();
-      const shares = parseFloat(position.shares || '0');
-
-      // Skip positions with 0 shares
-      if (shares === 0) continue;
-
-      const valueUSD = parseFloat(position.currentValueUSD || '0');
-      const current = positionsMap.get(wallet) || { count: 0, totalUSD: 0 };
-      positionsMap.set(wallet, {
-        count: current.count + 1,
-        totalUSD: current.totalUSD + valueUSD,
-      });
+      if (hasMore) {
+        this.logger.log(
+          `Fetched ${totalPositions} Sticky Vault positions so far, continuing pagination...`,
+        );
+      }
     }
 
     this.logger.log(
-      `Fetched Sticky Vault positions for ${positionsMap.size} unique wallets`,
+      `Fetched Sticky Vault positions for ${positionsMap.size} unique wallets from ${totalPositions} total positions`,
     );
     return positionsMap;
   }
@@ -349,79 +445,105 @@ export class PonderGraphqlService {
   /**
    * Get V3 pool positions with token amounts
    * Now includes deposited amounts to calculate USD value
+   * Uses pagination to handle Ponder's 1000 item limit
    */
   async getV3PoolPositionsWithPrices(
     tokenPrices: Map<string, number>,
   ): Promise<Map<string, { count: number; totalUSD: number }>> {
-    const query = `
-      query {
-        positions {
-          items {
-            owner
-            token0
-            token1
-            liquidity
-            depositedToken0
-            depositedToken1
-            withdrawnToken0
-            withdrawnToken1
+    const positionsMap = new Map<string, { count: number; totalUSD: number }>();
+    let totalPositions = 0;
+    let hasMore = true;
+    let after: string | undefined = undefined;
+
+    this.logger.log('Starting to fetch V3 positions with pagination...');
+
+    while (hasMore) {
+      const query = `
+        query {
+          positions(limit: 1000${after ? `, after: "${after}"` : ''}) {
+            items {
+              id
+              owner
+              token0
+              token1
+              liquidity
+              depositedToken0
+              depositedToken1
+              withdrawnToken0
+              withdrawnToken1
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
           }
         }
+      `;
+
+      const data = await this.query<{
+        positions: {
+          items: Array<{
+            id: string;
+            owner: string;
+            token0: string;
+            token1: string;
+            liquidity: string;
+            depositedToken0: string;
+            depositedToken1: string;
+            withdrawnToken0: string;
+            withdrawnToken1: string;
+          }>;
+          pageInfo: { hasNextPage: boolean; endCursor: string };
+        };
+      }>(query);
+
+      totalPositions += data.positions.items.length;
+
+      for (const position of data.positions.items) {
+        const liquidity = BigInt(position.liquidity || '0');
+
+        // Skip positions with 0 liquidity
+        if (liquidity === 0n) continue;
+
+        const wallet = position.owner.toLowerCase();
+        const token0Address = position.token0.toLowerCase();
+        const token1Address = position.token1.toLowerCase();
+
+        // Calculate current amounts (deposited - withdrawn)
+        const currentToken0 =
+          parseFloat(position.depositedToken0 || '0') -
+          parseFloat(position.withdrawnToken0 || '0');
+        const currentToken1 =
+          parseFloat(position.depositedToken1 || '0') -
+          parseFloat(position.withdrawnToken1 || '0');
+
+        // Get token prices
+        const token0Price = tokenPrices.get(token0Address) || 0;
+        const token1Price = tokenPrices.get(token1Address) || 0;
+
+        // Calculate USD value
+        const valueUSD =
+          currentToken0 * token0Price + currentToken1 * token1Price;
+
+        const current = positionsMap.get(wallet) || { count: 0, totalUSD: 0 };
+        positionsMap.set(wallet, {
+          count: current.count + 1,
+          totalUSD: current.totalUSD + valueUSD,
+        });
       }
-    `;
 
-    const data = await this.query<{
-      positions: {
-        items: Array<{
-          owner: string;
-          token0: string;
-          token1: string;
-          liquidity: string;
-          depositedToken0: string;
-          depositedToken1: string;
-          withdrawnToken0: string;
-          withdrawnToken1: string;
-        }>;
-      };
-    }>(query);
+      hasMore = data.positions.pageInfo.hasNextPage;
+      after = data.positions.pageInfo.endCursor;
 
-    const positionsMap = new Map<string, { count: number; totalUSD: number }>();
-
-    for (const position of data.positions.items) {
-      const liquidity = BigInt(position.liquidity || '0');
-
-      // Skip positions with 0 liquidity
-      if (liquidity === 0n) continue;
-
-      const wallet = position.owner.toLowerCase();
-      const token0Address = position.token0.toLowerCase();
-      const token1Address = position.token1.toLowerCase();
-
-      // Calculate current amounts (deposited - withdrawn)
-      const currentToken0 =
-        parseFloat(position.depositedToken0 || '0') -
-        parseFloat(position.withdrawnToken0 || '0');
-      const currentToken1 =
-        parseFloat(position.depositedToken1 || '0') -
-        parseFloat(position.withdrawnToken1 || '0');
-
-      // Get token prices
-      const token0Price = tokenPrices.get(token0Address) || 0;
-      const token1Price = tokenPrices.get(token1Address) || 0;
-
-      // Calculate USD value
-      const valueUSD =
-        currentToken0 * token0Price + currentToken1 * token1Price;
-
-      const current = positionsMap.get(wallet) || { count: 0, totalUSD: 0 };
-      positionsMap.set(wallet, {
-        count: current.count + 1,
-        totalUSD: current.totalUSD + valueUSD,
-      });
+      if (hasMore) {
+        this.logger.log(
+          `Fetched ${totalPositions} V3 positions so far, continuing pagination...`,
+        );
+      }
     }
 
     this.logger.log(
-      `Calculated V3 positions USD value for ${positionsMap.size} unique wallets`,
+      `Calculated V3 positions USD value for ${positionsMap.size} unique wallets from ${totalPositions} total positions`,
     );
     return positionsMap;
   }
@@ -499,73 +621,99 @@ export class PonderGraphqlService {
 
   /**
    * Get AutoWin positions with USD value calculated from vault TVL
+   * Uses pagination to handle Ponder's 1000 item limit
    */
   async getAutoWinPositionsWithPrices(
     stickyVaultInfo: Map<string, { tvlUSD: number; totalSupply: number }>,
     autoWinToSticky: Map<string, string>,
   ): Promise<Map<string, { count: number; totalUSD: number }>> {
-    const query = `
-      query {
-        autoWinUserPositions(where: { shares_not: "0" }) {
-          items {
-            user
-            shares
-            autoWinVault {
+    const positionsMap = new Map<string, { count: number; totalUSD: number }>();
+    let totalPositions = 0;
+    let hasMore = true;
+    let after: string | undefined = undefined;
+
+    this.logger.log('Starting to fetch AutoWin positions with pagination...');
+
+    while (hasMore) {
+      const query = `
+        query {
+          autoWinUserPositions(where: { shares_not: "0" }, limit: 1000${after ? `, after: "${after}"` : ''}) {
+            items {
               id
+              user
+              shares
+              autoWinVault {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
             }
           }
         }
+      `;
+
+      const data = await this.query<{
+        autoWinUserPositions: {
+          items: Array<{
+            id: string;
+            user: string;
+            shares: string;
+            autoWinVault: { id: string };
+          }>;
+          pageInfo: { hasNextPage: boolean; endCursor: string };
+        };
+      }>(query);
+
+      totalPositions += data.autoWinUserPositions.items.length;
+
+      for (const position of data.autoWinUserPositions.items) {
+        const shares = parseFloat(position.shares || '0');
+
+        // Skip positions with 0 shares
+        if (shares === 0) continue;
+
+        const wallet = position.user.toLowerCase();
+        const autoWinVault = position.autoWinVault.id.toLowerCase();
+
+        // Get underlying Sticky Vault
+        const stickyVault = autoWinToSticky.get(autoWinVault);
+        if (!stickyVault) {
+          this.logger.warn(
+            `No Sticky Vault found for AutoWin vault ${autoWinVault}`,
+          );
+          continue;
+        }
+
+        // Get vault info
+        const vaultInfo = stickyVaultInfo.get(stickyVault);
+        if (!vaultInfo || vaultInfo.totalSupply === 0) {
+          continue;
+        }
+
+        // Calculate USD value: shares × (vault TVL / totalSupply)
+        const valueUSD = (shares * vaultInfo.tvlUSD) / vaultInfo.totalSupply;
+
+        const current = positionsMap.get(wallet) || { count: 0, totalUSD: 0 };
+        positionsMap.set(wallet, {
+          count: current.count + 1,
+          totalUSD: current.totalUSD + valueUSD,
+        });
       }
-    `;
 
-    const data = await this.query<{
-      autoWinUserPositions: {
-        items: Array<{
-          user: string;
-          shares: string;
-          autoWinVault: { id: string };
-        }>;
-      };
-    }>(query);
+      hasMore = data.autoWinUserPositions.pageInfo.hasNextPage;
+      after = data.autoWinUserPositions.pageInfo.endCursor;
 
-    const positionsMap = new Map<string, { count: number; totalUSD: number }>();
-
-    for (const position of data.autoWinUserPositions.items) {
-      const shares = parseFloat(position.shares || '0');
-
-      // Skip positions with 0 shares
-      if (shares === 0) continue;
-
-      const wallet = position.user.toLowerCase();
-      const autoWinVault = position.autoWinVault.id.toLowerCase();
-
-      // Get underlying Sticky Vault
-      const stickyVault = autoWinToSticky.get(autoWinVault);
-      if (!stickyVault) {
-        this.logger.warn(
-          `No Sticky Vault found for AutoWin vault ${autoWinVault}`,
+      if (hasMore) {
+        this.logger.log(
+          `Fetched ${totalPositions} AutoWin positions so far, continuing pagination...`,
         );
-        continue;
       }
-
-      // Get vault info
-      const vaultInfo = stickyVaultInfo.get(stickyVault);
-      if (!vaultInfo || vaultInfo.totalSupply === 0) {
-        continue;
-      }
-
-      // Calculate USD value: shares × (vault TVL / totalSupply)
-      const valueUSD = (shares * vaultInfo.tvlUSD) / vaultInfo.totalSupply;
-
-      const current = positionsMap.get(wallet) || { count: 0, totalUSD: 0 };
-      positionsMap.set(wallet, {
-        count: current.count + 1,
-        totalUSD: current.totalUSD + valueUSD,
-      });
     }
 
     this.logger.log(
-      `Calculated AutoWin positions USD value for ${positionsMap.size} unique wallets`,
+      `Calculated AutoWin positions USD value for ${positionsMap.size} unique wallets from ${totalPositions} total positions`,
     );
     return positionsMap;
   }

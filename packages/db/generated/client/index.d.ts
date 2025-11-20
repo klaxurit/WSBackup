@@ -6642,9 +6642,9 @@ export namespace Prisma {
     readonly v3PoolsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
     readonly stickyVaultsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
     readonly autoWinVaultsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
-    readonly volumePoints: FieldRef<"LeaderboardEntry", 'Float'>
-    readonly liquidityPoints: FieldRef<"LeaderboardEntry", 'Float'>
-    readonly totalPoints: FieldRef<"LeaderboardEntry", 'Float'>
+    readonly volumePoints: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly liquidityPoints: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly totalPoints: FieldRef<"LeaderboardEntry", 'Int'>
     readonly rank: FieldRef<"LeaderboardEntry", 'Int'>
     readonly previousRank: FieldRef<"LeaderboardEntry", 'Int'>
     readonly lastUpdatedAt: FieldRef<"LeaderboardEntry", 'DateTime'>
@@ -7680,7 +7680,7 @@ export namespace Prisma {
     readonly wallet: FieldRef<"LeaderboardSnapshot", 'String'>
     readonly timestamp: FieldRef<"LeaderboardSnapshot", 'DateTime'>
     readonly rank: FieldRef<"LeaderboardSnapshot", 'Int'>
-    readonly totalPoints: FieldRef<"LeaderboardSnapshot", 'Float'>
+    readonly totalPoints: FieldRef<"LeaderboardSnapshot", 'Int'>
     readonly totalVolumeUSD: FieldRef<"LeaderboardSnapshot", 'Float'>
     readonly currentLiquidityUSD: FieldRef<"LeaderboardSnapshot", 'Float'>
     readonly positionsCount: FieldRef<"LeaderboardSnapshot", 'Int'>
@@ -8723,9 +8723,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
     stickyVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
     autoWinVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
-    volumePoints?: FloatFilter<"LeaderboardEntry"> | number
-    liquidityPoints?: FloatFilter<"LeaderboardEntry"> | number
-    totalPoints?: FloatFilter<"LeaderboardEntry"> | number
+    volumePoints?: IntFilter<"LeaderboardEntry"> | number
+    liquidityPoints?: IntFilter<"LeaderboardEntry"> | number
+    totalPoints?: IntFilter<"LeaderboardEntry"> | number
     rank?: IntFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
     lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
@@ -8768,9 +8768,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
     stickyVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
     autoWinVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
-    volumePoints?: FloatFilter<"LeaderboardEntry"> | number
-    liquidityPoints?: FloatFilter<"LeaderboardEntry"> | number
-    totalPoints?: FloatFilter<"LeaderboardEntry"> | number
+    volumePoints?: IntFilter<"LeaderboardEntry"> | number
+    liquidityPoints?: IntFilter<"LeaderboardEntry"> | number
+    totalPoints?: IntFilter<"LeaderboardEntry"> | number
     rank?: IntFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
     lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
@@ -8817,9 +8817,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
     stickyVaultsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
     autoWinVaultsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
-    volumePoints?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
-    liquidityPoints?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
-    totalPoints?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
+    volumePoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
+    liquidityPoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
+    totalPoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     rank?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableWithAggregatesFilter<"LeaderboardEntry"> | number | null
     lastUpdatedAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
@@ -8834,7 +8834,7 @@ export namespace Prisma {
     wallet?: StringFilter<"LeaderboardSnapshot"> | string
     timestamp?: DateTimeFilter<"LeaderboardSnapshot"> | Date | string
     rank?: IntFilter<"LeaderboardSnapshot"> | number
-    totalPoints?: FloatFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: IntFilter<"LeaderboardSnapshot"> | number
     totalVolumeUSD?: FloatFilter<"LeaderboardSnapshot"> | number
     currentLiquidityUSD?: FloatFilter<"LeaderboardSnapshot"> | number
     positionsCount?: IntFilter<"LeaderboardSnapshot"> | number
@@ -8861,7 +8861,7 @@ export namespace Prisma {
     wallet?: StringFilter<"LeaderboardSnapshot"> | string
     timestamp?: DateTimeFilter<"LeaderboardSnapshot"> | Date | string
     rank?: IntFilter<"LeaderboardSnapshot"> | number
-    totalPoints?: FloatFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: IntFilter<"LeaderboardSnapshot"> | number
     totalVolumeUSD?: FloatFilter<"LeaderboardSnapshot"> | number
     currentLiquidityUSD?: FloatFilter<"LeaderboardSnapshot"> | number
     positionsCount?: IntFilter<"LeaderboardSnapshot"> | number
@@ -8892,7 +8892,7 @@ export namespace Prisma {
     wallet?: StringWithAggregatesFilter<"LeaderboardSnapshot"> | string
     timestamp?: DateTimeWithAggregatesFilter<"LeaderboardSnapshot"> | Date | string
     rank?: IntWithAggregatesFilter<"LeaderboardSnapshot"> | number
-    totalPoints?: FloatWithAggregatesFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: IntWithAggregatesFilter<"LeaderboardSnapshot"> | number
     totalVolumeUSD?: FloatWithAggregatesFilter<"LeaderboardSnapshot"> | number
     currentLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardSnapshot"> | number
     positionsCount?: IntWithAggregatesFilter<"LeaderboardSnapshot"> | number
@@ -9432,9 +9432,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
-    volumePoints?: FloatFieldUpdateOperationsInput | number
-    liquidityPoints?: FloatFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: IntFieldUpdateOperationsInput | number
+    liquidityPoints?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9453,9 +9453,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
-    volumePoints?: FloatFieldUpdateOperationsInput | number
-    liquidityPoints?: FloatFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: IntFieldUpdateOperationsInput | number
+    liquidityPoints?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9494,9 +9494,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
-    volumePoints?: FloatFieldUpdateOperationsInput | number
-    liquidityPoints?: FloatFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: IntFieldUpdateOperationsInput | number
+    liquidityPoints?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9514,9 +9514,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
-    volumePoints?: FloatFieldUpdateOperationsInput | number
-    liquidityPoints?: FloatFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: IntFieldUpdateOperationsInput | number
+    liquidityPoints?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9549,7 +9549,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
@@ -9561,7 +9561,7 @@ export namespace Prisma {
     wallet?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
@@ -9582,7 +9582,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
@@ -9593,7 +9593,7 @@ export namespace Prisma {
     wallet?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
@@ -11804,7 +11804,7 @@ export namespace Prisma {
     wallet?: StringFilter<"LeaderboardSnapshot"> | string
     timestamp?: DateTimeFilter<"LeaderboardSnapshot"> | Date | string
     rank?: IntFilter<"LeaderboardSnapshot"> | number
-    totalPoints?: FloatFilter<"LeaderboardSnapshot"> | number
+    totalPoints?: IntFilter<"LeaderboardSnapshot"> | number
     totalVolumeUSD?: FloatFilter<"LeaderboardSnapshot"> | number
     currentLiquidityUSD?: FloatFilter<"LeaderboardSnapshot"> | number
     positionsCount?: IntFilter<"LeaderboardSnapshot"> | number
@@ -11877,9 +11877,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
-    volumePoints?: FloatFieldUpdateOperationsInput | number
-    liquidityPoints?: FloatFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: IntFieldUpdateOperationsInput | number
+    liquidityPoints?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11897,9 +11897,9 @@ export namespace Prisma {
     v3PoolsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     stickyVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
-    volumePoints?: FloatFieldUpdateOperationsInput | number
-    liquidityPoints?: FloatFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    volumePoints?: IntFieldUpdateOperationsInput | number
+    liquidityPoints?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12168,7 +12168,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
@@ -12178,7 +12178,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
@@ -12188,7 +12188,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     rank?: IntFieldUpdateOperationsInput | number
-    totalPoints?: FloatFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
     totalVolumeUSD?: FloatFieldUpdateOperationsInput | number
     currentLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     positionsCount?: IntFieldUpdateOperationsInput | number
