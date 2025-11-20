@@ -32,6 +32,7 @@
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
 @use 'components/chart/chart-toolbar';
+@use 'components/charts/mobileTokenChart';
 
 @use 'components/common/link';
 @use 'components/common/iconLink';
@@ -45,6 +46,7 @@
 @use 'components/common/tokenPairLogos';
 @use 'components/common/stickyIcon';
 @use 'components/common/globalSearch';
+@use 'components/common/truncated-text-tooltip';
 @use 'components/vaults/vault';
 @use 'components/vault/vault-timeline';
 @use 'components/vault/vault-deposit-modal';
@@ -58,9 +60,12 @@
 @use 'pages/explorePage';
 @use 'pages/positionPage';
 @use 'pages/liquidityPage';
+@use 'pages/portfolioPage';
 @use 'pages/poolViewPage';
 @use 'pages/poolPage';
 @use 'pages/vaults';
+@use 'pages/leaderboardPage';
+@use 'pages/mobileChartTestPage';
 
 
 // @import 'themes/dark';

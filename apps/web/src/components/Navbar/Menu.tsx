@@ -17,8 +17,11 @@ export const Menu = () => {
         <Link to="/explore" className={`link link--small link__white ${location.pathname === '/explore' ? 'active' : ''}`}>
           Explore
         </Link>
-        <Link className={`link link--small link__white ${location.pathname === '/liquidity' ? 'active' : ''}`} to="/liquidity">
-          Liquidity
+        <Link className={`link link--small link__white ${location.pathname === '/portfolio' ? 'active' : ''}`} to="/portfolio">
+          Portfolio
+        </Link>
+        <Link className={`link link--small link__white ${location.pathname === '/leaderboard' ? 'active' : ''}`} to="/leaderboard">
+          Leaderboard
         </Link>
       </div>
     </div>

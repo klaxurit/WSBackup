@@ -5,8 +5,10 @@ import { SwapPageLayout } from './components/Layout/SwapPageLayout'
 import { WalletConnect } from './components/WalletConnect/WalletConnect'
 import TokenPage from './pages/TokenPage/page'
 import ExplorePage from './pages/ExplorePage/page'
-import LiquidityPage from './pages/LiquidityPage/page'
+import PortfolioPage from './pages/PortfolioPage/page'
 import CreatePoolPage from './pages/PositionPage/create/page'
+import LeaderboardPage from './pages/LeaderboardPage/page'
+import MobileChartTestPage from './pages/MobileChartTestPage/page'
 import { useState } from 'react'
 import { useReconnect } from 'wagmi';
 import { useEffect } from 'react';
@@ -47,9 +49,12 @@ function AppContent() {
               </div>
             } />
             <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/liquidity" element={<LiquidityPage />} />
+            <Route path="/liquidity" element={<PortfolioPage />} />
+            <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/liquidity/create" element={<CreatePoolPage />} />
             <Route path="/vault/:vaultAddress" element={<VaultDetailPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/mobile-chart-test" element={<MobileChartTestPage />} />
             <Route path="/more" element={<div>More Page</div>} />
             <Route path="/token/:tokenId" element={<TokenPage />} />
             <Route path="/tokens/:tokenAddress" element={<TokenPage />} />
