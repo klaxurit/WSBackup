@@ -45,6 +45,7 @@ interface TableProps<T = any> {
   wrapperClassName?: string;
   scrollClassName?: string;
   getRowClassName?: (row: T, rowIndex: number) => string;
+  getRowRef?: (row: T, element: HTMLTableRowElement | null) => void;
   isLoading?: boolean;
   pagination?: PaginationProps;
   infiniteLoad?: InfiniteLoadProps;
@@ -178,6 +179,7 @@ export function Table<T = any>({
   wrapperClassName = 'Table__Wrapper',
   scrollClassName = 'Table__Scroll',
   getRowClassName,
+  getRowRef,
   isLoading = false,
   pagination,
   infiniteLoad,
@@ -370,6 +372,7 @@ export function Table<T = any>({
               sortedData.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
+                  ref={(el) => getRowRef?.(row, el)}
                   className={getRowClassName ? getRowClassName(row, rowIndex) : undefined}
                   onClick={() => onRowClick?.(row, rowIndex)}
                   style={{ cursor: onRowClick ? 'pointer' : 'default' }}

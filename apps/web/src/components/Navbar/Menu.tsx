@@ -20,9 +20,6 @@ export const Menu = () => {
         <Link className={`link link--small link__white ${location.pathname === '/portfolio' ? 'active' : ''}`} to="/portfolio">
           Portfolio
         </Link>
-        <Link className={`link link--small link__white ${location.pathname === '/leaderboard' ? 'active' : ''}`} to="/leaderboard">
-          Leaderboard
-        </Link>
       </div>
     </div>
   )

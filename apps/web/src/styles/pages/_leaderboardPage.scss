@@ -47,15 +47,13 @@
 
 // Section Title
 .Leaderboard__SectionTitle {
-  @include typography('heading-lg');
-  font-weight: 700;
+  @include typography('heading-lg', 700);
   color: #fff;
   margin: 0;
   letter-spacing: -0.3px;
 
   @media (max-width: 600px) {
-    @include typography('body-lg');
-    font-weight: 700;
+    @include typography('body-lg', 700);
   }
 
   // Quand il n'est pas dans le header Portfolio
@@ -68,42 +66,15 @@
   }
 }
 
-// Layout 2 colonnes
+// Layout single column
 .Leaderboard__Content {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 24px;
-  align-items: start;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr 350px;
-    gap: 20px;
-  }
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-}
-
-.Leaderboard__MainColumn {
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.Leaderboard__Sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: sticky;
-  top: 80px;
-  align-self: start;
+  gap: 32px;
+  width: 100%;
 
   @media (max-width: 900px) {
-    position: static;
-    top: 0;
+    gap: 24px;
   }
 }
 
@@ -146,8 +117,7 @@
 
 // Styles pour les stats cards
 .Leaderboard__StatCardTitle {
-  @include typography('body-2xs');
-  font-weight: 600;
+  @include typography('body-2xs', 600);
   color: $white-048;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -164,14 +134,12 @@
 }
 
 .Leaderboard__StatCardValue {
-  @include typography('heading-2xl');
-  font-weight: 700;
+  @include typography('heading-2xl', 700);
   color: #fff;
   line-height: 1;
 
   &--xlarge {
-    @include typography('heading-xl');
-    font-weight: 700;
+    @include typography('heading-xl', 700);
   }
 
   &--highlight {
@@ -180,16 +148,14 @@
 }
 
 .Leaderboard__StatCardSecondary {
-  @include typography('body-xs');
-  font-weight: 500;
+  @include typography('body-xs', 500);
   color: $white-040;
   text-align: center;
 }
 
 // Position Card Stat Label (réutilisé dans Boosted)
 .Leaderboard__PositionCardStatLabel {
-  @include typography('body-2xs');
-  font-weight: 600;
+  @include typography('body-2xs', 600);
   color: $white-048;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -246,14 +212,12 @@
 }
 
 .Leaderboard__BoostedCardPair {
-  @include typography('body-sm');
-  font-weight: 700;
+  @include typography('body-sm', 700);
   color: #fff;
 }
 
 .Leaderboard__BoostedCardType {
-  @include typography('body-xs');
-  font-weight: 500;
+  @include typography('body-xs', 500);
   color: $white-056;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -275,8 +239,7 @@
 }
 
 .Leaderboard__BoostedCardAPRValue {
-  @include typography('body-xs');
-  font-weight: 700;
+  @include typography('body-xs', 700);
   color: #fff;
   text-align: right;
   white-space: nowrap;
@@ -284,8 +247,7 @@
   text-overflow: ellipsis;
 
   &--large {
-    @include typography('body-lg');
-    font-weight: 700;
+    @include typography('body-lg', 700);
   }
 
   &--highlight {
@@ -298,8 +260,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  @include typography('body-2xs');
-  font-weight: 700;
+  @include typography('body-2xs', 700);
   color: $beryl-pure;
 }
 
@@ -505,6 +466,202 @@
   gap: 8px;
 }
 
+.Leaderboard__SearchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 12px;
+  }
+}
+
+// Search Result Card
+.Leaderboard__SearchResultCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  animation: searchResultFadeIn 0.3s ease;
+
+  @media (max-width: 600px) {
+    padding: 16px 18px;
+    margin-bottom: 20px;
+  }
+}
+
+@keyframes searchResultFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.Leaderboard__SearchResultLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 24px;
+
+  p {
+    @include typography('body-md');
+    color: $white-056;
+    margin: 0;
+  }
+}
+
+.Leaderboard__SearchResultError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-align: center;
+
+  p {
+    @include typography('body-md');
+    color: $white-072;
+    margin: 0;
+  }
+}
+
+.Leaderboard__SearchResultErrorSubtext {
+  @include typography('body-sm');
+  color: $white-048 !important;
+}
+
+.Leaderboard__SearchResultContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.Leaderboard__SearchResultHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.Leaderboard__SearchResultWallet {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.Leaderboard__SearchResultWalletLabel {
+  @include typography('body-xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__SearchResultWalletAddress {
+  @include typography('body-lg');
+  font-weight: 700;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.Leaderboard__SearchResultRank {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+
+  @media (max-width: 600px) {
+    align-items: flex-start;
+  }
+}
+
+.Leaderboard__SearchResultRankLabel {
+  @include typography('body-xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__SearchResultRankValue {
+  @include typography('heading-xl');
+  font-weight: 700;
+  color: #E39229;
+  line-height: 1;
+}
+
+.Leaderboard__SearchResultRankChange {
+  @include typography('body-sm');
+  font-weight: 600;
+  margin-top: 4px;
+
+  &--positive {
+    color: $success-pure;
+  }
+
+  &--negative {
+    color: $carmel-pure;
+  }
+}
+
+.Leaderboard__SearchResultStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.Leaderboard__SearchResultStat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.Leaderboard__SearchResultStatLabel {
+  @include typography('body-xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__SearchResultStatValue {
+  @include typography('body-lg');
+  font-weight: 700;
+  color: #fff;
+
+  &--highlight {
+    color: #E39229;
+  }
+}
+
 .Leaderboard__TableNote {
   display: flex;
   align-items: center;
@@ -606,6 +763,39 @@
       0 6px 16px rgba(227, 146, 41, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: scale(1.002);
+  }
+}
+
+// Table Row Highlight - Searched Wallet
+.Leaderboard__TableRow--highlighted {
+  background: rgba(0, 255, 163, 0.12) !important;
+  border: 2px solid rgba(0, 255, 163, 0.6) !important;
+  border-left: 4px solid #00FFA3 !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 163, 0.3),
+    0 4px 12px rgba(0, 255, 163, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: highlightPulse 2s ease-in-out infinite;
+  position: relative;
+
+  &:hover {
+    background: rgba(0, 255, 163, 0.18) !important;
+    border-color: rgba(0, 255, 163, 0.8) !important;
+  }
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 163, 0.3),
+      0 4px 12px rgba(0, 255, 163, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 163, 0.5),
+      0 4px 16px rgba(0, 255, 163, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -757,4 +947,153 @@
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
+}
+
+// Vaults Marquee Section
+.Leaderboard__VaultsMarquee {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 0;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  &::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(18, 17, 14, 1), rgba(18, 17, 14, 0));
+  }
+
+  &::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(18, 17, 14, 1), rgba(18, 17, 14, 0));
+  }
+}
+
+.Leaderboard__VaultsMarqueeLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.Leaderboard__VaultsMarqueeTrack {
+  display: flex;
+  gap: 16px;
+  animation: vaultsMarquee 60s linear infinite;
+  will-change: transform;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes vaultsMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.Leaderboard__VaultsMarqueeItem {
+  flex: 0 0 auto;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08);
+    border-color: #E39229;
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(227, 146, 41, 0.1);
+  }
+
+  @media (max-width: 600px) {
+    min-width: 240px;
+    padding: 10px 12px;
+  }
+}
+
+.Leaderboard__VaultsMarqueeItemHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.Leaderboard__VaultsMarqueeItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.Leaderboard__VaultsMarqueeItemPair {
+  @include typography('body-sm');
+  font-weight: 700;
+  color: #fff;
+}
+
+.Leaderboard__VaultsMarqueeItemType {
+  @include typography('body-xs');
+  font-weight: 500;
+  color: $white-056;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__VaultsMarqueeItemStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.Leaderboard__VaultsMarqueeItemStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.Leaderboard__VaultsMarqueeItemStatLabel {
+  @include typography('body-2xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__VaultsMarqueeItemStatValue {
+  @include typography('body-sm');
+  font-weight: 700;
+  color: #fff;
+
+  &--highlight {
+    color: #E39229;
+  }
 }

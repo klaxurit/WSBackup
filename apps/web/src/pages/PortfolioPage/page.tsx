@@ -792,7 +792,7 @@ const PortfolioPage: React.FC = () => {
               View more
             </Link>
           </div>
-          <LeaderboardTable limit={5} showFilters={false} showTitle={false} />
+          <LeaderboardTable limit={5} showTitle={false} contextMode={true} />
         </div>
       </div>
     </PageContentTransition>

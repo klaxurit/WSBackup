@@ -97,6 +97,8 @@ export function useLeaderboardWallet(wallet: string | undefined) {
       return failureCount < 1; // Retry une seule fois pour les autres erreurs
     },
     staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes - garder en cache plus longtemps
+    refetchOnWindowFocus: false, // Ne pas refetch automatiquement pour éviter les appels inutiles
   });
 }
 
@@ -169,8 +171,9 @@ export function useLeaderboardList(page: number = 1, limit: number = 100) {
         throw error;
       }
     },
-    staleTime: 30000, // 30 secondes
-    refetchOnWindowFocus: true,
+    staleTime: 60000, // 1 minute - cohérent avec useLeaderboardWallet
+    gcTime: 300000, // 5 minutes - garder en cache plus longtemps
+    refetchOnWindowFocus: true, // Refetch si l'utilisateur revient sur la page
     retry: 2, // Retry 2 fois en cas d'erreur
   });
 }

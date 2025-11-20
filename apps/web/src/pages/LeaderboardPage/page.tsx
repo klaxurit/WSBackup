@@ -1,8 +1,7 @@
 import React from 'react';
 import { PageContentTransition } from '../../components/Transitions';
-import { PortfolioSection, TopBoostedSection } from '../../components/Leaderboard/PortfolioSection';
-import { TrendingSection } from '../../components/Leaderboard/TrendingSection';
 import { LeaderboardTable } from '../../components/Leaderboard/LeaderboardTable';
+import { VaultsMarquee } from '../../components/Leaderboard/VaultsMarquee';
 import { NewBanner } from '../../components/Common/NewBanner';
 import leaderboardIcon from '../../assets/leaderboard.png';
 
@@ -16,22 +15,11 @@ const LeaderboardPage: React.FC = () => {
       />
       <div className="Leaderboard__ContentWrapper">
         <div className="Leaderboard__Content">
-          {/* Main Column - Leaderboard Table */}
-          <div className="Leaderboard__MainColumn">
-            <LeaderboardTable />
-          </div>
+          {/* Vaults Marquee */}
+          <VaultsMarquee />
 
-          {/* Sidebar - Portfolio + Top Boosted + Trending */}
-          <div className="Leaderboard__Sidebar">
-            {/* User Portfolio Section */}
-            <PortfolioSection />
-
-            {/* Top Boosted Section */}
-            <TopBoostedSection />
-
-            {/* Trending Section (Top 3 pools and vaults) */}
-            <TrendingSection />
-          </div>
+          {/* Leaderboard Table */}
+          <LeaderboardTable />
         </div>
       </div>
     </PageContentTransition>
