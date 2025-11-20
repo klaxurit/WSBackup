@@ -5,6 +5,7 @@ import { Pool, Position, TickMath } from '@uniswap/v3-sdk';
 import { Token } from '@uniswap/sdk-core';
 import { currentChain } from '../config/wagmi';
 import JSBI from 'jsbi';
+import { useLeaderboardWallet } from './useLeaderboard';
 
 const GET_USER_POSITIONS = `
 query GetTransactions($owner: String) {
@@ -122,9 +123,15 @@ export interface PortfolioStats {
   activePositions: number;
   poolPositions: number;
   vaultPositions: number;
-  // Mock data pour l'UI (sera remplacé par le backend plus tard)
+  // Données du leaderboard depuis le backend
   rank: number;
   points: number;
+  volumePoints: number;
+  liquidityPoints: number;
+  totalVolumeUSD: number;
+  currentLiquidityUSD: number;
+  rankChange?: number;
+  // Mock data pour l'UI (sera remplacé par le backend plus tard)
   referrals: number;
   multiplier: number;
 }
@@ -139,8 +146,16 @@ export interface PortfolioStats {
 export function usePortfolioStats(): {
   stats: PortfolioStats | null;
   isLoading: boolean;
+  isWalletInLeaderboard: boolean; // Indique si le wallet est dans le leaderboard
 } {
   const { address } = useAccount();
+  
+  // Récupérer les données du leaderboard depuis le backend
+  // null signifie que le wallet n'est pas dans le leaderboard (pas une erreur)
+  const { data: leaderboardData, isLoading: leaderboardLoading, error: leaderboardError } = useLeaderboardWallet(address);
+  
+  // Le wallet est dans le leaderboard si on a des données (même avec rank 0)
+  const isWalletInLeaderboard = leaderboardData !== null && leaderboardData !== undefined;
 
   const { data: positions, isLoading: positionsLoading } = useQuery({
     queryKey: ['portfolio-positions', address],
@@ -266,15 +281,28 @@ export function usePortfolioStats(): {
       });
     }
 
-    // Mock data pour Rank, Points, Referrals, Multiplier
-    // TODO: Remplacer par les vraies données du backend
-    const mockRank = Math.floor(Math.random() * 1000) + 1;
-    const mockPoints = Math.floor(totalValueUSD * 10); // Points basés sur la valeur totale
+    // Utiliser les données du leaderboard si disponibles, sinon utiliser les valeurs calculées
+    const rank = leaderboardData?.rank ?? 0;
+    const totalPoints = leaderboardData?.totalPoints ?? 0;
+    const volumePoints = leaderboardData?.volumePoints ?? 0;
+    const liquidityPoints = leaderboardData?.liquidityPoints ?? 0;
+    const totalVolumeUSDFromLeaderboard = leaderboardData?.totalVolumeUSD ?? 0;
+    const currentLiquidityUSDFromLeaderboard = leaderboardData?.currentLiquidityUSD ?? 0;
+    const rankChange = leaderboardData?.rankChange;
+
+    // Si on a des données du leaderboard, utiliser la liquidité du leaderboard (plus précise)
+    // Sinon utiliser la valeur calculée depuis les positions
+    const finalTotalValueUSD = currentLiquidityUSDFromLeaderboard > 0 
+      ? currentLiquidityUSDFromLeaderboard 
+      : totalValueUSD;
+
+    // Mock data pour Referrals et Multiplier (pas encore disponibles dans le backend)
+    // TODO: Remplacer par les vraies données du backend quand disponibles
     const mockReferrals = Math.floor(Math.random() * 50);
     const mockMultiplier = 1 + (mockReferrals * 0.01); // Multiplier basé sur les referrals
 
     return {
-      totalValueUSD,
+      totalValueUSD: finalTotalValueUSD,
       poolValueUSD,
       vaultValueUSD,
       totalFeesEarned,
@@ -283,16 +311,26 @@ export function usePortfolioStats(): {
       activePositions,
       poolPositions,
       vaultPositions,
-      rank: mockRank,
-      points: mockPoints,
+      rank,
+      points: totalPoints,
+      volumePoints,
+      liquidityPoints,
+      totalVolumeUSD: totalVolumeUSDFromLeaderboard || 0,
+      currentLiquidityUSD: currentLiquidityUSDFromLeaderboard || totalValueUSD,
+      rankChange,
       referrals: mockReferrals,
       multiplier: mockMultiplier,
     };
-  }, [address, positions, vaultPositionsData]);
+  }, [address, positions, vaultPositionsData, leaderboardData]);
+
+  // Si le wallet n'est pas dans le leaderboard, on retourne quand même les stats calculées
+  // mais avec rank = 0 et points = 0
+  const isLoading = positionsLoading || vaultPositionsLoading || leaderboardLoading;
 
   return {
     stats,
-    isLoading: positionsLoading || vaultPositionsLoading,
+    isLoading,
+    isWalletInLeaderboard,
   };
 }
 

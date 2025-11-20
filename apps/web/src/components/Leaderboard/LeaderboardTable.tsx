@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import Table from '../Table/Table';
 import type { TableColumn } from '../Table/Table';
-import { MOCK_LEADERBOARD_DATA, type LeaderboardUser } from '../../utils/mockLeaderboardData';
+import { useLeaderboardList, type LeaderboardEntry } from '../../hooks/useLeaderboard';
 import { formatNumber } from '../../utils/formatNumber';
+import { Loader } from '../Loader/Loader';
 
 
 const formatAddress = (address: string, beraname?: string) => {
@@ -27,19 +28,25 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 }) => {
   const { address } = useAccount();
   const [timeFilter, setTimeFilter] = useState<'7d' | '30d' | 'all'>('7d');
+  
+  // Récupérer les données du leaderboard depuis le backend
+  // Note: Le backend ne supporte pas encore les filtres temporels, on ignore timeFilter pour l'instant
+  // S'assurer que limit est toujours un nombre valide
+  const validLimit = limit && limit > 0 ? limit : 100;
+  const { data: leaderboardResponse, isLoading, error } = useLeaderboardList(1, validLimit);
 
   const leaderboardData = useMemo(() => {
-    const data = MOCK_LEADERBOARD_DATA;
+    if (!leaderboardResponse?.entries) return [];
     // Si limit est défini, limiter les données
-    return limit ? data.slice(0, limit) : data;
-  }, [timeFilter, limit]);
+    return limit ? leaderboardResponse.entries.slice(0, limit) : leaderboardResponse.entries;
+  }, [leaderboardResponse, limit]);
 
-  const columns: TableColumn<LeaderboardUser>[] = [
+  const columns: TableColumn<LeaderboardEntry>[] = [
     {
       label: 'Rank',
       key: 'rank',
       width: '80px',
-      render: (row: LeaderboardUser) => {
+      render: (row: LeaderboardEntry) => {
         return (
           <span className="Leaderboard__RankCell">
             <span className={`Leaderboard__Rank ${row.rank <= 3 ? 'Leaderboard__Rank--top' : ''}`}>
@@ -49,17 +56,17 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         );
       },
       sortable: true,
-      sortValue: (row: LeaderboardUser) => row.rank,
+      sortValue: (row: LeaderboardEntry) => row.rank,
     },
     {
       label: 'User',
-      key: 'address',
-      render: (row: LeaderboardUser) => {
-        const isCurrentUser = address && row.address.toLowerCase() === address.toLowerCase();
+      key: 'wallet',
+      render: (row: LeaderboardEntry) => {
+        const isCurrentUser = address && row.wallet.toLowerCase() === address.toLowerCase();
         return (
           <span className={`Leaderboard__UserCell ${isCurrentUser ? 'Leaderboard__UserCell--current' : ''}`}>
             <span className="Leaderboard__Address">
-              {formatAddress(row.address, row.beraname)}
+              {formatAddress(row.wallet)}
             </span>
             {isCurrentUser && <span className="Leaderboard__YouBadge">YOU</span>}
           </span>
@@ -67,41 +74,65 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
       },
     },
     {
-      label: 'Total Value',
-      key: 'totalValueUSD',
-      render: (row: LeaderboardUser) => `$${formatNumber(row.totalValueUSD)}`,
+      label: 'Total Volume',
+      key: 'totalVolumeUSD',
+      render: (row: LeaderboardEntry) => `$${formatNumber(row.totalVolumeUSD)}`,
       sortable: true,
-      sortValue: (row: LeaderboardUser) => row.totalValueUSD,
+      sortValue: (row: LeaderboardEntry) => row.totalVolumeUSD,
     },
     {
-      label: 'Positions',
-      key: 'positions',
+      label: 'Volume Points',
+      key: 'volumePoints',
+      render: (row: LeaderboardEntry) => formatNumber(row.volumePoints),
+      sortable: true,
+      sortValue: (row: LeaderboardEntry) => row.volumePoints,
+    },
+    {
+      label: 'Current Positions',
+      key: 'positionsCount',
+      width: '140px',
+      render: (row: LeaderboardEntry) => row.positionsCount.toString(),
+      sortable: true,
+      sortValue: (row: LeaderboardEntry) => row.positionsCount,
+    },
+    {
+      label: 'Current Liquidity',
+      key: 'currentLiquidityUSD',
+      render: (row: LeaderboardEntry) => `$${formatNumber(row.currentLiquidityUSD)}`,
+      sortable: true,
+      sortValue: (row: LeaderboardEntry) => row.currentLiquidityUSD,
+    },
+    {
+      label: 'Liquidity Points',
+      key: 'liquidityPoints',
+      render: (row: LeaderboardEntry) => formatNumber(row.liquidityPoints),
+      sortable: true,
+      sortValue: (row: LeaderboardEntry) => row.liquidityPoints,
+    },
+    {
+      label: 'Total Points',
+      key: 'totalPoints',
+      render: (row: LeaderboardEntry) => formatNumber(row.totalPoints),
+      sortable: true,
+      sortValue: (row: LeaderboardEntry) => row.totalPoints,
+    },
+    {
+      label: 'Change',
+      key: 'rankChange',
       width: '120px',
-      render: (row: LeaderboardUser) => row.positions.toString(),
-      sortable: true,
-      sortValue: (row: LeaderboardUser) => row.positions,
-    },
-    {
-      label: 'Fees Earned',
-      key: 'feesEarned',
-      render: (row: LeaderboardUser) => `$${formatNumber(row.feesEarned)}`,
-      sortable: true,
-      sortValue: (row: LeaderboardUser) => row.feesEarned,
-    },
-    {
-      label: '7D Change',
-      key: 'weeklyChange',
-      width: '120px',
-      render: (row: LeaderboardUser) => {
-        const isPositive = row.weeklyChange >= 0;
+      render: (row: LeaderboardEntry) => {
+        if (row.rankChange === undefined || row.rankChange === 0) {
+          return <span className="Leaderboard__ChangeCell">---</span>;
+        }
+        const isPositive = row.rankChange > 0;
         return (
           <span className={`Leaderboard__ChangeCell ${isPositive ? 'Leaderboard__ChangeCell--positive' : 'Leaderboard__ChangeCell--negative'}`}>
-            {isPositive ? '+' : ''}{row.weeklyChange.toFixed(1)}%
+            {isPositive ? '+' : ''}{row.rankChange}
           </span>
         );
       },
       sortable: true,
-      sortValue: (row: LeaderboardUser) => row.weeklyChange,
+      sortValue: (row: LeaderboardEntry) => row.rankChange ?? 0,
     },
   ];
 
@@ -138,31 +169,42 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         </div>
       )}
 
-      <Table
-        columns={columns}
-        data={leaderboardData}
-        tableClassName="Table Table--bordered"
-        wrapperClassName="Table__Wrapper"
-        defaultSortKey="rank"
-        defaultSortDirection="asc"
-        emptyMessage="No data available"
-        getRowClassName={(row: LeaderboardUser) => {
-          const isCurrentUser = address && row.address.toLowerCase() === address.toLowerCase();
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
+          <Loader size="mobile" />
+        </div>
+      ) : error ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '48px', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <p style={{ color: '#f87171', margin: 0 }}>Error loading leaderboard</p>
+          <p style={{ color: '#aaa', margin: 0, fontSize: '14px' }}>{error instanceof Error ? error.message : 'Unknown error'}</p>
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          data={leaderboardData}
+          tableClassName="Table Table--bordered"
+          wrapperClassName="Table__Wrapper"
+          defaultSortKey="rank"
+          defaultSortDirection="asc"
+          emptyMessage="No data available"
+          getRowClassName={(row: LeaderboardEntry) => {
+            const isCurrentUser = address && row.wallet.toLowerCase() === address.toLowerCase();
 
-          // Ajouter les classes pour le gradient des top 10
-          const classes: string[] = [];
+            // Ajouter les classes pour le gradient des top 10
+            const classes: string[] = [];
 
-          if (isCurrentUser) {
-            classes.push('Leaderboard__TableRow--current');
-          }
+            if (isCurrentUser) {
+              classes.push('Leaderboard__TableRow--current');
+            }
 
-          if (row.rank <= 10) {
-            classes.push(`Leaderboard__TableRow--rank${row.rank}`);
-          }
+            if (row.rank <= 10) {
+              classes.push(`Leaderboard__TableRow--rank${row.rank}`);
+            }
 
-          return classes.join(' ');
-        }}
-      />
+            return classes.join(' ');
+          }}
+        />
+      )}
     </div>
   );
 };

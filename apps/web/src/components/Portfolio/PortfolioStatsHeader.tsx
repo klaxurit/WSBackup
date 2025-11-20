@@ -7,7 +7,7 @@ import { HelpTooltip } from '../Common/HelpTooltip';
 
 export const PortfolioStatsHeader: React.FC = () => {
   const { address, isConnected } = useAccount();
-  const { stats, isLoading } = usePortfolioStats();
+  const { stats, isLoading, isWalletInLeaderboard } = usePortfolioStats();
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -89,13 +89,20 @@ export const PortfolioStatsHeader: React.FC = () => {
             <HelpTooltip text="Total points earned from your liquidity positions and trading activity" />
           </div>
           <span className="PortfolioPage__StatCardValue">
-            {formatNumber(stats.points)}
+            {isWalletInLeaderboard ? formatNumber(stats.points) : '---'}
           </span>
           <span className="PortfolioPage__StatCardSubtext">Total Points</span>
           <div className="PortfolioPage__StatCardRank">
             <span className="PortfolioPage__StatCardRankLabel">Rank</span>
-            <span className="PortfolioPage__StatCardRankValue">#{formatNumber(stats.rank)}</span>
+            <span className="PortfolioPage__StatCardRankValue">
+              {isWalletInLeaderboard ? `#${formatNumber(stats.rank)}` : '---'}
+            </span>
           </div>
+          {!isWalletInLeaderboard && stats && (
+            <span className="PortfolioPage__StatCardSubtext" style={{ marginTop: '8px', fontSize: '11px', color: 'rgba(255, 255, 255, 0.4)' }}>
+              Start trading to join the leaderboard
+            </span>
+          )}
         </div>
 
         {/* Referrals Card */}

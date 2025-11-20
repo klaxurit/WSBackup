@@ -110,24 +110,34 @@ export class LeaderboardCalculatorService {
           v3Data.count + vaultData.count + autoWinData.count;
 
         // Calculate points (rounded to integers)
+        // S'assurer que toutes les valeurs sont des nombres valides (pas NaN)
         const volumePoints = Math.round(
-          totalVolumeUSD * this.VOLUME_MULTIPLIER,
+          (isNaN(totalVolumeUSD) ? 0 : totalVolumeUSD) * this.VOLUME_MULTIPLIER,
         );
         const liquidityPoints = Math.round(
-          currentLiquidityUSD * this.LIQUIDITY_MULTIPLIER,
+          (isNaN(currentLiquidityUSD) ? 0 : currentLiquidityUSD) * this.LIQUIDITY_MULTIPLIER,
         );
         const totalPoints = volumePoints + liquidityPoints;
 
+        // Valider que toutes les valeurs sont des nombres valides
+        const safeSwapVolumeUSD = isNaN(swapVolumeUSD) ? 0 : swapVolumeUSD;
+        const safeLiquidityDepositVolumeUSD = isNaN(liquidityDepositVolumeUSD) ? 0 : liquidityDepositVolumeUSD;
+        const safeTotalVolumeUSD = isNaN(totalVolumeUSD) ? 0 : totalVolumeUSD;
+        const safeCurrentLiquidityUSD = isNaN(currentLiquidityUSD) ? 0 : currentLiquidityUSD;
+        const safeV3PoolsLiquidityUSD = isNaN(v3Data.totalUSD) ? 0 : v3Data.totalUSD;
+        const safeStickyVaultsLiquidityUSD = isNaN(vaultData.totalUSD) ? 0 : vaultData.totalUSD;
+        const safeAutoWinVaultsLiquidityUSD = isNaN(autoWinData.totalUSD) ? 0 : autoWinData.totalUSD;
+
         walletMetrics.push({
           wallet,
-          swapVolumeUSD,
-          liquidityDepositVolumeUSD,
-          totalVolumeUSD,
-          currentLiquidityUSD,
+          swapVolumeUSD: safeSwapVolumeUSD,
+          liquidityDepositVolumeUSD: safeLiquidityDepositVolumeUSD,
+          totalVolumeUSD: safeTotalVolumeUSD,
+          currentLiquidityUSD: safeCurrentLiquidityUSD,
           positionsCount,
-          v3PoolsLiquidityUSD: v3Data.totalUSD,
-          stickyVaultsLiquidityUSD: vaultData.totalUSD,
-          autoWinVaultsLiquidityUSD: autoWinData.totalUSD,
+          v3PoolsLiquidityUSD: safeV3PoolsLiquidityUSD,
+          stickyVaultsLiquidityUSD: safeStickyVaultsLiquidityUSD,
+          autoWinVaultsLiquidityUSD: safeAutoWinVaultsLiquidityUSD,
           volumePoints,
           liquidityPoints,
           totalPoints,
@@ -159,6 +169,9 @@ export class LeaderboardCalculatorService {
         const metrics = walletMetrics[i];
         const newRank = i + 1;
         const previousRank = existingRanks.get(metrics.wallet);
+        
+        // S'assurer que previousRank est un nombre ou null (pas undefined)
+        const safePreviousRank = previousRank !== undefined ? previousRank : null;
 
         // Upsert leaderboard entry
         await this.prisma.leaderboardEntry.upsert({
@@ -179,7 +192,7 @@ export class LeaderboardCalculatorService {
             liquidityPoints: metrics.liquidityPoints,
             totalPoints: metrics.totalPoints,
             rank: newRank,
-            previousRank: previousRank,
+            previousRank: safePreviousRank,
             lastUpdatedAt: now,
           },
           update: {
@@ -195,7 +208,7 @@ export class LeaderboardCalculatorService {
             volumePoints: metrics.volumePoints,
             liquidityPoints: metrics.liquidityPoints,
             totalPoints: metrics.totalPoints,
-            previousRank: previousRank,
+            previousRank: safePreviousRank,
             rank: newRank,
             lastUpdatedAt: now,
           },

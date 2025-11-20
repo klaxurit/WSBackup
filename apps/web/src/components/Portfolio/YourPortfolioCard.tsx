@@ -5,12 +5,12 @@ import { formatNumber } from '../../utils/formatNumber';
 import { Loader } from '../Loader/Loader';
 
 interface YourPortfolioCardProps {
-  rankChange?: number;
+  // rankChange est maintenant géré via stats.rankChange depuis le backend
 }
 
-export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = ({ rankChange = 5 }) => {
+export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
   const { address, isConnected } = useAccount();
-  const { stats, isLoading } = usePortfolioStats();
+  const { stats, isLoading, isWalletInLeaderboard } = usePortfolioStats();
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -48,8 +48,14 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = ({ rankChange
   const availableBalance = stats ? stats.totalValueUSD * 0.3 : 0;
   const earningBalance = stats ? stats.totalFeesEarned : 0;
 
-  const volumePoints = stats ? Math.floor(stats.points * 0.54) : 0;
-  const liquidityPoints = stats ? Math.floor(stats.points * 0.46) : 0;
+  // Utiliser les vraies données du leaderboard si disponibles
+  // Si le wallet n'est pas dans le leaderboard, afficher 0 pour les points
+  const volumePoints = isWalletInLeaderboard && stats?.volumePoints !== undefined
+    ? stats.volumePoints
+    : (stats && isWalletInLeaderboard ? Math.floor(stats.points * 0.54) : 0);
+  const liquidityPoints = isWalletInLeaderboard && stats?.liquidityPoints !== undefined
+    ? stats.liquidityPoints
+    : (stats && isWalletInLeaderboard ? Math.floor(stats.points * 0.46) : 0);
 
   if (!isConnected) {
     return (
@@ -75,8 +81,7 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = ({ rankChange
     return null;
   }
 
-  const isRankGain = rankChange > 0;
-  const rankChangeAbs = Math.abs(rankChange);
+  // rankChange est maintenant géré directement dans le rendu avec stats.rankChange
 
   return (
     <div className="PortfolioPage__YourPortfolioCard">
@@ -120,50 +125,57 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = ({ rankChange
             <div className="PortfolioPage__YourPortfolioRank">
               <span className="PortfolioPage__YourPortfolioRankLabel">Rank</span>
               <div className="PortfolioPage__YourPortfolioRankValue">
-                <span>{stats.rank}</span>
-                <div className={`PortfolioPage__YourPortfolioRankChange ${isRankGain ? 'PortfolioPage__YourPortfolioRankChange--gain' : 'PortfolioPage__YourPortfolioRankChange--loss'}`}>
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {isRankGain ? (
-                      <path
-                        d="M6 2L10 8H2L6 2Z"
-                        fill="currentColor"
-                      />
-                    ) : (
-                      <path
-                        d="M6 10L2 4H10L6 10Z"
-                        fill="currentColor"
-                      />
-                    )}
-                  </svg>
-                  <span>{rankChangeAbs}</span>
-                </div>
+                <span>{isWalletInLeaderboard ? (stats.rank || '-') : '---'}</span>
+                {isWalletInLeaderboard && stats.rankChange !== undefined && stats.rankChange !== 0 && (
+                  <div className={`PortfolioPage__YourPortfolioRankChange ${stats.rankChange > 0 ? 'PortfolioPage__YourPortfolioRankChange--gain' : 'PortfolioPage__YourPortfolioRankChange--loss'}`}>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {stats.rankChange > 0 ? (
+                        <path
+                          d="M6 2L10 8H2L6 2Z"
+                          fill="currentColor"
+                        />
+                      ) : (
+                        <path
+                          d="M6 10L2 4H10L6 10Z"
+                          fill="currentColor"
+                        />
+                      )}
+                    </svg>
+                    <span>{Math.abs(stats.rankChange)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Points value */}
           <div className="PortfolioPage__YourPortfolioPointsValue">
-            {formatNumber(stats.points)}
+            {isWalletInLeaderboard ? formatNumber(stats.points) : '---'}
           </div>
+          {!isWalletInLeaderboard && (
+            <div style={{ marginTop: '8px', fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)' }}>
+              Start trading to earn points
+            </div>
+          )}
 
           {/* Volume / Liquidity row */}
           <div className="PortfolioPage__YourPortfolioPointsRow">
             <div className="PortfolioPage__YourPortfolioPointsItem">
               <span className="PortfolioPage__YourPortfolioPointsItemLabel">Volume</span>
               <span className="PortfolioPage__YourPortfolioPointsItemValue">
-                {formatNumber(volumePoints)}pts
+                {isWalletInLeaderboard ? `${formatNumber(volumePoints)}pts` : '---'}
               </span>
             </div>
             <div className="PortfolioPage__YourPortfolioPointsItem">
               <span className="PortfolioPage__YourPortfolioPointsItemLabel">Liquidity</span>
               <span className="PortfolioPage__YourPortfolioPointsItemValue">
-                {formatNumber(liquidityPoints)}pts
+                {isWalletInLeaderboard ? `${formatNumber(liquidityPoints)}pts` : '---'}
               </span>
             </div>
           </div>

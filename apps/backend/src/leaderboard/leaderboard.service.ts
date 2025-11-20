@@ -46,13 +46,20 @@ export class LeaderboardService {
   async getLeaderboard(
     query: LeaderboardQueryDto,
   ): Promise<LeaderboardResponseDto> {
-    const { page = 1, limit = 100 } = query;
-    const skip = (page - 1) * limit;
+    // S'assurer que page et limit sont des nombres entiers
+    const page = Number.parseInt(String(query.page || 1), 10);
+    const limit = Number.parseInt(String(query.limit || 100), 10);
+    
+    // Valider les valeurs
+    const validPage = Math.max(1, page);
+    const validLimit = Math.max(1, Math.min(500, limit)); // Max 500 selon le DTO
+    
+    const skip = (validPage - 1) * validLimit;
 
     const [entries, total, lastEntry] = await Promise.all([
       this.prisma.leaderboardEntry.findMany({
         skip,
-        take: limit,
+        take: validLimit,
         orderBy: {
           rank: 'asc',
         },
@@ -75,8 +82,8 @@ export class LeaderboardService {
     return {
       entries: mappedEntries,
       total,
-      page,
-      limit,
+      page: validPage,
+      limit: validLimit,
       lastUpdatedAt: lastEntry?.lastUpdatedAt,
     };
   }
