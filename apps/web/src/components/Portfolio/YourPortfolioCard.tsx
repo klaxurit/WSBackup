@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { usePortfolioStats } from '../../hooks/usePortfolioStats';
 import { formatNumber } from '../../utils/formatNumber';
@@ -9,10 +9,43 @@ interface YourPortfolioCardProps {
 }
 
 export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = ({ rankChange = 5 }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { stats, isLoading } = usePortfolioStats();
+  const [referralCode, setReferralCode] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [applied, setApplied] = useState(false);
 
-  const availableBalance = stats ? stats.totalValueUSD * 0.3 : 0; 
+  const referralLink = React.useMemo(() => {
+    if (!address) return '';
+
+    const baseUrl = window.location.origin;
+    const referralId = address.toLowerCase();
+
+    return `${baseUrl}?ref=${referralId}`;
+  }, [address]);
+
+  const handleCopyReferralLink = async () => {
+    if (!referralLink) return;
+
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy referral link:', error);
+    }
+  };
+
+  const handleApplyReferralCode = () => {
+    if (!referralCode.trim()) return;
+
+    // TODO: Appeler l'API backend pour appliquer le referral code
+    console.log('Applying referral code:', referralCode);
+    setApplied(true);
+    setTimeout(() => setApplied(false), 2000);
+  };
+
+  const availableBalance = stats ? stats.totalValueUSD * 0.3 : 0;
   const earningBalance = stats ? stats.totalFeesEarned : 0;
 
   const volumePoints = stats ? Math.floor(stats.points * 0.54) : 0;
@@ -133,6 +166,58 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = ({ rankChange
                 {formatNumber(liquidityPoints)}pts
               </span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Referral Section - Full Width */}
+      <div className="PortfolioPage__YourPortfolioReferralSection">
+        {/* Referral Input and Apply */}
+        <div className="PortfolioPage__YourPortfolioReferralInput">
+          <input
+            type="text"
+            placeholder="Referral code"
+            value={referralCode}
+            onChange={(e) => setReferralCode(e.target.value)}
+            className="PortfolioPage__YourPortfolioReferralInputField SearchBar__input"
+          />
+          <button
+            className={`btn btn--tiny btn__accent ${applied ? 'btn__success' : 'btn__accent'}`}
+            onClick={handleApplyReferralCode}
+            disabled={!referralCode.trim() || applied}
+            type="button"
+          >
+            {applied ? 'Applied!' : 'Apply'}
+          </button>
+        </div>
+
+        {/* Referrals Stats Row */}
+        <div className="PortfolioPage__YourPortfolioReferralStats">
+          <div className="PortfolioPage__YourPortfolioReferralStatItem">
+            <span className="PortfolioPage__YourPortfolioReferralStatLabel">Referrals</span>
+            <span className="PortfolioPage__YourPortfolioReferralStatValue">
+              {stats.referrals}
+              <span className="PortfolioPage__YourPortfolioReferralStatSubtext"> Invited Users</span>
+            </span>
+          </div>
+
+          <div className="PortfolioPage__YourPortfolioReferralStatDivider" />
+
+          <div className="PortfolioPage__YourPortfolioReferralStatItem">
+            <span className="PortfolioPage__YourPortfolioReferralStatLabel">Multiplier</span>
+            <span className="PortfolioPage__YourPortfolioReferralStatValue PortfolioPage__YourPortfolioReferralStatValue--highlight">
+              {((stats.multiplier - 1) * 100).toFixed(0)}%
+            </span>
+          </div>
+
+          <div className="PortfolioPage__YourPortfolioReferralStatItem PortfolioPage__YourPortfolioReferralStatItem--button">
+            <button
+              className={`btn btn--tiny btn__main ${copied ? 'btn__success' : ''}`}
+              onClick={handleCopyReferralLink}
+              type="button"
+            >
+              {copied ? 'Copied!' : 'Create Referral Code'}
+            </button>
           </div>
         </div>
       </div>

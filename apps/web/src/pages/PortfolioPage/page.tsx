@@ -21,6 +21,7 @@ import { StickyIcon } from '../../components/Common/StickyIcon';
 // import { PortfolioStatsHeader } from '../../components/Portfolio/PortfolioStatsHeader';
 import { YourPortfolioCard } from '../../components/Portfolio/YourPortfolioCard';
 import { LeaderboardTable } from '../../components/Leaderboard/LeaderboardTable';
+import { TruncatedTextWithTooltip } from '../../components/Common/TruncatedTextWithTooltip';
 
 
 const GET_USER_POSITIONS = `
@@ -601,7 +602,7 @@ const PortfolioPage: React.FC = () => {
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                  {row.vaultName}
+                  <TruncatedTextWithTooltip text={row.vaultName} maxLength={12} />
                 </span>
               </div>
             </div>
@@ -619,7 +620,10 @@ const PortfolioPage: React.FC = () => {
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                  {`${row.poolRef.token0Ref.symbol} / ${row.poolRef.token1Ref.symbol}`}
+                  <TruncatedTextWithTooltip
+                    text={`${row.poolRef.token0Ref.symbol} / ${row.poolRef.token1Ref.symbol}`}
+                    maxLength={12}
+                  />
                 </span>
               </div>
             </div>

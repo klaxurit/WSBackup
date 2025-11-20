@@ -113,12 +113,11 @@
   }
 
   &__TableWrapper {
-    margin-bottom: 16px;
     background: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    max-height: 200px; 
+    max-height: 310px;
     min-height: 200px;
 
     .Table__Wrapper {
@@ -129,6 +128,7 @@
       overflow: hidden;
       height: 100%;
       max-height: 100%;
+      margin-bottom: 0;
     }
 
     // Le Table__Scroll doit avoir le scroll vertical
@@ -845,6 +845,120 @@
     @include typography('body-md');
     font-weight: 700;
     color: #fff;
+  }
+
+  // Referral Section - Full Width
+  &__YourPortfolioReferralSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
+  }
+
+  &__YourPortfolioReferralInput {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__YourPortfolioReferralInputField {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    border-radius: 40px;
+    border: 1px solid var(--surface3, #232323);
+    background: $white-004;
+    padding: 0 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    @include typography('body-sm');
+
+    &:hover {
+      border-color: var(--surface4, #2a2a2a);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent1, #e39229);
+      box-shadow: 0px 0px 0px 4px rgba(227, 146, 41, 0.08);
+    }
+  }
+
+  &__YourPortfolioReferralStats {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  &__YourPortfolioReferralStatItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+
+    @media (max-width: 600px) {
+      align-items: center;
+      text-align: center;
+    }
+
+    &--button {
+      align-items: flex-end;
+      justify-content: center;
+      margin-left: auto;
+      justify-self: end;
+
+      @media (max-width: 600px) {
+        align-items: center;
+        margin-left: 0;
+        justify-self: stretch;
+      }
+    }
+  }
+
+  &__YourPortfolioReferralStatLabel {
+    @include typography('body-xs');
+    font-weight: 600;
+    color: $white-048;
+  }
+
+  &__YourPortfolioReferralStatValue {
+    @include typography('heading-md');
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+
+    &--highlight {
+      color: $beryl-pure;
+    }
+  }
+
+  &__YourPortfolioReferralStatSubtext {
+    @include typography('body-2xs');
+    font-weight: 500;
+    color: $white-048;
+    margin-top: 2px;
+  }
+
+  &__YourPortfolioReferralStatDivider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
+
+    @media (max-width: 600px) {
+      width: 100%;
+      height: 1px;
+    }
   }
 
   // Leaderboard Section
