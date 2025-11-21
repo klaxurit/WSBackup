@@ -26,6 +26,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return prisma.poolStats;
   }
 
+  get leaderboardEntry() {
+    return prisma.leaderboardEntry;
+  }
+
   get client() {
     return prisma;
   }

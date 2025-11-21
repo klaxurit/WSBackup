@@ -12,6 +12,7 @@ import { PonderModule } from './ponder/ponder.module';
 import { TokenModule } from './token/token.module';
 import { VaultsModule } from './vaults/vaults.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { ReferralModule } from './referral/referral.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     TokenModule,
     VaultsModule,
     LeaderboardModule,
+    ReferralModule,
   ],
   controllers: [AppController],
   providers: [AppService],

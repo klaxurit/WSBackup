@@ -168,6 +168,9 @@ model LeaderboardEntry {
   rank            Int // Current ranking position
   previousRank    Int? // Rank from last update
 
+  // Referral
+  referralCode String? @unique
+
   // Metadata
   lastUpdatedAt DateTime @updatedAt
   createdAt     DateTime @default(now())

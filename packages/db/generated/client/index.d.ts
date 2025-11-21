@@ -5883,6 +5883,7 @@ export namespace Prisma {
     totalPoints: number | null
     rank: number | null
     previousRank: number | null
+    referralCode: string | null
     lastUpdatedAt: Date | null
     createdAt: Date | null
   }
@@ -5903,6 +5904,7 @@ export namespace Prisma {
     totalPoints: number | null
     rank: number | null
     previousRank: number | null
+    referralCode: string | null
     lastUpdatedAt: Date | null
     createdAt: Date | null
   }
@@ -5923,6 +5925,7 @@ export namespace Prisma {
     totalPoints: number
     rank: number
     previousRank: number
+    referralCode: number
     lastUpdatedAt: number
     createdAt: number
     _all: number
@@ -5977,6 +5980,7 @@ export namespace Prisma {
     totalPoints?: true
     rank?: true
     previousRank?: true
+    referralCode?: true
     lastUpdatedAt?: true
     createdAt?: true
   }
@@ -5997,6 +6001,7 @@ export namespace Prisma {
     totalPoints?: true
     rank?: true
     previousRank?: true
+    referralCode?: true
     lastUpdatedAt?: true
     createdAt?: true
   }
@@ -6017,6 +6022,7 @@ export namespace Prisma {
     totalPoints?: true
     rank?: true
     previousRank?: true
+    referralCode?: true
     lastUpdatedAt?: true
     createdAt?: true
     _all?: true
@@ -6124,6 +6130,7 @@ export namespace Prisma {
     totalPoints: number
     rank: number
     previousRank: number | null
+    referralCode: string | null
     lastUpdatedAt: Date
     createdAt: Date
     _count: LeaderboardEntryCountAggregateOutputType | null
@@ -6163,6 +6170,7 @@ export namespace Prisma {
     totalPoints?: boolean
     rank?: boolean
     previousRank?: boolean
+    referralCode?: boolean
     lastUpdatedAt?: boolean
     createdAt?: boolean
     snapshots?: boolean | LeaderboardEntry$snapshotsArgs<ExtArgs>
@@ -6185,6 +6193,7 @@ export namespace Prisma {
     totalPoints?: boolean
     rank?: boolean
     previousRank?: boolean
+    referralCode?: boolean
     lastUpdatedAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["leaderboardEntry"]>
@@ -6205,6 +6214,7 @@ export namespace Prisma {
     totalPoints?: boolean
     rank?: boolean
     previousRank?: boolean
+    referralCode?: boolean
     lastUpdatedAt?: boolean
     createdAt?: boolean
   }
@@ -6236,6 +6246,7 @@ export namespace Prisma {
       totalPoints: number
       rank: number
       previousRank: number | null
+      referralCode: string | null
       lastUpdatedAt: Date
       createdAt: Date
     }, ExtArgs["result"]["leaderboardEntry"]>
@@ -6647,6 +6658,7 @@ export namespace Prisma {
     readonly totalPoints: FieldRef<"LeaderboardEntry", 'Int'>
     readonly rank: FieldRef<"LeaderboardEntry", 'Int'>
     readonly previousRank: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly referralCode: FieldRef<"LeaderboardEntry", 'String'>
     readonly lastUpdatedAt: FieldRef<"LeaderboardEntry", 'DateTime'>
     readonly createdAt: FieldRef<"LeaderboardEntry", 'DateTime'>
   }
@@ -8125,6 +8137,7 @@ export namespace Prisma {
     totalPoints: 'totalPoints',
     rank: 'rank',
     previousRank: 'previousRank',
+    referralCode: 'referralCode',
     lastUpdatedAt: 'lastUpdatedAt',
     createdAt: 'createdAt'
   };
@@ -8728,6 +8741,7 @@ export namespace Prisma {
     totalPoints?: IntFilter<"LeaderboardEntry"> | number
     rank?: IntFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
+    referralCode?: StringNullableFilter<"LeaderboardEntry"> | string | null
     lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     createdAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     snapshots?: LeaderboardSnapshotListRelationFilter
@@ -8749,6 +8763,7 @@ export namespace Prisma {
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrderInput | SortOrder
+    referralCode?: SortOrderInput | SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
     snapshots?: LeaderboardSnapshotOrderByRelationAggregateInput
@@ -8757,6 +8772,7 @@ export namespace Prisma {
   export type LeaderboardEntryWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     wallet?: string
+    referralCode?: string
     AND?: LeaderboardEntryWhereInput | LeaderboardEntryWhereInput[]
     OR?: LeaderboardEntryWhereInput[]
     NOT?: LeaderboardEntryWhereInput | LeaderboardEntryWhereInput[]
@@ -8776,7 +8792,7 @@ export namespace Prisma {
     lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     createdAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     snapshots?: LeaderboardSnapshotListRelationFilter
-  }, "id" | "wallet">
+  }, "id" | "wallet" | "referralCode">
 
   export type LeaderboardEntryOrderByWithAggregationInput = {
     id?: SortOrder
@@ -8794,6 +8810,7 @@ export namespace Prisma {
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrderInput | SortOrder
+    referralCode?: SortOrderInput | SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
     _count?: LeaderboardEntryCountOrderByAggregateInput
@@ -8822,6 +8839,7 @@ export namespace Prisma {
     totalPoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     rank?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableWithAggregatesFilter<"LeaderboardEntry"> | number | null
+    referralCode?: StringNullableWithAggregatesFilter<"LeaderboardEntry"> | string | null
     lastUpdatedAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
   }
@@ -9395,6 +9413,7 @@ export namespace Prisma {
     totalPoints?: number
     rank: number
     previousRank?: number | null
+    referralCode?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
     snapshots?: LeaderboardSnapshotCreateNestedManyWithoutLeaderboardEntryInput
@@ -9416,6 +9435,7 @@ export namespace Prisma {
     totalPoints?: number
     rank: number
     previousRank?: number | null
+    referralCode?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
     snapshots?: LeaderboardSnapshotUncheckedCreateNestedManyWithoutLeaderboardEntryInput
@@ -9437,6 +9457,7 @@ export namespace Prisma {
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     snapshots?: LeaderboardSnapshotUpdateManyWithoutLeaderboardEntryNestedInput
@@ -9458,6 +9479,7 @@ export namespace Prisma {
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     snapshots?: LeaderboardSnapshotUncheckedUpdateManyWithoutLeaderboardEntryNestedInput
@@ -9479,6 +9501,7 @@ export namespace Prisma {
     totalPoints?: number
     rank: number
     previousRank?: number | null
+    referralCode?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
   }
@@ -9499,6 +9522,7 @@ export namespace Prisma {
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9519,6 +9543,7 @@ export namespace Prisma {
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10229,6 +10254,7 @@ export namespace Prisma {
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
+    referralCode?: SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -10265,6 +10291,7 @@ export namespace Prisma {
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
+    referralCode?: SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -10285,6 +10312,7 @@ export namespace Prisma {
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
+    referralCode?: SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -11826,6 +11854,7 @@ export namespace Prisma {
     totalPoints?: number
     rank: number
     previousRank?: number | null
+    referralCode?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
   }
@@ -11846,6 +11875,7 @@ export namespace Prisma {
     totalPoints?: number
     rank: number
     previousRank?: number | null
+    referralCode?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
   }
@@ -11882,6 +11912,7 @@ export namespace Prisma {
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11902,6 +11933,7 @@ export namespace Prisma {
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -205,6 +205,7 @@ exports.Prisma.LeaderboardEntryScalarFieldEnum = {
   totalPoints: 'totalPoints',
   rank: 'rank',
   previousRank: 'previousRank',
+  referralCode: 'referralCode',
   lastUpdatedAt: 'lastUpdatedAt',
   createdAt: 'createdAt'
 };
