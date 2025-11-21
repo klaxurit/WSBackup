@@ -28,7 +28,7 @@ export class LeaderboardCalculatorService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly ponderGraphql: PonderGraphqlService,
-  ) {}
+  ) { }
 
   private get prisma() {
     return this.databaseService.client;
@@ -208,7 +208,7 @@ export class LeaderboardCalculatorService {
         const metrics = walletMetrics[i];
         const newRank = i + 1;
         const previousRank = existingRanks.get(metrics.wallet);
-        
+
         // S'assurer que previousRank est un nombre ou null (pas undefined)
         const safePreviousRank = previousRank !== undefined ? previousRank : null;
 

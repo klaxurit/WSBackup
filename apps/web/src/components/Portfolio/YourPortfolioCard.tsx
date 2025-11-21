@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePortfolioStats } from '../../hooks/usePortfolioStats';
+import { useReferral, useUpdateReferral, useApplyReferralCode } from '../../hooks/useReferral';
 import { formatNumber } from '../../utils/formatNumber';
 import { Loader } from '../Loader/Loader';
+import { CopyIcon } from '../SVGs/ProductSVGs';
 
 interface YourPortfolioCardProps {
   // rankChange est maintenant géré via stats.rankChange depuis le backend
@@ -11,38 +14,100 @@ interface YourPortfolioCardProps {
 export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
   const { address, isConnected } = useAccount();
   const { stats, isLoading, isWalletInLeaderboard } = usePortfolioStats();
-  const [referralCode, setReferralCode] = useState('');
-  const [copied, setCopied] = useState(false);
+
+  // Récupérer le referral code actuel
+  const { data: referralData, isLoading: isLoadingReferral } = useReferral(address);
+
+  // Hooks pour les mutations
+  const updateReferralMutation = useUpdateReferral();
+  const applyReferralMutation = useApplyReferralCode();
+
+  // État pour l'application d'un referral code (code d'un autre utilisateur)
+  const [referralCodeToApply, setReferralCodeToApply] = useState('');
   const [applied, setApplied] = useState(false);
 
-  const referralLink = React.useMemo(() => {
-    if (!address) return '';
+  // État pour la personnalisation du referral code
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [customCode, setCustomCode] = useState('');
+  const [copied, setCopied] = useState(false);
 
-    const baseUrl = window.location.origin;
-    const referralId = address.toLowerCase();
+  // Hooks pour signer les messages - séparés pour chaque action
+  const { signMessageAsync: signMessageForApply, isPending: isSigningForApply } = useSignMessage();
+  const { signMessageAsync: signMessageForUpdate, isPending: isSigningForUpdate } = useSignMessage();
 
-    return `${baseUrl}?ref=${referralId}`;
-  }, [address]);
-
-  const handleCopyReferralLink = async () => {
-    if (!referralLink) return;
+  // Copier le code de referral
+  const handleCopyReferralCode = async () => {
+    if (!referralData?.referralCode) return;
 
     try {
-      await navigator.clipboard.writeText(referralLink);
+      await navigator.clipboard.writeText(referralData.referralCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy referral link:', error);
+      console.error('Failed to copy referral code:', error);
     }
   };
 
-  const handleApplyReferralCode = () => {
-    if (!referralCode.trim()) return;
+  // Appliquer un referral code (code d'un autre utilisateur)
+  const handleApplyReferralCode = async () => {
+    if (!referralCodeToApply.trim() || !address) return;
 
-    // TODO: Appeler l'API backend pour appliquer le referral code
-    console.log('Applying referral code:', referralCode);
-    setApplied(true);
-    setTimeout(() => setApplied(false), 2000);
+    try {
+      // Signer le message (le code à appliquer)
+      const signature = await signMessageForApply({
+        message: referralCodeToApply.trim(),
+      });
+
+      // Appeler l'API pour appliquer le code
+      await applyReferralMutation.mutateAsync({
+        referralCode: referralCodeToApply.trim(),
+        signature,
+      });
+
+      setApplied(true);
+      setReferralCodeToApply('');
+      setTimeout(() => setApplied(false), 3000);
+    } catch (error: any) {
+      console.error('Failed to apply referral code:', error);
+      alert(error?.message || 'Failed to apply referral code');
+    }
+  };
+
+  // Gérer le clic sur "Customize Referral Code"
+  const handleCustomizeClick = () => {
+    setIsCustomizing(true);
+    setCustomCode(referralData?.referralCode || '');
+  };
+
+  // Mettre à jour le referral code personnalisé
+  const handleUpdateReferralCode = async () => {
+    if (!customCode.trim() || !address) return;
+
+    // Validation : minimum 6 caractères, alphanumériques, underscores ou hyphens
+    const codeRegex = /^[a-zA-Z0-9_-]{6,20}$/;
+    if (!codeRegex.test(customCode.trim())) {
+      alert('Referral code must be 6-20 alphanumeric characters, underscores or hyphens');
+      return;
+    }
+
+    try {
+      // Signer le message (le nouveau code)
+      const signature = await signMessageForUpdate({
+        message: customCode.trim(),
+      });
+
+      // Appeler l'API pour mettre à jour le code
+      await updateReferralMutation.mutateAsync({
+        referralCode: customCode.trim(),
+        signature,
+      });
+
+      setIsCustomizing(false);
+      setCustomCode('');
+    } catch (error: any) {
+      console.error('Failed to update referral code:', error);
+      alert(error?.message || 'Failed to update referral code');
+    }
   };
 
   const availableBalance = stats ? stats.totalValueUSD * 0.3 : 0;
@@ -67,7 +132,7 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || isLoadingReferral) {
     return (
       <div className="PortfolioPage__YourPortfolioCard">
         <div className="PortfolioPage__YourPortfolioContent">
@@ -184,22 +249,27 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
 
       {/* Referral Section - Full Width */}
       <div className="PortfolioPage__YourPortfolioReferralSection">
-        {/* Referral Input and Apply */}
+        {/* Referral Input and Apply (pour appliquer un code d'un autre utilisateur) */}
         <div className="PortfolioPage__YourPortfolioReferralInput">
           <input
             type="text"
             placeholder="Referral code"
-            value={referralCode}
-            onChange={(e) => setReferralCode(e.target.value)}
+            value={referralCodeToApply}
+            onChange={(e) => setReferralCodeToApply(e.target.value)}
             className="PortfolioPage__YourPortfolioReferralInputField SearchBar__input"
+            disabled={applied || applyReferralMutation.isPending || isSigningForApply}
           />
           <button
             className={`btn btn--tiny btn__accent ${applied ? 'btn__success' : 'btn__accent'}`}
             onClick={handleApplyReferralCode}
-            disabled={!referralCode.trim() || applied}
+            disabled={!referralCodeToApply.trim() || applied || applyReferralMutation.isPending || isSigningForApply}
             type="button"
           >
-            {applied ? 'Applied!' : 'Apply'}
+            {isSigningForApply || applyReferralMutation.isPending
+              ? 'Signing...'
+              : applied
+                ? 'Applied!'
+                : 'Apply'}
           </button>
         </div>
 
@@ -223,13 +293,110 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
           </div>
 
           <div className="PortfolioPage__YourPortfolioReferralStatItem PortfolioPage__YourPortfolioReferralStatItem--button">
-            <button
-              className={`btn btn--tiny btn__main ${copied ? 'btn__success' : ''}`}
-              onClick={handleCopyReferralLink}
-              type="button"
-            >
-              {copied ? 'Copied!' : 'Create Referral Code'}
-            </button>
+            <AnimatePresence mode="wait" initial={false}>
+              {isCustomizing ? (
+                <motion.div
+                  key="customize-input"
+                  initial={{ opacity: 0, scale: 0.95, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, x: -10 }}
+                  transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                  className="PortfolioPage__YourPortfolioCustomizeInput"
+                >
+                  <input
+                    type="text"
+                    placeholder="Code (6-20 chars)"
+                    value={customCode}
+                    onChange={(e) => setCustomCode(e.target.value)}
+                    className="PortfolioPage__YourPortfolioCustomizeInputField"
+                    disabled={updateReferralMutation.isPending || isSigningForUpdate}
+                    maxLength={20}
+                    autoFocus
+                  />
+                  <button
+                    className="btn btn--tiny btn__main"
+                    onClick={handleUpdateReferralCode}
+                    disabled={!customCode.trim() || customCode.trim().length < 6 || updateReferralMutation.isPending || isSigningForUpdate}
+                    type="button"
+                  >
+                    {isSigningForUpdate || updateReferralMutation.isPending ? 'Signing...' : 'Update'}
+                  </button>
+                  <button
+                    className="btn btn--tiny btn__shade"
+                    onClick={() => {
+                      setIsCustomizing(false);
+                      setCustomCode('');
+                    }}
+                    disabled={updateReferralMutation.isPending || isSigningForUpdate}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="customize-button"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  {referralData?.referralCode && (
+                    <motion.button
+                      className="btn btn--tiny btn__shade PortfolioPage__CopyButton"
+                      onClick={handleCopyReferralCode}
+                      type="button"
+                      title="Copy referral code"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <AnimatePresence mode="wait">
+                        {copied ? (
+                          <motion.svg
+                            key="check"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <path
+                              d="M13.5 4.5L6 12L2.5 8.5"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </motion.svg>
+                        ) : (
+                          <motion.div
+                            key="copy"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <CopyIcon />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  )}
+                  <button
+                    className="btn btn--tiny btn__main"
+                    onClick={handleCustomizeClick}
+                    type="button"
+                  >
+                    Customize Referral Code
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
