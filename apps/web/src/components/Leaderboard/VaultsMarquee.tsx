@@ -115,14 +115,14 @@ export const VaultsMarquee: React.FC = () => {
               <div className="Leaderboard__VaultsMarqueeItemHeader">
                 <TokenPairLogos
                   token0={{
-                    id: vault.poolRef.token0Ref.id,
-                    address: vault.poolRef.token0Ref.id,
+                    id: vault.poolRef.token0Ref.id as `0x${string}`,
+                    address: vault.poolRef.token0Ref.id as `0x${string}`,
                     symbol: vault.poolRef.token0Ref.symbol,
                     logoUri: vault.poolRef.token0Ref.logoUri
                   }}
                   token1={{
-                    id: vault.poolRef.token1Ref.id,
-                    address: vault.poolRef.token1Ref.id,
+                    id: vault.poolRef.token1Ref.id as `0x${string}`,
+                    address: vault.poolRef.token1Ref.id as `0x${string}`,
                     symbol: vault.poolRef.token1Ref.symbol,
                     logoUri: vault.poolRef.token1Ref.logoUri
                   }}

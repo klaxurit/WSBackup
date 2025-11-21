@@ -73,7 +73,7 @@ export function useUpdateReferral() {
 
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalider et refetch le referral code après mise à jour
       queryClient.invalidateQueries({ queryKey: ['referral', address] });
     },

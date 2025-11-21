@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, type InfiniteData } from '@tanstack/react-query';
 import Table from '../Table/Table';
 import type { TableColumn } from '../Table/Table';
 import { type LeaderboardEntry, type LeaderboardResponse, useLeaderboardWallet } from '../../hooks/useLeaderboard';
@@ -165,16 +165,16 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-    error,
-    refetch
-  } = useInfiniteQuery<LeaderboardResponse>({
-    queryKey: ['leaderboard-list-infinite', itemsPerPage],
+    error
+  } = useInfiniteQuery<LeaderboardResponse, Error, InfiniteData<LeaderboardResponse>, (string | number)[], number>({
+    queryKey: ['leaderboard-list-infinite', itemsPerPage.toString()],
     queryFn: async ({ pageParam = 1 }) => {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const baseUrl = apiUrl.replace(/\/$/, '');
       
+      const page = typeof pageParam === 'number' ? pageParam : 1;
       const params = new URLSearchParams({
-        page: pageParam.toString(),
+        page: page.toString(),
         limit: itemsPerPage.toString(),
       });
 
