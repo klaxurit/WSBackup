@@ -8,7 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ReferralService } from './referral.service';
-import { UpdateReferralDto, ReferralResponseDto } from './referral.dto';
+import { UpdateReferralDto, ReferralResponseDto, UseReferralDto, UseReferralResponseDto } from './referral.dto';
 
 @Controller('referral')
 export class ReferralController {
@@ -27,6 +27,19 @@ export class ReferralController {
     @Body() dto: UpdateReferralDto,
   ): Promise<ReferralResponseDto> {
     return this.referralService.updateReferral(
+      wallet,
+      dto.referralCode,
+      dto.signature,
+    );
+  }
+
+  @Post(':wallet/use')
+  @HttpCode(HttpStatus.OK)
+  async useReferralCode(
+    @Param('wallet') wallet: string,
+    @Body() dto: UseReferralDto,
+  ): Promise<UseReferralResponseDto> {
+    return this.referralService.useReferralCode(
       wallet,
       dto.referralCode,
       dto.signature,

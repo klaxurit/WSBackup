@@ -14,6 +14,7 @@ interface WalletMetrics {
   autoWinVaultsLiquidityUSD: number;
   volumePoints: number;
   liquidityPoints: number;
+  referralPoints: number;
   totalPoints: number;
 }
 
@@ -22,6 +23,7 @@ export class LeaderboardCalculatorService {
   private readonly logger = new Logger(LeaderboardCalculatorService.name);
   private readonly VOLUME_MULTIPLIER = 1.2;
   private readonly LIQUIDITY_MULTIPLIER = 1.0;
+  private readonly REFERRAL_BONUS_RATE = 0.2; // 20% of referrals' points
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -117,7 +119,8 @@ export class LeaderboardCalculatorService {
         const liquidityPoints = Math.round(
           (isNaN(currentLiquidityUSD) ? 0 : currentLiquidityUSD) * this.LIQUIDITY_MULTIPLIER,
         );
-        const totalPoints = volumePoints + liquidityPoints;
+        // Base points without referral bonus (referral points added later)
+        const basePoints = volumePoints + liquidityPoints;
 
         // Valider que toutes les valeurs sont des nombres valides
         const safeSwapVolumeUSD = isNaN(swapVolumeUSD) ? 0 : swapVolumeUSD;
@@ -140,8 +143,44 @@ export class LeaderboardCalculatorService {
           autoWinVaultsLiquidityUSD: safeAutoWinVaultsLiquidityUSD,
           volumePoints,
           liquidityPoints,
-          totalPoints,
+          referralPoints: 0, // Will be calculated after
+          totalPoints: basePoints, // Will be updated with referral points
         });
+      }
+
+      // 4.5. Calculate referral bonus points
+      // Get all referral relationships
+      const referralRelations = await this.prisma.leaderboardEntry.findMany({
+        where: { referredBy: { not: null } },
+        select: { wallet: true, referredBy: true },
+      });
+
+      // Build map: referrer -> list of referred wallets
+      const referrerToReferred = new Map<string, string[]>();
+      for (const rel of referralRelations) {
+        if (rel.referredBy) {
+          const existing = referrerToReferred.get(rel.referredBy) || [];
+          existing.push(rel.wallet);
+          referrerToReferred.set(rel.referredBy, existing);
+        }
+      }
+
+      // Build map: wallet -> base points for quick lookup
+      const walletBasePoints = new Map<string, number>();
+      for (const m of walletMetrics) {
+        walletBasePoints.set(m.wallet, m.volumePoints + m.liquidityPoints);
+      }
+
+      // Calculate referral points for each referrer
+      for (const metrics of walletMetrics) {
+        const referredWallets = referrerToReferred.get(metrics.wallet) || [];
+        let referralPoints = 0;
+        for (const referredWallet of referredWallets) {
+          const referredBasePoints = walletBasePoints.get(referredWallet) || 0;
+          referralPoints += Math.round(referredBasePoints * this.REFERRAL_BONUS_RATE);
+        }
+        metrics.referralPoints = referralPoints;
+        metrics.totalPoints = metrics.volumePoints + metrics.liquidityPoints + referralPoints;
       }
 
       // 5. Sort by total points and assign ranks
@@ -190,6 +229,7 @@ export class LeaderboardCalculatorService {
             autoWinVaultsLiquidityUSD: metrics.autoWinVaultsLiquidityUSD,
             volumePoints: metrics.volumePoints,
             liquidityPoints: metrics.liquidityPoints,
+            referralPoints: metrics.referralPoints,
             totalPoints: metrics.totalPoints,
             rank: newRank,
             previousRank: safePreviousRank,
@@ -207,6 +247,7 @@ export class LeaderboardCalculatorService {
             autoWinVaultsLiquidityUSD: metrics.autoWinVaultsLiquidityUSD,
             volumePoints: metrics.volumePoints,
             liquidityPoints: metrics.liquidityPoints,
+            referralPoints: metrics.referralPoints,
             totalPoints: metrics.totalPoints,
             previousRank: safePreviousRank,
             rank: newRank,

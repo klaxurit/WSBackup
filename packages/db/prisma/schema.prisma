@@ -164,12 +164,14 @@ model LeaderboardEntry {
   // Points and ranking (integers - rounded)
   volumePoints    Int @default(0) // round(1.2 × totalVolumeUSD)
   liquidityPoints Int @default(0) // round(1.0 × currentLiquidityUSD)
+  referralPoints  Int @default(0) // 20% of referrals' points
   totalPoints     Int @default(0) // sum of all points
   rank            Int // Current ranking position
   previousRank    Int? // Rank from last update
 
   // Referral
   referralCode String? @unique
+  referredBy   String? // wallet address of referrer
 
   // Metadata
   lastUpdatedAt DateTime @updatedAt

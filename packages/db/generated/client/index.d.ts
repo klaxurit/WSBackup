@@ -5846,6 +5846,7 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: number | null
     volumePoints: number | null
     liquidityPoints: number | null
+    referralPoints: number | null
     totalPoints: number | null
     rank: number | null
     previousRank: number | null
@@ -5862,6 +5863,7 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: number | null
     volumePoints: number | null
     liquidityPoints: number | null
+    referralPoints: number | null
     totalPoints: number | null
     rank: number | null
     previousRank: number | null
@@ -5880,10 +5882,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: number | null
     volumePoints: number | null
     liquidityPoints: number | null
+    referralPoints: number | null
     totalPoints: number | null
     rank: number | null
     previousRank: number | null
     referralCode: string | null
+    referredBy: string | null
     lastUpdatedAt: Date | null
     createdAt: Date | null
   }
@@ -5901,10 +5905,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: number | null
     volumePoints: number | null
     liquidityPoints: number | null
+    referralPoints: number | null
     totalPoints: number | null
     rank: number | null
     previousRank: number | null
     referralCode: string | null
+    referredBy: string | null
     lastUpdatedAt: Date | null
     createdAt: Date | null
   }
@@ -5922,10 +5928,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: number
     volumePoints: number
     liquidityPoints: number
+    referralPoints: number
     totalPoints: number
     rank: number
     previousRank: number
     referralCode: number
+    referredBy: number
     lastUpdatedAt: number
     createdAt: number
     _all: number
@@ -5943,6 +5951,7 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: true
     volumePoints?: true
     liquidityPoints?: true
+    referralPoints?: true
     totalPoints?: true
     rank?: true
     previousRank?: true
@@ -5959,6 +5968,7 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: true
     volumePoints?: true
     liquidityPoints?: true
+    referralPoints?: true
     totalPoints?: true
     rank?: true
     previousRank?: true
@@ -5977,10 +5987,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: true
     volumePoints?: true
     liquidityPoints?: true
+    referralPoints?: true
     totalPoints?: true
     rank?: true
     previousRank?: true
     referralCode?: true
+    referredBy?: true
     lastUpdatedAt?: true
     createdAt?: true
   }
@@ -5998,10 +6010,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: true
     volumePoints?: true
     liquidityPoints?: true
+    referralPoints?: true
     totalPoints?: true
     rank?: true
     previousRank?: true
     referralCode?: true
+    referredBy?: true
     lastUpdatedAt?: true
     createdAt?: true
   }
@@ -6019,10 +6033,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: true
     volumePoints?: true
     liquidityPoints?: true
+    referralPoints?: true
     totalPoints?: true
     rank?: true
     previousRank?: true
     referralCode?: true
+    referredBy?: true
     lastUpdatedAt?: true
     createdAt?: true
     _all?: true
@@ -6127,10 +6143,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: number
     volumePoints: number
     liquidityPoints: number
+    referralPoints: number
     totalPoints: number
     rank: number
     previousRank: number | null
     referralCode: string | null
+    referredBy: string | null
     lastUpdatedAt: Date
     createdAt: Date
     _count: LeaderboardEntryCountAggregateOutputType | null
@@ -6167,10 +6185,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: boolean
     volumePoints?: boolean
     liquidityPoints?: boolean
+    referralPoints?: boolean
     totalPoints?: boolean
     rank?: boolean
     previousRank?: boolean
     referralCode?: boolean
+    referredBy?: boolean
     lastUpdatedAt?: boolean
     createdAt?: boolean
     snapshots?: boolean | LeaderboardEntry$snapshotsArgs<ExtArgs>
@@ -6190,10 +6210,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: boolean
     volumePoints?: boolean
     liquidityPoints?: boolean
+    referralPoints?: boolean
     totalPoints?: boolean
     rank?: boolean
     previousRank?: boolean
     referralCode?: boolean
+    referredBy?: boolean
     lastUpdatedAt?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["leaderboardEntry"]>
@@ -6211,10 +6233,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: boolean
     volumePoints?: boolean
     liquidityPoints?: boolean
+    referralPoints?: boolean
     totalPoints?: boolean
     rank?: boolean
     previousRank?: boolean
     referralCode?: boolean
+    referredBy?: boolean
     lastUpdatedAt?: boolean
     createdAt?: boolean
   }
@@ -6243,10 +6267,12 @@ export namespace Prisma {
       autoWinVaultsLiquidityUSD: number
       volumePoints: number
       liquidityPoints: number
+      referralPoints: number
       totalPoints: number
       rank: number
       previousRank: number | null
       referralCode: string | null
+      referredBy: string | null
       lastUpdatedAt: Date
       createdAt: Date
     }, ExtArgs["result"]["leaderboardEntry"]>
@@ -6655,10 +6681,12 @@ export namespace Prisma {
     readonly autoWinVaultsLiquidityUSD: FieldRef<"LeaderboardEntry", 'Float'>
     readonly volumePoints: FieldRef<"LeaderboardEntry", 'Int'>
     readonly liquidityPoints: FieldRef<"LeaderboardEntry", 'Int'>
+    readonly referralPoints: FieldRef<"LeaderboardEntry", 'Int'>
     readonly totalPoints: FieldRef<"LeaderboardEntry", 'Int'>
     readonly rank: FieldRef<"LeaderboardEntry", 'Int'>
     readonly previousRank: FieldRef<"LeaderboardEntry", 'Int'>
     readonly referralCode: FieldRef<"LeaderboardEntry", 'String'>
+    readonly referredBy: FieldRef<"LeaderboardEntry", 'String'>
     readonly lastUpdatedAt: FieldRef<"LeaderboardEntry", 'DateTime'>
     readonly createdAt: FieldRef<"LeaderboardEntry", 'DateTime'>
   }
@@ -8134,10 +8162,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD: 'autoWinVaultsLiquidityUSD',
     volumePoints: 'volumePoints',
     liquidityPoints: 'liquidityPoints',
+    referralPoints: 'referralPoints',
     totalPoints: 'totalPoints',
     rank: 'rank',
     previousRank: 'previousRank',
     referralCode: 'referralCode',
+    referredBy: 'referredBy',
     lastUpdatedAt: 'lastUpdatedAt',
     createdAt: 'createdAt'
   };
@@ -8738,10 +8768,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
     volumePoints?: IntFilter<"LeaderboardEntry"> | number
     liquidityPoints?: IntFilter<"LeaderboardEntry"> | number
+    referralPoints?: IntFilter<"LeaderboardEntry"> | number
     totalPoints?: IntFilter<"LeaderboardEntry"> | number
     rank?: IntFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
     referralCode?: StringNullableFilter<"LeaderboardEntry"> | string | null
+    referredBy?: StringNullableFilter<"LeaderboardEntry"> | string | null
     lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     createdAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     snapshots?: LeaderboardSnapshotListRelationFilter
@@ -8760,10 +8792,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrderInput | SortOrder
     referralCode?: SortOrderInput | SortOrder
+    referredBy?: SortOrderInput | SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
     snapshots?: LeaderboardSnapshotOrderByRelationAggregateInput
@@ -8786,9 +8820,11 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFilter<"LeaderboardEntry"> | number
     volumePoints?: IntFilter<"LeaderboardEntry"> | number
     liquidityPoints?: IntFilter<"LeaderboardEntry"> | number
+    referralPoints?: IntFilter<"LeaderboardEntry"> | number
     totalPoints?: IntFilter<"LeaderboardEntry"> | number
     rank?: IntFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableFilter<"LeaderboardEntry"> | number | null
+    referredBy?: StringNullableFilter<"LeaderboardEntry"> | string | null
     lastUpdatedAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     createdAt?: DateTimeFilter<"LeaderboardEntry"> | Date | string
     snapshots?: LeaderboardSnapshotListRelationFilter
@@ -8807,10 +8843,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrderInput | SortOrder
     referralCode?: SortOrderInput | SortOrder
+    referredBy?: SortOrderInput | SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
     _count?: LeaderboardEntryCountOrderByAggregateInput
@@ -8836,10 +8874,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatWithAggregatesFilter<"LeaderboardEntry"> | number
     volumePoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     liquidityPoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
+    referralPoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     totalPoints?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     rank?: IntWithAggregatesFilter<"LeaderboardEntry"> | number
     previousRank?: IntNullableWithAggregatesFilter<"LeaderboardEntry"> | number | null
     referralCode?: StringNullableWithAggregatesFilter<"LeaderboardEntry"> | string | null
+    referredBy?: StringNullableWithAggregatesFilter<"LeaderboardEntry"> | string | null
     lastUpdatedAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"LeaderboardEntry"> | Date | string
   }
@@ -9410,10 +9450,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: number
     volumePoints?: number
     liquidityPoints?: number
+    referralPoints?: number
     totalPoints?: number
     rank: number
     previousRank?: number | null
     referralCode?: string | null
+    referredBy?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
     snapshots?: LeaderboardSnapshotCreateNestedManyWithoutLeaderboardEntryInput
@@ -9432,10 +9474,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: number
     volumePoints?: number
     liquidityPoints?: number
+    referralPoints?: number
     totalPoints?: number
     rank: number
     previousRank?: number | null
     referralCode?: string | null
+    referredBy?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
     snapshots?: LeaderboardSnapshotUncheckedCreateNestedManyWithoutLeaderboardEntryInput
@@ -9454,10 +9498,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     volumePoints?: IntFieldUpdateOperationsInput | number
     liquidityPoints?: IntFieldUpdateOperationsInput | number
+    referralPoints?: IntFieldUpdateOperationsInput | number
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     snapshots?: LeaderboardSnapshotUpdateManyWithoutLeaderboardEntryNestedInput
@@ -9476,10 +9522,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     volumePoints?: IntFieldUpdateOperationsInput | number
     liquidityPoints?: IntFieldUpdateOperationsInput | number
+    referralPoints?: IntFieldUpdateOperationsInput | number
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     snapshots?: LeaderboardSnapshotUncheckedUpdateManyWithoutLeaderboardEntryNestedInput
@@ -9498,10 +9546,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: number
     volumePoints?: number
     liquidityPoints?: number
+    referralPoints?: number
     totalPoints?: number
     rank: number
     previousRank?: number | null
     referralCode?: string | null
+    referredBy?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
   }
@@ -9519,10 +9569,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     volumePoints?: IntFieldUpdateOperationsInput | number
     liquidityPoints?: IntFieldUpdateOperationsInput | number
+    referralPoints?: IntFieldUpdateOperationsInput | number
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9540,10 +9592,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     volumePoints?: IntFieldUpdateOperationsInput | number
     liquidityPoints?: IntFieldUpdateOperationsInput | number
+    referralPoints?: IntFieldUpdateOperationsInput | number
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10251,10 +10305,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
     referralCode?: SortOrder
+    referredBy?: SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -10270,6 +10326,7 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
@@ -10288,10 +10345,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
     referralCode?: SortOrder
+    referredBy?: SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -10309,10 +10368,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
     referralCode?: SortOrder
+    referredBy?: SortOrder
     lastUpdatedAt?: SortOrder
     createdAt?: SortOrder
   }
@@ -10328,6 +10389,7 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: SortOrder
     volumePoints?: SortOrder
     liquidityPoints?: SortOrder
+    referralPoints?: SortOrder
     totalPoints?: SortOrder
     rank?: SortOrder
     previousRank?: SortOrder
@@ -11851,10 +11913,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: number
     volumePoints?: number
     liquidityPoints?: number
+    referralPoints?: number
     totalPoints?: number
     rank: number
     previousRank?: number | null
     referralCode?: string | null
+    referredBy?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
   }
@@ -11872,10 +11936,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: number
     volumePoints?: number
     liquidityPoints?: number
+    referralPoints?: number
     totalPoints?: number
     rank: number
     previousRank?: number | null
     referralCode?: string | null
+    referredBy?: string | null
     lastUpdatedAt?: Date | string
     createdAt?: Date | string
   }
@@ -11909,10 +11975,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     volumePoints?: IntFieldUpdateOperationsInput | number
     liquidityPoints?: IntFieldUpdateOperationsInput | number
+    referralPoints?: IntFieldUpdateOperationsInput | number
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11930,10 +11998,12 @@ export namespace Prisma {
     autoWinVaultsLiquidityUSD?: FloatFieldUpdateOperationsInput | number
     volumePoints?: IntFieldUpdateOperationsInput | number
     liquidityPoints?: IntFieldUpdateOperationsInput | number
+    referralPoints?: IntFieldUpdateOperationsInput | number
     totalPoints?: IntFieldUpdateOperationsInput | number
     rank?: IntFieldUpdateOperationsInput | number
     previousRank?: NullableIntFieldUpdateOperationsInput | number | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

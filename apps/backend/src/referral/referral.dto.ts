@@ -17,3 +17,18 @@ export class ReferralResponseDto {
   wallet: string;
   referralCode: string;
 }
+
+export class UseReferralDto {
+  @IsString()
+  @IsNotEmpty()
+  referralCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  signature: string;
+}
+
+export class UseReferralResponseDto {
+  wallet: string;
+  referredBy: string;
+}

@@ -202,10 +202,12 @@ exports.Prisma.LeaderboardEntryScalarFieldEnum = {
   autoWinVaultsLiquidityUSD: 'autoWinVaultsLiquidityUSD',
   volumePoints: 'volumePoints',
   liquidityPoints: 'liquidityPoints',
+  referralPoints: 'referralPoints',
   totalPoints: 'totalPoints',
   rank: 'rank',
   previousRank: 'previousRank',
   referralCode: 'referralCode',
+  referredBy: 'referredBy',
   lastUpdatedAt: 'lastUpdatedAt',
   createdAt: 'createdAt'
 };

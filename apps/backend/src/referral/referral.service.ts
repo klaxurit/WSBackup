@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { randomUUID } from 'crypto';
@@ -92,6 +93,71 @@ export class ReferralService {
     return {
       wallet: entry.wallet,
       referralCode: entry.referralCode!,
+    };
+  }
+
+  async useReferralCode(
+    wallet: string,
+    referralCode: string,
+    signature: string,
+  ): Promise<{ wallet: string; referredBy: string }> {
+    const normalizedWallet = wallet.toLowerCase() as `0x${string}`;
+
+    // Verify signature
+    const message = referralCode;
+    let isValid = false;
+    try {
+      isValid = await verifyMessage({
+        address: normalizedWallet,
+        message,
+        signature: signature as `0x${string}`,
+      });
+    } catch {
+      throw new BadRequestException('Invalid signature format');
+    }
+
+    if (!isValid) {
+      throw new BadRequestException('Signature verification failed');
+    }
+
+    // Find the referrer by their referral code
+    const referrer = await this.db.leaderboardEntry.findUnique({
+      where: { referralCode },
+    });
+
+    if (!referrer) {
+      throw new NotFoundException('Referral code not found');
+    }
+
+    if (referrer.wallet === normalizedWallet) {
+      throw new BadRequestException('Cannot use your own referral code');
+    }
+
+    // Check if user already has a referrer
+    const existingEntry = await this.db.leaderboardEntry.findUnique({
+      where: { wallet: normalizedWallet },
+    });
+
+    if (existingEntry?.referredBy) {
+      throw new ConflictException('Already registered with a referral code');
+    }
+
+    // Upsert the entry with referredBy
+    const entry = await this.db.leaderboardEntry.upsert({
+      where: { wallet: normalizedWallet },
+      update: { referredBy: referrer.wallet },
+      create: {
+        id: normalizedWallet,
+        wallet: normalizedWallet,
+        referredBy: referrer.wallet,
+        referralCode: randomUUID().slice(0, 8),
+        rank: 0,
+      },
+    });
+
+    return {
+      wallet: entry.wallet,
+      referredBy: referrer.wallet,
     };
   }
 }
