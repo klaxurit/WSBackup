@@ -160,4 +160,25 @@ export class ReferralService {
       referredBy: referrer.wallet,
     };
   }
+
+  async getReferralCount(referralCode: string): Promise<{ referralCode: string; count: number }> {
+    // Verify the referral code exists
+    const referrer = await this.db.leaderboardEntry.findUnique({
+      where: { referralCode },
+    });
+
+    if (!referrer) {
+      throw new NotFoundException('Referral code not found');
+    }
+
+    // Count how many entries have this wallet as their referredBy
+    const count = await this.db.leaderboardEntry.count({
+      where: { referredBy: referrer.wallet },
+    });
+
+    return {
+      referralCode,
+      count,
+    };
+  }
 }

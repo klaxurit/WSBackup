@@ -8,7 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ReferralService } from './referral.service';
-import { UpdateReferralDto, ReferralResponseDto, UseReferralDto, UseReferralResponseDto } from './referral.dto';
+import { UpdateReferralDto, ReferralResponseDto, UseReferralDto, UseReferralResponseDto, ReferralCountResponseDto } from './referral.dto';
 
 @Controller('referral')
 export class ReferralController {
@@ -44,5 +44,13 @@ export class ReferralController {
       dto.referralCode,
       dto.signature,
     );
+  }
+
+  @Get('count/:referralCode')
+  @HttpCode(HttpStatus.OK)
+  async getReferralCount(
+    @Param('referralCode') referralCode: string,
+  ): Promise<ReferralCountResponseDto> {
+    return this.referralService.getReferralCount(referralCode);
   }
 }
