@@ -32,3 +32,8 @@ export class UseReferralResponseDto {
   wallet: string;
   referredBy: string;
 }
+
+export class ReferralCountResponseDto {
+  referralCode: string;
+  count: number;
+}
