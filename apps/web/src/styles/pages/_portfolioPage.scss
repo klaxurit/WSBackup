@@ -136,8 +136,17 @@
       flex: 1;
       min-height: 0;
       overflow-y: auto !important; // Force le scroll vertical
-      overflow-x: auto;
+      overflow-x: hidden;
       max-height: 100%; // Ne dépasse pas la hauteur du parent
+    }
+
+    .Table {
+      min-width: 0;
+
+      thead th,
+      td {
+        padding: 1rem;
+      }
     }
   }
 
@@ -609,7 +618,7 @@
   // Two columns layout (50% each)
   &__TwoColumns {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
     gap: 24px;
     align-items: start; // Les colonnes commencent en haut, ne s'étirent pas ensemble
 
@@ -645,7 +654,7 @@
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
-    padding: 24px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -889,9 +898,8 @@
   }
 
   &__YourPortfolioReferralStats {
-    display: grid;
-    grid-template-columns: auto auto 1fr auto;
-    gap: 16px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
 
@@ -927,6 +935,10 @@
   }
 
   &__YourPortfolioReferralStatLabel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
     @include typography('body-xs');
     font-weight: 600;
     color: $white-048;
@@ -970,9 +982,9 @@
   }
 
   &__YourPortfolioCustomizeInputField {
-    width: 140px;
+    width: auto;
     height: 28px;
-    border-radius: 6px;
+    border-radius: 40px;
     border: 1px solid var(--surface3, #232323);
     background: $white-004;
     padding: 0 8px;

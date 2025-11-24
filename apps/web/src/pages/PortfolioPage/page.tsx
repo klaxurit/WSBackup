@@ -578,6 +578,7 @@ const PortfolioPage: React.FC = () => {
     {
       label: 'Pair',
       key: 'pair',
+      width: '32%',
       render: (row) => {
         if (row.type === 'vault') {
           return (
@@ -632,85 +633,48 @@ const PortfolioPage: React.FC = () => {
       },
     },
     {
-      label: 'Type',
-      key: 'type',
-      render: (row) => {
-        if (row.type === 'vault') {
-          return (
-            <span style={{
-              fontSize: '14px',
-              color: '#e39229',
-              fontWeight: '500',
-              letterSpacing: '0.5px',
-              backgroundColor: 'rgba(227, 146, 41, 0.1)',
-              textShadow: '0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00',
-              padding: '6px 10px 6px 10px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              width: 'fit-content'
-            }}>
-              Vault
-            </span>
-          )
-        } else {
-          return (
-            <span style={{
-              fontSize: '14px',
-              color: '#aaa',
-              fontWeight: '500',
-              letterSpacing: '0.5px',
-              backgroundColor: 'rgba(170, 170, 170, 0.1)',
-              textShadow: '0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00',
-              padding: '6px 10px 6px 10px',
-              borderRadius: '12px',
-              display: 'inline-block',
-              width: 'fit-content'
-            }}>
-              Pool
-            </span>
-          )
-        }
-      }
-    },
-    {
       label: 'Position size',
       key: 'size',
+      width: '28%',
       render: (row) => row.type === 'vault' ? <VaultPositionSizeCell row={row} /> : <PositionSizeCell row={row} />
     },
     {
-      label: 'Fees',
-      key: 'fees',
+      label: 'Type / Fees',
+      key: 'type-fees',
+      width: '20%',
       render: (row) => {
-        if (row.type === 'vault') {
-          // Pour les vaults, afficher le fee tier de la pool associée
-          const feeTier = row.feeTier / 10000; // Convertir de basis points en pourcentage
-          return (
-            <span style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#e39229'
-            }}>
-              {feeTier}%
+        const isVault = row.type === 'vault'
+        const feeTier = isVault ? row.feeTier / 10000 : row.poolRef.feeTier / 10000
+        const badgeStyle = isVault
+          ? { color: '#e39229', backgroundColor: 'rgba(227, 146, 41, 0.1)' }
+          : { color: '#aaa', backgroundColor: 'rgba(170, 170, 170, 0.1)' }
+
+        return (
+          <span style={{
+            fontSize: '12px',
+            fontWeight: 600,
+            letterSpacing: '0.4px',
+            padding: '4px 10px',
+            borderRadius: '12px',
+            width: 'fit-content',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            textShadow: '0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00',
+            ...badgeStyle
+          }}>
+            {isVault ? 'Vault' : 'Pool'}
+            <span style={{ fontSize: '11px', fontWeight: 500, opacity: 0.85 }}>
+              · {feeTier}%
             </span>
-          )
-        } else {
-          // Pour les pools, afficher le fee tier
-          const feeTier = row.poolRef.feeTier / 10000; // Convertir de basis points en pourcentage
-          return (
-            <span style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#aaa'
-            }}>
-              {feeTier}%
-            </span>
-          )
-        }
+          </span>
+        )
       }
     },
     {
       label: 'APR',
       key: 'apr',
+      width: '20%',
       render: (row) => {
         if (row.type === 'vault') {
           return row.apr ? `${row.apr.toFixed(2)}%` : "-"

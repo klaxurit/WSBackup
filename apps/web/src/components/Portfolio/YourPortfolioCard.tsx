@@ -6,6 +6,7 @@ import { useReferral, useUpdateReferral, useApplyReferralCode } from '../../hook
 import { formatNumber } from '../../utils/formatNumber';
 import { Loader } from '../Loader/Loader';
 import { CopyIcon } from '../SVGs/ProductSVGs';
+import { HelpTooltip } from '../Common/HelpTooltip';
 
 interface YourPortfolioCardProps {
   // rankChange est maintenant géré via stats.rankChange depuis le backend
@@ -276,19 +277,17 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
         {/* Referrals Stats Row */}
         <div className="PortfolioPage__YourPortfolioReferralStats">
           <div className="PortfolioPage__YourPortfolioReferralStatItem">
-            <span className="PortfolioPage__YourPortfolioReferralStatLabel">Referrals</span>
+            <span className="PortfolioPage__YourPortfolioReferralStatLabel">
+              Referrals <HelpTooltip text={'You earn 20% of every referred user’s points'} size="small" /> 
+            </span>
             <span className="PortfolioPage__YourPortfolioReferralStatValue">
               {stats.referrals}
-              <span className="PortfolioPage__YourPortfolioReferralStatSubtext"> Invited Users</span>
             </span>
-          </div>
-
-          <div className="PortfolioPage__YourPortfolioReferralStatDivider" />
-
-          <div className="PortfolioPage__YourPortfolioReferralStatItem">
-            <span className="PortfolioPage__YourPortfolioReferralStatLabel">Multiplier</span>
-            <span className="PortfolioPage__YourPortfolioReferralStatValue PortfolioPage__YourPortfolioReferralStatValue--highlight">
-              {((stats.multiplier - 1) * 100).toFixed(0)}%
+            <span
+              className="PortfolioPage__YourPortfolioReferralStatSubtext"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              Invited Users
             </span>
           </div>
 

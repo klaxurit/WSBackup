@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface HelpTooltipProps {
   text: string;
   className?: string;
+  size?: 'small' | 'medium' | 'large';
 }
 
-export const HelpTooltip: React.FC<HelpTooltipProps> = ({ text, className }) => {
+export const HelpTooltip: React.FC<HelpTooltipProps> = ({ text, className, size = 'medium' }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -15,8 +16,8 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({ text, className }) => 
       onMouseLeave={() => setIsVisible(false)}
     >
       <svg
-        width="16"
-        height="16"
+        width={size === 'small' ? '14' : size === 'medium' ? '16' : '20'}
+        height={size === 'small' ? '14' : size === 'medium' ? '16' : '20'}
         viewBox="0 0 16 16"
         fill="none"
         className="HelpTooltip__Icon"
