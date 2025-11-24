@@ -686,6 +686,16 @@
 
     @media (max-width: 600px) {
       grid-template-columns: 1fr;
+
+      &__YourPortfolioContent--loading {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        text-align: center;
+        min-height: 240px;
+      }
+
       gap: 20px;
     }
   }

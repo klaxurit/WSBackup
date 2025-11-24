@@ -115,6 +115,10 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
   const availableBalance = stats ? stats.totalValueUSD * 0.3 : 0;
   const earningBalance = stats ? stats.totalFeesEarned : 0;
   const referralCount = referralCountData?.count;
+  const referralCountDisplay = typeof referralCount === 'number'
+    ? referralCount
+    : (isLoadingReferral || isLoadingReferralCount ? '...' : '---');
+  const referralUsersLabel = typeof referralCount === 'number' && referralCount === 1 ? 'Invited User' : 'Invited Users';
 
   // Utiliser les vraies données du leaderboard si disponibles
   // Si le wallet n'est pas dans le leaderboard, afficher 0 pour les points
@@ -138,9 +142,9 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
   if (isLoading || isLoadingReferral) {
     return (
       <div className="PortfolioPage__YourPortfolioCard">
-        <div className="PortfolioPage__YourPortfolioContent">
+        {/* <div className="PortfolioPage__YourPortfolioContent PortfolioPage__YourPortfolioContent--loading"> */}
           <Loader size="mobile" />
-        </div>
+        {/* </div> */}
       </div>
     );
   }
@@ -283,15 +287,13 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
               Referrals <HelpTooltip text={'You earn 20% of every referred user’s points'} size="small" />
             </span>
             <span className="PortfolioPage__YourPortfolioReferralStatValue">
-              {referralCount !== undefined
-                ? referralCount
-                : (stats?.referrals ?? (isLoadingReferralCount ? '...' : '---'))}
+              {referralCountDisplay}
             </span>
             <span
               className="PortfolioPage__YourPortfolioReferralStatSubtext"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              Invited Users
+              {referralUsersLabel}
             </span>
           </div>
 
