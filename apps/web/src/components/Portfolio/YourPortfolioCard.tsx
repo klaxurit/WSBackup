@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAccount, useSignMessage } from 'wagmi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePortfolioStats } from '../../hooks/usePortfolioStats';
-import { useReferral, useUpdateReferral, useApplyReferralCode } from '../../hooks/useReferral';
+import { useReferral, useUpdateReferral, useApplyReferralCode, useReferralCount } from '../../hooks/useReferral';
 import { formatNumber } from '../../utils/formatNumber';
 import { Loader } from '../Loader/Loader';
 import { CopyIcon } from '../SVGs/ProductSVGs';
@@ -18,6 +18,7 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
 
   // Récupérer le referral code actuel
   const { data: referralData, isLoading: isLoadingReferral } = useReferral(address);
+  const { data: referralCountData, isLoading: isLoadingReferralCount } = useReferralCount(referralData?.referralCode);
 
   // Hooks pour les mutations
   const updateReferralMutation = useUpdateReferral();
@@ -113,6 +114,7 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
 
   const availableBalance = stats ? stats.totalValueUSD * 0.3 : 0;
   const earningBalance = stats ? stats.totalFeesEarned : 0;
+  const referralCount = referralCountData?.count;
 
   // Utiliser les vraies données du leaderboard si disponibles
   // Si le wallet n'est pas dans le leaderboard, afficher 0 pour les points
@@ -278,10 +280,12 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
         <div className="PortfolioPage__YourPortfolioReferralStats">
           <div className="PortfolioPage__YourPortfolioReferralStatItem">
             <span className="PortfolioPage__YourPortfolioReferralStatLabel">
-              Referrals <HelpTooltip text={'You earn 20% of every referred user’s points'} size="small" /> 
+              Referrals <HelpTooltip text={'You earn 20% of every referred user’s points'} size="small" />
             </span>
             <span className="PortfolioPage__YourPortfolioReferralStatValue">
-              {stats.referrals}
+              {referralCount !== undefined
+                ? referralCount
+                : (stats?.referrals ?? (isLoadingReferralCount ? '...' : '---'))}
             </span>
             <span
               className="PortfolioPage__YourPortfolioReferralStatSubtext"

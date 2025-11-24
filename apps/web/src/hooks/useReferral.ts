@@ -11,6 +11,11 @@ export interface UseReferralResponse {
   referredBy: string;
 }
 
+export interface ReferralCountResponse {
+  referralCode: string;
+  count: number;
+}
+
 /**
  * Hook pour récupérer le referral code d'un wallet
  * Le backend créera automatiquement un code si l'utilisateur n'en a pas
@@ -118,6 +123,33 @@ export function useApplyReferralCode() {
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       queryClient.invalidateQueries({ queryKey: ['portfolio-stats'] });
     },
+  });
+}
+
+/**
+ * Hook pour récupérer le nombre de filleuls pour un referral code donné
+ */
+export function useReferralCount(referralCode: string | undefined) {
+  return useQuery<ReferralCountResponse>({
+    queryKey: ['referral-count', referralCode],
+    queryFn: async () => {
+      if (!referralCode) throw new Error('Referral code is required');
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      
+      const response = await fetch(`${apiUrl}/referral/count/${referralCode}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch referral count: ${response.status}`);
+      }
+
+      return response.json();
+    },
+    enabled: !!referralCode,
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchOnWindowFocus: false,
   });
 }
 
