@@ -143,7 +143,7 @@ export const YourPortfolioCard: React.FC<YourPortfolioCardProps> = () => {
     return (
       <div className="PortfolioPage__YourPortfolioCard">
         {/* <div className="PortfolioPage__YourPortfolioContent PortfolioPage__YourPortfolioContent--loading"> */}
-          <Loader size="mobile" />
+        <Loader size="mobile" />
         {/* </div> */}
       </div>
     );

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { formatNumber } from '../../utils/formatNumber';
@@ -63,6 +63,7 @@ interface Vault {
 
 export const VaultsMarquee: React.FC = () => {
   const navigate = useNavigate();
+  const trackRef = useRef<HTMLDivElement>(null);
 
   const { data: vaultsData, isLoading } = useQuery({
     queryKey: ['top-vaults-marquee'],
@@ -78,12 +79,50 @@ export const VaultsMarquee: React.FC = () => {
     },
   });
 
-  // Dupliquer les vaults pour créer un défilement continu
   const duplicatedVaults = useMemo(() => {
     if (!vaultsData || vaultsData.length === 0) return [];
-    // Dupliquer 3 fois pour un défilement fluide
-    return [...vaultsData, ...vaultsData, ...vaultsData];
+
+    const validVaults = vaultsData.filter((vault: any) => {
+      const tvl = parseFloat(vault.totalValueLockedUSD);
+      return !isNaN(tvl) && tvl > 1;
+    });
+
+    if (validVaults.length === 0) return [];
+
+    return [...validVaults, ...validVaults, ...validVaults];
   }, [vaultsData]);
+
+  useEffect(() => {
+    if (!trackRef.current || !vaultsData || vaultsData.length === 0) return;
+
+    const updateTranslation = () => {
+      const track = trackRef.current;
+      if (!track) return;
+
+      const totalWidth = track.scrollWidth;
+      if (totalWidth === 0) {
+        requestAnimationFrame(updateTranslation);
+        return;
+      }
+
+      const oneThirdWidth = totalWidth / 3;
+      track.style.setProperty('--marquee-translate', `-${oneThirdWidth}px`);
+    };
+
+    requestAnimationFrame(updateTranslation);
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateTranslation();
+    });
+
+    if (trackRef.current) {
+      resizeObserver.observe(trackRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [vaultsData, duplicatedVaults]);
 
   if (isLoading) {
     return (
@@ -95,13 +134,13 @@ export const VaultsMarquee: React.FC = () => {
     );
   }
 
-  if (!vaultsData || vaultsData.length === 0) {
+  if (!duplicatedVaults || duplicatedVaults.length === 0) {
     return null;
   }
 
   return (
     <div className="Leaderboard__VaultsMarquee">
-      <div className="Leaderboard__VaultsMarqueeTrack">
+      <div className="Leaderboard__VaultsMarqueeTrack" ref={trackRef}>
         {duplicatedVaults.map((vault: Vault, index: number) => {
           const tvl = parseFloat(vault.totalValueLockedUSD || '0');
           const apr = parseFloat(vault.vaultDayData?.items?.[0]?.maxPotentialAPR || '0');

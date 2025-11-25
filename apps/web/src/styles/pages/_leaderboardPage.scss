@@ -499,6 +499,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -785,12 +786,15 @@
 }
 
 @keyframes highlightPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       0 0 0 1px rgba(0, 255, 163, 0.3),
       0 4px 12px rgba(0, 255, 163, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
+
   50% {
     box-shadow:
       0 0 0 1px rgba(0, 255, 163, 0.5),
@@ -991,6 +995,7 @@
 .Leaderboard__VaultsMarqueeTrack {
   display: flex;
   gap: 16px;
+
   animation: vaultsMarquee 60s linear infinite;
   will-change: transform;
 
@@ -1003,14 +1008,18 @@
   0% {
     transform: translateX(0);
   }
+
   100% {
-    transform: translateX(-33.333%);
+    // Utilise la variable CSS calculée en JavaScript pour une translation précise
+    // Cela garantit un défilement infini sans saut car la valeur correspond exactement
+    // à la largeur d'une copie complète (incluant les gaps)
+    transform: translateX(var(--marquee-translate, -33.333%));
   }
 }
 
 .Leaderboard__VaultsMarqueeItem {
   flex: 0 0 auto;
-  min-width: 280px;
+  min-width: 180px;
   display: flex;
   flex-direction: column;
   gap: 12px;
