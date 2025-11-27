@@ -18,8 +18,7 @@ const formatAPR = (value: number | undefined): string => {
 
 export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
   vaultAddress,
-  totalValueLockedUSD,
-  collectedFeesUSD,
+  totalValueLockedUSD
 }) => {
   // Fetch APR strategies from backend
   const { data: aprData, isLoading: aprLoading } = useVaultAPRs({ vaultAddress });
@@ -35,14 +34,7 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
   }, [aprData]);
 
   const stickyAPRValue = strategies.sticky?.totalAPR;
-  const stickyPoolAPR = strategies.sticky?.poolAPR; // Pure pool APR from Uniswap V3
   const stickyRealizedAPR = strategies.sticky?.realizedAPR;
-
-  // Calculate capture rate (realized / pool APR)
-  const captureRate = useMemo(() => {
-    if (!stickyPoolAPR || stickyPoolAPR === 0 || !stickyRealizedAPR) return 0;
-    return (stickyRealizedAPR / stickyPoolAPR) * 100;
-  }, [stickyPoolAPR, stickyRealizedAPR]);
 
   const computedAutoWinAPR = useMemo(() => {
     if (strategies.autowin) {
@@ -60,11 +52,6 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
         <span className="VaultDetailPage__StatValue">${formatNumber(parseFloat(totalValueLockedUSD))}</span>
       </div>
 
-      <div className="VaultDetailPage__StatCard">
-        <span className="VaultDetailPage__StatLabel">Collected Fees</span>
-        <span className="VaultDetailPage__StatValue">${formatNumber(parseFloat(collectedFeesUSD))}</span>
-      </div>
-
       <div className="VaultDetailPage__StatCard VaultDetailPage__StatCard--apr">
         <div className="VaultDetailPage__StatHeader">
           <span className="VaultDetailPage__StatLabel">
@@ -80,15 +67,9 @@ export const VaultStatsGrid: React.FC<VaultStatsGridProps> = ({
               {formatAPR(strategies.sticky.totalAPR)}%
             </span>
             <div className="VaultDetailPage__APRDetails">
-              {stickyPoolAPR !== undefined && (
-                <span className="VaultDetailPage__APRDetail">Pool APR: {formatAPR(stickyPoolAPR)}%</span>
-              )}
               {stickyRealizedAPR !== undefined && (
                 <>
                   <span className="VaultDetailPage__APRDetail">Vault APR: {formatAPR(stickyRealizedAPR)}%</span>
-                  {captureRate > 0 && (
-                    <span className="VaultDetailPage__APRDetail">Capture: {formatAPR(captureRate)}%</span>
-                  )}
                 </>
               )}
             </div>
