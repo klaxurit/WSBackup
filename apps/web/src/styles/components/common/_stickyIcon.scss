@@ -1,0 +1,30 @@
+@use "../../utils" as *;
+
+.StickyIcon {
+  width: 20px;
+  height: 20px;
+  background: #000;
+  border-radius: 50%;
+  border: 1px solid #e39229;
+}
+
+.VaultDetailPage__PositionShares {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+// Styles spécifiques pour différents contextes
+.VaultDetailPage__PositionShares .StickyIcon {
+  width: 24px;
+  height: 24px;
+  background: black;
+  border-radius: 50%;
+  border: 2px solid #e39229;
+  margin-left: 2px;
+}
+
+// Pour les inputs de token
+.LiquidityInput .StickyIcon {
+  margin-left: 4px;
+}

@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
-import { Loader } from '../Loader/Loader';
-import { formatUnits, zeroAddress } from 'viem';
-import { useAccount, useBalance } from 'wagmi';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { FallbackImg } from '../utils/FallbackImg';
-import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { TokenLogo } from '../Common/TokenLogo';
+import { formatTokenForDisplay } from '../../utils/tokenDisplay';
 
 interface NetworkItemProps {
   token: BerachainToken;
   isSelected: boolean;
   onSelect: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-  balance?: string;
-  loading?: boolean;
 }
 
 const baseExplorer = import.meta.env.VITE_NODE_ENV === "production"
@@ -24,64 +18,14 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
   isSelected,
   onSelect,
 }) => {
-  const { address } = useAccount()
-  const [displayFallback, setDisplayFallback] = useState<boolean>(false)
-  const { data: balance, isLoading: isLoading } = useBalance({
-    address,
-    token: token.address === zeroAddress ? undefined : (token.address as `0x${string}`)
-  })
+  const [displayFallback] = useState<boolean>(false)
 
-  // Récupérer les stats du token pour avoir le prix USD
-  const { data: tokenStats } = useQuery({
-    queryKey: ["tokenStats", token.address],
-    queryFn: async () => {
-      if (!token.address) return null;
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`)
-      if (!resp.ok) return null;
-      const data = await resp.json();
-      return data.find((t: any) =>
-        t.address?.toLowerCase() === token.address?.toLowerCase()
-      );
-    },
-    enabled: !!token.address,
-    staleTime: 60_000
-  });
+  // Les balances et prix USD sont maintenant fournis directement par le backend
+  const balance = token.balance || '';
+  const balanceUsd = token.balanceUSD || 0;
 
-  // Récupérer aussi les stats du WBERA pour le fallback du BERA
-  const { data: wBeraStats } = useQuery({
-    queryKey: ["wBeraStats"],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`)
-      if (!resp.ok) return null;
-      const data = await resp.json();
-      return data.find((t: any) =>
-        t.symbol === 'wBERA' || t.address?.toLowerCase() === '0x6969696969696969696969696969696969696969'
-      );
-    },
-    staleTime: 60_000
-  });
-
-  // Calculer la valeur USD de la balance
-  const balanceUsd = useMemo(() => {
-    if (!balance || balance.value === 0n) return 0;
-
-    let price = 0;
-
-    // Essayer d'abord le prix du token lui-même
-    if (tokenStats) {
-      price = tokenStats?.TokenDailyStats?.[0]?.price || 0;
-    }
-
-    // Si c'est le token BERA (zeroAddress) et qu'on n'a pas de prix, utiliser le prix du WBERA
-    if (price === 0 && token.address === zeroAddress && wBeraStats) {
-      price = wBeraStats?.TokenDailyStats?.[0]?.price || 0;
-    }
-
-    if (price === 0) return 0;
-
-    const amount = parseFloat(formatUnits(balance.value, token.decimals || 18));
-    return amount * price;
-  }, [balance, tokenStats, wBeraStats, token.address, token.decimals]);
+  // Apply Sticky Vault formatting if needed
+  const displayToken = formatTokenForDisplay(token);
 
   return (
     <div
@@ -90,21 +34,12 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
       tabIndex={0}
     >
       <div className="Modal__ItemLogo">
-        {displayFallback || !token.logoUri
-          ? <FallbackImg content={token.symbol} />
-          : (
-            <img
-              src={token.logoUri}
-              alt={token.name}
-              onError={() => setDisplayFallback(true)}
-              className="Modal__ItemImage"
-            />
-          )}
+        <TokenLogo logoUri={!displayFallback ? token.logoUri : null} symbol={token.symbol} size="large" className="Modal__ItemImage" />
       </div>
       <div className="Modal__ItemInfo">
-        <span className="Modal__ItemName">{token.name}</span>
+        <span className="Modal__ItemName">{displayToken.name}</span>
         <div className="Modal__ItemDetails">
-          <span className="Modal__ItemSymbol">{token.symbol}</span>
+          <span className="Modal__ItemSymbol">{displayToken.symbol}</span>
           {token.address && (
             <a href={`${baseExplorer}${token.address}`} target='_blank' onClick={(e) => e.stopPropagation()}>
               <span className="Modal__ItemAddress">
@@ -115,24 +50,17 @@ export const TokenItem: React.FC<NetworkItemProps> = ({
         </div>
       </div>
       <div className="Modal__ItemBalanceContainer">
-        {isLoading
-          ? (
-            <span className="Modal__ItemPrice">
-              <Loader size="mini" />
-            </span>
-          ) : (
-            <>
-              <span className="Modal__ItemPrice">
-                {balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` : ''}
-              </span>
-              <span className="Modal__ItemBalance">
-                {balance && balance.value !== 0n
-                  ? `${parseFloat(formatUnits(balance.value, token.decimals || 18)).toFixed(4)}`
-                  : ''
-                }
-              </span>
-            </>
-          )}
+        <>
+          <span className="Modal__ItemBalance">
+            {balance && parseFloat(balance) > 0
+              ? `${parseFloat(balance).toFixed(4)}`
+              : ''
+            }
+          </span>
+          <span className="Modal__ItemPrice">
+            {balanceUsd && balanceUsd > 0 ? `$${balanceUsd.toFixed(2)}` : ''}
+          </span>
+        </>
       </div>
     </div>
   );

@@ -26,10 +26,9 @@ RUN pnpm add -g turbo
 RUN turbo build --filter=@repo/indexer
 
 FROM node:20 AS runner
-
 WORKDIR /app
+RUN ulimit -n 100000
 COPY --from=builder /app/ ./
-
 WORKDIR /app/apps/indexer
 
 EXPOSE 42069

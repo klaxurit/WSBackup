@@ -17,429 +17,907 @@ export const factory = onchainTable("factory", (t) => ({
 
   totalValueLockedBERAUntracked: t.numeric().notNull().default("0"),
   totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
-}))
-
-export const token = onchainTable("token", (t) => ({
-  id: t.hex().primaryKey(), // Adresse
-  symbol: t.text().notNull(),
-  name: t.text().notNull(),
-  decimals: t.integer().notNull(),
-  totalSupply: t.numeric().notNull().default("0"),
-  maxSupply: t.numeric().notNull().default("0"),
-  logoUri: t.text(),
-  txCount: t.integer().notNull().default(0),
-  poolCount: t.integer().notNull().default(0),
-  whitelistPools: t.json().$type<string[]>().notNull().default([]),
-  volume: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  untrackedVolumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  totalValueLocked: t.numeric().notNull().default("0"),
-  totalValueLockedUSD: t.numeric().notNull().default("0"),
-  derivedBERA: t.numeric().notNull().default("0"),
-
-  totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
-}), (table) => ({
-  symbolIndex: index().on(table.symbol),
-  nameIndex: index().on(table.name),
 }));
 
-export const pool = onchainTable("pool", (t) => ({
-  id: t.hex().primaryKey(), // Adresse
-  createdAtTimestamp: t.bigint().notNull(),
-  createdAtBlockNumber: t.bigint().notNull(),
-  token0: t.hex().notNull(),
-  token1: t.hex().notNull(),
-  feeTier: t.integer().notNull(),
-  liquidity: t.bigint().notNull().default(0n),
-  sqrtPrice: t.bigint().notNull().default(0n),
-  tick: t.integer(),
-  observationIndex: t.integer().notNull().default(0),
-  volumeToken0: t.numeric().notNull().default("0"),
-  volumeToken1: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  untrackedVolumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  txCount: t.integer().notNull().default(0),
-  collectedFeesToken0: t.numeric().notNull().default("0"),
-  collectedFeesToken1: t.numeric().notNull().default("0"),
-  collectedFeesUSD: t.numeric().notNull().default("0"),
-  totalValueLockedToken0: t.numeric().notNull().default("0"),
-  totalValueLockedToken1: t.numeric().notNull().default("0"),
-  totalValueLockedUSD: t.numeric().notNull().default("0"),
-  totalValueLockedBERA: t.numeric().notNull().default("0"),
-  token0Price: t.numeric().notNull().default("0"),
-  token1Price: t.numeric().notNull().default("0"),
-  liquidityProviderCount: t.integer().notNull().default(0),
+export const token = onchainTable(
+  "token",
+  (t) => ({
+    id: t.hex().primaryKey(), // Adresse
+    symbol: t.text().notNull(),
+    name: t.text().notNull(),
+    decimals: t.integer().notNull(),
+    totalSupply: t.numeric().notNull().default("0"),
+    maxSupply: t.numeric().notNull().default("0"),
+    logoUri: t.text(),
+    txCount: t.integer().notNull().default(0),
+    poolCount: t.integer().notNull().default(0),
+    whitelistPools: t.json().$type<string[]>().notNull().default([]),
+    volume: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    untrackedVolumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    totalValueLocked: t.numeric().notNull().default("0"),
+    totalValueLockedUSD: t.numeric().notNull().default("0"),
+    derivedBERA: t.numeric().notNull().default("0"),
 
-  totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
-  feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
-  feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
-}), (table) => ({
-  token0Index: index().on(table.token0),
-  token1Index: index().on(table.token1),
-  feeTierIndex: index().on(table.feeTier),
-}));
+    totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    symbolIndex: index().on(table.symbol),
+    nameIndex: index().on(table.name),
+  }),
+);
 
-export const transaction = onchainTable("transaction", (t) => ({
-  id: t.hex().primaryKey(), // tx hash
-  blockNumber: t.bigint().notNull(),
-  timestamp: t.bigint().notNull(),
-  gasUsed: t.bigint().notNull(),
-  gasPrice: t.bigint().notNull(),
-  from: t.hex().notNull(),
-  mints: t.json().$type<string[]>().notNull().default([]),
-  swaps: t.json().$type<string[]>().notNull().default([]),
-  burns: t.json().$type<string[]>().notNull().default([]),
-  collects: t.json().$type<string[]>().notNull().default([]),
-  flashes: t.json().$type<string[]>().notNull().default([]),
-}), (table) => ({
-  timestampIndex: index().on(table.timestamp),
-  fromIndex: index().on(table.from),
-}));
+export const pool = onchainTable(
+  "pool",
+  (t) => ({
+    id: t.hex().primaryKey(), // Adresse
+    createdAtTimestamp: t.bigint().notNull(),
+    createdAtBlockNumber: t.bigint().notNull(),
+    token0: t.hex().notNull(),
+    token1: t.hex().notNull(),
+    feeTier: t.integer().notNull(),
+    liquidity: t.bigint().notNull().default(0n),
+    sqrtPrice: t.bigint().notNull().default(0n),
+    tick: t.integer(),
+    observationIndex: t.integer().notNull().default(0),
+    volumeToken0: t.numeric().notNull().default("0"),
+    volumeToken1: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    untrackedVolumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    txCount: t.integer().notNull().default(0),
+    collectedFeesToken0: t.numeric().notNull().default("0"),
+    collectedFeesToken1: t.numeric().notNull().default("0"),
+    collectedFeesUSD: t.numeric().notNull().default("0"),
+    totalValueLockedToken0: t.numeric().notNull().default("0"),
+    totalValueLockedToken1: t.numeric().notNull().default("0"),
+    totalValueLockedUSD: t.numeric().notNull().default("0"),
+    totalValueLockedBERA: t.numeric().notNull().default("0"),
+    token0Price: t.numeric().notNull().default("0"),
+    token1Price: t.numeric().notNull().default("0"),
+    liquidityProviderCount: t.integer().notNull().default(0),
 
-export const tick = onchainTable("tick", (t) => ({
-  id: t.text().primaryKey(), // pool address + "#" + tick index
-  poolAddress: t.hex().notNull(),
-  tickIdx: t.integer().notNull(), // Index du tick (-887272 à 887272)
-  pool: t.hex().notNull(),
-  liquidityGross: t.bigint().notNull().default(0n), // Liquidité totale qui utilise ce tick comme borne
-  liquidityNet: t.bigint().notNull().default(0n), // Changement net de liquidité quand le prix traverse ce tick
-  // Positif = tick est utilisé comme tickLower
-  // Négatif = tick est utilisé comme tickUpper
-  price0: t.numeric().notNull().default("0"), // Prix de token0 en termes de token1 à ce tick
-  price1: t.numeric().notNull().default("0"), // Prix de token1 en termes de token0 à ce tick
-  volumeToken0: t.numeric().notNull().default("0"), // Volume total de token0 échangé à ce tick
-  volumeToken1: t.numeric().notNull().default("0"), // Volume total de token1 échangé à ce tick
-  volumeUSD: t.numeric().notNull().default("0"),
-  untrackedVolumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  collectedFeesToken0: t.numeric().notNull().default("0"),
-  collectedFeesToken1: t.numeric().notNull().default("0"),
-  collectedFeesUSD: t.numeric().notNull().default("0"),
-  createdAtTimestamp: t.bigint().notNull(), // Première fois que ce tick a été initialisé
-  createdAtBlockNumber: t.bigint().notNull(),
-  liquidityProviderCount: t.integer().notNull().default(0), // Nombre de positions utilisant ce tick
-  feeGrowthOutside0X128: t.bigint().notNull().default(0n), // Fees token0 accumulés "à l'extérieur" de ce tick
-  feeGrowthOutside1X128: t.bigint().notNull().default(0n), // Fees token1 accumulés "à l'extérieur" de ce tick
-}), (table) => ({
-  poolIndex: index().on(table.pool),
-  tickIdxIndex: index().on(table.tickIdx),
-}));
+    totalValueLockedUSDUntracked: t.numeric().notNull().default("0"),
+    feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
+    feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
+  }),
+  (table) => ({
+    token0Index: index().on(table.token0),
+    token1Index: index().on(table.token1),
+    feeTierIndex: index().on(table.feeTier),
+  }),
+);
 
-export const position = onchainTable("position", (t) => ({
-  id: t.text().primaryKey(), // NFT tokenId
-  owner: t.hex().notNull(),
-  pool: t.hex().notNull(),
-  token0: t.hex().notNull(),
-  token1: t.hex().notNull(),
-  tickLower: t.hex().notNull(),
-  tickUpper: t.hex().notNull(),
-  liquidity: t.bigint().notNull().default(0n),
-  depositedToken0: t.numeric().notNull().default("0"),
-  depositedToken1: t.numeric().notNull().default("0"),
-  withdrawnToken0: t.numeric().notNull().default("0"),
-  withdrawnToken1: t.numeric().notNull().default("0"),
-  collectedFeesToken0: t.numeric().notNull().default("0"),
-  collectedFeesToken1: t.numeric().notNull().default("0"),
-  transaction: t.hex().notNull(),
-  feeGrowthInside0LastX128: t.bigint().notNull().default(0n),
-  feeGrowthInside1LastX128: t.bigint().notNull().default(0n),
-  tokenId: t.bigint().notNull()
-}), (table) => ({
-  ownerIndex: index().on(table.owner),
-  poolIndex: index().on(table.pool),
-}));
+export const transaction = onchainTable(
+  "transaction",
+  (t) => ({
+    id: t.hex().primaryKey(), // tx hash
+    blockNumber: t.bigint().notNull(),
+    timestamp: t.bigint().notNull(),
+    gasUsed: t.bigint().notNull(),
+    gasPrice: t.bigint().notNull(),
+    from: t.hex().notNull(),
+    mints: t.json().$type<string[]>().notNull().default([]),
+    swaps: t.json().$type<string[]>().notNull().default([]),
+    burns: t.json().$type<string[]>().notNull().default([]),
+    collects: t.json().$type<string[]>().notNull().default([]),
+    flashes: t.json().$type<string[]>().notNull().default([]),
+  }),
+  (table) => ({
+    timestampIndex: index().on(table.timestamp),
+    fromIndex: index().on(table.from),
+  }),
+);
 
-export const positionSnapshot = onchainTable("position_snapshot", (t) => ({
-  id: t.text().primaryKey(), // position id + "#" + block number
-  owner: t.hex().notNull(),
-  pool: t.hex().notNull(),
-  position: t.text().notNull(),
-  timestamp: t.bigint().notNull(),
-  blockNumber: t.bigint().notNull(),
-  liquidity: t.bigint().notNull().default(0n),
-  depositedToken0: t.numeric().notNull().default("0"),
-  depositedToken1: t.numeric().notNull().default("0"),
-  withdrawnToken0: t.numeric().notNull().default("0"),
-  withdrawnToken1: t.numeric().notNull().default("0"),
-  collectedFeesToken0: t.numeric().notNull().default("0"),
-  collectedFeesToken1: t.numeric().notNull().default("0"),
-  transaction: t.hex().notNull(),
-  feeGrowthInside0LastX128: t.bigint().notNull().default(0n),
-  feeGrowthInside1LastX128: t.bigint().notNull().default(0n),
-}), (table) => ({
-  positionIndex: index().on(table.position),
-  timestampIndex: index().on(table.timestamp),
-}));
+export const tick = onchainTable(
+  "tick",
+  (t) => ({
+    id: t.text().primaryKey(), // pool address + "#" + tick index
+    poolAddress: t.hex().notNull(),
+    tickIdx: t.integer().notNull(), // Index du tick (-887272 à 887272)
+    pool: t.hex().notNull(),
+    liquidityGross: t.bigint().notNull().default(0n), // Liquidité totale qui utilise ce tick comme borne
+    liquidityNet: t.bigint().notNull().default(0n), // Changement net de liquidité quand le prix traverse ce tick
+    // Positif = tick est utilisé comme tickLower
+    // Négatif = tick est utilisé comme tickUpper
+    price0: t.numeric().notNull().default("0"), // Prix de token0 en termes de token1 à ce tick
+    price1: t.numeric().notNull().default("0"), // Prix de token1 en termes de token0 à ce tick
+    volumeToken0: t.numeric().notNull().default("0"), // Volume total de token0 échangé à ce tick
+    volumeToken1: t.numeric().notNull().default("0"), // Volume total de token1 échangé à ce tick
+    volumeUSD: t.numeric().notNull().default("0"),
+    untrackedVolumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    collectedFeesToken0: t.numeric().notNull().default("0"),
+    collectedFeesToken1: t.numeric().notNull().default("0"),
+    collectedFeesUSD: t.numeric().notNull().default("0"),
+    createdAtTimestamp: t.bigint().notNull(), // Première fois que ce tick a été initialisé
+    createdAtBlockNumber: t.bigint().notNull(),
+    liquidityProviderCount: t.integer().notNull().default(0), // Nombre de positions utilisant ce tick
+    feeGrowthOutside0X128: t.bigint().notNull().default(0n), // Fees token0 accumulés "à l'extérieur" de ce tick
+    feeGrowthOutside1X128: t.bigint().notNull().default(0n), // Fees token1 accumulés "à l'extérieur" de ce tick
+  }),
+  (table) => ({
+    poolIndex: index().on(table.pool),
+    tickIdxIndex: index().on(table.tickIdx),
+  }),
+);
+
+export const position = onchainTable(
+  "position",
+  (t) => ({
+    id: t.text().primaryKey(), // NFT tokenId
+    owner: t.hex().notNull(),
+    pool: t.hex().notNull(),
+    token0: t.hex().notNull(),
+    token1: t.hex().notNull(),
+    tickLower: t.integer().notNull(),
+    tickUpper: t.integer().notNull(),
+    liquidity: t.bigint().notNull().default(0n),
+    depositedToken0: t.numeric().notNull().default("0"),
+    depositedToken1: t.numeric().notNull().default("0"),
+    withdrawnToken0: t.numeric().notNull().default("0"),
+    withdrawnToken1: t.numeric().notNull().default("0"),
+    collectedFeesToken0: t.numeric().notNull().default("0"),
+    collectedFeesToken1: t.numeric().notNull().default("0"),
+    transaction: t.hex().notNull(),
+    feeGrowthInside0LastX128: t.bigint().notNull().default(0n),
+    feeGrowthInside1LastX128: t.bigint().notNull().default(0n),
+    tokenId: t.bigint().notNull(),
+  }),
+  (table) => ({
+    ownerIndex: index().on(table.owner),
+    poolIndex: index().on(table.pool),
+  }),
+);
+
+export const positionSnapshot = onchainTable(
+  "position_snapshot",
+  (t) => ({
+    id: t.text().primaryKey(), // position id + "#" + block number
+    owner: t.hex().notNull(),
+    pool: t.hex().notNull(),
+    position: t.text().notNull(),
+    timestamp: t.bigint().notNull(),
+    blockNumber: t.bigint().notNull(),
+    liquidity: t.bigint().notNull().default(0n),
+    depositedToken0: t.numeric().notNull().default("0"),
+    depositedToken1: t.numeric().notNull().default("0"),
+    withdrawnToken0: t.numeric().notNull().default("0"),
+    withdrawnToken1: t.numeric().notNull().default("0"),
+    collectedFeesToken0: t.numeric().notNull().default("0"),
+    collectedFeesToken1: t.numeric().notNull().default("0"),
+    transaction: t.hex().notNull(),
+    feeGrowthInside0LastX128: t.bigint().notNull().default(0n),
+    feeGrowthInside1LastX128: t.bigint().notNull().default(0n),
+  }),
+  (table) => ({
+    positionIndex: index().on(table.position),
+    timestampIndex: index().on(table.timestamp),
+  }),
+);
 
 export const bundle = onchainTable("bundle", (t) => ({
   id: t.text().primaryKey(),
-  beraPriceUSD: t.numeric().notNull().default("0")
-}))
+  beraPriceUSD: t.numeric().notNull().default("0"),
+}));
+
+export const stickyVault = onchainTable("stickyVault", (t) => ({
+  id: t.hex().primaryKey(), // Address
+  name: t.text(),
+  createdAtTimestamp: t.bigint().notNull(),
+  createdAtBlockNumber: t.bigint().notNull(),
+  pool: t.hex().notNull(),
+  manager: t.hex().notNull(),
+  // Fee structure
+  managementFee: t.integer().notNull().default(0), // Management fee percentage (basis points, e.g., 100 = 1%)
+  performanceFee: t.integer().notNull().default(0), // Performance fee percentage (basis points)
+  // ERC20 vault state
+  totalSupply: t.numeric().notNull().default("0"), // Total shares circulating
+  totalValueLockedToken0: t.numeric().notNull().default("0"), // Total t0 in vault
+  totalValueLockedToken1: t.numeric().notNull().default("0"), // total t1 in vault
+  // Pool position (v3) state
+  tickLower: t.integer(),
+  tickUpper: t.integer(),
+  currentTick: t.integer(),
+  liquidity: t.bigint().notNull().default(0n), // liquidity active in pool
+  collectedFeesToken0: t.numeric().notNull().default("0"),
+  collectedFeesToken1: t.numeric().notNull().default("0"),
+  // Management fees collected
+  managementFeesToken0: t.numeric().notNull().default("0"),
+  managementFeesToken1: t.numeric().notNull().default("0"),
+  managementFeesUSD: t.numeric().notNull().default("0"),
+  // Stats - separated volume types
+  tradingVolumeUSD: t.numeric().notNull().default("0"), // Volume from underlying Uniswap swaps
+  depositWithdrawVolumeUSD: t.numeric().notNull().default("0"), // Volume from user deposits/withdraws
+  totalValueLockedBERA: t.numeric().notNull().default("0"),
+  totalValueLockedUSD: t.numeric().notNull().default("0"),
+  collectedFeesUSD: t.numeric().notNull().default("0"),
+  rebalanceCount: t.integer().notNull().default(0),
+  txCount: t.integer().notNull().default(0),
+  apy: t.numeric().notNull().default("0"),
+  // Performance metrics
+  netAPR: t.numeric().notNull().default("0"), // APR after management fees
+  impermanentLoss: t.numeric().notNull().default("0"), // IL from rebalances
+  // AutoWin integration
+  autoWinVault: t.hex(), // Nullable reference to AutoWin vault
+}));
+
+// ============ AUTOWIN VAULTS ============
+
+export const autoWinVault = onchainTable(
+  "autoWinVault",
+  (t) => ({
+    id: t.hex().primaryKey(), // AutoWin vault address
+    stakingToken: t.hex().notNull(), // StickyVault address
+    implementation: t.hex().notNull(),
+    createdAtTimestamp: t.bigint().notNull(),
+    createdAtBlockNumber: t.bigint().notNull(),
+
+    // Aggregated stats
+    totalDeposits: t.numeric().notNull().default("0"),
+    totalWithdrawals: t.numeric().notNull().default("0"),
+    totalBgtClaimed: t.numeric().notNull().default("0"),
+    totalCompoundFees: t.numeric().notNull().default("0"),
+    totalBountyPaid: t.numeric().notNull().default("0"),
+    claimCount: t.integer().notNull().default(0),
+    depositCount: t.integer().notNull().default(0),
+    withdrawCount: t.integer().notNull().default(0),
+
+    // Performance metrics
+    avgBgtPerClaim: t.numeric().notNull().default("0"),
+    lastClaimTimestamp: t.bigint().notNull().default(0n),
+    estimatedAPR: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    stakingTokenIndex: index().on(table.stakingToken),
+  }),
+);
+
+export const autoWinDeposit = onchainTable(
+  "autoWinDeposit",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + log index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    autoWinVault: t.hex().notNull(),
+    user: t.hex().notNull(),
+    assets: t.bigint().notNull(),
+    shares: t.bigint().notNull(),
+  }),
+  (table) => ({
+    vaultIndex: index().on(table.autoWinVault),
+    userIndex: index().on(table.user),
+    timestampIndex: index().on(table.timestamp),
+  }),
+);
+
+export const autoWinWithdraw = onchainTable(
+  "autoWinWithdraw",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + log index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    autoWinVault: t.hex().notNull(),
+    user: t.hex().notNull(),
+    assets: t.bigint().notNull(),
+    shares: t.bigint().notNull(),
+  }),
+  (table) => ({
+    vaultIndex: index().on(table.autoWinVault),
+    userIndex: index().on(table.user),
+    timestampIndex: index().on(table.timestamp),
+  }),
+);
+
+export const autoWinBgtClaim = onchainTable(
+  "autoWinBgtClaim",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + log index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    autoWinVault: t.hex().notNull(),
+    bountySender: t.hex().notNull(),
+    bgtRecipient: t.hex().notNull(),
+    compoundAmount: t.bigint().notNull(),
+    compoundFee: t.bigint().notNull(),
+    tokenToRecipient: t.bigint().notNull(),
+    tvlSnapshot: t.numeric().notNull().default("0"), // TVL at claim time
+  }),
+  (table) => ({
+    vaultIndex: index().on(table.autoWinVault),
+    timestampIndex: index().on(table.timestamp),
+    senderIndex: index().on(table.bountySender),
+  }),
+);
+
+export const autoWinDayData = onchainTable(
+  "autoWinDayData",
+  (t) => ({
+    id: t.text().primaryKey(), // autoWinVault address + "-" + day id
+    date: t.integer().notNull(),
+    autoWinVault: t.hex().notNull(),
+
+    totalDeposits: t.numeric().notNull().default("0"),
+    totalWithdrawals: t.numeric().notNull().default("0"),
+    totalBgtClaimed: t.numeric().notNull().default("0"),
+    totalCompoundFees: t.numeric().notNull().default("0"),
+    totalBountyPaid: t.numeric().notNull().default("0"),
+
+    depositCount: t.integer().notNull().default(0),
+    withdrawCount: t.integer().notNull().default(0),
+    claimCount: t.integer().notNull().default(0),
+
+    avgAPR: t.numeric().notNull().default("0"),
+    avgTVL: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+    vaultIndex: index().on(table.autoWinVault),
+    compoundIndex: index().on(table.autoWinVault, table.date),
+  }),
+);
+
+export const autoWinUserPosition = onchainTable(
+  "autoWinUserPosition",
+  (t) => ({
+    id: t.text().primaryKey(), // user-autoWinVault
+    user: t.hex().notNull(),
+    autoWinVault: t.hex().notNull(),
+    shares: t.numeric().notNull().default("0"),
+    firstDepositAt: t.bigint().notNull(),
+    lastUpdateAt: t.bigint().notNull(),
+  }),
+  (table) => ({
+    userIndex: index().on(table.user),
+    vaultIndex: index().on(table.autoWinVault),
+    compoundIndex: index().on(table.user, table.autoWinVault),
+  }),
+);
+
+export const vaultUserPosition = onchainTable(
+  "vaultUserPosition",
+  (t) => ({
+    id: t.text().primaryKey(), // user-vault
+    user: t.hex().notNull(),
+    vault: t.hex().notNull(),
+    shares: t.numeric().notNull().default("0"),
+
+    // Token amounts tracking
+    depositedToken0: t.numeric().notNull().default("0"),
+    depositedToken1: t.numeric().notNull().default("0"),
+    currentValueToken0: t.numeric().notNull().default("0"),
+    currentValueToken1: t.numeric().notNull().default("0"),
+
+    // Total value tracking (main metrics)
+    currentValueBERA: t.numeric().notNull().default("0"),
+    currentValueUSD: t.numeric().notNull().default("0"),
+    totalValue: t.numeric().notNull().default("0"), // Alias for currentValueUSD
+
+    // Initial investment tracking
+    initialValueBERA: t.numeric().notNull().default("0"),
+    initialValueUSD: t.numeric().notNull().default("0"),
+    avgEntryPriceToken0: t.numeric().notNull().default("0"),
+    avgEntryPriceToken1: t.numeric().notNull().default("0"),
+
+    // Performance tracking
+    realizedPnLBERA: t.numeric().notNull().default("0"),
+    realizedPnLUSD: t.numeric().notNull().default("0"),
+    unrealizedPnLBERA: t.numeric().notNull().default("0"),
+    unrealizedPnLUSD: t.numeric().notNull().default("0"),
+    totalPnLUSD: t.numeric().notNull().default("0"),
+
+    // Performance metrics
+    totalReturn: t.numeric().notNull().default("0"), // ROI total en %
+    annualizedReturn: t.numeric().notNull().default("0"), // APR personnel
+    feesEarnedUSD: t.numeric().notNull().default("0"), // Fees earned by user
+    impermanentLoss: t.numeric().notNull().default("0"), // IL subi
+
+    // Timestamps
+    firstDepositAt: t.bigint(),
+    lastUpdateAt: t.bigint().notNull().default(0n),
+
+    // Legacy field (deprecated)
+    unrealizedPnL: t.integer(),
+  }),
+  (table) => ({
+    userIndex: index().on(table.user),
+    vaultIndex: index().on(table.vault),
+  }),
+);
 
 // ============ EVENTS ============
 
-export const mint = onchainTable("mint", (t) => ({
-  id: t.text().primaryKey(), // tx hash + "#" + index
+export const mint = onchainTable(
+  "mint",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    pool: t.hex().notNull(),
+    token0: t.hex().notNull(),
+    token1: t.hex().notNull(),
+    owner: t.hex().notNull(),
+    sender: t.hex().notNull(),
+    origin: t.hex().notNull(),
+    amount: t.bigint().notNull(),
+    amount0: t.bigint().notNull(),
+    amount1: t.bigint().notNull(),
+    amountUSD: t.numeric(),
+    tickLower: t.integer().notNull(),
+    tickUpper: t.integer().notNull(),
+    logIndex: t.integer(),
+  }),
+  (table) => ({
+    poolIndex: index().on(table.pool),
+    timestampIndex: index().on(table.timestamp),
+    ownerIndex: index().on(table.owner),
+  }),
+);
+
+export const burn = onchainTable(
+  "burn",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    pool: t.hex().notNull(),
+    token0: t.hex().notNull(),
+    token1: t.hex().notNull(),
+    owner: t.hex().notNull(),
+    origin: t.hex().notNull(),
+    amount: t.bigint().notNull(),
+    amount0: t.bigint().notNull(),
+    amount1: t.bigint().notNull(),
+    amountUSD: t.numeric(),
+    tickLower: t.integer().notNull(),
+    tickUpper: t.integer().notNull(),
+    logIndex: t.integer(),
+  }),
+  (table) => ({
+    poolIndex: index().on(table.pool),
+    timestampIndex: index().on(table.timestamp),
+    ownerIndex: index().on(table.owner),
+  }),
+);
+
+export const swap = onchainTable(
+  "swap",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    pool: t.hex().notNull(),
+    token0: t.hex().notNull(),
+    token1: t.hex().notNull(),
+    sender: t.hex().notNull(),
+    recipient: t.hex().notNull(),
+    origin: t.hex().notNull(),
+    amount0: t.bigint().notNull(), // Can be negative
+    amount1: t.bigint().notNull(), // Can be negative
+    amountUSD: t.numeric(),
+    sqrtPriceX96: t.bigint().notNull(),
+    tick: t.integer().notNull(),
+    logIndex: t.integer(),
+
+    liquidity: t.bigint().notNull(),
+  }),
+  (table) => ({
+    poolIndex: index().on(table.pool),
+    timestampIndex: index().on(table.timestamp),
+    senderIndex: index().on(table.sender),
+    recipientIndex: index().on(table.recipient),
+  }),
+);
+
+export const collect = onchainTable(
+  "collect",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    pool: t.hex().notNull(),
+    owner: t.hex().notNull(),
+    amount0: t.bigint().notNull(),
+    amount1: t.bigint().notNull(),
+    amountUSD: t.numeric(),
+    tickLower: t.integer().notNull(),
+    tickUpper: t.integer().notNull(),
+    logIndex: t.integer(),
+  }),
+  (table) => ({
+    poolIndex: index().on(table.pool),
+    timestampIndex: index().on(table.timestamp),
+    ownerIndex: index().on(table.owner),
+  }),
+);
+
+export const flash = onchainTable(
+  "flash",
+  (t) => ({
+    id: t.text().primaryKey(), // tx hash + "#" + index
+    transaction: t.hex().notNull(),
+    timestamp: t.bigint().notNull(),
+    pool: t.hex().notNull(),
+    sender: t.hex().notNull(),
+    recipient: t.hex().notNull(),
+    amount0: t.bigint().notNull(),
+    amount1: t.bigint().notNull(),
+    amountUSD: t.numeric(),
+    amount0Paid: t.bigint().notNull(),
+    amount1Paid: t.bigint().notNull(),
+    logIndex: t.integer(),
+  }),
+  (table) => ({
+    poolIndex: index().on(table.pool),
+    timestampIndex: index().on(table.timestamp),
+  }),
+);
+
+export const vaultDeposit = onchainTable("vaultDeposit", (t) => ({
+  id: t.text().primaryKey(),
   transaction: t.hex().notNull(),
   timestamp: t.bigint().notNull(),
-  pool: t.hex().notNull(),
-  token0: t.hex().notNull(),
-  token1: t.hex().notNull(),
-  owner: t.hex().notNull(),
-  sender: t.hex().notNull(),
-  origin: t.hex().notNull(),
-  amount: t.bigint().notNull(),
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
+  vaultUserPosition: t.text().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
-  amountUSD: t.numeric(),
-  tickLower: t.integer().notNull(),
-  tickUpper: t.integer().notNull(),
-  logIndex: t.integer(),
-}), (table) => ({
-  poolIndex: index().on(table.pool),
-  timestampIndex: index().on(table.timestamp),
-  ownerIndex: index().on(table.owner),
+  shares: t.bigint().notNull(),
+  liquidityMinted: t.bigint().notNull(),
 }));
 
-export const burn = onchainTable("burn", (t) => ({
-  id: t.text().primaryKey(), // tx hash + "#" + index
+export const vaultPositionSnapshot = onchainTable(
+  "vault_position_snapshot",
+  (t) => ({
+    id: t.text().primaryKey(), // positionId-timestamp
+    vaultUserPosition: t.text().notNull(),
+    timestamp: t.bigint().notNull(),
+    blockNumber: t.bigint().notNull(),
+
+    // Position state at snapshot time
+    shares: t.numeric().notNull().default("0"),
+    currentValueToken0: t.numeric().notNull().default("0"),
+    currentValueToken1: t.numeric().notNull().default("0"),
+    currentValueUSD: t.numeric().notNull().default("0"),
+    currentValueBERA: t.numeric().notNull().default("0"),
+
+    // Performance at snapshot time
+    unrealizedPnLUSD: t.numeric().notNull().default("0"),
+    totalReturn: t.numeric().notNull().default("0"),
+    annualizedReturn: t.numeric().notNull().default("0"),
+
+    // Vault context at snapshot time
+    vaultAPR: t.numeric().notNull().default("0"),
+    vaultTVL: t.numeric().notNull().default("0"),
+
+    // Snapshot metadata
+    cause: t.text().notNull(), // "deposit", "withdraw", "rebalance", "fee_collection", "price_update"
+    triggerTxHash: t.hex(),
+  }),
+  (table) => ({
+    positionIndex: index().on(table.vaultUserPosition),
+    timestampIndex: index().on(table.timestamp),
+    causeIndex: index().on(table.cause),
+    compoundIndex: index().on(table.vaultUserPosition, table.timestamp),
+  }),
+);
+
+export const vaultWithdrawal = onchainTable("vaultWithdrawal", (t) => ({
+  id: t.text().primaryKey(),
   transaction: t.hex().notNull(),
   timestamp: t.bigint().notNull(),
-  pool: t.hex().notNull(),
-  token0: t.hex().notNull(),
-  token1: t.hex().notNull(),
-  owner: t.hex().notNull(),
-  origin: t.hex().notNull(),
-  amount: t.bigint().notNull(),
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
+  vaultUserPosition: t.text().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
-  amountUSD: t.numeric(),
-  tickLower: t.integer().notNull(),
-  tickUpper: t.integer().notNull(),
-  logIndex: t.integer(),
-}), (table) => ({
-  poolIndex: index().on(table.pool),
-  timestampIndex: index().on(table.timestamp),
-  ownerIndex: index().on(table.owner),
+  share: t.bigint().notNull().default(0n),
+  liquidityBurned: t.bigint().notNull(),
 }));
 
-export const swap = onchainTable("swap", (t) => ({
-  id: t.text().primaryKey(), // tx hash + "#" + index
+export const vaultRebalance = onchainTable("vaultRebalance", (t) => ({
+  id: t.text().primaryKey(),
   transaction: t.hex().notNull(),
   timestamp: t.bigint().notNull(),
-  pool: t.hex().notNull(),
-  token0: t.hex().notNull(),
-  token1: t.hex().notNull(),
-  sender: t.hex().notNull(),
-  recipient: t.hex().notNull(),
-  origin: t.hex().notNull(),
-  amount0: t.bigint().notNull(), // Can be negative
-  amount1: t.bigint().notNull(), // Can be negative
-  amountUSD: t.numeric(),
-  sqrtPriceX96: t.bigint().notNull(),
-  tick: t.integer().notNull(),
-  logIndex: t.integer(),
-
-  liquidity: t.bigint().notNull(),
-}), (table) => ({
-  poolIndex: index().on(table.pool),
-  timestampIndex: index().on(table.timestamp),
-  senderIndex: index().on(table.sender),
-  recipientIndex: index().on(table.recipient),
-}));
-
-export const collect = onchainTable("collect", (t) => ({
-  id: t.text().primaryKey(), // tx hash + "#" + index
-  transaction: t.hex().notNull(),
-  timestamp: t.bigint().notNull(),
-  pool: t.hex().notNull(),
-  owner: t.hex().notNull(),
+  user: t.hex().notNull(),
+  vault: t.hex().notNull(),
   amount0: t.bigint().notNull(),
   amount1: t.bigint().notNull(),
-  amountUSD: t.numeric(),
-  tickLower: t.integer().notNull(),
-  tickUpper: t.integer().notNull(),
-  logIndex: t.integer(),
-}), (table) => ({
-  poolIndex: index().on(table.pool),
-  timestampIndex: index().on(table.timestamp),
-  ownerIndex: index().on(table.owner),
-}));
-
-export const flash = onchainTable("flash", (t) => ({
-  id: t.text().primaryKey(), // tx hash + "#" + index
-  transaction: t.hex().notNull(),
-  timestamp: t.bigint().notNull(),
-  pool: t.hex().notNull(),
-  sender: t.hex().notNull(),
-  recipient: t.hex().notNull(),
-  amount0: t.bigint().notNull(),
-  amount1: t.bigint().notNull(),
-  amountUSD: t.numeric(),
-  amount0Paid: t.bigint().notNull(),
-  amount1Paid: t.bigint().notNull(),
-  logIndex: t.integer(),
-}), (table) => ({
-  poolIndex: index().on(table.pool),
-  timestampIndex: index().on(table.timestamp),
+  share: t.bigint().notNull().default(0n),
 }));
 
 // ============ DONNÉES HISTORIQUES ============
 
-export const protocolDayData = onchainTable("uniswap_day_data", (t) => ({
-  id: t.integer().primaryKey(), // timestamp / 86400
-  date: t.integer().notNull(),
-  volumeBERA: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  volumeUSDUntracked: t.numeric().notNull().default("0"),
-  feesBERA: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  txCount: t.integer().notNull().default(0),
-  tvlUSD: t.numeric().notNull().default("0"),
-}), (table) => ({
-  dateIndex: index().on(table.date),
-}));
+export const protocolDayData = onchainTable(
+  "uniswap_day_data",
+  (t) => ({
+    id: t.integer().primaryKey(), // timestamp / 86400
+    date: t.integer().notNull(),
+    volumeBERA: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    volumeUSDUntracked: t.numeric().notNull().default("0"),
+    feesBERA: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    txCount: t.integer().notNull().default(0),
+    tvlUSD: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+  }),
+);
 
-export const poolDayData = onchainTable("pool_day_data", (t) => ({
-  id: t.text().primaryKey(), // pool address + "-" + day id
-  date: t.integer().notNull(),
-  pool: t.hex().notNull(),
-  liquidity: t.bigint().notNull().default(0n),
-  sqrtPrice: t.bigint().notNull().default(0n),
-  token0Price: t.numeric().notNull().default("0"),
-  token1Price: t.numeric().notNull().default("0"),
-  tick: t.integer(),
-  feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
-  feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
-  tvlUSD: t.numeric().notNull().default("0"),
-  volumeToken0: t.numeric().notNull().default("0"),
-  volumeToken1: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  txCount: t.integer().notNull().default(0),
-  open: t.numeric().notNull().default("0"),
-  high: t.numeric().notNull().default("0"),
-  low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0"),
-  apr: t.numeric().notNull().default("0"),
-  volumeUSD1D: t.numeric().notNull().default("0"),
-  volumeUSD30D: t.numeric().notNull().default("0"),
-}), (table) => ({
-  dateIndex: index().on(table.date),
-  poolIndex: index().on(table.pool),
-  compoundIndex: index().on(table.pool, table.date),
-}));
+export const poolDayData = onchainTable(
+  "pool_day_data",
+  (t) => ({
+    id: t.text().primaryKey(), // pool address + "-" + day id
+    date: t.integer().notNull(),
+    pool: t.hex().notNull(),
+    liquidity: t.bigint().notNull().default(0n),
+    sqrtPrice: t.bigint().notNull().default(0n),
+    token0Price: t.numeric().notNull().default("0"),
+    token1Price: t.numeric().notNull().default("0"),
+    tick: t.integer(),
+    feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
+    feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
+    tvlUSD: t.numeric().notNull().default("0"),
+    volumeToken0: t.numeric().notNull().default("0"),
+    volumeToken1: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    txCount: t.integer().notNull().default(0),
+    t0open: t.numeric().notNull().default("0"),
+    t1open: t.numeric().notNull().default("0"),
+    t0high: t.numeric().notNull().default("0"),
+    t1high: t.numeric().notNull().default("0"),
+    t0low: t.numeric().notNull().default("0"),
+    t1low: t.numeric().notNull().default("0"),
+    t0close: t.numeric().notNull().default("0"),
+    t1close: t.numeric().notNull().default("0"),
+    apr: t.numeric().notNull().default("0"),
+    activeRangeAPR: t.numeric().notNull().default("0"),
+    volumeUSD1D: t.numeric().notNull().default("0"),
+    volumeUSD30D: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+    poolIndex: index().on(table.pool),
+    compoundIndex: index().on(table.pool, table.date),
+  }),
+);
 
-export const poolHourData = onchainTable("pool_hour_data", (t) => ({
-  id: t.text().primaryKey(), // pool address + "-" + hour id
-  periodStartUnix: t.integer().notNull(),
-  pool: t.hex().notNull(),
-  liquidity: t.bigint().notNull().default(0n),
-  sqrtPrice: t.bigint().notNull().default(0n),
-  token0Price: t.numeric().notNull().default("0"),
-  token1Price: t.numeric().notNull().default("0"),
-  tick: t.integer(),
-  feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
-  feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
-  tvlUSD: t.numeric().notNull().default("0"),
-  volumeToken0: t.numeric().notNull().default("0"),
-  volumeToken1: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  txCount: t.integer().notNull().default(0),
-  open: t.numeric().notNull().default("0"),
-  high: t.numeric().notNull().default("0"),
-  low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0")
-}), (table) => ({
-  periodIndex: index().on(table.periodStartUnix),
-  poolIndex: index().on(table.pool),
-}));
+export const poolHourData = onchainTable(
+  "pool_hour_data",
+  (t) => ({
+    id: t.text().primaryKey(), // pool address + "-" + hour id
+    periodStartUnix: t.integer().notNull(),
+    pool: t.hex().notNull(),
+    liquidity: t.bigint().notNull().default(0n),
+    sqrtPrice: t.bigint().notNull().default(0n),
+    token0Price: t.numeric().notNull().default("0"),
+    token1Price: t.numeric().notNull().default("0"),
+    tick: t.integer(),
+    feeGrowthGlobal0X128: t.bigint().notNull().default(0n),
+    feeGrowthGlobal1X128: t.bigint().notNull().default(0n),
+    tvlUSD: t.numeric().notNull().default("0"),
+    volumeToken0: t.numeric().notNull().default("0"),
+    volumeToken1: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    txCount: t.integer().notNull().default(0),
+    t0open: t.numeric().notNull().default("0"),
+    t1open: t.numeric().notNull().default("0"),
+    t0high: t.numeric().notNull().default("0"),
+    t1high: t.numeric().notNull().default("0"),
+    t0low: t.numeric().notNull().default("0"),
+    t1low: t.numeric().notNull().default("0"),
+    t0close: t.numeric().notNull().default("0"),
+    t1close: t.numeric().notNull().default("0"),
+    apr: t.numeric().notNull().default("0"),
+    activeRangeAPR: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    periodIndex: index().on(table.periodStartUnix),
+    poolIndex: index().on(table.pool),
+  }),
+);
 
-export const tokenDayData = onchainTable("token_day_data", (t) => ({
-  id: t.text().primaryKey(), // token address + "-" + day id
-  date: t.integer().notNull(),
-  token: t.hex().notNull(),
-  volume: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  volume24hUSD: t.numeric().notNull().default("0"),
-  untrackedVolumeUSD: t.numeric().notNull().default("0"),
-  totalValueLocked: t.numeric().notNull().default("0"),
-  totalValueLockedUSD: t.numeric().notNull().default("0"),
-  priceUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  open: t.numeric().notNull().default("0"),
-  high: t.numeric().notNull().default("0"),
-  low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0"),
-  oneDayEvo: t.numeric().notNull().default("0"),
-  oneMonthEvo: t.numeric().notNull().default("0"),
-  marketCap: t.numeric().notNull().default("0"),
-  fdv: t.numeric().notNull().default("0"),
-}), (table) => ({
-  dateIndex: index().on(table.date),
-  tokenIndex: index().on(table.token),
-}));
+export const tokenDayData = onchainTable(
+  "token_day_data",
+  (t) => ({
+    id: t.text().primaryKey(), // token address + "-" + day id
+    date: t.integer().notNull(),
+    token: t.hex().notNull(),
+    volume: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    volume24hUSD: t.numeric().notNull().default("0"),
+    untrackedVolumeUSD: t.numeric().notNull().default("0"),
+    totalValueLocked: t.numeric().notNull().default("0"),
+    totalValueLockedUSD: t.numeric().notNull().default("0"),
+    priceUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    open: t.numeric().notNull().default("0"),
+    high: t.numeric().notNull().default("0"),
+    low: t.numeric().notNull().default("0"),
+    close: t.numeric().notNull().default("0"),
+    oneDayEvo: t.numeric().notNull().default("0"),
+    oneMonthEvo: t.numeric().notNull().default("0"),
+    oneWeekEvo: t.numeric().notNull().default("0"),
+    marketCap: t.numeric().notNull().default("0"),
+    fdv: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+    tokenIndex: index().on(table.token),
+  }),
+);
 
-export const tokenHourData = onchainTable("token_hour_data", (t) => ({
-  id: t.text().primaryKey(), // token address + "-" + hour id
-  periodStartUnix: t.integer().notNull(),
-  token: t.hex().notNull(),
-  volume: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  untrackedVolumeUSD: t.numeric().notNull().default("0"),
-  totalValueLocked: t.numeric().notNull().default("0"),
-  totalValueLockedUSD: t.numeric().notNull().default("0"),
-  priceUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  open: t.numeric().notNull().default("0"),
-  high: t.numeric().notNull().default("0"),
-  low: t.numeric().notNull().default("0"),
-  close: t.numeric().notNull().default("0"),
-}), (table) => ({
-  periodIndex: index().on(table.periodStartUnix),
-  tokenIndex: index().on(table.token),
-}));
+export const tokenHourData = onchainTable(
+  "token_hour_data",
+  (t) => ({
+    id: t.text().primaryKey(), // token address + "-" + hour id
+    periodStartUnix: t.integer().notNull(),
+    token: t.hex().notNull(),
+    volume: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    untrackedVolumeUSD: t.numeric().notNull().default("0"),
+    totalValueLocked: t.numeric().notNull().default("0"),
+    totalValueLockedUSD: t.numeric().notNull().default("0"),
+    priceUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    open: t.numeric().notNull().default("0"),
+    high: t.numeric().notNull().default("0"),
+    low: t.numeric().notNull().default("0"),
+    close: t.numeric().notNull().default("0"),
+  }),
+  (table) => ({
+    periodIndex: index().on(table.periodStartUnix),
+    tokenIndex: index().on(table.token),
+  }),
+);
 
-export const tickDayData = onchainTable("tick_day_data", (t) => ({
-  id: t.text().primaryKey(), // pool address + "-" + tick + "-" + day id
-  date: t.integer().notNull(),
-  pool: t.hex().notNull(),
-  tick: t.hex().notNull(),
-  liquidityGross: t.bigint().notNull().default(0n),
-  liquidityNet: t.bigint().notNull().default(0n),
-  volumeToken0: t.numeric().notNull().default("0"),
-  volumeToken1: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  feeGrowthOutside0X128: t.bigint().notNull().default(0n),
-  feeGrowthOutside1X128: t.bigint().notNull().default(0n),
-}), (table) => ({
-  dateIndex: index().on(table.date),
-  poolIndex: index().on(table.pool),
-  tickIndex: index().on(table.tick),
-}));
+export const tickDayData = onchainTable(
+  "tick_day_data",
+  (t) => ({
+    id: t.text().primaryKey(), // pool address + "-" + tick + "-" + day id
+    date: t.integer().notNull(),
+    pool: t.hex().notNull(),
+    tick: t.hex().notNull(),
+    liquidityGross: t.bigint().notNull().default(0n),
+    liquidityNet: t.bigint().notNull().default(0n),
+    volumeToken0: t.numeric().notNull().default("0"),
+    volumeToken1: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    feeGrowthOutside0X128: t.bigint().notNull().default(0n),
+    feeGrowthOutside1X128: t.bigint().notNull().default(0n),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+    poolIndex: index().on(table.pool),
+    tickIndex: index().on(table.tick),
+  }),
+);
 
-export const tickHourData = onchainTable("tick_hour_data", (t) => ({
-  id: t.text().primaryKey(), // pool address + "-" + tick + "-" + hour id
-  periodStartUnix: t.integer().notNull(),
-  pool: t.hex().notNull(),
-  tick: t.hex().notNull(),
-  liquidityGross: t.bigint().notNull().default(0n),
-  liquidityNet: t.bigint().notNull().default(0n),
-  volumeToken0: t.numeric().notNull().default("0"),
-  volumeToken1: t.numeric().notNull().default("0"),
-  volumeUSD: t.numeric().notNull().default("0"),
-  feesUSD: t.numeric().notNull().default("0"),
-  feeGrowthOutside0X128: t.bigint().notNull().default(0n),
-  feeGrowthOutside1X128: t.bigint().notNull().default(0n),
-}), (table) => ({
-  periodIndex: index().on(table.periodStartUnix),
-  poolIndex: index().on(table.pool),
-  tickIndex: index().on(table.tick),
-}));
+export const tickHourData = onchainTable(
+  "tick_hour_data",
+  (t) => ({
+    id: t.text().primaryKey(), // pool address + "-" + tick + "-" + hour id
+    periodStartUnix: t.integer().notNull(),
+    pool: t.hex().notNull(),
+    tick: t.hex().notNull(),
+    liquidityGross: t.bigint().notNull().default(0n),
+    liquidityNet: t.bigint().notNull().default(0n),
+    volumeToken0: t.numeric().notNull().default("0"),
+    volumeToken1: t.numeric().notNull().default("0"),
+    volumeUSD: t.numeric().notNull().default("0"),
+    feesUSD: t.numeric().notNull().default("0"),
+    feeGrowthOutside0X128: t.bigint().notNull().default(0n),
+    feeGrowthOutside1X128: t.bigint().notNull().default(0n),
+  }),
+  (table) => ({
+    periodIndex: index().on(table.periodStartUnix),
+    poolIndex: index().on(table.pool),
+    tickIndex: index().on(table.tick),
+  }),
+);
+
+export const vaultDayData = onchainTable(
+  "vault_day_data",
+  (t) => ({
+    id: t.text().primaryKey(), // vault address + "-" + day id
+    date: t.integer().notNull(),
+    vault: t.hex().notNull(),
+    // Separated volume types
+    tradingVolumeUSD: t.numeric().notNull().default("0"), // Trading volume
+    depositWithdrawVolumeUSD: t.numeric().notNull().default("0"), // Deposit/withdraw volume
+    volumeUSD1D: t.numeric().notNull().default("0"),
+    volumeUSD30D: t.numeric().notNull().default("0"),
+    totalSupply: t.numeric().notNull().default("0"),
+    totalValueLockedToken0: t.numeric().notNull().default("0"),
+    totalValueLockedToken1: t.numeric().notNull().default("0"),
+    totalValueLockedUSD: t.numeric().notNull().default("0"),
+    collectedFeesToken0: t.numeric().notNull().default("0"),
+    collectedFeesToken1: t.numeric().notNull().default("0"),
+    collectedFeesUSD: t.numeric().notNull().default("0"),
+    // Management fees
+    managementFeesToken0: t.numeric().notNull().default("0"),
+    managementFeesToken1: t.numeric().notNull().default("0"),
+    managementFeesUSD: t.numeric().notNull().default("0"),
+    // Performance metrics
+    apr: t.numeric().notNull().default("0"), // Gross APR
+    netAPR: t.numeric().notNull().default("0"), // Net APR after fees
+    maxPotentialAPR: t.numeric().notNull().default("0"), // Max potential APR with optimal positioning
+    impermanentLoss: t.numeric().notNull().default("0"),
+    rebalanceCount: t.integer().notNull().default(0),
+    txCount: t.integer().notNull().default(0),
+  }),
+  (table) => ({
+    dateIndex: index().on(table.date),
+    vaultIndex: index().on(table.vault),
+    compoundIndex: index().on(table.vault, table.date),
+  }),
+);
+
+export const vaultHourData = onchainTable(
+  "vault_hour_data",
+  (t) => ({
+    id: t.text().primaryKey(), // vault address + "-" + hour id
+    periodStartUnix: t.integer().notNull(),
+    vault: t.hex().notNull(),
+    // Separated volume types
+    tradingVolumeUSD: t.numeric().notNull().default("0"), // Trading volume
+    depositWithdrawVolumeUSD: t.numeric().notNull().default("0"), // Deposit/withdraw volume
+    totalSupply: t.numeric().notNull().default("0"),
+    totalValueLockedToken0: t.numeric().notNull().default("0"),
+    totalValueLockedToken1: t.numeric().notNull().default("0"),
+    totalValueLockedUSD: t.numeric().notNull().default("0"),
+    collectedFeesToken0: t.numeric().notNull().default("0"),
+    collectedFeesToken1: t.numeric().notNull().default("0"),
+    collectedFeesUSD: t.numeric().notNull().default("0"),
+    // Management fees
+    managementFeesToken0: t.numeric().notNull().default("0"),
+    managementFeesToken1: t.numeric().notNull().default("0"),
+    managementFeesUSD: t.numeric().notNull().default("0"),
+    // Performance metrics
+    apr: t.numeric().notNull().default("0"), // Gross APR
+    netAPR: t.numeric().notNull().default("0"), // Net APR after fees
+    maxPotentialAPR: t.numeric().notNull().default("0"), // Max potential APR with optimal positioning
+    impermanentLoss: t.numeric().notNull().default("0"),
+    rebalanceCount: t.integer().notNull().default(0),
+    txCount: t.integer().notNull().default(0),
+  }),
+  (table) => ({
+    periodIndex: index().on(table.periodStartUnix),
+    vaultIndex: index().on(table.vault),
+  }),
+);
+
+// VaultDayData {
+//   id: string // vault-day
+//   vault: StickyVault
+//   date: number
+//   tvlUSD: number
+//   volumeUSD: number
+//   feesUSD: number
+//   apy: number
+//   priceRange: { lower: number, upper: number }
+//   utilizationRate: number // % liquidity in range
+// }
+
+// UserVaultData {
+//   id: string // user-vault
+//   user: string
+//   vault: StickyVault
+//   totalDeposited0: bigint
+//   totalDeposited1: bigint
+//   totalWithdrawn0: bigint
+//   totalWithdrawn1: bigint
+//   currentShares: bigint
+//   realizedPnL: number
+//   unrealizedPnL: number
+//   firstDepositTimestamp: number
+// }
 
 // ============ RELATIONS ============
 
@@ -464,51 +942,51 @@ export const poolRelations = relations(pool, ({ one, many }) => ({
 export const mintPoolRelations = relations(mint, ({ one }) => ({
   pool: one(pool, {
     fields: [mint.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
 export const burnPoolRelations = relations(burn, ({ one }) => ({
   pool: one(pool, {
     fields: [burn.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
 export const swapPoolRelations = relations(swap, ({ one }) => ({
   pool: one(pool, {
     fields: [swap.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
 export const collectPoolRelations = relations(collect, ({ one }) => ({
   pool: one(pool, {
     fields: [collect.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
 export const tickPoolRelations = relations(tick, ({ one }) => ({
   pool: one(pool, {
     fields: [tick.pool],
-    references: [pool.id]
-  })
-}))
-export const positionPoolRelations = relations(position, ({ one }) => ({
-  pool: one(pool, {
-    fields: [position.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
+// export const positionPoolRelations = relations(position, ({ one }) => ({
+//   pool: one(pool, {
+//     fields: [position.pool],
+//     references: [pool.id],
+//   }),
+// }));
 export const poolHourRelations = relations(poolHourData, ({ one }) => ({
   pool: one(pool, {
     fields: [poolHourData.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
 export const poolDayRelations = relations(poolDayData, ({ one }) => ({
   pool: one(pool, {
     fields: [poolDayData.pool],
-    references: [pool.id]
-  })
-}))
+    references: [pool.id],
+  }),
+}));
 
 export const tokenRelations = relations(token, ({ many }) => ({
   poolsAsToken0: many(pool),
@@ -519,15 +997,15 @@ export const tokenRelations = relations(token, ({ many }) => ({
 export const tokenDayRelations = relations(tokenDayData, ({ one }) => ({
   token: one(token, {
     fields: [tokenDayData.token],
-    references: [token.id]
-  })
-}))
+    references: [token.id],
+  }),
+}));
 export const tokenHourRelations = relations(tokenHourData, ({ one }) => ({
   token: one(token, {
     fields: [tokenHourData.token],
-    references: [token.id]
-  })
-}))
+    references: [token.id],
+  }),
+}));
 
 export const positionRelations = relations(position, ({ one, many }) => ({
   poolRef: one(pool, {
@@ -536,12 +1014,15 @@ export const positionRelations = relations(position, ({ one, many }) => ({
   }),
   snapshots: many(positionSnapshot),
 }));
-export const snapshotsPositionRelations = relations(positionSnapshot, ({ one }) => ({
-  position: one(position, {
-    fields: [positionSnapshot.position],
-    references: [position.id]
-  })
-}))
+export const snapshotsPositionRelations = relations(
+  positionSnapshot,
+  ({ one }) => ({
+    position: one(position, {
+      fields: [positionSnapshot.position],
+      references: [position.id],
+    }),
+  }),
+);
 
 export const transactionRelations = relations(transaction, ({ many }) => ({
   mints: many(mint),
@@ -553,30 +1034,198 @@ export const transactionRelations = relations(transaction, ({ many }) => ({
 export const mintTxRelations = relations(mint, ({ one }) => ({
   transaction: one(transaction, {
     fields: [mint.transaction],
-    references: [transaction.id]
-  })
-}))
+    references: [transaction.id],
+  }),
+}));
 export const burnTxRelations = relations(burn, ({ one }) => ({
   transaction: one(transaction, {
     fields: [burn.transaction],
-    references: [transaction.id]
-  })
-}))
+    references: [transaction.id],
+  }),
+}));
 export const swapsTxRelations = relations(swap, ({ one }) => ({
   transaction: one(transaction, {
     fields: [swap.transaction],
-    references: [transaction.id]
-  })
-}))
+    references: [transaction.id],
+  }),
+}));
 export const collectTxRelations = relations(collect, ({ one }) => ({
   transaction: one(transaction, {
     fields: [collect.transaction],
-    references: [transaction.id]
-  })
-}))
+    references: [transaction.id],
+  }),
+}));
 export const flashTxRelations = relations(flash, ({ one }) => ({
   transaction: one(transaction, {
     fields: [flash.transaction],
-    references: [transaction.id]
-  })
-}))
+    references: [transaction.id],
+  }),
+}));
+
+export const stickyVaultRelations = relations(stickyVault, ({ one, many }) => ({
+  // token0Ref: one(token, {
+  //   fields: [stickyVault.token0],
+  //   references: [token.id]
+  // }),
+  // token1Ref: one(token, {
+  //   fields: [stickyVault.token1],
+  //   references: [token.id]
+  // }),
+  poolRef: one(pool, {
+    fields: [stickyVault.pool],
+    references: [pool.id],
+  }),
+  deposits: many(vaultDeposit),
+  withdrawals: many(vaultWithdrawal),
+  rebalances: many(vaultRebalance),
+  positions: many(vaultUserPosition),
+  vaultDayData: many(vaultDayData),
+  vaultHourData: many(vaultHourData),
+  autoWinVaultRef: one(autoWinVault, {
+    fields: [stickyVault.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+}));
+export const positionVaultRelations = relations(
+  vaultUserPosition,
+  ({ one }) => ({
+    stickyVault: one(stickyVault, {
+      fields: [vaultUserPosition.vault],
+      references: [stickyVault.id],
+    }),
+  }),
+);
+
+export const vaultDepositVaultRelations = relations(
+  vaultDeposit,
+  ({ one }) => ({
+    stickyVault: one(stickyVault, {
+      fields: [vaultDeposit.vault],
+      references: [stickyVault.id],
+    }),
+  }),
+);
+export const vaultWithdrawalVaultRelations = relations(
+  vaultWithdrawal,
+  ({ one }) => ({
+    stickyVault: one(stickyVault, {
+      fields: [vaultWithdrawal.vault],
+      references: [stickyVault.id],
+    }),
+  }),
+);
+export const vaultRebalanceVaultRelations = relations(
+  vaultRebalance,
+  ({ one }) => ({
+    stickyVault: one(stickyVault, {
+      fields: [vaultRebalance.vault],
+      references: [stickyVault.id],
+    }),
+  }),
+);
+export const vaultDepositTxRelations = relations(vaultDeposit, ({ one }) => ({
+  transaction: one(transaction, {
+    fields: [vaultDeposit.transaction],
+    references: [transaction.id],
+  }),
+  userPosition: one(vaultUserPosition, {
+    fields: [vaultDeposit.vaultUserPosition],
+    references: [vaultUserPosition.id],
+  }),
+}));
+export const vaultWithdrawalTxRelations = relations(
+  vaultWithdrawal,
+  ({ one }) => ({
+    transaction: one(transaction, {
+      fields: [vaultWithdrawal.transaction],
+      references: [transaction.id],
+    }),
+    userPosition: one(vaultUserPosition, {
+      fields: [vaultWithdrawal.vaultUserPosition],
+      references: [vaultUserPosition.id],
+    }),
+  }),
+);
+export const vaultRebalanceTxRelations = relations(
+  vaultRebalance,
+  ({ one }) => ({
+    transaction: one(transaction, {
+      fields: [vaultRebalance.transaction],
+      references: [transaction.id],
+    }),
+  }),
+);
+
+export const vaultDayDataRelations = relations(vaultDayData, ({ one }) => ({
+  vault: one(stickyVault, {
+    fields: [vaultDayData.vault],
+    references: [stickyVault.id],
+  }),
+}));
+
+export const vaultHourDataRelations = relations(vaultHourData, ({ one }) => ({
+  vault: one(stickyVault, {
+    fields: [vaultHourData.vault],
+    references: [stickyVault.id],
+  }),
+}));
+
+// AutoWin Relations
+export const autoWinVaultRelations = relations(autoWinVault, ({ one, many }) => ({
+  stakingTokenRef: one(stickyVault, {
+    fields: [autoWinVault.stakingToken],
+    references: [stickyVault.id],
+  }),
+  deposits: many(autoWinDeposit),
+  withdraws: many(autoWinWithdraw),
+  bgtClaims: many(autoWinBgtClaim),
+  dayData: many(autoWinDayData),
+  positions: many(autoWinUserPosition),
+}));
+
+export const autoWinDepositRelations = relations(autoWinDeposit, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinDeposit.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+  transaction: one(transaction, {
+    fields: [autoWinDeposit.transaction],
+    references: [transaction.id],
+  }),
+}));
+
+export const autoWinWithdrawRelations = relations(autoWinWithdraw, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinWithdraw.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+  transaction: one(transaction, {
+    fields: [autoWinWithdraw.transaction],
+    references: [transaction.id],
+  }),
+}));
+
+export const autoWinBgtClaimRelations = relations(autoWinBgtClaim, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinBgtClaim.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+  transaction: one(transaction, {
+    fields: [autoWinBgtClaim.transaction],
+    references: [transaction.id],
+  }),
+}));
+
+export const autoWinDayDataRelations = relations(autoWinDayData, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinDayData.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+}));
+
+export const autoWinUserPositionRelations = relations(autoWinUserPosition, ({ one }) => ({
+  autoWinVault: one(autoWinVault, {
+    fields: [autoWinUserPosition.autoWinVault],
+    references: [autoWinVault.id],
+  }),
+}));

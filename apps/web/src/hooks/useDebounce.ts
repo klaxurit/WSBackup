@@ -1,67 +1,52 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react';
 
 /**
- * Hook pour débouncer une valeur
- * @param value - La valeur à débouncer
- * @param delay - Le délai en millisecondes
- * @returns La valeur débouncée
+ * Custom hook that debounces a value for a specified delay.
+ *
+ * @template T - The type of the value to debounce
+ * @param value - The value to debounce
+ * @param delay - Delay in milliseconds before updating the debounced value
+ * @returns The debounced value
+ *
+ * @example
+ * ```typescript
+ * const [searchTerm, setSearchTerm] = useState('');
+ * const debouncedSearchTerm = useDebounce(searchTerm, 500);
+ *
+ * // debouncedSearchTerm will only update 500ms after searchTerm stops changing
+ * ```
  */
-export const useDebounce = <T>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    // Nettoyer le timeout précédent
+    // Clear the previous timeout if value changes before delay
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
+      clearTimeout(timeoutRef.current);
     }
 
-    // Créer un nouveau timeout
+    // Set a new timeout to update the debounced value after delay
     timeoutRef.current = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
+      setDebouncedValue(value);
+    }, delay);
 
-    // Cleanup
+    // Cleanup function to clear timeout on unmount or value change
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+        clearTimeout(timeoutRef.current);
       }
-    }
-  }, [value, delay])
+    };
+  }, [value, delay]);
 
-  return debouncedValue
-}
-
-/**
- * Hook pour débouncer les appels de fonction
- * @param callback - La fonction à débouncer
- * @param delay - Le délai en millisecondes
- * @returns La fonction débouncée
- */
-export const useDebouncedCallback = <T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T => {
-  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-
-  const debouncedCallback = (...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      callback(...args)
-    }, delay)
-  }
-
-  // Cleanup au démontage
+  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+        clearTimeout(timeoutRef.current);
       }
-    }
-  }, [])
+    };
+  }, []); // ESLint will be satisfied with this empty dependency array
 
-  return debouncedCallback as T
+  return debouncedValue;
 }

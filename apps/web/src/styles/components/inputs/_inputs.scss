@@ -26,14 +26,16 @@
       gap: 4px;
       color: var(--Neutral-Onyx-pure, #8a8984);
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 14px;
+      @include typography('body-sm');
       font-style: normal;
       font-weight: 400;
       line-height: 140%;
       letter-spacing: -0.029px;
     }
 
-    button {
+    .networkSelector.has-token,
+    .toggleBtn__item.active,
+    .toggleBtn__item {
       display: flex;
       height: 36px;
       padding: 2px 10px 2px 12px;
@@ -41,7 +43,7 @@
       gap: 4px;
       color: var(--Neutral-Onyx-blacker-bis, #12110e);
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 18px;
+      @include typography('heading-md');
       font-style: normal;
       font-weight: 500;
       line-height: 140%;
@@ -96,7 +98,7 @@
       color: $onyx-pure-bis;
       text-align: right;
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 400;
       line-height: 22.4px;
       margin: 0;
@@ -115,7 +117,7 @@
     &__Amount {
       color: var(--Neutral-Onyx-pure, #8a8984);
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 12px;
+      @include typography('caption');
       font-style: normal;
       font-weight: 400;
       line-height: 140%;
@@ -123,11 +125,19 @@
     }
 
     &__Max {
+      display: flex;
+      height: 36px;
+      padding: 2px 10px 2px 12px;
+      align-items: center;
+      gap: 4px;
+      color: var(--Neutral-Onyx-blacker-bis, #12110e);
+      font-family: TT Hoves, system-ui, sans-serif;
+      letter-spacing: -.043px;
       margin: 0;
       color: $beryl-pure !important;
       text-align: right;
-      font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 14px !important;
+      @include typography('body-sm');
+      line-height: 1.4;
       font-style: normal;
       font-weight: 500;
       cursor: pointer;
@@ -138,8 +148,6 @@
       flex: 1 0 0;
       background: none;
       border: none;
-      padding: 0;
-      margin: 0;
       outline: none;
       box-shadow: none;
       border-radius: 0;
@@ -158,7 +166,7 @@
     &__Input {
       background: none;
       border: none;
-      font-size: 40px;
+      @include typography('display-lg');
       font-weight: 400;
       line-height: 120%;
       letter-spacing: -0.096px;
@@ -196,7 +204,7 @@
       align-self: stretch;
       color: var(--Neutral-Onyx-pure, #8a8984);
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 12px;
+      @include typography('caption');
       font-style: normal;
       font-weight: 400;
       line-height: 140%;
@@ -275,7 +283,7 @@
     &__Input {
       background: none;
       border: none;
-      font-size: 20px;
+      @include typography('heading-lg');
       font-weight: 400;
       line-height: 32px;
       width: auto;
@@ -299,17 +307,12 @@
     }
 
     &__Type {
-      font-size: 20px;
+      @include typography('heading-lg');
       font-weight: 400;
       line-height: 32px;
       font-family: "TT Hoves", system-ui, sans-serif;
       color: var(--neutral-onyx-pure, #868391);
       margin: 0;
-    }
-
-    &__Logos {
-      display: flex;
-      align-items: center;
     }
 
     &--focus {
@@ -332,7 +335,7 @@
       gap: 4px;
       color: var(--Neutral-Onyx-blacker-bis, #12110e);
       font-family: "TT Hoves", system-ui, sans-serif;
-      font-size: 18px;
+      @include typography('heading-md');
       font-style: normal;
       font-weight: 500;
       line-height: 140%;

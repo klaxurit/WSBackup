@@ -1,91 +1,309 @@
 import Table, { type TableColumn } from "../Table/Table"
 import { TokenPairLogos } from '../Common/TokenPairLogos';
-import { ExplorerIcon } from "../SVGs";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../../utils/formatNumber";
 import { useMemo } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { useAccount, useReadContracts } from 'wagmi';
+import { type Address, formatUnits } from 'viem';
+import { StickyVaultWithRouter } from '../../config/abis/StickyVaultWithRouter';
+import { AutowinABI } from '../../config/abis/Autowin';
 
 interface VaultsTableProps {
   searchValue: string
 }
 
-// Mock data for vaults
-const MOCK_VAULTS = [
-  {
-    address: '0x2345678901234567890123456789012345678901',
-    name: 'WBERA/HONEY',
-    token0Address: '0x6969696969696969696969696969696969696969',
-    token1Address: '0x1111111111111111111111111111111111111111',
-    token0Symbol: 'WBERA',
-    token1Symbol: 'USDC',
-    token0LogoUri: '/tokens/wbera.png',
-    token1LogoUri: 'https://res.cloudinary.com/duv0g402y/raw/upload/v1717773645/src/assets/honey.png',
-    strategy: 'Stable Range',
-    tvlUSD: 850000,
-    apr: 12.3,
-    feesApr: 6.8,
-    rewardsApr: 5.5,
-    dayVolumeUSD: 32000,
-    monthVolumeUSD: 950000
+const GET_STICKYVAULTS = `
+  query GetStickyVaults($user: String = "") {
+  stickyVaults {
+    items {
+      name
+      txCount
+      totalValueLockedUSD
+      totalValueLockedToken1
+      totalValueLockedToken0
+      totalValueLockedBERA
+      totalSupply
+      tickUpper
+      tickLower
+      rebalanceCount
+      pool
+      manager
+      liquidity
+      id
+      currentTick
+      createdAtTimestamp
+      createdAtBlockNumber
+      collectedFeesUSD
+      collectedFeesToken1
+      collectedFeesToken0
+      autoWinVault
+      positions(where: {user: $user}) {
+        items {
+          currentValueUSD
+          shares
+        }
+      }
+      autoWinVaultRef {
+        id
+        estimatedAPR
+        positions(where: {user: $user}) {
+          items {
+            shares
+          }
+        }
+      }
+      vaultDayData(orderBy: "date", orderDirection: "desc", limit: 1) {
+        items {
+          apr
+          maxPotentialAPR
+          collectedFeesToken0
+          collectedFeesToken1
+          collectedFeesUSD
+          date
+          id
+          volumeUSD1D
+          volumeUSD30D
+          rebalanceCount
+          totalSupply
+          totalValueLockedToken0
+          totalValueLockedToken1
+          totalValueLockedUSD
+          txCount
+        }
+      }
+      poolRef {
+        token1Ref {
+          id
+          logoUri
+          name
+          symbol
+        }
+        token0Ref {
+          id
+          logoUri
+          name
+          symbol
+        }
+      }
+    }
   }
-];
+}
+`
+
+const BL = [
+  "0xfe68ef4370be9977f006d0ecf9a3676c8bdd7303", // Sticky Vault WETH-USDC.e-0.05%
+  "0x01716554a6125db2e140e01a4dc6412813aaf048" // Sticky Vault WBTC-brBTC-0.01%
+].map((address) => address.toLowerCase());
 
 export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
-  const vaults = useMemo(() => {
-    if (!searchValue) return MOCK_VAULTS
-    return MOCK_VAULTS.filter((vault: any) =>
-      (vault.name && vault.name.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (vault.address && vault.address.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (vault.token0Symbol && vault.token0Symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
-      (vault.token1Symbol && vault.token1Symbol.toLowerCase().includes(searchValue.toLowerCase()))
+  const navigate = useNavigate();
+  const { address } = useAccount();
+
+  const { data: vaults, isLoading } = useQuery({
+    queryKey: ['stickyVaults', address],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: GET_STICKYVAULTS,
+          variables: { user: address?.toLowerCase() || "" }
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data.stickyVaults.items
+    }
+  });
+
+
+  const { balanceContracts, vaultIndexMap } = useMemo(() => {
+    if (!address || !vaults || vaults.length === 0) {
+      return { balanceContracts: [], vaultIndexMap: new Map() };
+    }
+
+    const contracts: any[] = [];
+    const indexMap = new Map<string, { stickyIndex: number; totalSupplyIndex: number; autoWinIndex?: number }>();
+
+    vaults.forEach((vault: any) => {
+      const vaultId = vault.id.toLowerCase();
+      const stickyIndex = contracts.length;
+
+      contracts.push({
+        address: vault.id as Address,
+        abi: StickyVaultWithRouter,
+        functionName: 'balanceOf',
+        args: [address],
+      });
+
+      const totalSupplyIndex = contracts.length;
+
+      contracts.push({
+        address: vault.id as Address,
+        abi: StickyVaultWithRouter,
+        functionName: 'totalSupply',
+      });
+
+      let autoWinIndex: number | undefined;
+
+      if (vault.autoWinVault && vault.autoWinVault !== '0x0000000000000000000000000000000000000000') {
+        autoWinIndex = contracts.length;
+        contracts.push({
+          address: vault.autoWinVault as Address,
+          abi: AutowinABI,
+          functionName: 'balanceOf',
+          args: [address],
+        });
+      }
+
+      indexMap.set(vaultId, { stickyIndex, totalSupplyIndex, autoWinIndex });
+    });
+
+    return { balanceContracts: contracts, vaultIndexMap: indexMap };
+  }, [address, vaults]);
+
+  const { data: balancesData } = useReadContracts({
+    contracts: balanceContracts,
+    query: {
+      enabled: !!address && balanceContracts.length > 0,
+      staleTime: 30000,
+    }
+  });
+
+  const { convertContracts, convertIndexMap } = useMemo(() => {
+    if (!balancesData || !address || !vaults || vaults.length === 0 || vaultIndexMap.size === 0) {
+      return { convertContracts: [], convertIndexMap: new Map() };
+    }
+
+    const contracts: any[] = [];
+    const indexMap = new Map<string, number>();
+
+    vaults.forEach((vault: any) => {
+      const vaultId = vault.id.toLowerCase();
+      const indices = vaultIndexMap.get(vaultId);
+
+      if (!indices || indices.autoWinIndex === undefined) return;
+
+      const autoWinBalance = balancesData[indices.autoWinIndex]?.result as bigint | undefined;
+
+      if (autoWinBalance && autoWinBalance > 0n) {
+        indexMap.set(vaultId, contracts.length);
+        contracts.push({
+          address: vault.autoWinVault as Address,
+          abi: AutowinABI,
+          functionName: 'convertToAssets' as const,
+          args: [autoWinBalance],
+        });
+      }
+    });
+
+    return { convertContracts: contracts, convertIndexMap: indexMap };
+  }, [balancesData, address, vaults, vaultIndexMap]);
+
+  const { data: convertData } = useReadContracts({
+    contracts: convertContracts,
+    query: {
+      enabled: convertContracts.length > 0,
+      staleTime: 30000,
+    },
+  });
+
+  const getVaultHolding = useMemo(() => {
+    return (vaultId: string): number => {
+      if (!address || !vaults || !balancesData || vaultIndexMap.size === 0) return 0;
+
+      const vaultIdLower = vaultId.toLowerCase();
+
+      const indices = vaultIndexMap.get(vaultIdLower);
+      if (!indices) return 0;
+
+      const vault = vaults.find((v: any) => v.id.toLowerCase() === vaultIdLower);
+      if (!vault) return 0;
+
+      const tvl = parseFloat(vault.totalValueLockedUSD || '0');
+
+
+      const stickyBalance = balancesData[indices.stickyIndex]?.result as bigint | undefined;
+      const stickyTotalSupply = balancesData[indices.totalSupplyIndex]?.result as bigint | undefined;
+      const autoWinBalance = indices.autoWinIndex !== undefined
+        ? balancesData[indices.autoWinIndex]?.result as bigint | undefined
+        : undefined;
+
+      let total = 0;
+
+      // Sticky value (formule de useStickyVaultBalance)
+      if (stickyBalance && stickyBalance > 0n && stickyTotalSupply && stickyTotalSupply > 0n) {
+        const sharesDecimal = parseFloat(formatUnits(stickyBalance, 18));
+        const totalSupplyDecimal = parseFloat(formatUnits(stickyTotalSupply, 18));
+        const proportion = sharesDecimal / totalSupplyDecimal;
+        total += proportion * tvl;
+      }
+
+
+      if (autoWinBalance && autoWinBalance > 0n && stickyTotalSupply && stickyTotalSupply > 0n) {
+        const convertIndex = convertIndexMap.get(vaultIdLower);
+
+        if (convertIndex !== undefined && convertData && convertData[convertIndex]) {
+          const convertedAssets = convertData[convertIndex]?.result as bigint | undefined;
+
+          if (convertedAssets) {
+            const assetsDecimal = parseFloat(formatUnits(convertedAssets, 18));
+            const totalSupplyDecimal = parseFloat(formatUnits(stickyTotalSupply, 18));
+            const proportion = assetsDecimal / totalSupplyDecimal;
+            total += proportion * tvl;
+          }
+        }
+      }
+
+      return total;
+    };
+  }, [address, vaults, balancesData, convertData, vaultIndexMap, convertIndexMap]);
+
+  const filteredVaults = useMemo(() => {
+    if (!vaults) return []
+    const approvedVaults = vaults.filter((v: any) => !BL.includes((v.id as string).toLowerCase()))
+
+    if (!searchValue) return approvedVaults
+    return approvedVaults.filter((vault: any) =>
+      (vault.id && vault.id.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (vault.poolRef.token0Ref.symbol && vault.poolRef.token0Ref.symbol.toLowerCase().includes(searchValue.toLowerCase())) ||
+      (vault.poolRef.token1Ref.symbol && vault.poolRef.token1Ref.symbol.toLowerCase().includes(searchValue.toLowerCase()))
     );
-  }, [searchValue]);
+  }, [vaults, searchValue]);
+
+  const handleRowClick = (row: any) => {
+    navigate(`/vault/${row.id}`);
+  };
 
   const columns: TableColumn[] = [
-    {
-      label: '#',
-      key: 'index',
-      className: 'VaultsTable__IndexTd',
-      render: (row) => (
-        <span className="VaultsTable__IndexCell">
-          <Link
-            to={`/vaults/${row.address}`}
-            className="VaultsTable__IndexLink"
-          >
-            <span className="Table__Address">
-              {row.token0Symbol}/{row.token1Symbol}
-            </span>
-          </Link>
-          <a
-            href={`https://berascan.com/address/${row.address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="Table__Icon"
-            title={row.address}
-          >
-            <ExplorerIcon />
-          </a>
-        </span>
-      )
-    },
     {
       label: 'Vault',
       key: 'vault',
       className: 'VaultsTable__VaultTd',
       sortable: true,
-      sortValue: (row) => `${row.token0Symbol}/${row.token1Symbol}`,
+      sortValue: (row) => `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`,
       render: (row) => (
         <span className="VaultsTable__VaultCell">
           <span className="VaultsTable__LogoWrapper">
             <TokenPairLogos
-              token0={{ address: row.token0Address, logoUri: row.token0LogoUri, symbol: row.token0Symbol }}
-              token1={{ address: row.token1Address, logoUri: row.token1LogoUri, symbol: row.token1Symbol }}
+              token0={{ id: row.poolRef.token0Ref.id, address: row.poolRef.token0Ref.id, logoUri: row.poolRef.token0Ref.logoUri, symbol: row.poolRef.token0Ref.symbol }}
+              token1={{ id: row.poolRef.token1Ref.id, address: row.poolRef.token1Ref.id, logoUri: row.poolRef.token1Ref.logoUri, symbol: row.poolRef.token1Ref.symbol }}
               borderWidth={2}
               separatorWidth={1.5}
               size={28}
             />
           </span>
-          <span className="VaultsTable__VaultName">{row.name || `${row.token0Symbol}/${row.token1Symbol}`}</span>
+          <span className="VaultsTable__VaultName">
+            {row?.name ? row.name : `${row.poolRef.token0Ref.symbol}/${row.poolRef.token1Ref.symbol}`}
+          </span>
         </span>
       )
     },
@@ -94,14 +312,19 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       key: 'strategy',
       className: 'VaultsTable__StrategyTd',
       sortable: true,
-      sortValue: (row) => row.strategy || 'Auto-Compound',
-      render: (row) => (
-        <span className="VaultsTable__StrategyCell">
-          <span className="VaultsTable__StrategyBadge">
-            {row.strategy || 'Auto-Compound'}
+      sortValue: (row) => row.autoWinVault ? 'AutoWin' : 'Sticky',
+      render: (row) => {
+        const isAutoWin = row.autoWinVault && row.autoWinVault !== '0x0000000000000000000000000000000000000000';
+        const strategy = isAutoWin ? 'AutoWin' : 'Sticky';
+
+        return (
+          <span className="VaultsTable__StrategyCell">
+            <span className={`VaultsTable__StrategyBadge VaultsTable__StrategyBadge--${strategy.toLowerCase()}`}>
+              {strategy}
+            </span>
           </span>
-        </span>
-      )
+        );
+      }
     },
     {
       label: 'TVL',
@@ -109,13 +332,13 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__TvlTd',
       sortable: true,
       sortValue: (row) => {
-        return row.tvlUSD || 0
+        return row.totalValueLockedUSD || 0
       },
       render: (row) => {
         return (
           <span className="VaultsTable__TvlCell">
-            {row.tvlUSD !== 0
-              ? `$${formatNumber(row.tvlUSD)}`
+            {row.totalValueLockedUSD !== 0
+              ? `$${formatNumber(row.totalValueLockedUSD)}`
               : "-"}
           </span>
         )
@@ -127,49 +350,43 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       className: 'VaultsTable__AprTd',
       sortable: true,
       sortValue: (row) => {
-        return row.apr || 0;
+        const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;
+        const maxPotentialAPR = parseFloat(dayData?.maxPotentialAPR || '0');
+        const currentAPR = parseFloat(dayData?.apr || '0');
+
+        // Check if this vault has AutoWin
+        const hasAutoWin = row.autoWinVault && row.autoWinVault !== '0x0000000000000000000000000000000000000000';
+        const autoWinEstimatedAPR = hasAutoWin ? parseFloat(row.autoWinVaultRef?.estimatedAPR || '0') : 0;
+
+        // For AutoWin vaults, sort by: maxPotentialAPR + estimatedBGT
+        const sortAPR = hasAutoWin && autoWinEstimatedAPR > 0
+          ? maxPotentialAPR + autoWinEstimatedAPR
+          : maxPotentialAPR || currentAPR;
+
+        return sortAPR || 0;
       },
       render: (row) => {
+        const dayData = row?.vaultDayData.items && row.vaultDayData.items.length > 0 ? row.vaultDayData.items[0] : null;
+        const currentAPR = parseFloat(dayData?.apr || '0');
+        const maxPotentialAPR = parseFloat(dayData?.maxPotentialAPR || '0');
+
+        // Check if this vault has AutoWin
+        const hasAutoWin = row.autoWinVault && row.autoWinVault !== '0x0000000000000000000000000000000000000000';
+        const autoWinEstimatedAPR = hasAutoWin ? parseFloat(row.autoWinVaultRef?.estimatedAPR || '0') : 0;
+
+        // For AutoWin vaults, display: maxPotentialAPR + estimatedBGT
+        const displayAPR = hasAutoWin && autoWinEstimatedAPR > 0
+          ? maxPotentialAPR + autoWinEstimatedAPR
+          : maxPotentialAPR || currentAPR;
+
         return (
           <span className="VaultsTable__AprCell">
-            {row.apr !== 0
-              ? `${row.apr.toFixed(2)}%`
-              : "-"}
-          </span>
-        )
-      }
-    },
-    {
-      label: 'Fees APR',
-      key: 'feesApr',
-      className: 'VaultsTable__FeesAprTd',
-      sortable: true,
-      sortValue: (row) => {
-        return row.feesApr || 0;
-      },
-      render: (row) => {
-        return (
-          <span className="VaultsTable__FeesAprCell">
-            {row.feesApr !== 0
-              ? `${row.feesApr.toFixed(2)}%`
-              : "-"}
-          </span>
-        )
-      }
-    },
-    {
-      label: 'Rewards APR',
-      key: 'rewardsApr',
-      className: 'VaultsTable__RewardsAprTd',
-      sortable: true,
-      sortValue: (row) => {
-        return row.rewardsApr || 0;
-      },
-      render: (row) => {
-        return (
-          <span className="VaultsTable__RewardsAprCell">
-            {row.rewardsApr !== 0
-              ? `${row.rewardsApr.toFixed(2)}%`
+            {dayData && (displayAPR !== 0 || currentAPR !== 0)
+              ? (
+                <div className="VaultsTable__AprWrapper">
+                  <div className="VaultsTable__CurrentApr">{Number(displayAPR).toFixed(2)}%</div>
+                </div>
+              )
               : "-"}
           </span>
         )
@@ -186,8 +403,8 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       render: (row) => {
         return (
           <span className="VaultsTable__Vol1dCell">
-            {row.dayVolumeUSD !== 0
-              ? `$${formatNumber(row.dayVolumeUSD)}`
+            {row?.vaultDayData.items && row.vaultDayData.items.length > 0 && row.vaultDayData.items[0].volumeUSD1D !== "0"
+              ? `$${formatNumber(row.vaultDayData.items[0].volumeUSD1D)}`
               : "-"}
           </span>
         )
@@ -204,11 +421,33 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
       render: (row) => {
         return (
           <span className="VaultsTable__Vol30dCell">
-            {row.monthVolumeUSD !== 0
-              ? `$${formatNumber(row.monthVolumeUSD)}`
+            {row?.vaultDayData.items && row.vaultDayData.items.length > 0 && row.vaultDayData.items[0].volumeUSD30D !== "0"
+              ? `$${formatNumber(row.vaultDayData.items[0].volumeUSD30D)}`
               : "-"}
           </span>
         )
+      }
+    },
+    {
+      label: 'Holdings',
+      key: 'holdings',
+      className: 'VaultsTable__HoldingsTd',
+      sortable: true,
+      sortValue: (row) => {
+        if (!address) return 0;
+        return getVaultHolding(row.id);
+      },
+      render: (row) => {
+        if (!address) {
+          return <span className="VaultsTable__HoldingsCell">-</span>;
+        }
+
+        const holding = getVaultHolding(row.id);
+        return (
+          <span className="VaultsTable__HoldingsCell">
+            ${formatNumber(holding)}
+          </span>
+        );
       }
     },
   ];
@@ -216,13 +455,14 @@ export const VaultsTable = ({ searchValue }: VaultsTableProps) => {
   return (
     <Table
       columns={columns}
-      data={vaults}
-      isLoading={false}
-      tableClassName="Table"
+      data={filteredVaults}
+      isLoading={isLoading}
+      tableClassName="Table Table--bordered"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
       defaultSortKey="tvl"
       defaultSortDirection="desc"
+      onRowClick={handleRowClick}
     />
   )
 }

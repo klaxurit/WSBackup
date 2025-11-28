@@ -1,5 +1,5 @@
 import { createConfig, factory } from "ponder";
-import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI } from "@repo/contracts";
+import { CONTRACTS, FactoryABI, PoolABI, PositionManagerABI, StickyVaultFactoryABI, StickyVaultRouter, StickyVaultWithRouter, AutoWinFactoryABI, AutowinABI } from "./src/utils/abi";
 
 export default createConfig({
   database: {
@@ -13,13 +13,13 @@ export default createConfig({
     },
   },
   contracts: {
-    WinnieFactory: {
+    v3Factory: {
       chain: "mainnet",
       abi: FactoryABI,
       address: CONTRACTS.FACTORY,
       startBlock: 7402490,
     },
-    WinniePool: {
+    v3Pool: {
       chain: "mainnet",
       abi: PoolABI,
       address: factory({
@@ -40,11 +40,75 @@ export default createConfig({
       }),
       startBlock: 7402490,
     },
-    WinniePositionManager: {
+    v3PositionManager: {
       chain: "mainnet",
       abi: PositionManagerABI,
       address: CONTRACTS.POSITION_MANAGER,
       startBlock: 7402490,
     },
+    svFactory: {
+      chain: "mainnet",
+      abi: StickyVaultFactoryABI,
+      address: CONTRACTS.STICKYVAULT_FACTORY,
+      startBlock: 9742600
+    },
+    svVaults: {
+      chain: "mainnet",
+      abi: StickyVaultWithRouter,
+      address: factory({
+        address: CONTRACTS.STICKYVAULT_FACTORY,
+        event: {
+          anonymous: false,
+          inputs: [
+            { indexed: true, name: "uniPool", type: "address" },
+            { indexed: true, name: "manager", type: "address" },
+            { indexed: true, name: "stickyVault", type: "address" },
+            { indexed: false, name: "implementation", type: "address" },
+          ],
+          name: "StickyVaultCreated",
+          type: "event"
+        },
+        parameter: "stickyVault"
+      }),
+      startBlock: 9742600
+    },
+    svRouter: {
+      chain: "mainnet",
+      abi: StickyVaultRouter,
+      address: CONTRACTS.STICKYVAULT_ROUTER,
+      startBlock: 9742600
+    },
+    autoWinFactory: {
+      chain: "mainnet",
+      abi: AutoWinFactoryABI,
+      address: CONTRACTS.AUTOWIN_FACTORY,
+      startBlock: 9742600
+    },
+    autoWinVaults: {
+      chain: "mainnet",
+      abi: AutowinABI,
+      address: factory({
+        address: CONTRACTS.AUTOWIN_FACTORY,
+        event: {
+          anonymous: false,
+          inputs: [
+            { indexed: true, name: "autoWin", type: "address" },
+            { indexed: false, name: "implementation", type: "address" },
+            { indexed: true, name: "stakingToken", type: "address" }
+          ],
+          name: "AutoWinDeployed",
+          type: "event"
+        },
+        parameter: "autoWin"
+      }),
+      startBlock: 9742600
+    }
   },
+  // blocks: {
+  //   autoStatsUpdate: {
+  //     chain: 'mainnet',
+  //     interval: 10,
+  //     startBlock: 9742600
+  //   }
+  // }
 });

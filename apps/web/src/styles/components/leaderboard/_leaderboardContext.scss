@@ -1,0 +1,179 @@
+@use "../../utils" as *;
+
+.LeaderboardContext {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+
+  @media (max-width: 600px) {
+    gap: 24px;
+  }
+}
+
+.LeaderboardContext__Loading,
+.LeaderboardContext__Empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+
+  p {
+    @include typography('body-md');
+    color: $white-056;
+    margin: 0;
+  }
+}
+
+.LeaderboardContext__Section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.LeaderboardContext__SectionTitle {
+  @include typography('heading-md');
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.3px;
+
+  @media (max-width: 600px) {
+    @include typography('body-lg');
+    font-weight: 700;
+  }
+}
+
+.LeaderboardContext__Top3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.LeaderboardContext__AroundUser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.LeaderboardContext__Card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &--top3 {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 16px;
+    background: rgba(227, 146, 41, 0.05);
+    border-color: rgba(227, 146, 41, 0.2);
+
+    &:hover {
+      background: rgba(227, 146, 41, 0.08);
+      border-color: rgba(227, 146, 41, 0.3);
+    }
+  }
+
+  &--current {
+    background: rgba(227, 146, 41, 0.12) !important;
+    border: 2px solid rgba(227, 146, 41, 0.8) !important;
+    border-left: 4px solid #E39229 !important;
+    box-shadow:
+      0 0 0 1px rgba(227, 146, 41, 0.3),
+      0 4px 12px rgba(227, 146, 41, 0.2);
+
+    &:hover {
+      background: rgba(227, 146, 41, 0.15) !important;
+      border-color: rgba(227, 146, 41, 1) !important;
+    }
+  }
+}
+
+.LeaderboardContext__CardRank {
+  @include typography('heading-lg');
+  font-weight: 700;
+  color: #E39229;
+  min-width: 60px;
+  text-align: center;
+
+  @media (max-width: 600px) {
+    @include typography('body-lg');
+    min-width: 50px;
+  }
+}
+
+.LeaderboardContext__CardAddress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  @include typography('body-md');
+  font-weight: 600;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.LeaderboardContext__YouBadge {
+  padding: 2px 6px;
+  background: rgba(227, 146, 41, 0.2);
+  color: #E39229;
+  @include typography('body-2xs');
+  font-weight: 700;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.LeaderboardContext__CardPoints {
+  @include typography('body-md');
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  min-width: 100px;
+
+  @media (max-width: 600px) {
+    @include typography('body-sm');
+    min-width: 80px;
+  }
+}
+
+.LeaderboardContext__CardChange {
+  @include typography('body-sm');
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  &--positive {
+    color: $success-pure;
+    background: rgba($success-pure, 0.1);
+  }
+
+  &--negative {
+    color: $carmel-pure;
+    background: rgba($carmel-pure, 0.1);
+  }
+}
+

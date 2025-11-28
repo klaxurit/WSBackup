@@ -1,0 +1,578 @@
+@use '../../utils' as *;
+@use 'sass:color';
+
+// Styles harmonisés pour les modales de position (Increase, Withdraw, Claim Fees)
+// Override de l'overlay existant
+.PoolView__ModalOverlay {
+  backdrop-filter: blur(10px);
+}
+
+// Styles pour le contenu de la modale (appliqué sur ModalBox)
+.PoolView__ModalContent {
+  padding: 20px;
+  min-width: 400px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.PoolView__ModalHeader {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.PoolView__ModalHeaderLeft {
+  justify-self: start;
+  position: relative;
+}
+
+.PoolView__ModalTitle {
+  justify-self: center;
+}
+
+.PoolView__ModalClose {
+  justify-self: end;
+}
+
+// Styles spécifiques pour la ParamBox dans les modales de position
+.PoolView__ModalHeaderLeft .ParamBox {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  margin-top: 8px;
+  background: #180E00;
+  border: 1px solid $white-008;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  min-width: 200px;
+}
+
+.PoolView__ModalClose {
+  background: none;
+  border: none;
+  color: $white;
+  @include typography('heading-lg');
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.15s;
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    color: $beryl-pure;
+    background: rgba($beryl-pure, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Styles pour les formulaires
+.PoolView__Form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.PoolView__FormError {
+  background: rgba($error-pure, 0.1);
+  border: 1px solid rgba($error-pure, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+
+  p {
+    color: $error-pure;
+    @include typography('body-sm');
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Styles pour les sections de succès
+.PoolView__Success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.PoolView__SuccessIcon {
+  @include typography('display-lg');
+  margin-bottom: 8px;
+}
+
+.PoolView__SuccessTitle {
+  @include typography('heading-md');
+  font-weight: 600;
+  color: $white;
+  margin: 0;
+}
+
+.PoolView__SuccessMessage {
+  color: $onyx-light;
+  @include typography('body-sm');
+  margin: 0;
+}
+
+// Styles pour les boutons d'action
+.PoolView__ActionBtn {
+
+  &--add {
+    background: linear-gradient(90deg, $beryl-pure 0%, $beryl-medium 100%);
+    color: $onyx-black;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(90deg, $beryl-medium 0%, $beryl-pure 100%);
+      box-shadow: 0 4px 12px rgba($beryl-pure, 0.3);
+    }
+  }
+
+  &--remove {
+    background: linear-gradient(90deg, $error-pure 0%, #ff6b6b 100%);
+    color: $white;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(90deg, #ff6b6b 0%, $error-pure 100%);
+      box-shadow: 0 4px 12px rgba($error-pure, 0.3);
+      border: 1px solid transparent;
+    }
+  }
+
+  &--claim {
+    background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+    color: $white;
+
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(90deg, #45a049 0%, #4CAF50 100%);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+      border: 1px solid transparent;
+    }
+  }
+
+  &:disabled {
+    background: $onyx-darker !important;
+    color: $onyx-medium !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+}
+
+// Styles pour les messages de confirmation
+.PoolView__ConfirmationMessage {
+  color: $white;
+  @include typography('body-lg');
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+// Styles pour les sections d'informations
+.PoolView__InfoSection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.PoolView__InfoTitle {
+  color: $white;
+  @include typography('body-sm');
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.PoolView__InfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.PoolView__InfoLabel {
+  color: $onyx-light;
+  @include typography('body-sm');
+  font-weight: 400;
+}
+
+.PoolView__InfoValue {
+  color: $white;
+  @include typography('body-sm');
+  font-weight: 500;
+}
+
+// Styles pour les boutons de pourcentage
+.PoolView__PercentageButtons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+  margin-top: 16px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.PoolView__PercentageButton {
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: $onyx-light;
+  @include typography('body-sm');
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  position: relative;
+
+  &:hover:not(:disabled) {
+    background: rgba($beryl-pure, 0.1);
+    color: rgba(255, 208, 86);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.active {
+    background: $beryl-pure;
+    color: rgba(255, 208, 86);
+    font-weight: 600;
+    text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+    box-shadow: 0 2px 8px rgba($beryl-pure, 0.3);
+    transform: translateY(-1px);
+
+    &:hover:not(:disabled) {
+      background: $beryl-medium;
+      color: rgba(255, 208, 86);
+      box-shadow: 0 4px 12px rgba($beryl-pure, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// Styles pour le bouton principal en état de succès
+.PoolView__MainButton--success {
+  position: relative;
+  background: $beryl-pure !important;
+  color: rgba(255, 208, 86) !important;
+  text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00 !important;
+  box-shadow: 0 4px 12px rgba($beryl-pure, 0.3), 0 0 20px rgba($beryl-pure, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+
+  // Conteneur pour l'ourson withdraw
+  .withdraw-bear {
+    position: absolute;
+    top: -105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: url('/src/assets/bear_withdraw.png') no-repeat center center;
+    background-size: contain;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+
+    // Animation d'apparition
+    animation:
+      withdrawBearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards 0.2s,
+      withdrawBearIdle 2s ease-in-out infinite 0.8s;
+  }
+
+  // Conteneur pour l'ourson increase
+  .increase-bear {
+    position: absolute;
+    top: -105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: url('/src/assets/bear_increase.png') no-repeat center center;
+    background-size: contain;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+
+    // Animation d'apparition
+    animation:
+      increaseBearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards 0.2s,
+      increaseBearIdle 2s ease-in-out infinite 0.8s;
+  }
+
+  // Optimisations de performance GPU
+  will-change: transform,
+  filter,
+  box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+// Animations pour l'ourson withdraw
+@keyframes withdrawBearAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: translateX(-50%) translateY(-5px) scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes withdrawBearIdle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-2px) scale(1.02);
+  }
+}
+
+// Animations pour l'ourson increase
+@keyframes increaseBearAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: translateX(-50%) translateY(-5px) scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes increaseBearIdle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-2px) scale(1.02);
+  }
+}
+
+// Accessibilité - respect du prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  .PoolView__MainButton--success {
+    animation: none;
+    background: $beryl-pure !important;
+
+    .withdraw-bear {
+      animation: none;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+      filter: none;
+    }
+
+    .increase-bear {
+      animation: none;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+      filter: none;
+    }
+  }
+}
+
+// Styles pour les sliders
+.PoolView__Slider {
+  width: 100%;
+  margin-bottom: 8px;
+
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: $beryl-pure;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    &::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: $beryl-pure;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+.PoolView__SliderLabels {
+  display: flex;
+  justify-content: space-between;
+  color: $onyx-light;
+  @include typography('caption');
+  margin-top: 4px;
+}
+
+.PoolView__SliderValue {
+  color: $beryl-pure;
+  font-weight: 600;
+}
+
+// Styles pour les messages de statut
+.PoolView__StatusMessage {
+  background: rgba($beryl-pure, 0.1);
+  border: 1px solid rgba($beryl-pure, 0.2);
+  color: $beryl-pure;
+  padding: 12px;
+  border-radius: 8px;
+  @include typography('body-sm');
+  text-align: center;
+  margin-top: 16px;
+}
+
+// Styles pour les erreurs de validation
+.PoolView__ValidationErrors {
+  margin-bottom: 16px;
+}
+
+.PoolView__ValidationError {
+  background: rgba($error-pure, 0.1);
+  border: 1px solid rgba($error-pure, 0.2);
+  color: $error-pure;
+  padding: 8px 12px;
+  border-radius: 6px;
+  @include typography('body-sm');
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Styles pour les boutons d'approbation
+.PoolView__ApprovalButton {
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  @include typography('body-lg');
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, $beryl-pure 0%, $beryl-medium 100%);
+  color: $onyx-black;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(90deg, $beryl-medium 0%, $beryl-pure 100%);
+    box-shadow: 0 4px 12px rgba($beryl-pure, 0.3);
+  }
+
+  &:disabled {
+    background: $onyx-darker !important;
+    color: $onyx-medium !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+}
+
+// Styles pour les boutons secondaires
+.PoolView__SecondaryButton {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: $white;
+  @include typography('body-lg');
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Styles pour les informations de note
+.PoolView__InfoNote {
+  @include typography('caption');
+  color: $onyx-light;
+  text-align: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+}
+
+// Responsive design
+@media (max-width: 480px) {
+  .PoolView__ModalContent {
+    min-width: 0;
+    max-width: 95vw;
+  }
+
+  .PoolView__ModalTitle {
+    @include typography('heading-md');
+  }
+
+  .PoolView__PercentageButtons {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .PoolView__PercentageButton {
+    padding: 10px 6px;
+    @include typography('body-sm');
+  }
+}
+
+// Les animations sont gérées par le composant Modal existant

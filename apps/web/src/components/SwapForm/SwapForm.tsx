@@ -4,15 +4,15 @@ import { FromInput } from '../Inputs/FromInput';
 import { SwapToInput } from '../Inputs/SwapToInput';
 import { Divider } from '../Inputs/Divider';
 import { Nut } from "../SVGs/ProductSVGs";
+import { RouteDisplay } from '../RouteDisplay';
 import { TransactionStatusModal } from '../TransactionStatusModal/TransactionStatusModal';
-import { useSwap } from '../../hooks/useSwap';
+import { useSwap } from '../../hooks/swap/useSwap';
 import { useAccount, useWatchBlockNumber } from "wagmi";
-import { formatUnits, parseUnits, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import { usePoolAddress } from '../../hooks/usePoolAddress';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useTokens } from '../../hooks/useBerachainTokenList';
 import { Loader } from '../Loader/Loader';
-import { useTokenStats } from "../../hooks/useTokenStats";
 import { ensureArray } from '../../utils/dataValidation';
 
 interface FormProps {
@@ -22,11 +22,16 @@ interface FormProps {
   customClassName?: string;
   isHomePage?: boolean;
   isSticky?: boolean;
+  showTitle?: boolean;
   onPoolChange?: (poolAddress: string | null, fromToken: BerachainToken | null, toToken: BerachainToken | null) => void;
   initialFromToken?: BerachainToken | null;
   initialToToken?: BerachainToken | null;
 }
 
+/**
+ * SwapForm utilisant le nouveau hook useSwap modulaire
+ * Version finale après migration et tests réussis
+ */
 export const SwapForm: React.FC<FormProps> = React.memo(
   ({
     dominantColor,
@@ -34,6 +39,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     customClassName,
     isHomePage,
     isSticky = false,
+    showTitle = false,
     onPoolChange,
     initialFromToken,
     initialToToken
@@ -52,19 +58,19 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       isAuto: true,
     })
     const [deadlineConfig, setDeadlineConfig] = useState<{ real: number, display: string }>({ real: 20, display: "20" })
+    const [lastEditedField, setLastEditedField] = useState<'from' | 'to' | null>(null);
     const [editing, setEditing] = useState<'from' | 'to' | null>(null);
-    const { data: fromTokenStats } = useTokenStats(fromToken?.address as `0x${string}` || null);
-    const { data: toTokenStats } = useTokenStats(toToken?.address as `0x${string}` || null);
-    const priceFrom = fromTokenStats?.price || 0;
-    const priceTo = toTokenStats?.price || 0;
+    const isUpdatingFromQuote = useRef<boolean>(false);
     const { data: tokens } = useTokens();
 
+    // <<<< NOUVEAU HOOK MODULAIRE
     const swap = useSwap({
       tokenIn: (fromToken?.address as `0x${string}`) || zeroAddress,
       tokenOut: (toToken?.address as `0x${string}`) || zeroAddress,
       amountIn: fromAmount,
       slippageTolerance: slippageConfig.real,
       deadline: deadlineConfig.real,
+      enableDebounce: true,
     })
 
     const { poolAddress } = usePoolAddress(
@@ -92,13 +98,10 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(token);
     }, []);
 
-    const handleCloseModal = () => {
-      setShowModal(false);
-      if (swap.status === 'error') {
-        swap.reset();
-      }
-    };
+    // Simplified handlers for this version
+
     const handleSwitchTokens = useCallback(() => {
+      if (!fromToken || !toToken) return
       const currentFromToken = fromToken;
       const currentToToken = toToken;
       const currentFromAmount = fromAmount;
@@ -108,7 +111,7 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       setToToken(currentFromToken);
       setFromAmount(currentToAmount);
       setToAmount(currentFromAmount);
-      setEditing(null);
+      setLastEditedField(null);
     }, [fromToken, toToken, fromAmount, toAmount]);
 
     const updateSlippage = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -139,38 +142,48 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     const handleClickParams = () => {
       setParamOpen(!paramOpen)
     }
+
+    const handleAdjustSettings = useCallback(() => {
+      setParamOpen(true);
+    }, []);
+
     const isButtonEnabled = useMemo(() => {
       const hasValidTokens = !!(fromToken && toToken);
-      const hasValidAmount = fromAmount > 0n && toAmount > 0n;
-      const validStatuses = ["ready", "error"];
-      const isValidStatus = validStatuses.includes(swap.status) ||
-        (swap.status === "idle" && hasValidAmount);
+      const hasValidAmount = fromAmount > 0n;
 
-      return hasValidTokens && hasValidAmount && isValidStatus;
-    }, [fromToken, toToken, fromAmount, toAmount, swap.status]);
+      // Bloquer seulement si le swap est en cours de chargement
+      const isNotLoading = !["loading-routes", "quoting"].includes(swap.status);
+
+      const enabled = hasValidTokens && hasValidAmount && isNotLoading;
+
+      return enabled;
+    }, [fromToken, toToken, fromAmount, swap.status]);
 
     const btnText = useMemo(() => {
       if (!fromToken || !toToken) return "Select a token"
-      if (!fromAmount || fromAmount === 0n) return "Enter Amount"
-      if (swap.status === "ready") return "Preview"
-      if (swap.status === "success" && showModal) return "Success! 🎉"
+      if (!fromAmount || fromAmount === 0n) return "Enter an amount"
+
+      // Vérifier les cas de wrap/unwrap en priorité
+      if (swap.isWrap) return "Wrap"
+      if (swap.isUnWrap) return "Unwrap"
+
+      if (swap.status === "ready" && swap.quote) return "Preview"
+      if (swap.status === "success") return "Success"
       if (swap.status === "error") {
-        if (swap.isWrap) return "Wrap"
-        if (swap.isUnWrap) return "Unwrap"
-        return swap?.error || "Error"
+        return "Error"
       }
       if (["loading-routes", "quoting"].includes(swap.status)) return null
 
       return "Preview"
-    }, [swap.status, fromToken, toToken, fromAmount, toAmount, showModal])
+    }, [swap.status, fromToken, toToken, fromAmount, toAmount, swap.isWrap, swap.isUnWrap, swap.error])
 
     const handleBtnClick = async () => {
       if (swap.isWrap) {
-        await swap.wrap()
+        await swap.wrap()  // Wrap/Unwrap restent directs
       } else if (swap.isUnWrap) {
         await swap.unwrap()
       } else {
-        setShowModal(true);
+        setShowModal(true)  // Ouvrir la modal pour les swaps normaux
       }
     }
 
@@ -183,10 +196,39 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     })
 
     useEffect(() => {
-      if (swap?.quote?.amountOut && editing !== 'to' && fromToken && toToken) {
-        setToAmount(swap.quote.amountOut)
+      if (swap?.quote?.amountOut &&
+        lastEditedField !== 'to' &&
+        fromToken && toToken &&
+        fromAmount > 0n &&
+        !isUpdatingFromQuote.current) {
+
+        isUpdatingFromQuote.current = true;
+        setToAmount(swap.quote.amountOut);
+
+        // Reset the flag after state update
+        setTimeout(() => {
+          isUpdatingFromQuote.current = false;
+        }, 0);
+      } else if (swap.isWrap || swap.isUnWrap) {
+        setToAmount(fromAmount)
+      } else if (fromAmount === 0n && lastEditedField !== 'to') {
+        setToAmount(0n);
       }
-    }, [swap.quote, editing, fromToken, toToken])
+    }, [swap?.quote?.amountOut, lastEditedField, fromToken, toToken, fromAmount])
+
+    // Effet pour attendre que les routes soient recalculées après un changement
+    useEffect(() => {
+      if (editing === 'from' && fromAmount > 0n && fromToken && toToken && swap.status === 'ready' && swap.quote?.amountOut) {
+        setToAmount(swap.quote.amountOut);
+      }
+    }, [editing, fromAmount, fromToken, toToken, swap.status, swap.quote?.amountOut])
+
+    // Effet supplémentaire pour s'assurer que l'état editing est réinitialisé après un swap
+    useEffect(() => {
+      if (swap.status === 'success') {
+        setEditing(null);
+      }
+    }, [swap.status])
 
     useEffect(() => {
       if (onPoolChange) {
@@ -196,12 +238,25 @@ export const SwapForm: React.FC<FormProps> = React.memo(
     }, [poolAddress, fromToken, toToken, onPoolChange]);
 
     useEffect(() => {
-      if (!fromToken && tokens) {
+      if (!fromToken && tokens && tokens.length > 0) {
         const tokensArray = ensureArray(tokens) as BerachainToken[];
         const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
-        if (bera) setFromToken(bera);
+        if (bera) {
+          setFromToken(bera);
+        }
       }
     }, [tokens, fromToken]);
+
+    // Effet supplémentaire pour s'assurer que BERA est sélectionné même si fromToken est null
+    useEffect(() => {
+      if (tokens && tokens.length > 0 && !fromToken && !initialFromToken) {
+        const tokensArray = ensureArray(tokens) as BerachainToken[];
+        const bera = tokensArray.find(t => t.address.toLowerCase() === '0x0000000000000000000000000000000000000000');
+        if (bera) {
+          setFromToken(bera);
+        }
+      }
+    }, [tokens, fromToken, initialFromToken]);
 
     useEffect(() => {
       if (initialFromToken && initialFromToken.address !== fromToken?.address) {
@@ -215,21 +270,15 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       }
     }, [initialToToken]);
 
-    const handleFromAmountChange = (amount: bigint) => {
-      setEditing('from');
+    const handleFromAmountChange = useCallback((amount: bigint) => {
+      setLastEditedField('from');
       setFromAmount(amount);
-    };
+    }, []);
 
     const handleToAmountChange = useCallback((amount: bigint) => {
-      setEditing('to');
+      setLastEditedField('to');
       setToAmount(amount);
-      if (priceFrom && priceTo && toToken && fromToken && amount > 0n) {
-        const toAmountFloat = parseFloat(formatUnits(amount, toToken?.decimals || 18));
-        const fromAmountFloat = (toAmountFloat * priceTo) / priceFrom;
-        const fromAmountWei = parseUnits(fromAmountFloat.toFixed(fromToken.decimals), fromToken?.decimals || 18);
-        setFromAmount(fromAmountWei);
-      }
-    }, [priceFrom, priceTo, toToken, fromToken]);
+    }, []);
 
     const formClasses = [
       'Form',
@@ -248,10 +297,12 @@ export const SwapForm: React.FC<FormProps> = React.memo(
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [paramOpen]);
 
+
     return (
       <div className={formClasses}>
         <div className="Form__box">
-          <div className="Form__head">
+          <div className={`Form__head ${showTitle ? 'Form__head--with-title' : ''}`}>
+            {showTitle && <h3 className="Form__title">Swap</h3>}
             <button className="iconLink" onClick={handleClickParams}>
               {!slippageConfig.isAuto ? slippageConfig.display : ""}
               <Nut />
@@ -285,9 +336,9 @@ export const SwapForm: React.FC<FormProps> = React.memo(
                   <p>&nbsp;minutes</p>
                 </div>
               </div>
-
             </div>
           </div>
+
 
           <div className="Inputs">
             <FromInput
@@ -299,12 +350,13 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!fromToken}
-              onBlur={() => setEditing(null)}
+              onBlur={() => setLastEditedField(null)}
             />
             <Divider
               dominantColor={dominantColor}
               secondaryColor={secondaryColor}
               onClick={handleSwitchTokens}
+              isActive={(!!fromToken && !!toToken)}
             />
             <SwapToInput
               steps={{ totalRatio: 0, steps: [] }}
@@ -316,9 +368,18 @@ export const SwapForm: React.FC<FormProps> = React.memo(
               secondaryColor={secondaryColor}
               isHomePage={isHomePage}
               disabled={!toToken}
-              onBlur={() => setEditing(null)}
+              onBlur={() => setLastEditedField(null)}
             />
           </div>
+
+          {/* RouteDisplay component - show optimal route visualization */}
+          {fromToken && toToken && fromAmount > 0n && swap.optimizedRoute && (
+            <RouteDisplay
+              optimizedRoute={swap.optimizedRoute}
+              fromToken={fromToken}
+              toToken={toToken}
+            />
+          )}
 
           <div className="Form__ConnectBtnWrapper">
             {!isConnected ? (
@@ -340,14 +401,22 @@ export const SwapForm: React.FC<FormProps> = React.memo(
             )}
           </div>
         </div>
+
+        {/* Transaction Status Modal */}
         <TransactionStatusModal
           open={showModal}
-          onClose={handleCloseModal}
+          onClose={() => setShowModal(false)}
           inputToken={fromToken}
           outputToken={toToken}
           inputAmount={fromAmount}
           outputAmount={toAmount}
           swap={swap}
+          onRefreshInputs={() => {
+            setFromAmount(0n)
+            setToAmount(0n)
+            swap.reset()
+          }}
+          onAdjustSettings={handleAdjustSettings}
         />
       </div >
     );

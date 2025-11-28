@@ -1,3 +1,5 @@
+@use "../../utils" as *;
+
 .FormTab {
   display: flex;
   gap: 8px;
@@ -32,10 +34,8 @@
   color: var(--Neutral-Onyx-pure, #8a8984);
   text-align: center;
   font-family: "TT Hoves", system-ui, sans-serif;
-  font-size: 16px;
-  font-style: normal;
+  @include typography('body-lg');
   font-weight: 500;
-  line-height: 140%;
   letter-spacing: -0.038px;
   display: flex;
   height: 32px;

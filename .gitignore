@@ -18,6 +18,9 @@ coverage
 # Turbo
 .turbo
 
+# Claude
+claude/
+
 # Vercel
 .vercel
 
@@ -42,3 +45,5 @@ packages/db/generated/client/index.js
 
 # Claude Context (local only)
 context.md
+.claude/
+.vscode/

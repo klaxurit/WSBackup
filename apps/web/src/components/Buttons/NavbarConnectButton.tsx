@@ -7,7 +7,7 @@ import { formatEther } from 'viem';
 import { WinnieFavicon } from '../SVGs/LogoSVGs';
 import earLeft from '../../assets/ear_left.png';
 import earRight from '../../assets/ear_right.png';
-import bearButtonBg from '../../assets/bear_button.svg';
+import { Button } from '../Button/Button';
 
 interface NavbarConnectButtonProps {
   onClick?: () => void;
@@ -16,15 +16,10 @@ interface NavbarConnectButtonProps {
   showRightEar?: boolean;
 }
 
-function isMobile() {
-  if (typeof navigator === 'undefined') return false;
-  return /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-}
-
 function getWalletName() {
-  if (window.ethereum?.isMetaMask) return 'MetaMask';
-  if (window.ethereum?.isRabby) return 'Rabby';
-  if (window.ethereum?.isCoinbaseWallet) return 'Coinbase Wallet';
+  if (typeof window !== 'undefined' && (window as any).ethereum?.isMetaMask) return 'MetaMask';
+  if (typeof window !== 'undefined' && (window as any).ethereum?.isRabby) return 'Rabby';
+  if (typeof window !== 'undefined' && (window as any).ethereum?.isCoinbaseWallet) return 'Coinbase Wallet';
   return 'Wallet';
 }
 
@@ -51,27 +46,21 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   const { data: balance, isLoading } = useBalance({ address });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [connectorMenuOpen, setConnectorMenuOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const connectorMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
-      if (connectorMenuRef.current && !connectorMenuRef.current.contains(event.target as Node)) {
-        setConnectorMenuOpen(false);
-      }
     }
-    if (dropdownOpen || connectorMenuOpen) {
+    if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen, connectorMenuOpen]);
+  }, [dropdownOpen]);
 
   const formatAddress = (addr: string) => {
     if (!addr) return '';
@@ -81,43 +70,18 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   };
 
   const handleConnect = useCallback(() => {
-    if (isMobile()) {
-      connect('walletConnect').catch((err: any) => {
-        setError(err?.message || 'Connection error with WalletConnect');
-      });
-    } else {
-      connect('injected').catch((err: any) => {
-        setError(err?.message || 'Connection error with Injected wallet');
-      });
-    }
+    // Utiliser Web3Modal pour tous les appareils
+    connect();
   }, [connect]);
 
-  const handleConnectInjected = useCallback(async () => {
-    setError(null);
+  const handleDisconnect = useCallback(async () => {
     try {
-      await connect('injected');
-      setConnectorMenuOpen(false);
+      await disconnect();
+      setDropdownOpen(false);
       if (onClick) onClick();
-    } catch (err: any) {
-      setError(err?.message || 'Connection error with Injected wallet');
+    } catch (error) {
+      console.error('Error when disconnecting:', error);
     }
-  }, [connect, onClick]);
-
-  const handleConnectWalletConnect = useCallback(async () => {
-    setError(null);
-    try {
-      await connect('walletConnect');
-      setConnectorMenuOpen(false);
-      if (onClick) onClick();
-    } catch (err: any) {
-      setError(err?.message || 'Connection error with WalletConnect');
-    }
-  }, [connect, onClick]);
-
-  const handleDisconnect = useCallback(() => {
-    disconnect();
-    setDropdownOpen(false);
-    if (onClick) onClick();
   }, [disconnect, onClick]);
 
   const handleCopy = useCallback(() => {
@@ -127,48 +91,42 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div style={{ position: 'relative' }} ref={dropdownRef}>
-        <button
-          className={`Navbar__ConnectButton btn btn--small btn__shade ${customClassName}`.trim()}
+        <Button
+          size="small"
+          variant="shade"
           onClick={isConnected ? () => setDropdownOpen((v) => !v) : handleConnect}
-          disabled={isConnecting}
+          loading={isConnecting}
+          customClassName={`btn__navbar-connect ${customClassName}`.trim()}
         >
           {isConnected && address ? (
             beraname ? `${beraname}` : `⛓️ ${formatAddress(address)}`
-          ) : isConnecting ? <Loader size="mini" /> : 'Connect'}
-        </button>
-        {/* Menu de sélection du connecteur uniquement sur mobile */}
-        {!isConnected && connectorMenuOpen && isMobile() && (
-          <div className="Navbar__Dropdown" ref={connectorMenuRef} style={{ minWidth: 200 }}>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Select a wallet</div>
-            <button className="Navbar__DropdownButton" onClick={handleConnectInjected} style={{ width: '100%', marginBottom: 6 }}>
-              Metamask / Injected
-            </button>
-            <button className="Navbar__DropdownButton" onClick={handleConnectWalletConnect} style={{ width: '100%' }}>
-              WalletConnect (Mobile)
-            </button>
-            {error && <div style={{ color: 'red', marginTop: 8, fontSize: 13 }}>{error}</div>}
-          </div>
-        )}
+          ) : 'Connect'}
+        </Button>
         {isConnected && dropdownOpen && (
           <div className="Navbar__Dropdown">
             <div className="Navbar__DropdownHeader">
               <p className="Navbar__Address">{beraname ? beraname : formatAddress(address!)}</p>
-              <button
-                className="Navbar__CopyButton"
+              <Button
+                size="tiny"
+                variant="shade"
                 onClick={handleCopy}
+                customClassName="btn__navbar-copy"
                 title="Copy address"
+                aria-label="Copy address"
               >
                 <CopyIcon />
-              </button>
+              </Button>
             </div>
             <div className="Navbar__DropdownWalletName">{getWalletName()}</div>
-            <button
-              className="Navbar__DisconnectButton"
+            <Button
+              size="small"
+              variant="accent"
               onClick={handleDisconnect}
+              customClassName="btn__navbar-disconnect"
               title="Disconnect"
             >
               <LogoutIcon /> Disconnect
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -177,15 +135,11 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
           {!showLeftEar && (
             <img src={earLeft} alt="Oreille gauche" className="ear left-ear" />
           )}
-          <button
-            className="Navbar__BalanceButton btn btn--small btn__disabled"
+          <Button
+            size="small"
+            variant="disabled"
             disabled
-            style={{
-              backgroundImage: `url(${bearButtonBg})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
+            customClassName="btn__navbar-balance"
           >
             <span className="Navbar__BalanceIcon">
               <WinnieFavicon />
@@ -199,7 +153,7 @@ export const NavbarConnectButton: React.FC<NavbarConnectButtonProps> = ({
                   : "0 BERA")
                 : "—"
             )}
-          </button>
+          </Button>
           {!showRightEar && (
             <img src={earRight} alt="Oreille droite" className="ear right-ear" />
           )}

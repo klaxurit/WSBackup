@@ -1,0 +1,108 @@
+@use "../../utils" as *;
+
+.VaultTimeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 16px 24px 24px 24px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 12px 16px 16px 16px;
+  }
+}
+
+.VaultTimeline__Step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.VaultTimeline__StepNumber {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-body-sm, 0.875rem);
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 2;
+
+  // État par défaut (pending)
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.4);
+
+  .VaultTimeline__Step--active & {
+    background: linear-gradient(135deg, #FF9100 0%, #FFB800 100%);
+    border-color: #FFD056;
+    color: rgb(255, 208, 86);
+    text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+    box-shadow:
+      0 0 0 4px rgba(255, 145, 0, 0.15),
+      0 4px 12px rgba(255, 145, 0, 0.3);
+    transform: scale(1.1);
+  }
+
+  .VaultTimeline__Step--completed & {
+    background: rgba(255, 145, 0, 0.2);
+    border-color: #FF9100;
+    color: #FF9100;
+
+    svg {
+      color: #FF9100;
+    }
+  }
+
+  .VaultTimeline__Step--pending & {
+    opacity: 0.5;
+  }
+}
+
+.VaultTimeline__Line {
+  height: 2px;
+  width: 48px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+
+  &--completed {
+    background: linear-gradient(90deg, #FF9100 0%, rgba(255, 145, 0, 0.4) 100%);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .VaultTimeline {
+    padding: 16px 0;
+  }
+
+  .VaultTimeline__StepNumber {
+    width: 28px;
+    height: 28px;
+    font-size: var(--font-size-caption, 0.75rem);
+  }
+
+  .VaultTimeline__Line {
+    width: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .VaultTimeline__StepNumber {
+    width: 24px;
+    height: 24px;
+    font-size: var(--font-size-caption, 0.75rem);
+  }
+
+  .VaultTimeline__Line {
+    width: 24px;
+  }
+}

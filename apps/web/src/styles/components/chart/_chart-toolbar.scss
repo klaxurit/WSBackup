@@ -3,7 +3,6 @@
 $beryl-pure: #E39229;
 $border-color: #4B5563;
 $hover-border-color: #6B7280;
-$text-color: #D1D5DB;
 $hover-bg: #241500;
 
 @keyframes bearAppear {
@@ -25,21 +24,21 @@ $hover-bg: #241500;
 
 @keyframes bearHover {
   0% {
-    opacity: 0;
+    // opacity: 0;
     transform: translateX(-50%) translateY(20px) scale(0.8);
     z-index: 1;
     /* Commence derrière */
   }
 
   50% {
-    opacity: 0.4;
+    // opacity: 0.4;
     transform: translateX(-50%) translateY(15px) scale(0.85);
     z-index: 1;
     /* Reste derrière, juste les oreilles qui dépassent */
   }
 
   100% {
-    opacity: 0.6;
+    // opacity: 0.6;
     transform: translateX(-50%) translateY(7px) scale(0.9);
     z-index: 1;
     /* Finit derrière, juste les oreilles visibles */
@@ -92,6 +91,214 @@ $hover-bg: #241500;
   justify-content: space-between;
   padding: 16px;
 
+  // Version Desktop
+  &__desktop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    @media (max-width: 1028px) {
+      display: none;
+    }
+  }
+
+  // Version Mobile
+  &__mobile {
+    display: none;
+    width: 100%;
+    position: relative;
+    z-index: 100;
+
+    @media (max-width: 1028px) {
+      display: block;
+    }
+  }
+
+  &__mobile-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__mobile-dropdown {
+    position: relative;
+    flex: 1;
+
+    .btn.btn--small.btn__accent {
+      gap: 3px;
+    }
+  }
+
+
+  &__mobile-trigger-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+  }
+
+  &__mobile-trigger-label {
+    flex: 1;
+    text-align: left;
+  }
+
+  &__mobile-trigger-arrow {
+    color: currentColor;
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__mobile-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #180E00;
+    border: 1px solid $white-012;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+    max-height: 50vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+
+    &--open {
+      transform: translateY(0);
+    }
+
+    // Masquer sur desktop sauf pour les métriques qui ont besoin des deux versions
+    @media (min-width: 1029px) {
+      display: none;
+    }
+
+    // Retirer les backgrounds des boutons dans les menus mobiles
+    .btn {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      &:active {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      &.btn__main {
+        background: transparent !important;
+        color: $beryl-pure !important;
+        border: none !important;
+        box-shadow: none !important;
+
+        &:hover {
+          background: rgba($beryl-pure, 0.1) !important;
+          color: $beryl-pure !important;
+        }
+
+      }
+
+      &.btn__shade {
+        background: transparent !important;
+        color: $onyx-light !important;
+        border: none !important;
+        box-shadow: none !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05) !important;
+          color: $white !important;
+        }
+      }
+    }
+  }
+
+  &__mobile-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: $onyx-light;
+    @include typography('body-sm');
+    font-weight: 500;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+
+    &:hover:not(&--disabled) {
+      background: $white-008;
+      color: $white;
+    }
+
+    &--active {
+      background: $beryl-pure;
+      color: $onyx-black;
+
+      &:hover {
+        background: $beryl-light;
+        color: $onyx-black;
+      }
+    }
+
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      color: #6B7280;
+
+      &:hover {
+        background: transparent;
+        color: #6B7280;
+      }
+    }
+  }
+
+  &__mobile-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+  }
+
+  &__mobile-option-label {
+    flex: 1;
+  }
+
+  &__mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+
+    @media (min-width: 1029px) {
+      display: none;
+    }
+  }
+
+  // Menu mobile spécifique pour les métriques
+  &__mobile-menu--metrics {
+    @media (min-width: 1029px) {
+      display: none;
+    }
+  }
+
   &__section {
     display: flex;
     align-items: center;
@@ -105,42 +312,61 @@ $hover-bg: #241500;
   &__chart-types {
     display: flex;
     gap: 8px;
+    .btn.btn--tiny.btn__main:hover {
+      background: #E39229 !important;
+    }
   }
 
-  &__button {
+  // Styles pour les boutons d'intervalle uniquement (animation ourson préservée)
+  &__intervals-original {
     display: flex;
+    gap: 12px;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: #180E00;
-    border: 1px solid $border-color;
-    border-radius: 8px;
-    color: $text-color;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    font-size: 14px;
-    font-weight: 500;
 
-    &:hover:not(:disabled) {
-      border-color: $hover-border-color;
-      background: $hover-bg;
-      color: #fff;
-      transform: scale(1.02);
+    >div {
+      position: relative;
     }
 
-    &:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    &--active {
-      border-color: $beryl-pure;
-      background: #180E00;
-      color: $beryl-pure;
-    }
-
-    &-label {
-      font-size: 12px;
+    // Override des styles btn pour les boutons d'intervalle
+    .btn {
+      position: relative;
+      z-index: 10;
       font-weight: 600;
+      opacity: 1;
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+        transition: all 0.1s ease-out;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .bear {
+      position: absolute;
+      top: -23px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 45px;
+      z-index: 11;
+      pointer-events: none;
+
+      &--active {
+        animation: bearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+
+      &--hover {
+        animation: bearHover 0.3s ease-out forwards;
+        z-index: 1;
+      }
+
+      &--disappearing {
+        animation: bearDisappear 0.3s ease-in forwards;
+        z-index: 0;
+      }
     }
   }
 
@@ -149,6 +375,99 @@ $hover-bg: #241500;
     height: 32px;
     background: $border-color;
     opacity: 0.5;
+  }
+
+  // Dropdown des métriques
+  &__metrics-dropdown {
+    position: relative;
+  }
+
+  &__metrics-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #180E00;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    @include typography('body-sm');
+    font-weight: 500;
+    font-family: "TT Hoves", system-ui, sans-serif;
+
+    &:hover:not(&--disabled) {
+      border-color: $hover-border-color;
+      background: $hover-bg;
+      color: #fff;
+    }
+
+    &--open {
+      border-color: $beryl-pure;
+      background: #180E00;
+      color: $beryl-pure;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__metrics-trigger-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+  }
+
+  &__metrics-trigger-label {
+    @include typography('body-xs');
+    font-weight: 600;
+  }
+
+  &__metrics-trigger-arrow {
+    color: currentColor;
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__metrics-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 8px;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    @media (max-width: 1028px) {
+      display: none;
+    }
+  }
+
+
+  &__metrics-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+  }
+
+  &__metrics-option-label {
+    flex: 1;
   }
 
   &__intervals-original {
@@ -162,23 +481,14 @@ $hover-bg: #241500;
 
     button {
       position: relative;
-      z-index: 10; // Au-dessus des oursons au hover
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 20px;
-      border: 1px solid $border-color;
-      background: #180E00;
-      color: $text-color;
+      z-index: 10;
+      padding: 10px 14px;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       opacity: 1;
 
       &:hover:not(:disabled) {
         border-color: $hover-border-color;
         background: $hover-bg;
-        color: #fff;
-        transform: scale(1.02);
       }
 
       &:active:not(:disabled) {
@@ -194,7 +504,6 @@ $hover-bg: #241500;
       &.active {
         border-color: $beryl-pure;
         background: #180E00;
-        color: #fff;
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba($beryl-pure, 0.2);
       }
@@ -221,8 +530,163 @@ $hover-bg: #241500;
 
       &--disappearing {
         animation: bearDisappear 0.3s ease-in forwards;
-        z-index: 1;
+        z-index: 0;
       }
     }
+  }
+
+  // Section droite pour les métriques
+  &__section--right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+      margin-top: 12px;
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
+  // Dropdown des métriques
+  &__metrics-dropdown {
+    position: relative;
+    display: inline-block;
+    padding-top: 22px;
+
+    .btn.btn--tiny.btn__accent {
+      display: flex;
+      gap: 3px;
+    }
+
+    @media (max-width: 768px) {
+      padding-top: 0;
+      width: 100%;
+      max-width: 200px;
+    }
+  }
+
+  &__metrics-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    @include typography('body-sm');
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid #4B5563;
+    background: #180E00;
+    color: #D1D5DB;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+
+    &:hover:not(&--disabled) {
+      background: $white-012;
+      color: $white;
+      border-color: $white-016;
+    }
+
+    &--open {
+      background: #180E00;
+      color: $white;
+      border-color: $beryl-pure;
+    }
+
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      justify-content: space-between;
+      min-width: auto;
+      min-height: 44px;
+      border-color: $border-color;
+    }
+  }
+
+  &__metrics-trigger-icon {
+    @include typography('body-sm');
+    line-height: 1;
+  }
+
+  &__metrics-trigger-label {
+    flex: 1;
+    text-align: left;
+  }
+
+  &__metrics-trigger-arrow {
+    color: currentColor;
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__metrics-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 9999;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    margin-top: 4px;
+    overflow: hidden;
+    min-width: 120px;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &__metrics-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: $onyx-light;
+    @include typography('body-xs');
+    font-weight: 500;
+    font-family: "TT Hoves", system-ui, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+
+    &:hover {
+      background: $white-008;
+      color: $white;
+    }
+
+    &--active {
+      background: $beryl-pure;
+      color: $onyx-black;
+
+      &:hover {
+        background: $beryl-light;
+        color: $onyx-black;
+      }
+    }
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &__metrics-option-icon {
+    @include typography('body-sm');
+    line-height: 1;
+  }
+
+  &__metrics-option-label {
+    flex: 1;
   }
 }

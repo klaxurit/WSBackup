@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { useSwap } from '../../hooks/useSwap';
+import type { UseSwapReturn } from '../../hooks/swap/useSwap';
 import { formatEther, formatUnits } from 'viem';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { FallbackImg } from '../utils/FallbackImg';
-import { usePrice } from '../../hooks/usePrice';
+import { TokenLogo } from '../Common/TokenLogo';
+import { useTokensInPool } from '../../hooks/useTokensInPool';
 import { formatTokenAmount, formatUsdAmount } from '../../utils/format';
-import { getUsdAmount, getPoolFeesInBera } from '../../utils/transaction';
+import { getUsdAmount } from '../../utils/transaction';
 import { Modal } from '../Common/Modal';
 import { Loader } from '../Loader/Loader';
+import { processSwapError, type ErrorAction } from '../../utils/errorMapping';
 
 interface TransactionStatusModalProps {
   open: boolean;
@@ -16,7 +17,9 @@ interface TransactionStatusModalProps {
   outputToken: BerachainToken | null;
   inputAmount: bigint;
   outputAmount: bigint;
-  swap: ReturnType<typeof useSwap>
+  swap: UseSwapReturn;
+  onRefreshInputs: () => void;
+  onAdjustSettings?: () => void;
 }
 
 export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
@@ -25,29 +28,67 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
   inputToken,
   outputToken,
   inputAmount,
-  swap
+  swap,
+  onRefreshInputs,
+  onAdjustSettings
 }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [shouldRenderDetails, setShouldRenderDetails] = useState(false);
-  const { data: usdValueIn = 0 } = usePrice(inputToken)
-  const { data: usdValueOut = 0 } = usePrice(outputToken)
   const { quote } = swap
+  const { data: tokensData } = useTokensInPool();
+  const inputTokenData = useMemo(() => {
+    if (!inputToken || !tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === inputToken.address.toLowerCase()
+    );
+  }, [inputToken, tokensData]);
+
+  const outputTokenData = useMemo(() => {
+    if (!outputToken || !tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === outputToken.address.toLowerCase()
+    );
+  }, [outputToken, tokensData]);
+
+  const usdValueIn = inputTokenData?.priceUSD || 0;
+  const usdValueOut = outputTokenData?.priceUSD || 0;
+  const beraTokenData = useMemo(() => {
+    if (!tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === '0x0000000000000000000000000000000000000000' ||
+      token.address.toLowerCase() === '0x6969696969696969696969696969696969696969'
+    );
+  }, [tokensData]);
+
+  const beraUsdPrice = beraTokenData?.priceUSD || 0;
 
   const usdAmountIn = useMemo(() => {
     if (inputAmount === 0n) return 0
     return (usdValueIn * +formatUnits(inputAmount, inputToken?.decimals || 18)).toFixed(2)
-  }, [usdValueIn, inputAmount])
+  }, [usdValueIn, inputAmount, inputToken?.decimals])
+
   const usdAmountOut = useMemo(() => {
     if (!quote || quote?.amountOut === 0n) return 0
     return (usdValueOut * +formatUnits(quote.amountOut, outputToken?.decimals || 18)).toFixed(2)
-  }, [usdValueOut, quote])
+  }, [usdValueOut, quote, outputToken?.decimals])
 
-  const poolFeesInBera = useMemo(() => getPoolFeesInBera(swap.optimizedRoute), [swap.optimizedRoute]);
-  const poolFeesUsd = useMemo(() => getUsdAmount(usdValueIn, BigInt(poolFeesInBera)), [usdValueIn, poolFeesInBera]);
+  const poolFeesUsd = useMemo(() => {
+    if (!swap.optimizedRoute || inputAmount === 0n) return 0;
+
+    const totalFeeBasisPoints = swap.optimizedRoute.routes.reduce((total, { route }) => {
+      const routeFees = route.pools.reduce((sum, pool) => sum + pool.fee, 0);
+      return total + routeFees;
+    }, 0);
+
+    const feeAmountInToken = (inputAmount * BigInt(totalFeeBasisPoints)) / 1_000_000n;
+
+    return getUsdAmount(usdValueIn, feeAmountInToken, inputToken?.decimals || 18);
+  }, [swap.optimizedRoute, inputAmount, usdValueIn, inputToken?.decimals]);
+
   const gasFeesUsd = useMemo(() => {
-    if (!usdValueIn) return 0;
-    return usdValueIn * +formatEther(quote?.gasEstimate || 0n);
-  }, [usdValueIn, quote]);
+    if (!beraUsdPrice || !quote?.gasEstimate) return 0;
+    return beraUsdPrice * +formatEther(quote.gasEstimate);
+  }, [beraUsdPrice, quote?.gasEstimate]);
 
   useEffect(() => {
     if (isDetailsOpen) {
@@ -60,23 +101,28 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
   const btnText = useMemo(() => {
     if (swap.status === "ready" && !swap.needsApproval) return "Swap"
-    if (swap.status === "ready" && swap.needsApproval) return "Approve"
+    if (swap.status === "ready" && swap.needsApproval) {
+      const tokenSymbol = inputToken?.symbol || "Token";
+      return `Approve ${tokenSymbol}`;
+    }
     if (["loading-routes", "quoting"].includes(swap.status)) return "Loading"
     if (["approving"].includes(swap.status)) return null
+    if (swap.status === "idle") return "Loading routes..."
     return swap.status.replace(/^./, swap.status[0].toUpperCase())
-  }, [swap.status, swap.needsApproval])
+  }, [swap.status, swap.needsApproval, inputToken?.symbol])
 
   const rateValue = useMemo(() => {
-    if (!swap?.quote) return "0"
+    if (!swap?.quote || !inputAmount || inputAmount === 0n || !swap.quote.amountOut || swap.quote.amountOut === 0n) return "0"
     const inputDecimals = inputToken?.decimals || 18;
     const outputDecimals = outputToken?.decimals || 18;
     return parseFloat(formatUnits((inputAmount * (10n ** BigInt(outputDecimals))) / swap.quote.amountOut, inputDecimals)).toFixed(2)
-  }, [swap.quote, inputAmount])
+  }, [swap.quote, inputAmount, inputToken?.decimals, outputToken?.decimals])
 
   const priceImpact = useMemo(() => {
-    if (!quote?.priceImpact) return "0"
-    if (quote.priceImpact <= 100) return `-${(100 - quote.priceImpact).toFixed(2)}`
-    if (quote.priceImpact > 100) return `+${(quote.priceImpact - 100).toFixed(2)}`
+    if (!quote?.priceImpact || quote.priceImpact === 0) return "<0.01"
+    // Price impact is already a percentage (e.g., 0.5 means 0.5%)
+    // Display with negative sign to indicate loss
+    return `-${quote.priceImpact.toFixed(2)}`
   }, [quote])
 
   const handleToggleDetails = () => setIsDetailsOpen((v) => !v);
@@ -88,49 +134,116 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     }
   };
 
-  const isLoadingStep = [
-    "loading-routes", "quoting", "approving", "confirming", "swapping"
-  ].includes(swap.status);
   const isSuccess = swap.status === "success";
   const isError = swap.status === "error";
-
-  const shouldShowButton = !isSuccess || (isSuccess && open);
+  const isLoadingStep = [
+    "idle", "loading-routes", "quoting", "approving", "confirming", "swapping"
+  ].includes(swap.status);
 
   useEffect(() => {
-    if (isSuccess && open) {
-      const timer = setTimeout(() => {
-        handleCloseAndRefresh();
-      }, 4000);
-
-      return () => clearTimeout(timer);
+    if (open) {
+      setIsDetailsOpen(false);
+      setShouldRenderDetails(false);
     }
-  }, [isSuccess, open]);
+  }, [open]);
 
   const handleCloseAndRefresh = () => {
     onClose();
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+    swap.reset();
+    if (onRefreshInputs) {
+      setTimeout(() => {
+        onRefreshInputs();
+      }, 100);
+    }
   };
 
   const handleModalClose = isSuccess ? handleCloseAndRefresh : onClose;
+
+  // Fermer automatiquement la modal après un swap réussi
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        handleCloseAndRefresh();
+      }, 2000); // Fermer après 2 secondes pour laisser le temps de voir le succès
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
+
+  // Process error for user-friendly display
+  const errorInfo = useMemo(() => {
+    if (!isError || !swap.error) return null;
+
+    return processSwapError(swap.error, {
+      onRetry: () => {
+        swap.swap();
+      },
+      onAdjustSettings: () => {
+        onAdjustSettings?.();
+        onClose();
+      },
+      onCheckWallet: () => {
+        // Open wallet or close modal
+        onClose();
+      },
+      onClose: () => {
+        onClose()
+        swap.reset()
+      },
+      onApprove: () => {
+        if (swap.needsApproval) {
+          swap.approve();
+        }
+      }
+    });
+  }, [isError, swap.error, swap.refresh, swap.needsApproval, swap.approve, onAdjustSettings, onClose]);
+
+  // Helper function to render action button
+  const renderActionButton = (action: ErrorAction, index: number) => (
+    <button
+      key={index}
+      className={`btn btn--small ${action.type === 'primary'
+        ? 'btn__main'
+        : 'btn__shade'
+        }`}
+      onClick={action.action}
+      style={{ marginTop: index === 0 ? 16 : 8 }}
+    >
+      {action.label}
+    </button>
+  );
 
   return (
     <Modal open={open} onClose={handleModalClose} className="TransactionModal__box" overlayClassName="TransactionModal__overlay">
       {isError ? (
         <div className="TransactionModal__error">
           <div className="TransactionModal__head" style={{ marginBottom: 16 }}>
-            <span className="TransactionModal__title">Transaction failed</span>
+            <span className="TransactionModal__title">{errorInfo?.title || 'Transaction Failed'}</span>
             <button className="TransactionModal__close" onClick={onClose} aria-label="Close">
               &#10005;
             </button>
           </div>
-          <div className="TransactionModal__errorMessage" style={{ marginBottom: 24 }}>
-            <p>The transaction was rejected or failed. Please try again or check your wallet.</p>
+          <div className="TransactionModal__errorMessage" style={{ marginBottom: 16 }}>
+            <p>{errorInfo?.description || 'An unexpected error occurred. Please try again.'}</p>
           </div>
-          <button className="TransactionModal__swapBtn TransactionModal__swapBtn--error" onClick={onClose} style={{ marginTop: 8 }}>
-            Close
-          </button>
+          {/* Error details (for debugging) */}
+          {swap.error?.code && (
+            <div className="TransactionModal__errorDetails" style={{ marginBottom: 16, fontSize: '12px', color: '#666' }}>
+              Error Code: {swap.error.code}
+            </div>
+          )}
+          {/* Action buttons */}
+          <div className="TransactionModal__errorActions">
+            {errorInfo?.actions.map((action, index) => renderActionButton(action, index)) || (
+              <button
+                className="btn btn--large btn__shade"
+                onClick={onClose}
+                style={{ marginTop: 16 }}
+              >
+                Close
+              </button>
+            )}
+          </div>
         </div>
       ) : (!inputToken || !outputToken) ? null : (
         <>
@@ -148,10 +261,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountIn}</span>
               </div>
-              {inputToken.logoUri
-                ? (<img src={inputToken.logoUri} alt={inputToken.symbol} className="TransactionModal__tokenLogo" />)
-                : <FallbackImg content={inputToken.symbol} />
-              }
+              <TokenLogo logoUri={inputToken.logoUri} symbol={inputToken.symbol} size="large" className="TransactionModal__tokenLogo" />
             </div>
           </div>
           <div className="TransactionModal__arrowDown">↓</div>
@@ -163,10 +273,7 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                 </span>
                 <span className="TransactionModal__tokenPrice">${usdAmountOut}</span>
               </div>
-              {outputToken.logoUri
-                ? (<img src={outputToken.logoUri} alt={outputToken.symbol} className="TransactionModal__tokenLogo" />)
-                : <FallbackImg content={outputToken.symbol} />
-              }
+              <TokenLogo logoUri={outputToken.logoUri} symbol={outputToken.symbol} size="large" className="TransactionModal__tokenLogo" />
             </div>
           </div>
           <div className="TransactionModal__moreRow">
@@ -192,12 +299,12 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
                     <span className="TransactionModal__infoLabel">Rate</span>
                     <span className="TransactionModal__infoContent">
                       1 {outputToken.symbol} &#8776; {rateValue} {inputToken.symbol}
-                      <span className="TransactionModal__rateUsd">(${usdValueOut.toFixed(2)})</span>
+                      <span className="TransactionModal__rateUsd">(${usdValueOut > 0 ? usdValueOut.toFixed(2) : 'N/A'})</span>
                     </span>
                   </div>
                   <div className="TransactionModal__infoRow">
                     <span className="TransactionModal__infoLabel">Max slippage</span>
-                    <span className="TransactionModal__infoContent">{swap.slippageTolerance}%</span>
+                    <span className="TransactionModal__infoContent">{(swap.slippageTolerance * 100).toFixed(2)}%</span>
                   </div>
                   <div className="TransactionModal__infoRow">
                     <span className="TransactionModal__infoLabel">Min amount</span>
@@ -211,14 +318,17 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
               )}
             </div>
           </div>
-          {shouldShowButton && (
-            <button
-              className={`TransactionModal__swapBtn TransactionModal__swapBtn--ready${isLoadingStep ? ' btn__disabled' : ''}${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
-              onClick={handleSwap}
-              disabled={isLoadingStep || !['ready'].includes(swap.status)}
-            >
-              {isLoadingStep ? <Loader size="small" color="#191816" /> : isSuccess ? 'Success' : btnText}
-            </button>
+          {!isError && (
+            <div className="TransactionModal__ConnectBtn">
+              <button
+                className={`btn btn--large btn__${isLoadingStep ? 'disabled' : isSuccess ? 'main' : 'main'} TransactionModal__swapBtn${isSuccess ? ' TransactionModal__swapBtn--success' : ''}`}
+                onClick={handleSwap}
+                disabled={isLoadingStep || isSuccess || !['ready'].includes(swap.status)}
+              >
+                {isSuccess && <div className="psychedelic-bear" />}
+                {isLoadingStep ? <Loader size="small" /> : isSuccess ? 'Success' : btnText}
+              </button>
+            </div>
           )}
         </>
       )}

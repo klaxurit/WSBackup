@@ -1,8 +1,11 @@
+@use '../../utils' as *;
+@use 'sass:color';
+
 // Vault Components Styles
 
 // VaultModal
 .VaultModal {
-  background: #1a1a1a;
+  background: $onyx-black;
   border-radius: 16px;
   border: 1px solid #333;
   max-width: 500px;
@@ -18,8 +21,8 @@
     border-bottom: 1px solid #333;
 
     h3 {
-      color: #fff;
-      font-size: 1.2rem;
+      color: $white;
+      @include typography('heading-md');
       font-weight: 600;
       margin: 0;
     }
@@ -28,8 +31,8 @@
   &__Close {
     background: none;
     border: none;
-    color: #aaa;
-    font-size: 1.5rem;
+    color: $onyx-light;
+    @include typography('heading-xl');
     cursor: pointer;
     padding: 0;
     width: 24px;
@@ -39,7 +42,7 @@
     justify-content: center;
 
     &:hover {
-      color: #fff;
+      color: $white;
     }
   }
 
@@ -55,24 +58,24 @@
 
   &__ModeButton {
     flex: 1;
-    background: #2a2a2a;
+    background: $onyx-darker;
     border: 1px solid #333;
-    color: #aaa;
+    color: $onyx-light;
     padding: 0.75rem;
     border-radius: 8px;
-    font-size: 0.9rem;
+    @include typography('body-sm');
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      color: #fff;
-      border-color: #555;
+      color: $white;
+      border-color: $onyx-medium;
     }
 
     &.active {
-      background: #e39229;
-      border-color: #e39229;
-      color: #fff;
+      background: $beryl-pure;
+      border-color: $beryl-pure;
+      color: $white;
     }
   }
 
@@ -89,44 +92,44 @@
 
   &__TokenButton {
     flex: 1;
-    background: #2a2a2a;
+    background: $onyx-darker;
     border: 1px solid #333;
-    color: #aaa;
+    color: $onyx-light;
     padding: 0.75rem;
     border-radius: 8px;
-    font-size: 0.9rem;
+    @include typography('body-sm');
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      color: #fff;
-      border-color: #555;
+      color: $white;
+      border-color: $onyx-medium;
     }
 
     &.active {
-      background: #e39229;
-      border-color: #e39229;
-      color: #fff;
+      background: $beryl-pure;
+      border-color: $beryl-pure;
+      color: $white;
     }
   }
 
   &__Summary {
-    background: #2a2a2a;
+    background: $onyx-darker;
     border: 1px solid #333;
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1.5rem;
 
     h4 {
-      color: #fff;
-      font-size: 1rem;
+      color: $white;
+      @include typography('body-lg');
       font-weight: 600;
       margin: 0 0 0.75rem 0;
     }
 
     p {
-      color: #aaa;
-      font-size: 0.8rem;
+      color: $onyx-light;
+      @include typography('caption');
       margin: 0.5rem 0 0 0;
     }
   }
@@ -142,27 +145,27 @@
     }
 
     span:first-child {
-      color: #aaa;
-      font-size: 0.9rem;
+      color: $onyx-light;
+      @include typography('body-sm');
     }
 
     span:last-child {
-      color: #fff;
+      color: $white;
       font-weight: 600;
     }
   }
 
   &__WithdrawInfo {
-    background: #2a2a2a;
+    background: $onyx-darker;
     border: 1px solid #333;
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1.5rem;
 
     p {
-      color: #fff;
+      color: $white;
       margin: 0 0 0.5rem 0;
-      font-size: 0.9rem;
+      @include typography('body-sm');
 
       &:last-child {
         margin-bottom: 0;
@@ -178,31 +181,9 @@
   }
 }
 
-// VaultActionButton specific styles
+// VaultActionButton specific styles - Harmonized with design system
 .VaultDetailPage__ActionButton {
   width: 100%;
-
-  &.btn__disabled {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    color: #666;
-    cursor: not-allowed;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.02);
-      color: #666;
-    }
-  }
-
-  &.btn__main {
-    background: #e39229;
-    border: 1px solid #e39229;
-    color: #000;
-
-    &:hover {
-      background: #f0a040;
-      border: 1px solid #f0a040;
-    }
-  }
+  // Utilise maintenant les styles généraux du design system
+  // Pas de redéfinition des styles btn__main, btn__disabled, etc.
 }

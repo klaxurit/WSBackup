@@ -1,14 +1,22 @@
 import { useState, useEffect } from "react";
 import { HuahuaNetworkYellow } from "../SVGs/LogoSVGs";
 import { Tooltip } from "../Tooltip/Tooltip";
+import { formatUnits } from "viem";
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
+import type { useSwap } from '../../hooks/swap/useSwap';
 
-export const SwapDetails = ({ swapData }: { swapData: any }) => {
+interface SwapDetailsProps {
+  swap: ReturnType<typeof useSwap>;
+  fromToken: BerachainToken | null;
+  toToken: BerachainToken | null;
+  fromAmount: bigint;
+}
+
+export const SwapDetails = ({ swap, fromToken, toToken, fromAmount }: SwapDetailsProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullyOpen, setIsFullyOpen] = useState(false);
   const [currentTooltip, setCurrentTooltip] = useState<string | null>(null);
   const [hoveringTooltip, setHoveringTooltip] = useState(false);
-  const tokenIn = { symbol: "TOKEN1" };
-  const tokenOut = { symbol: "TOKEN2" };
 
   const toggleDetails = () => {
     setIsOpen(!isOpen);
@@ -30,7 +38,44 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
     }
   }, [hoveringTooltip]);
 
-  if (!swapData) return <></>;
+  // Ne pas afficher si pas de données ou si en cours de chargement
+  if (!swap.quote || !fromToken || !toToken || fromAmount === 0n) {
+    return null;
+  }
+
+  // Calculer le taux d'échange
+  const exchangeRate = fromAmount > 0n
+    ? Number(formatUnits(swap.quote.amountOut, toToken.decimals)) / Number(formatUnits(fromAmount, fromToken.decimals))
+    : 0;
+
+  // Calculer les fees totales
+  const calculateTotalFees = () => {
+    if (!swap.optimizedRoute) return 0;
+
+    let totalFeeBps = 0;
+    swap.optimizedRoute.routes.forEach(route => {
+      route.route.fees.forEach(fee => {
+        totalFeeBps += fee * (route.percentage / 100);
+      });
+    });
+
+    return totalFeeBps / 10000; // Convert basis points to percentage
+  };
+
+  const totalFeePercentage = calculateTotalFees();
+  const feeInUSD = fromAmount > 0n
+    ? (Number(formatUnits(fromAmount, fromToken.decimals)) * totalFeePercentage)
+    : 0;
+
+  // Estimer le coût du gas en USD (approximation)
+  const gasEstimateInUSD = swap.quote.gasEstimate
+    ? Number(formatUnits(swap.quote.gasEstimate, 18)) * 0.000001 // Estimation approximative
+    : 0;
+
+  // Calculer le minimum reçu avec slippage
+  const minReceived = swap.quote.amountOutMinimum
+    ? Number(formatUnits(swap.quote.amountOutMinimum, toToken.decimals))
+    : 0;
 
   return (
     <div
@@ -57,7 +102,7 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
               <circle cx="7" cy="4.95825" r="0.875" fill="#8A8984" />
             </svg>
             <p className="SwapDetails__PriceFee">
-              1 {tokenIn?.symbol} = {swapData?.totalRatio || 0} {tokenOut?.symbol}
+              1 {fromToken.symbol} = {exchangeRate.toFixed(6)} {toToken.symbol}
             </p>
             <p className="SwapDetails__PriceFeeInUSD">$0.00</p>
           </div>
@@ -93,7 +138,7 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
               onMouseEnter={() => setCurrentTooltip("priceImpact")}
               onMouseLeave={() => setHoveringTooltip(false)}
             >
-              ~0.02%
+              {swap.quote.priceImpact > 0.01 ? `${swap.quote.priceImpact.toFixed(2)}%` : '<0.01%'}
             </p>
             {currentTooltip === "priceImpact" && (
               <Tooltip
@@ -116,15 +161,15 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
               onMouseEnter={() => setCurrentTooltip("maxSlippage")}
               onMouseLeave={() => setHoveringTooltip(false)}
             >
-              <span className="SwapDetails__SectionTag">Auto</span>
-              <span>5%</span>
+              <span className="SwapDetails__SectionTag">{swap.slippageTolerance === 0.05 ? 'Auto' : 'Custom'}</span>
+              <span>{(swap.slippageTolerance * 100).toFixed(1)}%</span>
             </p>
             {currentTooltip === "maxSlippage" && (
               <Tooltip
                 className="tooltip__MaxSlippage"
                 content={
                   <span>
-                    Receive min. 307830 TOSHI
+                    Receive min. {minReceived.toFixed(6)} {toToken.symbol}
                     <br />
                     If the price moves below for you to
                     <br />
@@ -143,13 +188,13 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
             )}
           </div>
           <div className="SwapDetails__SectionRow">
-            <p className="SwapDetails__SectionRight">Fee (0.3%)</p>
+            <p className="SwapDetails__SectionRight">Fee ({(totalFeePercentage * 100).toFixed(2)}%)</p>
             <p
               className="SwapDetails__SectionLeft"
               onMouseEnter={() => setCurrentTooltip("fee")}
               onMouseLeave={() => setHoveringTooltip(false)}
             >
-              $0.30
+              ${feeInUSD.toFixed(2)}
             </p>
             {currentTooltip === "fee" && (
               <Tooltip
@@ -158,7 +203,7 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
                   <span>
                     Fees are applied to ensure you the
                     <br />
-                    best experience on Huahuaswap,
+                    best experience on WinnieSwap,
                     <br />
                     and have already been taken into
                     <br />
@@ -184,7 +229,7 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
               <span className="SwapDetails__SectionNetworkSVG">
                 <HuahuaNetworkYellow />
               </span>
-              <span>$8.40</span>
+              <span>${gasEstimateInUSD.toFixed(2)}</span>
             </p>
             {currentTooltip === "networkCost" && (
               <Tooltip
@@ -193,9 +238,9 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
                   <span>
                     <img src="/route.svg" alt="" style={{ height: "27px", width: "200px" }} />
                     <br />
-                    Network cost is paid in HUAHUA
+                    Network cost is paid in BERA
                     <br />
-                    on the Chihuahua chain for the
+                    on the Berachain for the
                     <br />
                     transaction to proceed.
                     <a href="#" target="_blank" rel="noopener noreferrer">
@@ -222,14 +267,14 @@ export const SwapDetails = ({ swapData }: { swapData: any }) => {
               onMouseEnter={() => setCurrentTooltip("orderRouting")}
               onMouseLeave={() => setHoveringTooltip(false)}
             >
-              Chihuahua Chain API
+              {swap.quote.routeDetails}
             </p>
             {currentTooltip === "orderRouting" && (
               <Tooltip
                 className="tooltip__OrderRoutingTooltip"
                 content={
                   <span>
-                    Best price route costs ~$0.64 in gas.
+                    Best price route costs ~${gasEstimateInUSD.toFixed(2)} in gas.
                     <br />
                     This order optimizes your total output
                     <br />

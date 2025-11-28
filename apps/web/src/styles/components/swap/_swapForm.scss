@@ -44,8 +44,7 @@
 
       .Form__head {
         h5 {
-          font-size: 1.25rem;
-          font-weight: 600;
+          @include typography('heading-lg');
           margin: 0;
         }
       }
@@ -77,9 +76,10 @@
       color: $beryl-pure;
       border: 1px solid $onyx-pure;
       border-radius: 8px;
-      font-size: 0.875rem;
+      @include typography('body-sm');
       cursor: pointer;
       transition: all 0.2s ease;
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
 
       &:hover {
         background: $onyx-pure;
@@ -96,10 +96,23 @@
     align-self: stretch;
 
     h5 {
-      font-size: 16px;
+      @include typography('body-lg');
+      font-weight: 600;
       margin: 0;
       color: var(--Neutral-White, #fff);
     }
+
+    &--with-title {
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--Neutral-White, #fff);
   }
 
   &__Tabs {
@@ -153,14 +166,13 @@
   right: 0;
   padding: 16px 16px 16px 16px;
   border-radius: 24px;
-  // border: 1px solid rgba(27, 26, 23);
-  background: rgba(27, 26, 23);
+  background: #180E00;
   z-index: 1;
   width: 300px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid #504F4C;
+  border: 1px solid $white-008;
 
   &__param {
     display: flex;
@@ -174,21 +186,23 @@
     gap: 2px;
     align-items: center;
     justify-content: space-between;
-    border: 1px solid #504F4C;
-    background: #191816;
+    border: 1px solid $white-008;
+    background: $white-008;
     padding: 2px 5px;
     border-radius: 15px;
     min-height: 28px;
 
 
     button {
-      color: #8a8984;
+      color: $onyx-pure;
       padding: 2px 5px;
       left: 2px;
       border-radius: 12px;
-      border: 1px solid #504F4C;
+      border: 1px solid $white-008;
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
 
       &.active {
+        background: $white-008;
         color: #E39229;
       }
     }
@@ -204,7 +218,8 @@
     p {
       color: #8a8984;
       margin: 0;
-      font-size: 12px;
+      @include typography('caption');
+      font-weight: 400;
     }
   }
 

@@ -4,9 +4,14 @@
   position: fixed;
   top: 0;
   left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.6);
   z-index: 2000;
   opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.25s cubic-bezier(0.4, 0.2, 0.2, 1);
 
   &.open {
@@ -18,9 +23,9 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: var(--Neutral-Onyx-blacker-bis, #12110e);
-  border-radius: var(--XL, 28px);
-  border: 1px solid var(--Neutral-Onyx-darker-ters, #1d1c1a);
+  background: #180E00;
+    border-radius: 28px;
+    border: 1px solid $white-008;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   opacity: 0;
   transform: translateY(32px) scale(0.98);
@@ -45,16 +50,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
 }
 
 .MobileMenuModal__Box {
   position: relative;
-  background-color: #161414;
+  background: #180E00;
   color: #fff;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  border: 1.5px solid var(--Neutral-Onyx-darker-ters, #1d1c1a);
-  padding: 32px 20px 24px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid $white-008;
+  padding: 24px 20px 20px 20px;
   min-width: 90vw;
   max-width: 400px;
   min-height: 320px;
@@ -63,61 +69,69 @@
   align-items: center;
   position: relative;
   justify-content: space-between;
+  backdrop-filter: blur(10px);
+
+  .SearchBar.expanded {
+    width: 100%;
+  }
 
   &::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url('/src/assets/head_bg.png');
-    background-size: cover;
-    background-position: center -25px;
-    background-repeat: no-repeat;
-    opacity: 0.25;
+    background: linear-gradient(135deg, rgba(255, 145, 0, 0.05) 0%, rgba(0, 0, 0, 0.1) 100%);
     z-index: 1;
-    border-radius: 24px;
-    pointer-events: none;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.25); // Optionnel, pour renforcer la lisibilité
-    z-index: 2;
-    border-radius: 24px;
+    border-radius: 16px;
     pointer-events: none;
   }
 
   >* {
     position: relative;
-    z-index: 3;
+    z-index: 2;
   }
 }
 
 .MobileMenuModal__Close {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 16px;
+  right: 16px;
   background: none;
   border: none;
-  color: #fff;
-  font-size: 24px;
+  color: $white-064;
+  font-size: var(--font-size-heading-lg, 1.25rem);
   cursor: pointer;
-  z-index: 1;
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.12);
+  }
 }
 
 .MobileMenuModal__Nav {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
   width: 100%;
   align-items: center;
-  margin-top: 24px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .MobileMenuModal__Link {
-color: $beryl-medium;
-  font-size: 1.7rem;
+  color: $beryl-medium;
+  @include typography('heading-2xl');
   font-weight: 600;
   opacity: 0.85;
   margin-top: 0;
@@ -128,35 +142,18 @@ color: $beryl-medium;
     -1px -1px 0 #000,
     1px -1px 0 #000,
     -1px 1px 0 #000;
-    padding: 10px 0;
-}
+  padding: 10px 0;
+  text-decoration: none;
+  transition: all 0.15s ease;
 
-.MobileMenuModal__Link:hover {
-  background: #232323;
+  &:hover {
+    background: #232323;
+    opacity: 1;
+  }
 }
 
 .MobileMenuModal__Search {
   width: 100%;
-  margin-top: 8px;
-}
-
-.SearchBar {
-  width: 100%;
-  bottom: 0;
-}
-
-.MobileMenuModal__Close {
-  color: $beryl-medium;
-  font-size: 1.7rem;
-  font-weight: 600;
-  opacity: 0.85;
-  margin-top: 0;
-  text-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.45),
-    0 0 2px #000,
-    1px 1px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000;
-  flex: 0 0 auto;
+  margin-top: 16px;
+  position: relative;
 }

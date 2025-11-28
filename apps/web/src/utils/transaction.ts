@@ -1,5 +1,5 @@
 import { formatUnits } from 'viem';
-import type { OptimizedRoute, PoolInfo, SingleRoute } from '../hooks/useSwap';
+import type { OptimizedRoute, PoolInfo, SingleRoute } from '../hooks/swap/useSwap';
 
 export function getUsdAmount(tokenUsdPrice: number, amount: bigint, decimal: number = 18) {
   if (!tokenUsdPrice || amount === 0n) return 0;

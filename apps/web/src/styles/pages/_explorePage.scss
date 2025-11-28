@@ -10,10 +10,43 @@
 
   .SearchBar {
     width: 42px;
+    flex-shrink: 0;
+
+    &.expanded {
+      width: 220px;
+
+      @media (max-width: 600px) {
+        width: 100%;
+        flex: 1 1 100%;
+      }
+    }
   }
 
   @media (min-width: 600px) {
     gap: 32px;
+  }
+
+  &__Header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    @media (max-width: 600px) {
+      flex-wrap: wrap;
+    }
+  }
+
+  &__Tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 1;
+    min-width: 0;
+
+    @media (max-width: 600px) {
+      flex: 1 1 auto;
+    }
   }
 
   &__Search {
@@ -54,7 +87,7 @@
 
   &__SearchInput {
     font-family: inherit;
-    font-size: 1rem;
+    @include typography('body-lg');
     font-weight: 500;
     line-height: 1.2;
     color: var(--neutral2, #e0e0e0);
@@ -138,6 +171,10 @@
       width: 220px;
       border-color: var(--accent1, #e39229);
       box-shadow: 0px 0px 0px 4px rgba(227, 146, 41, 0.08);
+
+      .iconSearch {
+        left: 0;
+      }
     }
 
     &__iconWrapper {
@@ -166,7 +203,7 @@
 
     &__input {
       font-family: inherit;
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 500;
       color: var(--neutral2, #e0e0e0);
       background: transparent;

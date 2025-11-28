@@ -1,0 +1,1135 @@
+@use "../../utils" as *;
+
+.VaultDepositModal__Overlay {
+  backdrop-filter: blur(4px);
+}
+
+.VaultDepositModal__Box {
+  max-width: 480px;
+  width: 90%;
+  padding: 0;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    max-width: 95%;
+  }
+}
+
+.VaultDepositModal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 400px;
+}
+
+.VaultDepositModal__Header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 16px 20px;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 16px 16px 12px 16px;
+  }
+}
+
+.VaultDepositModal__HeaderLeft {
+  justify-self: start;
+}
+
+.VaultDepositModal__Title {
+  justify-self: center;
+  @include typography('heading-lg');
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    @include typography('heading-md');
+  }
+}
+
+.VaultDepositModal__Close {
+  justify-self: end;
+  background: none;
+  border: none;
+  color: #fff;
+  @include typography('heading-lg');
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.15s;
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    color: #FFD056;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.VaultDepositModal__Content {
+  padding: 0 24px 24px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 0 16px 20px 16px;
+  }
+}
+
+// Styles pour les étapes communes
+.VaultDepositModal__StepContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.VaultDepositModal__InfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  .label {
+    @include typography('body-sm');
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .value {
+    @include typography('body-sm');
+    font-weight: 600;
+    color: #fff;
+  }
+}
+
+.VaultDepositModal__TokenInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: black;
+    border: 2px solid $beryl-pure;
+  }
+
+  .amount {
+    @include typography('heading-3xl');
+    font-weight: 700;
+    color: #fff;
+    margin-right: 8px;
+  }
+
+  .symbol {
+    @include typography('heading-md');
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+// Les boutons utilisent les classes existantes de l'app (btn btn--large btn__main, etc.)
+
+.VaultDepositModal__Description {
+  @include typography('body-sm');
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  margin: 12px 0;
+  text-align: center;
+}
+
+// ========================================
+// Styles pour ApprovalStep
+// ========================================
+.VaultDepositModal__AllowanceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+// ========================================
+// Styles pour ConfirmDepositStep
+// ========================================
+
+// Warning Banner for Pool Ratio Adjustment
+.VaultDepositModal__WarningBanner {
+  background: linear-gradient(135deg, rgba(255, 145, 0, 0.12) 0%, rgba(255, 180, 70, 0.08) 100%);
+  border: 1px solid rgba(255, 145, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle glow effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 145, 0, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .warning-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+
+    svg {
+      color: rgba(255, 145, 0, 0.9);
+      flex-shrink: 0;
+    }
+
+    .warning-title {
+      @include typography('body-sm');
+      font-weight: 700;
+      color: rgba(255, 145, 0, 0.95);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .warning-message {
+    @include typography('body-sm');
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+    margin: 0 0 14px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .warning-details {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 145, 0, 0.15);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      @include typography('caption');
+
+      &:not(:last-child) {
+        margin-bottom: 8px;
+      }
+
+      .detail-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+      }
+
+      .detail-value {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        text-align: right;
+
+        &--highlighted {
+          color: rgba(255, 145, 0, 0.95);
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  .warning-note {
+    @include typography('caption');
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    font-style: italic;
+  }
+}
+
+.VaultDepositModal__AutoCompoundBanner {
+  background: linear-gradient(135deg, rgba(227, 146, 41, 0.12) 0%, rgba(240, 168, 65, 0.08) 100%);
+  border: 1px solid rgba(227, 146, 41, 0.25);
+  border-radius: 12px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+
+  // Subtle glow effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(227, 146, 41, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .VaultDepositModal__AutoCompoundHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+
+    .label {
+      @include typography('body-sm');
+      font-weight: 700;
+      color: $beryl-pure;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status {
+      @include typography('body-sm');
+      color: $beryl-pure;
+      font-weight: 600;
+      background: rgba(227, 146, 41, 0.15);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(227, 146, 41, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  .description {
+    @include typography('body-sm');
+    color: $white-072;
+    line-height: 1.6;
+    margin-top: 12px;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// APR Grid for AutoWin banner
+.VaultDepositModal__APRGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+
+  .apr-item {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.3s ease;
+    position: relative;
+    box-sizing: border-box;
+
+    .apr-label {
+      @include typography('caption');
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+      line-height: 1.2;
+      transition: color 0.3s ease;
+    }
+
+    .apr-value {
+      @include typography('body-lg');
+      color: $beryl-pure;
+      font-weight: 700;
+      transition: color 0.3s ease;
+
+      // Style shiny pour inciter à activer AutoWin
+      &--shiny {
+        color: $beryl-pure;
+        font-weight: 800;
+        @include typography('heading-md');
+        text-shadow: 0 0 12px rgba(255, 208, 86, 0.6);
+        animation: shinyValue 2s;
+        position: relative;
+      }
+    }
+
+    // État highlighted pour AutoWin APR quand activé
+    &--highlighted {
+      background: rgba(255, 208, 86, 0.08);
+      border: 2px solid rgba(255, 208, 86, 0.3);
+      animation: shinyGlow 2s;
+      box-shadow: 0 0 20px rgba(255, 208, 86, 0.2);
+
+      .apr-label {
+        color: $beryl-pure;
+        font-weight: 600;
+      }
+
+      .apr-value {
+        color: $beryl-pure;
+        text-shadow: 0 0 8px rgba(255, 208, 86, 0.5);
+      }
+    }
+
+    // État dimmed pour les APR non prioritaires
+    &--dimmed {
+      background: rgba(0, 0, 0, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.04);
+      opacity: 0.6;
+
+      .apr-label {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .apr-value {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+// Animation shiny pour AutoWin APR activé
+@keyframes shinyGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 208, 86, 0.2);
+    border-color: rgba(255, 208, 86, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(255, 208, 86, 0.4);
+    border-color: rgba(255, 208, 86, 0.5);
+  }
+}
+
+// Animation de balayage shiny
+@keyframes shinySweep {
+  0% {
+    left: -100%;
+  }
+
+  50% {
+    left: 100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+// Animation shiny pour la valeur APR
+@keyframes shinyValue {
+
+  0%,
+  100% {
+    text-shadow: 0 0 12px rgba(255, 208, 86, 0.6);
+  }
+
+  50% {
+    text-shadow: 0 0 20px rgba(255, 208, 86, 0.8);
+  }
+}
+
+// Animation warning pour les APR non-AutoWin quand AutoWin est désactivé
+@keyframes warningPulse {
+
+  0%,
+  100% {
+    background: rgba(255, 100, 100, 0.08);
+    border-color: rgba(255, 100, 100, 0.2);
+  }
+
+  50% {
+    background: rgba(255, 100, 100, 0.12);
+    border-color: rgba(255, 100, 100, 0.3);
+  }
+}
+
+.VaultDepositModal__DepositDetails {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  .AutoWinIcon {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 145, 0, 0.2);
+    border-radius: 50%;
+    border: 1px solid #e39229;
+  }
+
+  .section {
+    h4 {
+      @include typography('body-sm');
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0 0 12px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 0 0;
+
+      .token-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        img {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+        }
+
+        .symbol {
+          @include typography('body-md');
+          font-weight: 600;
+          color: #fff;
+        }
+      }
+
+      .amount {
+        @include typography('body-md');
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      &:first-of-type {
+        padding-top: 0;
+      }
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 0 0;
+
+      .label {
+        @include typography('body-sm');
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .value {
+        @include typography('body-sm');
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .StickyIcon {
+        width: 24px;
+        height: 24px;
+        background: black;
+        border-radius: 50%;
+        border: 1px solid #e39229;
+      }
+
+      &:first-of-type {
+        padding-top: 0;
+      }
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 20px 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 1px;
+      background: rgba(227, 146, 41, 0.3);
+    }
+  }
+}
+
+// ========================================
+// Styles pour WaitingStep
+// ========================================
+.VaultDepositModal__WaitingStep {
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.VaultDepositModal__LoaderContainer {
+  margin: 24px 0;
+
+  .Loader {
+
+    .circular circle,
+    .path {
+      stroke: $beryl-pure !important;
+      filter: drop-shadow(0px 1.2px 0.7px #100A25) drop-shadow(-0.2px 0px 0px #180E00) drop-shadow(0.2px 0px 0px #180E00) drop-shadow(0px -0.2px 0px #180E00);
+    }
+  }
+}
+
+.VaultDepositModal__WaitingTitle {
+  @include typography('heading-md');
+  font-weight: 600;
+  color: #fff;
+  margin: 16px 0 12px 0;
+}
+
+.VaultDepositModal__WaitingDescription {
+  @include typography('body-sm');
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 8px 0;
+}
+
+.VaultDepositModal__WaitingMessage {
+  @include typography('body-sm');
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+// ========================================
+// Styles pour SuccessStep
+// ========================================
+.VaultDepositModal__SuccessStep {
+  align-items: center;
+  text-align: center;
+  min-height: 300px;
+}
+
+.VaultDepositModal__SuccessTitle {
+  @include typography('heading-lg');
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 12px 0;
+}
+
+.VaultDepositModal__SuccessMessage {
+  @include typography('body-sm');
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 20px 0;
+}
+
+.VaultDepositModal__TxLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: underline;
+  @include typography('body-sm');
+  font-weight: 500;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $beryl-pure;
+
+    svg {
+      path {
+        stroke: $beryl-pure;
+      }
+    }
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+
+  }
+}
+
+// Staking Options (Infrared, Berahub)
+.VaultDepositModal__StakingOptions {
+  margin: 0 0 20px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 16px;
+
+  .staking-prompt,
+  .staking-description {
+    @include typography('body-sm');
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+
+  .staking-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .staking-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 14px 18px;
+    min-height: 52px;
+    width: auto;
+    height: auto;
+  }
+
+  .infrared-logo {
+    display: block;
+    max-width: 148px;
+    width: 100%;
+    height: auto;
+    max-height: 28px;
+  }
+}
+
+.VaultDepositModal__StakingOptionList {
+  display: grid;
+  gap: 10px;
+
+  .staking-option-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    .option-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .option-icons {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .option-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        .option-title {
+          @include typography('body-md');
+          font-weight: 600;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .option-subtitle {
+          @include typography('body-sm');
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+
+    .option-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+
+      .option-apr {
+        @include typography('body-md');
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .option-status {
+        @include typography('caption');
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+    }
+  }
+}
+
+// Success Button avec animation de l'ourson
+.VaultDepositModal__SuccessButton {
+  position: relative;
+  width: 100%;
+  margin-top: auto;
+
+  // Conteneur pour l'ourson increase
+  .increase-bear {
+    position: absolute;
+    top: -97px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: url('/src/assets/bear_increase.png') no-repeat center center;
+    background-size: contain;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+
+    // Animation d'apparition
+    animation:
+      increaseBearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards 0.2s,
+      increaseBearIdle 2s ease-in-out infinite 0.8s;
+  }
+
+  // Conteneur pour l'ourson withdraw
+  .withdraw-bear {
+    position: absolute;
+    top: -105px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: url('/src/assets/bear_withdraw.png') no-repeat center center;
+    background-size: contain;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+
+    // Animation d'apparition
+    animation:
+      withdrawBearAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards 0.2s,
+      withdrawBearIdle 2s ease-in-out infinite 0.8s;
+  }
+
+  // Optimisations de performance GPU
+  will-change: transform,
+  filter,
+  box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+// Animations pour l'ourson increase
+@keyframes increaseBearAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(30px) scale(0.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes increaseBearIdle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-10px) scale(1.05);
+  }
+}
+
+// Animations pour l'ourson withdraw
+@keyframes withdrawBearAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(30px) scale(0.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes withdrawBearIdle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-10px) scale(1.05);
+  }
+}
+
+// ========================================
+// Styles pour ErrorStep
+// ========================================
+.VaultDepositModal__ErrorStep {
+  align-items: center;
+  text-align: center;
+  min-height: 300px;
+}
+
+.VaultDepositModal__ErrorIcon {
+  margin: 24px 0;
+  animation: errorShake 0.5s ease-in-out;
+}
+
+@keyframes errorShake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-8px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(8px);
+  }
+}
+
+.VaultDepositModal__ErrorTitle {
+  @include typography('heading-lg');
+  font-weight: 600;
+  color: #F44336;
+  margin: 0 0 16px 0;
+}
+
+.VaultDepositModal__ErrorMessage {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+
+  p {
+    @include typography('body-sm');
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 8px 0;
+  }
+
+  .error-code {
+    display: block;
+    @include typography('caption');
+    font-family: monospace;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+}
+
+.VaultDepositModal__ErrorActions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: auto;
+
+  button {
+    flex: 1;
+  }
+}
+
+// ========================================
+// Styles pour ConfirmWithdrawStep
+// ========================================
+.VaultDepositModal__WithdrawAmount {
+  text-align: center;
+  padding: 20px 16px;
+
+  h4 {
+    @include typography('body-sm');
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 12px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .amount-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    .amount {
+      @include typography('display-lg');
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .symbol {
+      @include typography('heading-md');
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+}
+
+.VaultDepositModal__WithdrawDetails {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  .section {
+    h4 {
+      @include typography('body-sm');
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0 0 12px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 0 0;
+
+      .token-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        img {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+        }
+
+        .symbol {
+          @include typography('body-md');
+          font-weight: 600;
+          color: #fff;
+        }
+      }
+
+      .amount {
+        @include typography('body-md');
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      &:first-of-type {
+        padding-top: 0;
+      }
+    }
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 20px 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 1px;
+      background: rgba(227, 146, 41, 0.3);
+    }
+  }
+}
+
+.VaultDepositModal__ReceiveTokens {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  h4 {
+    @include typography('body-sm');
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 12px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .token-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0 0 0;
+
+    .token-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+      }
+
+      .symbol {
+        @include typography('body-md');
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    .amount {
+      @include typography('body-md');
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+}

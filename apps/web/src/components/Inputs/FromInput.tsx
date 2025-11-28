@@ -1,12 +1,12 @@
 "use client";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import React from "react";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from "wagmi";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
-import { usePrice } from "../../hooks/usePrice";
 import TokenSelector from "../Buttons/TokenSelector";
 import { formatTokenAmount } from '../../utils/format';
+import { useTokensInPool } from "../../hooks/useTokensInPool";
 
 interface FromInputProps {
   onToggleNetworkList?: (isOpen: boolean) => void;
@@ -27,7 +27,7 @@ interface FromInputProps {
   isListOpen?: boolean;
 }
 
-export const FromInput: React.FC<FromInputProps> = (
+export const FromInput: React.FC<FromInputProps> = React.memo((
   {
     onToggleNetworkList,
     disabled,
@@ -46,14 +46,31 @@ export const FromInput: React.FC<FromInputProps> = (
   }) => {
   const { address } = useAccount()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { data: balance, isLoading: loading } = useBalance({
+
+  // Hook Wagmi pour les balances (mise à jour automatique après transactions)
+  const { data: wagmiBalance, isLoading: balanceLoading } = useBalance({
     address,
     token: (selectedToken?.address !== zeroAddress) ? selectedToken?.address as `0x${string}` : undefined,
     query: {
       enabled: !!selectedToken
     }
   })
-  const { data: usdValue = 0 } = usePrice(selectedToken)
+
+  // Données optimisées pour les prix USD
+  const { data: tokensData } = useTokensInPool();
+
+  // Trouver le token sélectionné dans les données optimisées pour le prix
+  const selectedTokenData = useMemo(() => {
+    if (!selectedToken || !tokensData?.data?.tokens) return null;
+    return tokensData.data.tokens.find(token =>
+      token.address.toLowerCase() === selectedToken.address.toLowerCase()
+    );
+  }, [selectedToken, tokensData]);
+
+  // Utiliser Wagmi pour la balance (mise à jour automatique) et les données optimisées pour le prix
+  const balance = wagmiBalance;
+  const usdValue = selectedTokenData?.priceUSD || 0;
+  const loading = balanceLoading;
 
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0
@@ -62,51 +79,53 @@ export const FromInput: React.FC<FromInputProps> = (
 
   const isOverBalance = useMemo(() => (value > (balance?.value || 0n)), [value, balance])
 
-  const [inputValue, setInputValue] = React.useState('');
-  const isInputting = React.useRef(false);
+  const [inputValue, setInputValue] = useState('');
+  const [isUserTyping, setIsUserTyping] = useState(false);
 
-  React.useEffect(() => {
-    if (!isInputting.current) {
+  // Synchronize input display with prop value when not typing
+  useEffect(() => {
+    if (!isUserTyping) {
       setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
     }
-  }, [value, selectedToken?.decimals]);
+  }, [value, selectedToken?.decimals, isUserTyping]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
-    isInputting.current = true;
+    setIsUserTyping(true);
 
-    // Validation améliorée : accepter seulement les nombres décimaux valides
+    // Enhanced validation: only accept valid decimal numbers
     if (/^\d*(\.\d*)?$/.test(val) && val !== '') {
       try {
         const parsedAmount = parseUnits(val, selectedToken?.decimals || 18);
-        // Vérifier que le montant n'est pas négatif
+        // Verify amount is not negative
         if (parsedAmount >= 0n) {
           onAmountChange(parsedAmount);
         }
       } catch (error) {
-        // En cas d'erreur de parsing, ne pas mettre à jour le montant
+        // Don't update amount on parsing error
         console.warn('Invalid input amount:', val);
       }
     } else if (val === '') {
       onAmountChange(0n);
     }
-  };
+  }, [onAmountChange, selectedToken?.decimals]);
 
-  const handleBlur = () => {
-    isInputting.current = false;
+  const handleBlur = useCallback(() => {
+    setIsUserTyping(false);
     setInputValue(value === 0n ? '' : formatUnits(value, selectedToken?.decimals || 18));
-  };
+  }, [value, selectedToken?.decimals]);
 
-  const setMax = () => {
-    if (inputRef.current) {
-      const val = selectedToken?.address === zeroAddress
-        ? (balance?.value || 0n) * 99n / 100n
-        : balance?.value
-      inputRef.current.value = formatUnits(val || 0n, selectedToken?.decimals || 18)
-      onAmountChange(val || 0n)
-    }
-  }
+  const setMax = useCallback(() => {
+    const val = selectedToken?.address === zeroAddress
+      ? (balance?.value || 0n) * 99n / 100n
+      : balance?.value || 0n;
+
+    const formattedVal = formatUnits(val, selectedToken?.decimals || 18);
+    setInputValue(formattedVal);
+    setIsUserTyping(false);
+    onAmountChange(val);
+  }, [balance?.value, selectedToken?.address, selectedToken?.decimals, onAmountChange]);
 
   return (
     <div
@@ -127,7 +146,10 @@ export const FromInput: React.FC<FromInputProps> = (
             placeholder="0"
             value={inputValue}
             onChange={handleInputChange}
-            onBlur={() => { handleBlur(); if (typeof onBlur === 'function') onBlur(); }}
+            onBlur={() => {
+              handleBlur();
+              if (typeof onBlur === 'function') onBlur();
+            }}
             min={0}
             style={{ color: isOverBalance ? '#FF7456' : undefined }}
             readOnly={disabled}
@@ -151,7 +173,6 @@ export const FromInput: React.FC<FromInputProps> = (
               onSelect={onTokenSelect}
               onForceOpen={onInputClick}
               forceListOpen={isListOpen}
-              onlyPoolToken={true}
             />
           </div>
         </div>
@@ -178,6 +199,6 @@ export const FromInput: React.FC<FromInputProps> = (
       </div>
     </div>
   );
-}
+});
 
 FromInput.displayName = "FromInput";

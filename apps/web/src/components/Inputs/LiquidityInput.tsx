@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, useImperativeHandle, forwardRef, type ChangeEvent } from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { useAccount, useBalance } from 'wagmi';
 import { usePrice } from '../../hooks/usePrice';
 import { formatUnits, parseUnits, zeroAddress } from 'viem';
 import { formatTokenAmount } from '../../utils/format';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
 import type { Token } from '../../hooks/usePositions';
 
 // Type simple pour les tokens mockés
@@ -22,15 +22,25 @@ interface LiquidityInputProps {
   value: bigint;
   isOverBalance: boolean;
   disabled?: boolean;
+  showMaxButton?: boolean;
+  customUsdValue?: number;
+  customBalance?: bigint;
 }
 
-export const LiquidityInput: React.FC<LiquidityInputProps> = ({
+export interface LiquidityInputRef {
+  refresh: () => void;
+}
+
+export const LiquidityInput = forwardRef<LiquidityInputRef, LiquidityInputProps>(({
   selectedToken,
   onAmountChange,
   value,
   isOverBalance,
   disabled = false,
-}) => {
+  showMaxButton = true,
+  customUsdValue,
+  customBalance,
+}, ref) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const isInputting = useRef(false);
   const lastUserInput = useRef<string>('');
@@ -39,18 +49,26 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
   const { address } = useAccount()
   const { data: usdValue = 0 } = usePrice(selectedToken as any)
 
-  const { data: balance, isLoading: loading } = useBalance({
+  // Use custom balance if provided, otherwise use useBalance hook
+  const { data: wagmiBalance, isLoading: loadingWagmi } = useBalance({
     address,
     token: (selectedToken?.address !== zeroAddress) ? selectedToken?.address as `0x${string}` : undefined,
     query: {
-      enabled: !!address
+      enabled: !!address && !customBalance
     }
   })
 
+  // Use custom balance or wagmi balance
+  const balance = customBalance !== undefined ? { value: customBalance } : wagmiBalance
+  const loading = customBalance !== undefined ? false : loadingWagmi
+
   const usdAmount = useMemo(() => {
     if (value === 0n) return 0
+    if (customUsdValue !== undefined) {
+      return (customUsdValue * +formatUnits(value, selectedToken?.decimals || 18)).toFixed(2)
+    }
     return (usdValue * +formatUnits(value, selectedToken?.decimals || 18)).toFixed(2)
-  }, [usdValue, value])
+  }, [usdValue, value, customUsdValue, selectedToken?.decimals])
 
 
   useEffect(() => {
@@ -100,6 +118,22 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
       onAmountChange(balance?.value || 0n)
     }
   }
+
+  // Fonction de refresh pour remettre à zéro l'input
+  const refreshInput = () => {
+    setInputValue('');
+    onAmountChange(0n);
+    isInputting.current = false;
+    lastUserInput.current = '';
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
+
+  // Exposer la fonction de refresh via useImperativeHandle
+  useImperativeHandle(ref, () => ({
+    refresh: refreshInput,
+  }), []);
   return (
     <div className="LiquidityInput">
       <div className="Inputs">
@@ -130,14 +164,7 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
                     disabled
                   >
                     <span className="networkSelector__logoWrapper">
-                      {!selectedToken?.logoUri
-                        ? <FallbackImg content={selectedToken?.symbol || ""} />
-                        : (
-                          <img
-                            src={selectedToken?.logoUri}
-                            alt={selectedToken?.name}
-                          />
-                        )}
+                      <TokenLogo logoUri={selectedToken?.logoUri} symbol={selectedToken?.symbol || ""} size="large" />
                     </span>
                     <span className="networkSelector__symbol">{selectedToken?.symbol}</span>
                   </button>
@@ -149,17 +176,21 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
               <div className="From__Balance">
                 {selectedToken && (
                   <>
-                    <button
-                      type="button"
-                      className="From__Max"
-                      onClick={setMax}
-                      tabIndex={-1}
-                    >
-                      Max
-                    </button>
-                    <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
-                      {loading ? "..." : formatTokenAmount(formatUnits(balance?.value || 0n, selectedToken?.decimals || 18))}
-                    </p>
+                    {showMaxButton && (
+                      <>
+                        <button
+                          type="button"
+                          className="From__Max"
+                          onClick={setMax}
+                          tabIndex={-1}
+                        >
+                          Max
+                        </button>
+                        <p className={`From__Amount${isOverBalance ? ' From__Amount--error' : ''}`}>
+                          {loading ? "..." : formatTokenAmount(formatUnits(balance?.value || 0n, selectedToken?.decimals || 18))}
+                        </p>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -169,4 +200,4 @@ export const LiquidityInput: React.FC<LiquidityInputProps> = ({
       </div>
     </div>
   );
-};
+});

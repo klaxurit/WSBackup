@@ -10,16 +10,17 @@ export async function updateTokenStats(timestamp: bigint, token: typeof sToken.$
 
   const hourId = Math.floor(Number(timestamp) / 3600)
   const hourStartUnix = hourId * 3600
-  const hourTokenID = `${token.id} -${hourId} `
+  const hourTokenID = `${token.id}-${hourId}`
 
   const tokenPrice = await getPriceInUSD(token, context)
-  const oneDayEvo = await getPriceEvo(tokenPrice, `${token.id} -${hourId - 24} `, context)
-  const oneMonthEvo = await getPriceEvo(tokenPrice, `${token.id} -${hourId - (24 * 30)} `, context)
+  const oneDayEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - 1}`, context) // It's one hour not one day (not fixed in schema)
+  const oneMonthEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - (24)}`, context) // It's one day not one month (not fixed in schema)
+  const oneWeekEvo = await getPriceEvo(tokenPrice, `${token.id}-${hourId - (24 * 7)}`, context) // 7 days evolution
   const marketCap = await getMarketcap(token, tokenPrice)
   const fdv = await getFDV(token, tokenPrice)
-  const volume24hUSD = await getVolumeByPeriod(token, `${token.id} -${hourId - 24} `, context)
+  const volume24hUSD = await getVolumeByPeriod(token, `${token.id}-${hourId - 24}`, context)
 
-  await updateDayTokenData(token, dayTokenId, dayStartTimestamp, tokenPrice, oneDayEvo, oneMonthEvo, marketCap, fdv, volume24hUSD, context)
+  await updateDayTokenData(token, dayTokenId, dayStartTimestamp, tokenPrice, oneDayEvo, oneMonthEvo, oneWeekEvo, marketCap, fdv, volume24hUSD, context)
   await updateHourTokenData(token, hourTokenID, hourStartUnix, tokenPrice, context)
 }
 
@@ -30,6 +31,7 @@ async function updateDayTokenData(
   tokenPrice: string,
   oneDayEvo: string,
   oneMonthEvo: string,
+  oneWeekEvo: string,
   marketCap: string,
   fdv: string,
   volume24hUSD: string,
@@ -54,6 +56,7 @@ async function updateDayTokenData(
       close: tokenPrice,
       oneDayEvo,
       oneMonthEvo,
+      oneWeekEvo,
       marketCap,
       fdv,
       volume24hUSD
@@ -73,6 +76,7 @@ async function updateDayTokenData(
       close: tokenPrice,
       oneDayEvo,
       oneMonthEvo,
+      oneWeekEvo,
       marketCap,
       fdv,
       volume24hUSD
@@ -134,9 +138,26 @@ async function getPriceInUSD(token: typeof sToken.$inferSelect, context: Context
   return beraPrice.mul(beraPriceUSD).toString()
 }
 
-async function getPriceEvo(currentPrice: string, fromId: string, context: Context): Promise<string> {
-  const fromData = await context.db.find(tokenHourData, { id: fromId })
-  if (!fromData || fromData.priceUSD === "0" || currentPrice === "0") return "0"
+async function getPriceEvo(currentPrice: string, targetFromId: string, context: Context): Promise<string> {
+  if (currentPrice === "0") return "0"
+
+  // Extract hour ID from target
+  const targetHourMatch = targetFromId.match(/-([0-9]+)$/)
+  if (!targetHourMatch || !targetHourMatch[1]) return "0"
+
+  const targetHour = parseInt(targetHourMatch[1])
+  const tokenId = targetFromId.substring(0, targetFromId.lastIndexOf('-'))
+
+  // Search backwards for available data near target hour
+  let fromData: typeof tokenHourData.$inferSelect | null = null
+
+  // Try target hour first, then search backwards up to 7 days
+  for (let i = 0; i <= 168 && !fromData; i++) {
+    const searchHour = targetHour - i
+    fromData = await context.db.find(tokenHourData, { id: `${tokenId}-${searchHour}` })
+  }
+
+  if (!fromData || fromData.priceUSD === "0") return "0"
 
   return new Decimal(currentPrice)
     .minus(fromData.priceUSD)
@@ -160,11 +181,27 @@ async function getFDV(token: typeof sToken.$inferSelect, currentPrice: string): 
   return supply.mul(currentPrice).toString()
 }
 
-async function getVolumeByPeriod(token: typeof sToken.$inferSelect, fromId: string, context: Context): Promise<string> {
-  const fromData = await context.db.find(tokenHourData, { id: fromId })
-  if (!fromData || fromData.volumeUSD === "0" || token.volumeUSD === "0") return "0"
+async function getVolumeByPeriod(token: typeof sToken.$inferSelect, targetFromId: string, context: Context): Promise<string> {
+  if (!token.volumeUSD || token.volumeUSD === "0") return "0"
 
-  return new Decimal(token.volumeUSD)
-    .minus(fromData.volumeUSD)
-    .toString()
+  // Extract hour ID from target
+  const targetHourMatch = targetFromId.match(/-([0-9]+)$/)
+  if (!targetHourMatch || !targetHourMatch[1]) return "0"
+
+  const targetHour = parseInt(targetHourMatch[1])
+  const tokenId = targetFromId.substring(0, targetFromId.lastIndexOf('-'))
+
+  // Search backwards for available data near target hour
+  let fromData: typeof tokenHourData.$inferSelect | null = null
+
+  // Try target hour first, then search backwards up to 7 days
+  for (let i = 0; i <= 168 && !fromData; i++) {
+    const searchHour = targetHour - i
+    fromData = await context.db.find(tokenHourData, { id: `${tokenId}-${searchHour}` })
+  }
+
+  if (!fromData || fromData.volumeUSD === "0") return "0"
+
+  const volumeDiff = new Decimal(token.volumeUSD).minus(fromData.volumeUSD)
+  return volumeDiff.gt(0) ? volumeDiff.toString() : "0"
 }

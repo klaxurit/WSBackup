@@ -1,6 +1,7 @@
 import React from 'react';
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 import { usePopularTokens } from '../../hooks/usePopularTokens';
+import { cleanTokenSymbol, isStickyVaultToken } from '../../utils/tokenDisplay';
 
 interface PopularTokensProps {
   tokens: BerachainToken[];
@@ -25,9 +26,9 @@ export const PopularTokens: React.FC<PopularTokensProps> = ({
         Popular tokens
       </div>
       <div className="PopularTokens__List">
-        {popularTokens.map((token) => (
+        {popularTokens.map((token, index) => (
           <button
-            key={token.address || token.symbol}
+            key={`popular-${token.address || token.symbol}-${index}`}
             className={`PopularTokens__Button ${selectedToken?.address === token.address ? 'PopularTokens__Button--selected' : ''
               }`}
             onClick={() => onTokenSelect(token)}
@@ -46,7 +47,9 @@ export const PopularTokens: React.FC<PopularTokensProps> = ({
                 </div>
               )}
               <span className="PopularTokens__ButtonSymbol">
-                {token.symbol}
+                {isStickyVaultToken(token.name)
+                  ? cleanTokenSymbol(token.symbol)
+                  : token.symbol}
               </span>
             </div>
           </button>

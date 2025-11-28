@@ -1,0 +1,1108 @@
+@use "../utils" as *;
+
+.Leaderboard {
+  padding: 0 1rem;
+  max-width: 1192px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 80vh;
+
+  @media (max-width: 600px) {
+    padding: 0 8px;
+    gap: 24px;
+  }
+
+  // Fond circulaire pour l'image de la bannière (comme bee_icon.png)
+  .swap-banner__content {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate(5%, -50%);
+      width: 90px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      z-index: 0;
+    }
+  }
+
+  .swap-banner__img {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.Leaderboard__ContentWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+// Section Title
+.Leaderboard__SectionTitle {
+  @include typography('heading-lg', 700);
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.3px;
+
+  @media (max-width: 600px) {
+    @include typography('body-lg', 700);
+  }
+
+  // Quand il n'est pas dans le header Portfolio
+  &:not(.Leaderboard__PortfolioHeader *) {
+    margin-bottom: 12px;
+
+    @media (max-width: 600px) {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+// Layout single column
+.Leaderboard__Content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+
+  @media (max-width: 900px) {
+    gap: 24px;
+  }
+}
+
+// Portfolio Section
+.Leaderboard__Portfolio {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Portfolio Row : 3 stats en ligne horizontale
+.Leaderboard__PortfolioRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+// Top Boosted Section
+.Leaderboard__TopBoosted {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.Leaderboard__TopBoostedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+// Styles pour les stats cards
+.Leaderboard__StatCardTitle {
+  @include typography('body-2xs', 600);
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+.Leaderboard__StatCardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.Leaderboard__StatCardValue {
+  @include typography('heading-2xl', 700);
+  color: #fff;
+  line-height: 1;
+
+  &--xlarge {
+    @include typography('heading-xl', 700);
+  }
+
+  &--highlight {
+    color: $beryl-pure;
+  }
+}
+
+.Leaderboard__StatCardSecondary {
+  @include typography('body-xs', 500);
+  color: $white-040;
+  text-align: center;
+}
+
+// Position Card Stat Label (réutilisé dans Boosted)
+.Leaderboard__PositionCardStatLabel {
+  @include typography('body-2xs', 600);
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__BoostedCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  height: 100%;
+  min-width: 0;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08);
+    border-color: #E39229;
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(227, 146, 41, 0.1);
+  }
+}
+
+// Stats cards spécifiques (sans hover pour les stats)
+.Leaderboard__StatCard {
+  cursor: default;
+
+  &:hover {
+    transform: none;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: none;
+  }
+}
+
+.Leaderboard__BoostedCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Leaderboard__BoostedCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.Leaderboard__BoostedCardPair {
+  @include typography('body-sm', 700);
+  color: #fff;
+}
+
+.Leaderboard__BoostedCardType {
+  @include typography('body-xs', 500);
+  color: $white-056;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__BoostedCardAPR {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.Leaderboard__BoostedCardStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.Leaderboard__BoostedCardAPRValue {
+  @include typography('body-xs', 700);
+  color: #fff;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &--large {
+    @include typography('body-lg', 700);
+  }
+
+  &--highlight {
+    color: #E39229;
+  }
+}
+
+.Leaderboard__BoostedCardBoost {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  @include typography('body-2xs', 700);
+  color: $beryl-pure;
+}
+
+.Leaderboard__WinnieIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+// Trending Section - Même structure que Portfolio
+.Leaderboard__Trending {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.Leaderboard__TrendingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.Leaderboard__TrendingColumn {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+.Leaderboard__TrendingCards {
+  display: contents;
+}
+
+.Leaderboard__TrendingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  height: 100%;
+  min-width: 0;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08);
+    border-color: #E39229;
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(227, 146, 41, 0.1);
+  }
+}
+
+.Leaderboard__TrendingCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Leaderboard__TrendingCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.Leaderboard__TrendingCardPair {
+  @include typography('body-sm');
+  font-weight: 700;
+  color: #fff;
+}
+
+.Leaderboard__TrendingCardFee {
+  @include typography('body-xs');
+  font-weight: 500;
+  color: $white-056;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__TrendingCardAPR {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.Leaderboard__TrendingCardAPRLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  @include typography('body-2xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__BestAPRBadge {
+  @include typography('body-2xs');
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(227, 146, 41, 0.15);
+  color: #E39229;
+  animation: bestAprPulse 2s ease-in-out infinite;
+}
+
+// Animation pour le badge BEST APR
+@keyframes bestAprPulse {
+
+  0%,
+  100% {
+    background: rgba(227, 146, 41, 0.15);
+    color: #E39229;
+  }
+
+  50% {
+    background: rgba(227, 146, 41, 0.25);
+    color: #FFD056;
+  }
+}
+
+.Leaderboard__TrendingCardAPRValue {
+  @include typography('heading-md');
+  font-weight: 700;
+  color: #E39229;
+
+  @media (max-width: 600px) {
+    @include typography('body-lg');
+    font-weight: 700;
+  }
+}
+
+.Leaderboard__TrendingCardStats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.Leaderboard__TrendingCardStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.Leaderboard__TrendingCardStatLabel {
+  @include typography('body-2xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.Leaderboard__TrendingCardStatValue {
+  @include typography('body-xs');
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Leaderboard Table Section
+.Leaderboard__TableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.Leaderboard__TableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.Leaderboard__FilterButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.Leaderboard__SearchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 12px;
+  }
+}
+
+// Search Result Card
+.Leaderboard__SearchResultCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  animation: searchResultFadeIn 0.3s ease;
+
+  @media (max-width: 600px) {
+    padding: 16px 18px;
+    margin-bottom: 20px;
+  }
+}
+
+@keyframes searchResultFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.Leaderboard__SearchResultLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 24px;
+
+  p {
+    @include typography('body-md');
+    color: $white-056;
+    margin: 0;
+  }
+}
+
+.Leaderboard__SearchResultError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+  text-align: center;
+
+  p {
+    @include typography('body-md');
+    color: $white-072;
+    margin: 0;
+  }
+}
+
+.Leaderboard__SearchResultErrorSubtext {
+  @include typography('body-sm');
+  color: $white-048 !important;
+}
+
+.Leaderboard__SearchResultContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.Leaderboard__SearchResultHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.Leaderboard__SearchResultWallet {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.Leaderboard__SearchResultWalletLabel {
+  @include typography('body-xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__SearchResultWalletAddress {
+  @include typography('body-lg');
+  font-weight: 700;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.Leaderboard__SearchResultRank {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+
+  @media (max-width: 600px) {
+    align-items: flex-start;
+  }
+}
+
+.Leaderboard__SearchResultRankLabel {
+  @include typography('body-xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__SearchResultRankValue {
+  @include typography('heading-xl');
+  font-weight: 700;
+  color: #E39229;
+  line-height: 1;
+}
+
+.Leaderboard__SearchResultRankChange {
+  @include typography('body-sm');
+  font-weight: 600;
+  margin-top: 4px;
+
+  &--positive {
+    color: $success-pure;
+  }
+
+  &--negative {
+    color: $carmel-pure;
+  }
+}
+
+.Leaderboard__SearchResultStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.Leaderboard__SearchResultStat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.Leaderboard__SearchResultStatLabel {
+  @include typography('body-xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__SearchResultStatValue {
+  @include typography('body-lg');
+  font-weight: 700;
+  color: #fff;
+
+  &--highlight {
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  @include typography('body-sm');
+  color: $white-056;
+
+  span:first-child {
+    @include typography('body-lg');
+  }
+}
+
+// Table Cells
+.Leaderboard__RankCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.Leaderboard__Rank {
+  @include typography('body-md');
+  font-weight: 600;
+  color: #fff;
+
+  &--top {
+    @include typography('body-lg');
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__Badge {
+  @include typography('body-sm');
+}
+
+.Leaderboard__UserCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &--current {
+    .Leaderboard__Address {
+      font-weight: 700;
+      color: #E39229;
+    }
+  }
+}
+
+.Leaderboard__Address {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  @include typography('body-sm');
+  color: $white-072;
+}
+
+.Leaderboard__YouBadge {
+  padding: 2px 6px;
+  background: rgba(227, 146, 41, 0.2);
+  color: #E39229;
+  @include typography('body-2xs');
+  font-weight: 700;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.Leaderboard__ChangeCell {
+  @include typography('body-sm');
+  font-weight: 600;
+
+  &--positive {
+    color: $success-pure;
+  }
+
+  &--negative {
+    color: $carmel-pure;
+  }
+}
+
+// Table Row Highlight - Current User
+.Leaderboard__TableRow--current {
+  background: rgba(227, 146, 41, 0.15) !important;
+  border: 2px solid rgba(227, 146, 41, 0.8) !important;
+  border-left: 4px solid #E39229 !important;
+  box-shadow:
+    0 0 0 1px rgba(227, 146, 41, 0.3),
+    0 4px 12px rgba(227, 146, 41, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.2) !important;
+    border-color: rgba(227, 146, 41, 1) !important;
+    box-shadow:
+      0 0 0 1px rgba(227, 146, 41, 0.5),
+      0 6px 16px rgba(227, 146, 41, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: scale(1.002);
+  }
+}
+
+// Table Row Highlight - Searched Wallet
+.Leaderboard__TableRow--highlighted {
+  background: rgba(0, 255, 163, 0.12) !important;
+  border: 2px solid rgba(0, 255, 163, 0.6) !important;
+  border-left: 4px solid #00FFA3 !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 163, 0.3),
+    0 4px 12px rgba(0, 255, 163, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: highlightPulse 2s ease-in-out infinite;
+  position: relative;
+
+  &:hover {
+    background: rgba(0, 255, 163, 0.18) !important;
+    border-color: rgba(0, 255, 163, 0.8) !important;
+  }
+}
+
+@keyframes highlightPulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 163, 0.3),
+      0 4px 12px rgba(0, 255, 163, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 163, 0.5),
+      0 4px 16px rgba(0, 255, 163, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+// Gradient pour les Top 10 - Intensité décroissante
+.Leaderboard__TableRow--rank1 {
+  background: rgba(227, 146, 41, 0.12) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.16) !important;
+  }
+
+  .Leaderboard__Rank {
+    @include typography('body-lg');
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableRow--rank2 {
+  background: rgba(227, 146, 41, 0.10) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.14) !important;
+  }
+
+  .Leaderboard__Rank {
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableRow--rank3 {
+  background: rgba(227, 146, 41, 0.08) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.12) !important;
+  }
+
+  .Leaderboard__Rank {
+    font-weight: 700;
+    color: #E39229;
+  }
+}
+
+.Leaderboard__TableRow--rank4 {
+  background: rgba(227, 146, 41, 0.07) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.11) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank5 {
+  background: rgba(227, 146, 41, 0.06) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.10) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank6 {
+  background: rgba(227, 146, 41, 0.05) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.09) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank7 {
+  background: rgba(227, 146, 41, 0.04) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank8 {
+  background: rgba(227, 146, 41, 0.03) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.07) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank9 {
+  background: rgba(227, 146, 41, 0.02) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.06) !important;
+  }
+}
+
+.Leaderboard__TableRow--rank10 {
+  background: rgba(227, 146, 41, 0.015) !important;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.05) !important;
+  }
+}
+
+// Si l'utilisateur est dans le top 10, on combine les styles
+.Leaderboard__TableRow--current {
+  // On garde le border pour l'utilisateur même s'il est dans le top 10
+  border: 2px solid rgba(227, 146, 41, 0.8) !important;
+  border-left: 4px solid #E39229 !important;
+  box-shadow:
+    0 0 0 1px rgba(227, 146, 41, 0.3),
+    0 4px 12px rgba(227, 146, 41, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+
+  // Si pas de rank class, on applique le background
+  &:not([class*="--rank"]) {
+    background: rgba(227, 146, 41, 0.15) !important;
+  }
+
+  &:hover {
+    border-color: rgba(227, 146, 41, 1) !important;
+    box-shadow:
+      0 0 0 1px rgba(227, 146, 41, 0.5),
+      0 6px 16px rgba(227, 146, 41, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transform: scale(1.002);
+  }
+
+  &:hover:not([class*="--rank"]) {
+    background: rgba(227, 146, 41, 0.2) !important;
+  }
+}
+
+// Empty & Loading States
+.Leaderboard__EmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  text-align: center;
+
+  p {
+    color: $white-056;
+    @include typography('body-md');
+    margin: 0;
+  }
+}
+
+.Leaderboard__LoadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+// Vaults Marquee Section
+.Leaderboard__VaultsMarquee {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 0;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  &::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(18, 17, 14, 1), rgba(18, 17, 14, 0));
+  }
+
+  &::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(18, 17, 14, 1), rgba(18, 17, 14, 0));
+  }
+}
+
+.Leaderboard__VaultsMarqueeLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.Leaderboard__VaultsMarqueeTrack {
+  display: flex;
+  gap: 16px;
+
+  animation: vaultsMarquee 60s linear infinite;
+  will-change: transform;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes vaultsMarquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    // Utilise la variable CSS calculée en JavaScript pour une translation précise
+    // Cela garantit un défilement infini sans saut car la valeur correspond exactement
+    // à la largeur d'une copie complète (incluant les gaps)
+    transform: translateX(var(--marquee-translate, -33.333%));
+  }
+}
+
+.Leaderboard__VaultsMarqueeItem {
+  flex: 0 0 auto;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(227, 146, 41, 0.08);
+    border-color: #E39229;
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(227, 146, 41, 0.1);
+  }
+
+  @media (max-width: 600px) {
+    min-width: 240px;
+    padding: 10px 12px;
+  }
+}
+
+.Leaderboard__VaultsMarqueeItemHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.Leaderboard__VaultsMarqueeItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.Leaderboard__VaultsMarqueeItemPair {
+  @include typography('body-sm');
+  font-weight: 700;
+  color: #fff;
+}
+
+.Leaderboard__VaultsMarqueeItemType {
+  @include typography('body-xs');
+  font-weight: 500;
+  color: $white-056;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__VaultsMarqueeItemStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.Leaderboard__VaultsMarqueeItemStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.Leaderboard__VaultsMarqueeItemStatLabel {
+  @include typography('body-2xs');
+  font-weight: 600;
+  color: $white-048;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.Leaderboard__VaultsMarqueeItemStatValue {
+  @include typography('body-sm');
+  font-weight: 700;
+  color: #fff;
+
+  &--highlight {
+    color: #E39229;
+  }
+}

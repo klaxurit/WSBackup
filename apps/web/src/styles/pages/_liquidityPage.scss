@@ -1,0 +1,643 @@
+@use "../utils" as *;
+
+.LiquidityPage {
+  padding: 0 1rem;
+  max-width: 1192px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: 80vh;
+
+  &__FilterButtons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    // Désactiver les animations sur les boutons de filtrage
+    .btn {
+      transition: none !important;
+
+      &:hover {
+        transition: none !important;
+      }
+
+      &:active {
+        transition: none !important;
+      }
+
+      &:focus-visible {
+        transition: none !important;
+      }
+    }
+  }
+
+  &__ContentWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  &__Main {
+    width: 100%;
+  }
+
+  &__TopSection {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+
+    @media (max-width: 1024px) {
+      flex-direction: column;
+      gap: 24px;
+    }
+  }
+
+  // Ultra Compact Line - Top Pools & Vaults
+  &__TopLine {
+    display: flex;
+    gap: 32px;
+
+
+    @media (max-width: 1024px) {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      padding: 12px;
+      gap: 12px;
+    }
+  }
+
+  &__TopPoolsUltraCompact,
+  &__TopVaultsUltraCompact {
+    flex: 1;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 16px;
+  }
+
+  &__TopLineTitle {
+    @include typography('heading-md');
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 12px 0;
+    letter-spacing: 0.5px;
+  }
+
+  &__TopPoolsRow,
+  &__TopVaultsRow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+
+    @media (max-width: 768px) {
+      gap: 6px;
+    }
+  }
+
+  &__TopPoolUltraCompact,
+  &__TopVaultUltraCompact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    &__Symbol {
+      @include typography('body-xs');
+      font-weight: 500;
+      color: #fff;
+    }
+
+    &__Apr {
+      @include typography('caption');
+      font-weight: 600;
+      color: #e39229;
+      background: rgba(227, 146, 41, 0.1);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+  }
+
+  &__TopVaultUltraCompact {
+    .StickyIcon {
+      opacity: 0.8;
+    }
+  }
+
+  &__Header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  &__Title {
+    margin: 0;
+    @include typography('heading-3xl');
+    font-weight: 700;
+    color: $beryl-pure;
+  }
+
+  &__TableWrapper {
+    margin-bottom: 16px;
+    overflow-x: auto;
+    background: none;
+  }
+
+  &__Table {
+    // Hérite du style Table/Table--bordered
+    background: none;
+    color: #e0e0e0;
+    border-radius: 12px;
+    width: 100%;
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      @include typography('body-md');
+    }
+
+    thead th {
+      background: $white-004;
+      color: #aaa;
+      font-weight: 700;
+      border-bottom: 1px solid #232323;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #232323;
+      transition: background 0.13s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+    }
+  }
+
+  &__ClosedBtn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accent1, #e39229);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    @include typography('body-md');
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+      background: rgba(227, 146, 41, 0.13);
+      color: #fff;
+    }
+  }
+
+
+  &__TopTitle {
+    margin-top: 0;
+    @include typography('heading-lg');
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #fff;
+  }
+
+  &__TopList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  &__TopCard {
+    background: $white-004;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    margin-bottom: 8px;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__TopPair {
+    font-weight: 600;
+    @include typography('body-lg');
+    color: #fff;
+
+    .LiquidityPage__TopVersion {
+      color: #888;
+      @include typography('body-sm');
+      margin-left: 8px;
+    }
+  }
+
+  &__TopFee {
+    @include typography('body-sm');
+    color: #aaa;
+  }
+
+  &__TopApr {
+    @include typography('body-sm');
+    color: #aaa;
+
+    &--positive {
+      color: #1aaf5d;
+      margin-left: 8px;
+    }
+  }
+
+  // === Section création de pool ===
+  &--create {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+    min-height: 70vh;
+
+    @media (max-width: 900px) {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .LiquidityPage__CreateHeader {
+      padding: 32px 12px 12px 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .LiquidityPage__Timeline {
+      min-width: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      margin-top: 32px;
+
+      @media (max-width: 900px) {
+        flex-direction: row;
+        min-width: 0;
+        margin-top: 0;
+        gap: 24px;
+        justify-content: center;
+      }
+    }
+
+    .LiquidityPage__Step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0.6;
+
+      &--active {
+        opacity: 1;
+
+        .LiquidityPage__StepNum {
+          background: $beryl-pure;
+          color: #fff;
+        }
+      }
+
+      &--next {
+        .LiquidityPage__StepNum {
+          background: $onyx-darker;
+          color: #aaa;
+        }
+      }
+    }
+
+    .LiquidityPage__StepNum {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: $onyx-darker;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      @include typography('heading-md');
+      margin-right: 4px;
+    }
+
+    .LiquidityPage__StepLabel {
+      @include typography('body-lg');
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .LiquidityPage__CreateContent {
+      flex: 1;
+      background: none;
+      border-radius: 16px;
+      padding: 32px 12px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+
+      @media (max-width: 900px) {
+        padding: 16px 8px;
+      }
+    }
+
+    .LiquidityPage__CreateTitle {
+      @include typography('heading-md');
+      font-weight: 600;
+      color: var(--accent1, #e39229);
+      margin-left: 18px;
+    }
+
+    .LiquidityPage__CreateSectionTitle {
+      @include typography('heading-md');
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .LiquidityPage__CreateSectionDesc {
+      color: #aaa;
+      @include typography('body-md');
+      margin-bottom: 12px;
+    }
+
+    .LiquidityPage__TokenSelectors {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .LiquidityPage__TokenSeparator {
+      @include typography('heading-xl');
+      color: #888;
+      font-weight: 700;
+      margin: 0 8px;
+    }
+
+    .LiquidityPage__FeeTiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .LiquidityPage__FeeTierBtn {
+      background: $onyx-darker;
+      border-radius: 12px;
+      border: 1.5px solid #232323;
+      color: #fff;
+      font-weight: 600;
+      @include typography('body-lg');
+      padding: 18px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      cursor: pointer;
+      min-width: 0;
+      min-height: 110px;
+      height: 100%;
+      width: 100%;
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
+      box-sizing: border-box;
+
+      &.active,
+      &:hover {
+        border-color: var(--accent1, #e39229);
+        background: $onyx-black;
+        color: var(--accent1, #e39229);
+      }
+
+      &--advanced {
+        background: none;
+        border: 1.5px dashed #888;
+        color: #aaa;
+        @include typography('body-md');
+        font-weight: 500;
+        padding: 10px 14px;
+        margin-left: 8px;
+        min-height: 110px;
+        height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+
+        .LiquidityPage__FeeTierAdvanced {
+          color: #888;
+          @include typography('body-md');
+          margin-left: 6px;
+        }
+      }
+    }
+
+    .LiquidityPage__FeeTierLabel {
+      @include typography('body-lg');
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .LiquidityPage__FeeTierDesc {
+      @include typography('caption');
+      color: #aaa;
+      margin-bottom: 2px;
+    }
+
+    .LiquidityPage__FeeTierTVL {
+      @include typography('body-md');
+      color: #888;
+    }
+
+    .LiquidityPage__CreateFooter {
+      display: flex;
+      justify-content: flex-end;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .LiquidityPage__ContinueBtn {
+      justify-content: center;
+      padding: 12px 32px;
+      border-radius: 10px;
+      background: $beryl-pure;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      @include typography('heading-md');
+      cursor: pointer;
+      transition: background 0.18s;
+      width: 100%;
+
+      &:hover {
+        background: $beryl-medium;
+      }
+    }
+
+    .LiquidityPage__ContinueBtn {
+      padding: 12px 32px;
+      border-radius: 10px;
+      background: $beryl-pure;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      @include typography('heading-md');
+      cursor: pointer;
+      transition: background 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover {
+        background: $beryl-medium;
+      }
+
+      &:disabled {
+        background: #2d2c2a;
+        color: #504f4c;
+        cursor: not-allowed;
+      }
+    }
+
+    // Styles pour Step 2
+    .LiquidityPage__StepFee {
+      background: rgba(227, 146, 41, 0.13);
+      color: #e39229;
+      padding: 4px 8px;
+      border-radius: 6px;
+      @include typography('body-sm');
+      font-weight: 600;
+    }
+
+    .LiquidityPage__PriceRange {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .LiquidityPage__PriceRow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: space-between;
+    }
+
+    .LiquidityPage__PriceLabel {
+      color: #aaa;
+      @include typography('body-sm');
+      font-weight: 600;
+      min-width: 100px;
+    }
+
+    .LiquidityPage__PriceValue {
+      color: #fff;
+      @include typography('body-lg');
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .LiquidityPage__PriceInput {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid #232323;
+      border-radius: 8px;
+      color: #fff;
+      padding: 8px 12px;
+      @include typography('body-sm');
+      width: 120px;
+      outline: none;
+
+      &:focus {
+        border-color: var(--accent1, #e39229);
+      }
+    }
+
+    .LiquidityPage__PriceUnit {
+      color: #aaa;
+      @include typography('caption');
+      min-width: 150px;
+    }
+
+    .LiquidityPage__LiquidityInputs {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .LiquidityPage__LiquidityInput {
+      width: 100%;
+    }
+  }
+}
+
+// Validation errors styling
+.validation-errors {
+  margin: 12px 0;
+
+  .validation-error {
+    background-color: #fef3cd;
+    border: 1px solid #fecba1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    @include typography('body-sm');
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Styles pour les spinners de boutons
+.btn-spinner {
+  display: inline-block;
+  animation: btn-spin 1s linear infinite;
+}
+
+@keyframes btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// StickyIcon styling for vault positions in LiquidityPage
+.LiquidityPage__VaultStickyIcon {
+  width: 18px;
+  height: 18px;
+  background: black;
+  border: 1px solid #e39229;
+  border-radius: 50%;
+}

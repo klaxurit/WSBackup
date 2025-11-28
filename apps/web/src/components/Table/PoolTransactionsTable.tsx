@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Table, { type TableColumn } from '../Table/Table';
-import { FallbackImg } from '../utils/FallbackImg';
+import { TokenLogo } from '../Common/TokenLogo';
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { formatUnits } from 'viem';
 
 interface PoolTransactionsTableProps {
@@ -10,8 +11,8 @@ interface PoolTransactionsTableProps {
 
 // Requête GraphQL pour récupérer les transactions (filtrage côté client)
 const GET_POOL_TRANSACTIONS = `
-  query GetPoolTransactions($limit: Int = 20) {
-    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+  query GetPoolTransactions {
+    transactions(orderBy: "timestamp", orderDirection: "desc") {
       totalCount
       pageInfo {
         endCursor
@@ -39,12 +40,22 @@ const GET_POOL_TRANSACTIONS = `
                 id
                 logoUri
                 decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
               token1Ref {
                 symbol
                 id
                 logoUri
                 decimals
+                tokenDayData(limit: 1, orderBy: "date", orderDirection: "desc") {
+                  items {
+                    priceUSD
+                  }
+                }
               }
             }
           }
@@ -72,12 +83,22 @@ interface GraphQLTransaction {
           id: string;
           logoUri?: string;
           decimals: number;
+          tokenDayData: {
+            items: Array<{
+              priceUSD: string;
+            }>;
+          };
         };
         token1Ref: {
           symbol: string;
           id: string;
           logoUri?: string;
           decimals: number;
+          tokenDayData: {
+            items: Array<{
+              priceUSD: string;
+            }>;
+          };
         };
       };
     }>;
@@ -103,6 +124,7 @@ interface Transaction {
   recipient: string;
   amount0: string;
   amount1: string;
+  amountUSD: number;
   createdAt: string;
   transactionHash: string;
   pool: {
@@ -110,22 +132,26 @@ interface Transaction {
       symbol: string;
       logoUri?: string;
       decimals: number;
+      priceUSD?: string;
     };
     token1: {
       symbol: string;
       logoUri?: string;
       decimals: number;
+      priceUSD?: string;
     };
   };
   tokenIn: {
     symbol: string;
     logoUri?: string;
     decimals: number;
+    priceUSD?: string;
   };
   tokenOut: {
     symbol: string;
     logoUri?: string;
     decimals: number;
+    priceUSD?: string;
   };
   amountIn: string;
   amountOut: string;
@@ -141,11 +167,12 @@ const transformGraphQLTransactionToTransaction = (graphqlTx: GraphQLTransaction,
     if (swap.pool.id.toLowerCase() === poolAddress.toLowerCase()) {
       const isAmount0Positive = BigInt(swap.amount0) > 0n;
 
-      transactions.push({
+      const transaction = {
         id: graphqlTx.id,
         recipient: swap.recipient,
         amount0: swap.amount0,
         amount1: swap.amount1,
+        amountUSD: swap.amountUSD,
         createdAt: new Date(parseInt(graphqlTx.timestamp) * 1000).toISOString(),
         transactionHash: graphqlTx.id,
         pool: {
@@ -153,34 +180,42 @@ const transformGraphQLTransactionToTransaction = (graphqlTx: GraphQLTransaction,
             symbol: swap.pool.token0Ref.symbol,
             logoUri: swap.pool.token0Ref.logoUri,
             decimals: swap.pool.token0Ref.decimals,
+            priceUSD: swap.pool.token0Ref.tokenDayData.items[0]?.priceUSD,
           },
           token1: {
             symbol: swap.pool.token1Ref.symbol,
             logoUri: swap.pool.token1Ref.logoUri,
             decimals: swap.pool.token1Ref.decimals,
+            priceUSD: swap.pool.token1Ref.tokenDayData.items[0]?.priceUSD,
           },
         },
         tokenIn: isAmount0Positive ? {
           symbol: swap.pool.token0Ref.symbol,
           logoUri: swap.pool.token0Ref.logoUri,
           decimals: swap.pool.token0Ref.decimals,
+          priceUSD: swap.pool.token0Ref.tokenDayData.items[0]?.priceUSD,
         } : {
           symbol: swap.pool.token1Ref.symbol,
           logoUri: swap.pool.token1Ref.logoUri,
           decimals: swap.pool.token1Ref.decimals,
+          priceUSD: swap.pool.token1Ref.tokenDayData.items[0]?.priceUSD,
         },
         tokenOut: isAmount0Positive ? {
           symbol: swap.pool.token1Ref.symbol,
           logoUri: swap.pool.token1Ref.logoUri,
           decimals: swap.pool.token1Ref.decimals,
+          priceUSD: swap.pool.token1Ref.tokenDayData.items[0]?.priceUSD,
         } : {
           symbol: swap.pool.token0Ref.symbol,
           logoUri: swap.pool.token0Ref.logoUri,
           decimals: swap.pool.token0Ref.decimals,
+          priceUSD: swap.pool.token0Ref.tokenDayData.items[0]?.priceUSD,
         },
         amountIn: isAmount0Positive ? swap.amount0 : swap.amount1,
         amountOut: isAmount0Positive ? swap.amount1 : swap.amount0,
-      });
+      };
+
+      transactions.push(transaction);
     }
   });
 
@@ -188,8 +223,11 @@ const transformGraphQLTransactionToTransaction = (graphqlTx: GraphQLTransaction,
 };
 
 export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ poolAddress }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   const { data, isLoading } = useQuery({
-    queryKey: ['pool-transactions', poolAddress],
+    queryKey: ['pool-transactions', poolAddress, currentPage],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
@@ -197,8 +235,7 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: GET_POOL_TRANSACTIONS,
-          variables: { limit: 50 }
+          query: GET_POOL_TRANSACTIONS
         }),
       });
 
@@ -225,6 +262,30 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
 
     return allTransactions;
   }, [data, poolAddress]);
+
+  // Pagination côté client
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return transactions.slice(startIndex, endIndex);
+  }, [transactions, currentPage, itemsPerPage]);
+
+  const pagination = useMemo(() => {
+    if (!transactions.length) return undefined;
+
+    const totalPages = Math.ceil(transactions.length / itemsPerPage);
+
+    return {
+      currentPage,
+      totalPages,
+      itemsPerPage,
+      totalItems: transactions.length,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+      onPageChange: setCurrentPage,
+      dataname: "transactions"
+    };
+  }, [transactions, currentPage, itemsPerPage]);
 
   const txColumns: TableColumn[] = [
     {
@@ -257,15 +318,14 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
         }
 
         return (
-          <a
-            href={`https://berascan.com/tx/${row.transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <ExplorerLink
+            address={row.transactionHash}
+            type="tx"
+            showIcon={false}
             className="Table__Address"
-            title={row.recipient}
           >
             {text}
-          </a>
+          </ExplorerLink>
         )
       },
     },
@@ -273,50 +333,46 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Type',
       key: 'type',
       render: (row: Transaction) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          Swap
-          {row.tokenIn.logoUri ? (
-            <img
-              src={row.tokenIn.logoUri}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-              alt={row.tokenIn.symbol}
-            />
-          ) : (
-            <FallbackImg
-              content={row.tokenIn.symbol}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-            />
-          )}
-          for
-          {row.tokenOut.logoUri ? (
-            <img
-              src={row.tokenOut.logoUri}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-              alt={row.tokenOut.symbol}
-            />
-          ) : (
-            <FallbackImg
-              content={row.tokenOut.symbol}
-              style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px", borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }}
-            />
-          )}
+        <span className="Table__CellText">
+          <span className="Table__CellLabel">Swap</span>
+          <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
+          <span className="Table__CellLabel">for</span>
+          <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
         </span>
       ),
     },
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        // Pour l'instant, on utilise amountUSD si disponible, sinon on calcule approximativement
-        const amountUSD = row.pool.token0.symbol === 'USDC' || row.pool.token0.symbol === 'USDT'
-          ? parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals))
-          : parseFloat(formatUnits(BigInt(row.amountOut), row.tokenOut.decimals));
+        // Calculer la valeur USD du token envoyé (tokenIn)
+        const tokenInAmount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals));
+        const tokenInPrice = parseFloat(row.tokenIn.priceUSD || '0');
+        const tokenInValueUSD = tokenInAmount * tokenInPrice;
 
-        if (amountUSD < 0.01) return "<0.01$"
+        // Si le prix n'est pas disponible, essayer avec le token reçu
+        if (tokenInPrice === 0) {
+          const tokenOutAmount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals));
+          const tokenOutPrice = parseFloat(row.tokenOut.priceUSD || '0');
+          const tokenOutValueUSD = tokenOutAmount * tokenOutPrice;
+
+          if (tokenOutValueUSD < 0.01) {
+            return <span className="Table__CellValue Table__CellValue--usd">&lt;0.01$</span>;
+          }
+          return (
+            <span className="Table__CellValue Table__CellValue--usd">
+              ${tokenOutValueUSD.toFixed(2)}
+            </span>
+          );
+        }
+
+        if (tokenInValueUSD < 0.01) {
+          return <span className="Table__CellValue Table__CellValue--usd">&lt;0.01$</span>;
+        }
         return (
-          <span>
-            ${amountUSD.toFixed(2)}
+          <span className="Table__CellValue Table__CellValue--usd">
+            ${tokenInValueUSD.toFixed(2)}
           </span>
-        )
+        );
       },
     },
     {
@@ -325,9 +381,11 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountIn), row.tokenIn.decimals))
         return (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} />}
+          <span className="Table__CellText">
+            <span className="Table__CellValue">
+              {amount < 0.01 ? '<0.01' : amount.toFixed(2)}
+            </span>
+            <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           </span>
         )
       },
@@ -336,11 +394,13 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Token amount (received)',
       key: 'amount2',
       render: (row) => {
-        const amount = parseFloat(formatUnits(BigInt(row.amountOut), row.tokenOut.decimals))
+        const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals))
         return (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
-            {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2, borderWidth: 2, borderColor: 'rgb(255, 193, 100)', borderStyle: 'solid' }} />}
+          <span className="Table__CellText">
+            <span className="Table__CellValue">
+              {amount < 0.01 ? '<0.01' : amount.toFixed(2)}
+            </span>
+            <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
           </span>
         )
       },
@@ -349,15 +409,13 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       label: 'Wallet',
       key: 'wallet',
       render: (row: Transaction) => (
-        <a
-          href={`https://berascan.com/address/${row.recipient}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <ExplorerLink
+          address={row.recipient}
+          showIcon={false}
           className="Table__Address"
-          title={row.recipient}
         >
           {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
-        </a>
+        </ExplorerLink>
       ),
     },
   ];
@@ -367,12 +425,13 @@ export const PoolTransactionsTable: React.FC<PoolTransactionsTableProps> = ({ po
       <h3 className="Pool__TransactionsSectionTitle">Recent Transactions</h3>
       <Table
         columns={txColumns}
-        data={transactions}
+        data={paginatedTransactions}
         isLoading={isLoading}
-        tableClassName="Table"
+        tableClassName="Table Table--bordered"
         wrapperClassName="Table__Wrapper"
         scrollClassName="Table__Scroll"
         emptyMessage="No transactions found for this pool"
+        pagination={pagination}
       />
     </div>
   );

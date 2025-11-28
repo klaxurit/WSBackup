@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Loader } from '../Loader/Loader';
 
 export type SortDirection = 'asc' | 'desc' | null;
 
@@ -20,6 +21,19 @@ interface PaginationProps {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
   onPageChange: (page: number) => void;
+  itemLabel?: string;
+}
+
+interface InfiniteLoadProps {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+  totalItems: number;
+  currentItems: number;
+  itemLabel?: string;
+  onSort?: (columnKey: string, direction: 'asc' | 'desc' | null) => void;
+  currentSortKey?: string;
+  currentSortDirection?: 'asc' | 'desc';
 }
 
 interface TableProps<T = any> {
@@ -31,89 +45,127 @@ interface TableProps<T = any> {
   wrapperClassName?: string;
   scrollClassName?: string;
   getRowClassName?: (row: T, rowIndex: number) => string;
+  getRowRef?: (row: T, element: HTMLTableRowElement | null) => void;
   isLoading?: boolean;
   pagination?: PaginationProps;
+  infiniteLoad?: InfiniteLoadProps;
   defaultSortKey?: string;
   defaultSortDirection?: SortDirection;
+  itemLabel?: string;
+  onRowClick?: (row: T, rowIndex: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-  itemsPerPage,
-  totalItems,
-  hasPreviousPage,
-  hasNextPage
+// Pagination component - currently unused but kept for future use
+// const Pagination: React.FC<PaginationProps> = ({
+//   currentPage,
+//   totalPages,
+//   onPageChange,
+//   itemsPerPage,
+//   totalItems,
+//   hasPreviousPage,
+//   hasNextPage,
+//   itemLabel = 'items'
+// }) => {
+//   const getVisiblePages = () => {
+//     const delta = 2;
+//     const range = [];
+//     const rangeWithDots = [];
+
+//     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+//       range.push(i);
+//     }
+
+//     if (currentPage - delta > 2) {
+//       rangeWithDots.push(1, '...');
+//     } else {
+//       rangeWithDots.push(1);
+//     }
+
+//     rangeWithDots.push(...range);
+
+//     if (currentPage + delta < totalPages - 1) {
+//       rangeWithDots.push('...', totalPages);
+//     } else if (totalPages > 1) {
+//       rangeWithDots.push(totalPages);
+//     }
+
+//     return rangeWithDots;
+//   };
+
+//   const startItem = (currentPage - 1) * itemsPerPage + 1;
+//   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+//   if (totalPages <= 1) return null;
+
+//   return (
+//     <div className="Table__Pagination">
+//       <div className="Table__PaginationInfo">
+//         Showing {startItem}-{endItem} of {totalItems} {itemLabel}
+//       </div>
+//       <div className="Table__PaginationControls">
+//         {hasPreviousPage && (
+//           <button
+//             className="Table__PaginationBtn"
+//             onClick={() => onPageChange(currentPage - 1)}
+//           >
+//             Previous
+//           </button>
+//         )}
+
+//         {getVisiblePages().map((page, index) => (
+//           <button
+//             key={index}
+//             className={`Table__PaginationBtn ${page === currentPage ?
+//               'Table__PaginationBtn--active' : ''
+//               } ${page === '...' ? 'Table__PaginationBtn--dots' : ''}`}
+//             onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
+//             disabled={page === '...'}
+//           >
+//             {page}
+//           </button>
+//         ))}
+
+//         {hasNextPage && (
+//           <button
+//             className="Table__PaginationBtn"
+//             onClick={() => onPageChange(currentPage + 1)}
+//           >
+//             Next
+//           </button>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+const InfiniteLoad: React.FC<InfiniteLoadProps> = ({
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
+  currentItems
 }) => {
-  const getVisiblePages = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i);
-    }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    rangeWithDots.push(...range);
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
-
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-
-  if (totalPages <= 1) return null;
+  if (!hasNextPage && currentItems === 0) return null;
 
   return (
-    <div className="Table__Pagination">
-      <div className="Table__PaginationInfo">
-        Showing {startItem}-{endItem} of {totalItems} transactions
-      </div>
-      <div className="Table__PaginationControls">
-        {hasPreviousPage && (
+    <div className="Table__InfiniteLoad">
+      {/* <div className="Table__InfiniteLoadInfo">
+        Showing {currentItems} of {totalItems} {itemLabel}
+      </div> */}
+      {hasNextPage && (
+        <div className="Table__InfiniteLoadControls">
           <button
-            className="Table__PaginationBtn"
-            onClick={() => onPageChange(currentPage - 1)}
+            className="Table__LoadMoreButton btn btn--small btn__main"
+            onClick={onLoadMore}
+            disabled={isFetchingNextPage}
           >
-            Previous
+            {isFetchingNextPage ? (
+              <Loader size="small" className="btn__main-loader" />
+            ) : (
+              'Load More'
+            )}
           </button>
-        )}
-
-        {getVisiblePages().map((page, index) => (
-          <button
-            key={index}
-            className={`Table__PaginationBtn ${page === currentPage ?
-              'Table__PaginationBtn--active' : ''
-              } ${page === '...' ? 'Table__PaginationBtn--dots' : ''}`}
-            onClick={() => typeof page === 'number' ? onPageChange(page) : undefined}
-            disabled={page === '...'}
-          >
-            {page}
-          </button>
-        ))}
-
-        {hasNextPage && (
-          <button
-            className="Table__PaginationBtn"
-            onClick={() => onPageChange(currentPage + 1)}
-          >
-            Next
-          </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -127,18 +179,46 @@ export function Table<T = any>({
   wrapperClassName = 'Table__Wrapper',
   scrollClassName = 'Table__Scroll',
   getRowClassName,
+  getRowRef,
   isLoading = false,
   pagination,
+  infiniteLoad,
   defaultSortKey,
   defaultSortDirection = null,
+  itemLabel = 'items',
+  onRowClick,
 }: TableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultSortDirection);
+
+  // Utiliser le tri côté serveur si disponible, sinon le tri local
+  const effectiveSortKey = infiniteLoad?.currentSortKey || sortKey;
+  const effectiveSortDirection = infiniteLoad?.currentSortDirection || sortDirection;
 
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return;
 
+    // Si on a une fonction de tri côté serveur (infinite loading), l'utiliser
+    if (infiniteLoad?.onSort) {
+      let newDirection: 'asc' | 'desc' | null = 'asc';
+
+      if (effectiveSortKey === columnKey) {
+        // Cycle through: asc -> desc -> null -> asc
+        if (effectiveSortDirection === 'asc') {
+          newDirection = 'desc';
+        } else if (effectiveSortDirection === 'desc') {
+          newDirection = null;
+        } else {
+          newDirection = 'asc';
+        }
+      }
+
+      infiniteLoad.onSort(columnKey, newDirection);
+      return;
+    }
+
+    // Sinon, utiliser le tri côté client (logique originale)
     if (sortKey === columnKey) {
       // Cycle through: asc -> desc -> null -> asc
       if (sortDirection === 'asc') {
@@ -156,6 +236,9 @@ export function Table<T = any>({
   };
 
   const sortedData = useMemo(() => {
+    // Si on utilise l'infinite loading avec tri côté serveur, pas de tri côté client
+    if (infiniteLoad?.onSort) return data;
+
     if (!sortKey || !sortDirection) return data;
 
     const column = columns.find(col => col.key === sortKey);
@@ -196,33 +279,60 @@ export function Table<T = any>({
         return bStr.localeCompare(aStr);
       }
     });
-  }, [data, sortKey, sortDirection, columns]);
+  }, [data, sortKey, sortDirection, columns, infiniteLoad]);
 
   const getSortIcon = (columnKey: string): React.ReactNode => {
     const column = columns.find(col => col.key === columnKey);
     if (!column?.sortable) return null;
 
-    if (sortKey !== columnKey) {
-      return <span className="Table__SortIcon Table__SortIcon--inactive">↕</span>;
+    // Icônes SVG pour éviter les problèmes de rendu iOS (emojis)
+    const ArrowUpIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 2L10 6H8V10H4V6H2L6 2Z" />
+      </svg>
+    );
+
+    const ArrowDownIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 10L2 6H4V2H8V6H10L6 10Z" />
+      </svg>
+    );
+
+    const ArrowBothIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 1L9 4H7V8H9L6 11L3 8H5V4H3L6 1Z" opacity="0.4" />
+      </svg>
+    );
+
+    if (effectiveSortKey !== columnKey) {
+      return <span className="Table__SortIcon Table__SortIcon--inactive"><ArrowBothIcon /></span>;
     }
 
-    if (sortDirection === 'asc') {
-      return <span className="Table__SortIcon Table__SortIcon--asc">↑</span>;
-    } else if (sortDirection === 'desc') {
-      return <span className="Table__SortIcon Table__SortIcon--desc">↓</span>;
+    if (effectiveSortDirection === 'asc') {
+      return <span className="Table__SortIcon Table__SortIcon--asc"><ArrowUpIcon /></span>;
+    } else if (effectiveSortDirection === 'desc') {
+      return <span className="Table__SortIcon Table__SortIcon--desc"><ArrowDownIcon /></span>;
     }
 
-    return <span className="Table__SortIcon Table__SortIcon--inactive">↕</span>;
+    return <span className="Table__SortIcon Table__SortIcon--inactive"><ArrowBothIcon /></span>;
   };
 
   const wrapperClasses = [
     wrapperClassName,
     className,
-    pagination ? 'Table__Wrapper--with-pagination' : ''
+    pagination ? 'Table__Wrapper--with-pagination' : '',
+    infiniteLoad ? 'Table__Wrapper--with-infinite-load' : ''
   ].filter(Boolean).join(' ');
 
   return (
     <div className={wrapperClasses}>
+      {isLoading && (
+        <div className="Table__LoadingOverlay">
+          <div className="Table__LoadingContainer">
+            <Loader size="desktop" />
+          </div>
+        </div>
+      )}
       <div className={scrollClassName}>
         <table className={`${tableClassName} Table--bordered`}>
           <thead>
@@ -250,7 +360,9 @@ export function Table<T = any>({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={columns.length} className="Table__Empty">Loading...</td>
+                <td colSpan={columns.length} className="Table__Empty" style={{ height: '300px' }}>
+                  {/* Empty cell to maintain table structure and minimum height */}
+                </td>
               </tr>
             ) : sortedData.length === 0 ? (
               <tr>
@@ -258,7 +370,13 @@ export function Table<T = any>({
               </tr>
             ) : (
               sortedData.map((row, rowIndex) => (
-                <tr key={rowIndex} className={getRowClassName ? getRowClassName(row, rowIndex) : undefined}>
+                <tr
+                  key={rowIndex}
+                  ref={(el) => getRowRef?.(row, el)}
+                  className={getRowClassName ? getRowClassName(row, rowIndex) : undefined}
+                  onClick={() => onRowClick?.(row, rowIndex)}
+                  style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className={col.className}>
                       {col.render ? col.render(row, rowIndex) : (row as any)[col.key]}
@@ -270,7 +388,8 @@ export function Table<T = any>({
           </tbody>
         </table>
       </div>
-      {pagination && <Pagination {...pagination} />}
+      {/* {pagination && <Pagination {...pagination} itemLabel={itemLabel} />} */}
+      {infiniteLoad && <InfiniteLoad {...infiniteLoad} itemLabel={itemLabel} />}
     </div>
   );
 }

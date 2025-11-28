@@ -1,0 +1,180 @@
+@use "../../utils" as *;
+
+// Système de tabs harmonisé pour toute l'application
+.Tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  // Désactiver les animations sur les boutons de tabs pour un rendu plus professionnel
+  .btn {
+    transition: none !important;
+
+    &:hover {
+      transition: none !important;
+    }
+
+    &:active {
+      transition: none !important;
+    }
+
+    &:focus-visible {
+      transition: none !important;
+    }
+  }
+
+  // Variante pour les tabs avec background
+  &--background {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+
+    .btn {
+      border-radius: 8px;
+
+      &.btn__main {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border: none;
+
+        // Pour les boutons de type tab, pas de changement au hover
+        &.btn__tab-active:hover {
+          background: rgba(255, 255, 255, 0.12);
+          color: #fff;
+        }
+      }
+
+      &.btn__shade {
+        background: transparent;
+        color: #aaa;
+        border: none;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.06);
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  // Variante pour les tabs avec underline
+  &--underline {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    padding-bottom: 0;
+    gap: 0;
+
+    .btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      padding: 12px 16px;
+      @include typography('body-sm');
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+
+      &:hover {
+        color: #fff;
+        background: none;
+      }
+
+      &.btn__main {
+        color: #e39229;
+        border-bottom-color: #e39229;
+        background: none;
+
+        // Pour les boutons de type tab, pas de changement au hover
+        &.btn__tab-active:hover {
+          color: #e39229;
+          border-bottom-color: #e39229;
+          background: none;
+        }
+      }
+    }
+  }
+
+  // Variante pour les tabs switch (comme TokenPage)
+  &--switch {
+    position: relative;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 999px;
+    padding: 2px;
+    gap: 0;
+
+    .btn {
+      position: relative;
+      z-index: 2;
+      border: none;
+      outline: none;
+      background: none;
+      color: #aaa;
+      @include typography('body-xs');
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: color 0.15s;
+
+      &:hover {
+        color: #fff;
+        background: none;
+      }
+
+      &.btn__main {
+        color: #222;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.22);
+
+        // Pour les boutons de type tab, pas de changement au hover
+        &.btn__tab-active:hover {
+          color: #222;
+          font-weight: 700;
+          background: rgba(255, 255, 255, 0.22);
+        }
+      }
+    }
+
+    // Slider pour l'effet switch
+    &::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+      transition: left 0.22s cubic-bezier(.4, 1, .4, 1);
+      z-index: 1;
+      box-shadow: 0 1px 4px 0 rgba(80, 80, 80, 0.06);
+      width: calc(50% - 2px);
+    }
+
+    &[data-selected="0"]::before {
+      left: 2px;
+    }
+
+    &[data-selected="1"]::before {
+      left: calc(50% + 2px);
+    }
+  }
+
+  // Responsive
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .btn {
+      font-size: var(--font-size-caption, 0.75rem);
+      padding: 8px 12px;
+    }
+
+    &--switch {
+      .btn {
+        font-size: var(--font-size-caption, 0.75rem);
+        padding: 4px 8px;
+      }
+    }
+  }
+}

@@ -1,0 +1,108 @@
+@use "../../styles/utils" as *;
+
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 8px;
+  border-left: 4px solid;
+  font-size: 14px;
+  line-height: 1.4;
+
+  &--error {
+    background-color: rgba($error-pure, 0.08);
+    border-left-color: $error-pure;
+    color: $error-pure;
+
+    .error-message__icon {
+      color: $error-pure;
+    }
+  }
+
+  &--warning {
+    background-color: rgba($carmel-pure, 0.08);
+    border-left-color: $carmel-pure;
+    color: $carmel-pure;
+
+    .error-message__icon {
+      color: $carmel-pure;
+    }
+  }
+
+  &__icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__text {
+    font-weight: 500;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__details {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.8;
+
+    summary {
+      cursor: pointer;
+      font-weight: 500;
+      margin-bottom: 4px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    pre {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 8px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+  }
+
+  // Version compacte
+  &--compact {
+    padding: 12px;
+    margin: 8px 0;
+    font-size: 13px;
+
+    .error-message__icon {
+      font-size: 14px;
+    }
+  }
+
+}
+
+// Animation d'apparition
+@keyframes error-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message {
+  animation: error-fade-in 0.3s ease-out;
+}

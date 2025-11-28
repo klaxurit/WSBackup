@@ -1,20 +1,28 @@
 import { useCallback, useEffect } from 'react';
 import { useAppDispatch } from '../store/hooks';
-import { setWalletConnected, setWalletDisconnected, setError, setBalance } from '../store/slices/walletSlice';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { injected, walletConnect } from 'wagmi/connectors';
+import { setWalletConnected, setError, setBalance, clearWalletState } from '../store/slices/walletSlice';
+import { useAccount, useDisconnect } from 'wagmi';
 import { createPublicClient, http, formatEther } from 'viem';
-import { berachain, berachainBepolia } from 'viem/chains';
+import { berachain } from 'viem/chains';
+import { useBerachainForce } from './useBerachainForce';
+import { useAppKit } from '@reown/appkit/react';
 
 export const useWallet = () => {
   const dispatch = useAppDispatch();
   const { address, isConnected, chainId } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
   const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { isCorrectNetwork } = useBerachainForce();
+  const { open } = useAppKit();
 
   // Synchroniser l'état Wagmi avec Redux à chaque changement
   useEffect(() => {
     if (isConnected && address && chainId) {
+      console.log('[useWallet] Wallet connected:', {
+        address,
+        chainId,
+        isCorrectNetwork
+      });
+
       dispatch(setWalletConnected({
         address,
         chainId: Number(chainId)
@@ -24,40 +32,41 @@ export const useWallet = () => {
       const rpcUrl = import.meta.env.VITE_BERACHAIN_API_URL || 'https://rpc.berachain.com/';
       const client = createPublicClient({ chain: berachain, transport: http(rpcUrl) });
       client.getBalance({ address }).then((balance) => {
+        console.log('[useWallet] Balance fetched:', formatEther(balance), 'BERA');
         dispatch(setBalance(formatEther(balance)));
-      }).catch(() => {
+      }).catch((error) => {
+        console.error('[useWallet] Error fetching balance:', error);
         dispatch(setBalance('0'));
       });
     } else if (!isConnected) {
-      dispatch(setWalletDisconnected());
+      console.log('[useWallet] Wallet disconnected');
+      dispatch(clearWalletState());
     }
-  }, [isConnected, address, chainId, dispatch]);
+  }, [isConnected, address, chainId, dispatch, isCorrectNetwork]);
 
-  const connectWallet = useCallback(async (connectorId: 'injected' | 'walletConnect') => {
+  const connectWallet = useCallback(() => {
     try {
-      const connector = connectorId === 'injected' ? injected() : walletConnect({
-        projectId: 'f5f6f0d2a4bb55b22ce05e9e92a4e95e'
-      });
-      connect(
-        { connector, chainId: berachainBepolia.id },
-        {
-          onSuccess: () => {
-            // Redux sera synchronisé automatiquement par le useEffect
-          },
-          onError: (error) => {
-            dispatch(setError(error instanceof Error ? error.message : 'Connection error'));
-          }
-        }
-      );
+      console.log('[useWallet] Opening connection modal...');
+      // Ouvrir la modal de connexion AppKit
+      open();
     } catch (err) {
+      console.error('[useWallet] Connection error:', err);
       dispatch(setError(err instanceof Error ? err.message : 'Connection error'));
     }
-  }, [connect, dispatch]);
+  }, [open, dispatch]);
 
-  const disconnectWallet = useCallback(() => {
+  const disconnectWallet = useCallback(async () => {
     try {
-      wagmiDisconnect();
+      console.log('[useWallet] Disconnecting wallet...');
+      // Déconnecter via Wagmi
+      await wagmiDisconnect();
+
+      // Nettoyer l'état Redux
+      dispatch(clearWalletState());
+      console.log('[useWallet] Wallet disconnected successfully');
+
     } catch (err) {
+      console.error('[useWallet] Disconnection error:', err);
       dispatch(setError(err instanceof Error ? err.message : 'Disconnection error'));
     }
   }, [wagmiDisconnect, dispatch]);
@@ -68,7 +77,8 @@ export const useWallet = () => {
     address,
     chainId,
     isConnected,
-    isConnecting: isPending,
-    connectors
+    isConnecting: false,
+    connectors: [],
+    isCorrectNetwork,
   };
 };

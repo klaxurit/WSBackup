@@ -16,20 +16,48 @@ export const SearchBar = ({
   activeTab,
 }: SearchBarProps) => {
   const [isExpanded, setIsExpanded] = useState(mode === 'expanded' || mode === 'default');
-  const [showPlaceholder, setShowPlaceholder] = useState(mode !== 'compact');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const cleanSearchBar = () => setSearchValue("");
+
+  // Add keyboard shortcut handler for "/" key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle "/" key when not in an input/textarea and when the component is visible
+      if (
+        e.key === "/" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA" &&
+        !document.activeElement?.hasAttribute("contenteditable")
+      ) {
+        // Check if this input is visible before trying to focus it
+        const inputElement = inputRef.current;
+        if (!inputElement) return;
+
+        // Check if the input or its parent container is visible
+        const isVisible = inputElement.offsetParent !== null;
+        if (!isVisible) return;
+
+        e.preventDefault(); // Prevent "/" from being typed
+        inputElement.focus();
+
+        // If in compact mode and not expanded, expand it
+        if (mode === 'compact' && !isExpanded) {
+          setIsExpanded(true);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, isExpanded]);
 
   const handleIconClick = () => {
     if (mode === 'compact' && !isExpanded) {
       setIsExpanded(true);
       setTimeout(() => {
-        if (mode === 'compact') {
-          setShowPlaceholder(true);
-        }
-      }, 300);
-      inputRef.current?.focus();
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -41,18 +69,27 @@ export const SearchBar = ({
         return "Search pools";
       case 'Tokens':
         return "Search tokens";
+      case 'Vaults':
+        return "Search vaults";
       default:
         return "Search";
     }
   })();
 
-  useEffect(() => {
-    if (!isExpanded) {
-      setShowPlaceholder(mode !== 'compact');
+  const getClassName = () => {
+    let classes = 'SearchBar';
+    if (mode === 'compact') {
+      classes += ' SearchBar__compact';
+      if (isExpanded) {
+        classes += ' expanded';
+      }
+    } else if (mode === 'expanded') {
+      classes += ' expanded';
     }
-  }, [isExpanded, mode]);
+    return classes;
+  };
 
-  const className = `SearchBar ${mode === 'compact' && !isExpanded ? 'SearchBar__compact' : ''} ${mode === 'compact' && isExpanded ? 'expanded' : ''} ${mode === 'expanded' ? 'expanded' : ''}`;
+  const className = getClassName();
   const placeholderText = mode === 'compact' ? (networksList ? "Search networks" : "Search tokens") :
     !networksList ? "Search" : "Search tokens, pools, transactions";
 
@@ -64,19 +101,20 @@ export const SearchBar = ({
         <svg className="SearchBar__iconSearch" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M13.3333 13.3333L16.6666 16.6666M15 9.16665C15 12.3883 12.3883 15 9.16665 15C5.94499 15 3.33331 12.3883 3.33331 9.16665C3.33331 5.94499 5.94499 3.33331 9.16665 3.33331C12.3883 3.33331 15 5.94499 15 9.16665Z" stroke="currentColor" strokeWidth="1.6" />
         </svg>
-        {(isExpanded || mode !== 'compact') && showPlaceholder ? (
-          <input
-            ref={inputRef}
-            type="text"
-            className="SearchBar__input"
-            style={{ width: isExpanded ? 200 : 'auto' }}
-            placeholder={mode === 'compact' ? arraySearchPlaceholderText : placeholderText}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            onBlur={() => { if (!searchValue && mode === 'compact') setIsExpanded(false); }}
-          />
-        ) : null}
+        <input
+          ref={inputRef}
+          type="text"
+          className="SearchBar__input"
+          placeholder={mode === 'compact' ? arraySearchPlaceholderText : placeholderText}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          onBlur={() => {
+            if (!searchValue && mode === 'compact') {
+              setIsExpanded(false);
+            }
+          }}
+        />
       </div>
       {showRightContent && (
         <div className="SearchBar__RightContent">

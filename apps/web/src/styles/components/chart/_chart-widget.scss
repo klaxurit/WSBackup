@@ -20,6 +20,7 @@ $chart-button-border-radius: 6px;
     overflow: hidden;
   }
 
+
   &__chart {
     width: 100%;
     height: var(--chart-height, 500px);
@@ -53,7 +54,7 @@ $chart-button-border-radius: 6px;
 
   &__overlay-message {
     color: $white;
-    font-size: 16px;
+    @include typography('body-lg');
     font-weight: 500;
     margin: 0;
   }
@@ -73,7 +74,7 @@ $chart-button-border-radius: 6px;
     color: $onyx-black;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    @include typography('body-sm');
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -173,7 +174,7 @@ $chart-button-border-radius: 6px;
     border: none;
     border-radius: $chart-button-border-radius;
     font-family: "TT Hoves", system-ui, sans-serif;
-    font-size: 14px;
+    @include typography('body-sm');
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -229,7 +230,7 @@ $chart-button-border-radius: 6px;
     min-width: 44px;
     justify-content: center;
     padding: 6px 8px;
-    font-size: 13px;
+    @include typography('body-xs');
     font-weight: 600;
   }
 
@@ -246,7 +247,7 @@ $chart-button-border-radius: 6px;
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    @include typography('caption');
     min-width: 0;
     flex-shrink: 1;
   }
@@ -278,12 +279,12 @@ $chart-button-border-radius: 6px;
     }
 
     &__stat {
-      font-size: 11px;
+      @include typography('body-xs');
     }
 
     &__button {
       padding: 6px 10px;
-      font-size: 13px;
+      @include typography('body-xs');
     }
   }
 
@@ -347,7 +348,7 @@ $chart-button-border-radius: 6px;
 
     &__button {
       padding: 8px 12px;
-      font-size: 14px;
+      @include typography('body-sm');
     }
 
     &__interval {
@@ -374,7 +375,7 @@ $chart-button-border-radius: 6px;
 
     &__button {
       padding: 6px 8px;
-      font-size: 13px;
+      @include typography('body-xs');
       min-width: 0;
     }
 

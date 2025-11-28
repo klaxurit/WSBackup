@@ -1,6 +1,6 @@
-import { CONTRACTS } from "@repo/contracts";
 import { Context } from "ponder:registry";
 import { protocolDayData, factory as sFactory } from "ponder:schema";
+import { CONTRACTS } from "../utils/abi";
 
 export async function updateProtocolDayData(timestamp: bigint, context: Context) {
   const factoryEntity = await context.db.find(sFactory, { id: CONTRACTS.FACTORY });

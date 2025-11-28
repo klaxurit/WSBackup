@@ -2,20 +2,22 @@ import { useMemo, useState } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { TokenItem } from './TokenItem';
 import { PopularTokens } from './PopularTokens';
-import { useTokens, type BerachainToken } from '../../hooks/useBerachainTokenList';
+import { useTokensInPool, convertToBerachainTokens } from '../../hooks/useTokensInPool';
+import { useTokens } from '../../hooks/useBerachainTokenList';
+import { usePopularTokens } from '../../hooks/usePopularTokens';
 import { Modal } from '../Common/Modal';
-import { zeroAddress } from "viem";
-import { useAccount } from "wagmi";
-import { useTokenBalances } from "../../hooks/useTokenBalances";
-import { useQuery } from "@tanstack/react-query";
-import { ensureArray } from "../../utils/dataValidation";
+import type { BerachainToken } from '../../hooks/useBerachainTokenList';
 
 interface NetworksListProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (token: BerachainToken) => void;
   selectedToken?: BerachainToken | null;
-  onlyPoolToken: boolean
+  /**
+   * Si true, affiche tous les tokens disponibles (pour la création de liquidité)
+   * Si false (défaut), affiche uniquement les tokens présents dans les pools
+   */
+  showAllTokens?: boolean;
 }
 
 export const TokenList = ({
@@ -23,140 +25,89 @@ export const TokenList = ({
   onClose,
   onSelect,
   selectedToken,
-  onlyPoolToken
+  showAllTokens = false,
 }: NetworksListProps) => {
   const [searchValue, setSearchValue] = useState<string>("");
-  const { data: tokens } = useTokens()
-  const { address, isConnected } = useAccount()
 
-  const { data: tokensStats } = useQuery({
-    queryKey: ["tokensStatsForList"],
-    queryFn: async () => {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/token/list`)
-      if (!resp.ok) return { data: [] as any[] }
-      return resp.json()
-    },
-    staleTime: 60_000
-  })
+  // Hook pour tous les tokens (pour la création de liquidité)
+  const {
+    data: allTokensData,
+    isLoading: isLoadingAllTokens,
+    error: errorAllTokens
+  } = useTokens();
 
-  const tokensArray = ensureArray<BerachainToken>(tokens);
+  // Hook pour les tokens dans les pools (pour le swap et autres)
+  const {
+    data: tokensInPoolData,
+    isLoading: isLoadingTokensInPool,
+    error: errorTokensInPool,
+    isError: isErrorTokensInPool
+  } = useTokensInPool();
+
+  // Sélectionner les données appropriées selon le mode
+  const isLoading = showAllTokens ? isLoadingAllTokens : isLoadingTokensInPool;
+  const error = showAllTokens ? errorAllTokens : errorTokensInPool;
+  const isError = showAllTokens ? !!errorAllTokens : isErrorTokensInPool;
+
+  // Convertir les tokens en format BerachainToken
+  const cachedTokens = useMemo(() => {
+    if (showAllTokens) {
+      // Pour tous les tokens, les données sont déjà au bon format
+      return Array.isArray(allTokensData) ? allTokensData : [];
+    } else {
+      // Pour les tokens dans les pools, utiliser la fonction de conversion
+      if (!tokensInPoolData?.data?.tokens) return [];
+      return convertToBerachainTokens(tokensInPoolData.data.tokens);
+    }
+  }, [showAllTokens, allTokensData, tokensInPoolData]);
+
+  // Tokens populaires (utilise le hook usePopularTokens)
+  const popularTokens = usePopularTokens(cachedTokens, undefined, 4);
+
+  // États dérivés pour compatibilité
+  const hasError = isError;
+  const hasTokens = cachedTokens.length > 0;
+  const isReady = !isLoading && !error;
+
+  // Filtrer et trier les tokens selon la recherche et les balances
+  const sortedTokens = useMemo(() => {
+    let filteredTokens = cachedTokens;
+
+    // Filtrer par recherche si nécessaire
+    if (searchValue !== "") {
+      const searchLower = searchValue.toLowerCase();
+      filteredTokens = cachedTokens.filter(token =>
+        token.symbol.toLowerCase().includes(searchLower) ||
+        token.name.toLowerCase().includes(searchLower) ||
+        token.address.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Trier par balance USD (déjà calculée par le backend)
+    return filteredTokens.sort((a, b) => {
+      const aValue = a.balanceUSD || 0;
+      const bValue = b.balanceUSD || 0;
+
+      // Tokens avec balance en premier, triés par valeur USD décroissante
+      if (aValue === 0 && bValue === 0) return 0;
+      if (aValue === 0) return 1;
+      if (bValue === 0) return -1;
+
+      return bValue - aValue;
+    });
+  }, [cachedTokens, searchValue]);
 
   const handleTokenSelect = (token: BerachainToken) => {
     onSelect(token);
     onClose();
   };
 
-  const filteredTokens = useMemo(() => {
-    const tokensArray = ensureArray(tokens) as BerachainToken[];
-
-    const onlyPoolOrAllTokens = onlyPoolToken
-      ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
-      : tokensArray
-
-    const tokensWithoutBGT = onlyPoolOrAllTokens.filter(t => t.symbol !== 'BGT')
-
-    if (searchValue === "") return tokensWithoutBGT;
-    return tokensWithoutBGT.filter((token) =>
-      token.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-      token.symbol.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [searchValue, tokensArray, onlyPoolToken]);
-
+  // Tokens pour les tokens populaires (sans recherche)
   const availableTokensForPopular = useMemo(() => {
-    const tokensArray = ensureArray(tokens) as BerachainToken[];
+    if (searchValue !== "") return [];
+    return popularTokens;
+  }, [popularTokens, searchValue]);
 
-    const baseTokens = onlyPoolToken
-      ? tokensArray.filter(t => t.status === 'IN_POOL' || t.address === zeroAddress)
-      : tokensArray
-    return baseTokens.filter(t => t.symbol !== 'BGT');
-  }, [tokens, onlyPoolToken]);
-
-  const marketCapByAddress = useMemo(() => {
-    const map = new Map<string, number>()
-    const statsArray: any[] = tokensStats || []
-    for (const t of statsArray) {
-      const addr: string = t.address
-      const mc: number = t?.TokenDailyStats?.[0]?.marketCap || 0
-      if (addr) map.set(String(addr).toLowerCase(), Number(mc) || 0)
-    }
-    return map
-  }, [tokensStats])
-
-  const validateAddress = (addr: string | undefined): string | undefined => {
-    if (!addr) return undefined;
-    if (addr.startsWith('0x') && addr.length === 42) {
-      return addr;
-    }
-    return undefined;
-  };
-
-  const balanceInputTokens = useMemo(() => {
-    return filteredTokens.map(t => ({
-      address: t.address === zeroAddress ? undefined : validateAddress(t.address),
-      symbol: t.symbol,
-      decimals: t.decimals
-    }))
-  }, [filteredTokens])
-
-  const { balances } = useTokenBalances(balanceInputTokens, address as `0x${string}`)
-
-  const sortedTokens = useMemo(() => {
-    if (!filteredTokens.length) return filteredTokens
-
-    const getBalanceUsd = (token: BerachainToken): number => {
-      const balanceStr = (balances as Record<string, string | undefined>)[token.symbol]
-      if (!balanceStr) return 0
-
-      const amount = parseFloat(balanceStr)
-      if (!amount || !isFinite(amount) || amount <= 0) return 0
-
-      let tokenStats = tokensStats?.find((t: any) =>
-        t.address?.toLowerCase() === token.address?.toLowerCase()
-      )
-
-      let price = tokenStats?.TokenDailyStats?.[0]?.price || 0
-
-      if (price === 0 && token.address === zeroAddress) {
-        const wBeraStats = tokensStats?.find((t: any) =>
-          t.symbol === 'wBERA' || t.address?.toLowerCase() === '0x6969696969696969696969696969696969696969'
-        )
-        price = wBeraStats?.TokenDailyStats?.[0]?.price || 0
-      }
-
-      if (price === 0) return 0
-
-      return amount * price
-    }
-
-    const getMarketCap = (token: BerachainToken): number => {
-      if (!token.address || !tokensStats) return 0
-
-      const marketCap = marketCapByAddress.get(token.address.toLowerCase()) || 0
-
-      return marketCap
-    }
-
-    if (isConnected) {
-      const withBalance: BerachainToken[] = []
-      const withoutBalance: BerachainToken[] = []
-
-      for (const t of filteredTokens) {
-        const usd = getBalanceUsd(t)
-        if (usd > 0) {
-          withBalance.push(t)
-        } else {
-          withoutBalance.push(t)
-        }
-      }
-
-      withBalance.sort((a, b) => getBalanceUsd(b) - getBalanceUsd(a))
-      withoutBalance.sort((a, b) => getMarketCap(b) - getMarketCap(a))
-
-      return [...withBalance, ...withoutBalance]
-    }
-
-    return [...filteredTokens].sort((a, b) => getMarketCap(b) - getMarketCap(a))
-  }, [filteredTokens, balances, isConnected, tokensStats, marketCapByAddress])
 
   return (
     <Modal open={isOpen} onClose={onClose} className="Modal" overlayClassName="NetworksList">
@@ -181,24 +132,56 @@ export const TokenList = ({
         setSearchValue={setSearchValue}
         networksList={true}
       />
-      {searchValue === "" && (
-        <PopularTokens
-          tokens={availableTokensForPopular}
-          onTokenSelect={handleTokenSelect}
-          selectedToken={selectedToken}
-        />
-      )}
 
-      <div className="Modal__Content">
-        {sortedTokens.map((token) => (
-          <TokenItem
-            key={token.address || token.symbol}
-            token={token}
-            isSelected={selectedToken?.address === token.address}
-            onSelect={handleTokenSelect.bind(null, token)}
-          />
-        ))}
-      </div>
+      {/* Affichage conditionnel basé sur l'état de chargement */}
+      {isLoading || !isReady ? (
+        <div className="Modal__Content">
+          <div className="Modal__Loading">
+            <div className="Modal__LoadingText">
+              Loading token data...
+            </div>
+          </div>
+        </div>
+      ) : hasError ? (
+        <div className="Modal__Content">
+          <div className="Modal__Error">
+            <div className="Modal__ErrorText">Failed to load tokens. Please try again.</div>
+            <button
+              className="Modal__RetryButton"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : !hasTokens ? (
+        <div className="Modal__Content">
+          <div className="Modal__Empty">
+            <div className="Modal__EmptyText">No tokens available</div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {searchValue === "" && (
+            <PopularTokens
+              tokens={availableTokensForPopular}
+              onTokenSelect={handleTokenSelect}
+              selectedToken={selectedToken}
+            />
+          )}
+
+          <div className="Modal__Content">
+            {sortedTokens.map((token, index) => (
+              <TokenItem
+                key={`${token.address || token.symbol}-${index}`}
+                token={token}
+                isSelected={selectedToken?.address === token.address}
+                onSelect={handleTokenSelect.bind(null, token)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </Modal>
   );
 };

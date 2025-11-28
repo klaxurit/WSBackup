@@ -1,0 +1,182 @@
+@use "../../utils" as *;
+
+// User Positions Table Styles
+.UserPositionsTable__Wrapper {
+  margin-top: 24px;
+
+  .UserPositionsTable__Title {
+    @include typography('heading-lg');
+    font-weight: 600;
+    color: $white-080;
+    margin-bottom: 16px;
+    text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+  }
+}
+
+.UserPositionsTable__Container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.UserPositionsTable__Scroll {
+  overflow-x: auto;
+}
+
+.UserPositionsTable {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    background: rgba(255, 255, 255, 0.04);
+    color: $white-072;
+    font-weight: 600;
+    @include typography('body-sm');
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    white-space: nowrap;
+
+    &:first-child {
+      padding-left: 20px;
+    }
+
+    &:last-child {
+      padding-right: 20px;
+    }
+  }
+
+  td {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+
+    &:first-child {
+      padding-left: 20px;
+    }
+
+    &:last-child {
+      padding-right: 20px;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+// Type Column
+.UserPositionsTable__TypeCell {
+  display: flex;
+  align-items: center;
+}
+
+.UserPositionsTable__TypeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 8px;
+  @include typography('caption');
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.sticky {
+    background: rgba(255, 255, 255, 0.1);
+    color: $white-080;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  &.autowin {
+    background: rgba(227, 146, 41, 0.15);
+    color: $beryl-pure;
+    border: 1px solid rgba(227, 146, 41, 0.3);
+  }
+}
+
+// Value Column
+.UserPositionsTable__ValueCell {
+  @include typography('body-lg');
+  font-weight: 600;
+  color: $white-080;
+}
+
+// Token Column
+.UserPositionsTable__TokenCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.UserPositionsTable__TokenIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.UserPositionsTable__TokenName {
+  font-weight: 600;
+  color: $white-080;
+  @include typography('body-sm');
+}
+
+.UserPositionsTable__TokenAmount {
+  @include typography('body-sm');
+  color: $white-064;
+  margin-left: auto;
+}
+
+// APR Column
+.UserPositionsTable__AprCell {
+  @include typography('body-lg');
+  font-weight: 600;
+  color: $beryl-pure;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .UserPositionsTable__Wrapper {
+    margin-top: 20px;
+  }
+
+  .UserPositionsTable {
+
+    th,
+    td {
+      padding: 12px 8px;
+      @include typography('body-sm');
+
+      &:first-child {
+        padding-left: 12px;
+      }
+
+      &:last-child {
+        padding-right: 12px;
+      }
+    }
+  }
+
+  .UserPositionsTable__TokenCell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .UserPositionsTable__TokenAmount {
+    margin-left: 0;
+    @include typography('caption');
+  }
+
+  .UserPositionsTable__TypeBadge {
+    padding: 3px 8px;
+    @include typography('caption');
+  }
+}

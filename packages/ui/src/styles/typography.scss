@@ -1,0 +1,6 @@
+@use './typography-tokens' as typography;
+
+:root {
+  @include typography.declare-typography-css-variables();
+}
+

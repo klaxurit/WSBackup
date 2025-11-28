@@ -1,16 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Table, { type TableColumn } from "../Table/Table"
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from '../Common/TokenLogo';
+import { ExplorerLink } from '../Common/ExplorerLink';
 import { formatUnits } from "viem";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface TransactionsTableProps {
-  searchValue: string | null;
+  searchValue?: string
 }
 
-const GET_TRANSACTIONS = `
-  query GetTransactions($limit: Int = 20) {
-    transactions(limit: $limit, orderBy: "timestamp", orderDirection: "desc") {
+const GET_TRANSACTIONS_FAST = `
+  query GetTransactionsFast($limit: Int!, $after: String) {
+    transactions(
+      orderBy: "timestamp",
+      orderDirection: "desc",
+      limit: $limit,
+      after: $after
+    ) {
       totalCount
       pageInfo {
         endCursor
@@ -19,19 +25,9 @@ const GET_TRANSACTIONS = `
         startCursor
       }
       items {
-        from
-        gasPrice
-        gasUsed
         id
         timestamp
-        burns {
-          totalCount
-        }
-        collects {
-          totalCount
-        }
         swaps {
-          totalCount
           items {
             amount1
             amount0
@@ -43,140 +39,184 @@ const GET_TRANSACTIONS = `
                 symbol
                 id
                 logoUri
+                decimals
               }
               token1Ref {
                 symbol
                 id
                 logoUri
+                decimals
               }
             }
           }
-        }
-        mints {
-          totalCount
         }
       }
     }
   }
 `
 
-export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
-  const [currentPage, setCurrentPage] = useState(1)
+export const TransactionsTable = ({ searchValue = '' }: TransactionsTableProps) => {
+  const itemsPerPage = 50; // Plus d'éléments par page pour les transactions
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: async () => {
+  // Déterminer si on est en mode recherche
+  const isSearching = searchValue && searchValue.trim() !== '';
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage
+  } = useInfiniteQuery({
+    queryKey: ['transactions', searchValue],
+    queryFn: async ({ pageParam }) => {
+      // En mode recherche, charger plus de données
+      const limit = isSearching ? 500 : itemsPerPage;
+      // En mode recherche, ignorer la pagination
+      const after = isSearching ? null : (pageParam || null);
+
       const resp = await fetch(`${import.meta.env.VITE_GRAPHQL_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: GET_TRANSACTIONS }),
-      });
-      if (!resp.ok) return []
-
-      const data = await resp.json()
-
-      return data.data.transactions
-    },
-    select: (data) => {
-      // console.log("Données brutes des swaps:", data)
-      return {
-        pagination: {
-          ...data.pageInfo,
-          onPageChange: setCurrentPage
-        },
-        txs: data.items.map((s: any) => {
-          // Debug: afficher la structure complète d'un swap
-          // console.log("Structure d'un swap:", s);
-
-          // Récupérer les informations des tokens depuis la base de données
-          // const getTokenInfo = (address: string) => {
-          //   const token = tokensMap.get(address.toLowerCase());
-          //   return token || {
-          //     symbol: 'Unknown',
-          //     name: 'Unknown Token',
-          //     decimals: 18,
-          //     logoUri: null
-          //   };
-          // };
-
-
-          if (s.swaps.items.length > 0) { // C'est un swap
-            if (BigInt(s.swaps.items[0].amount0) > 0n) {
-              // A -> B
-              return {
-                ...s,
-                ...s.swaps.items[0],
-                tokenIn: s.swaps.items[0].pool.token0Ref,
-                tokenOut: s.swaps.items[0].pool.token1Ref,
-                amountIn: BigInt(s.swaps.items[0].amount0),
-                amountOut: BigInt(s.swaps.items[0].amount1),
-              }
-            } else {
-              // B -> A
-              return {
-                ...s,
-                ...s.swaps.items[0],
-                tokenIn: s.swaps.items[0].pool.token1Ref,
-                tokenOut: s.swaps.items[0].pool.token0Ref,
-                amountIn: BigInt(s.swaps.items[0].amount1),
-                amountOut: BigInt(s.swaps.items[0].amount0),
-              }
-            }
+        body: JSON.stringify({
+          query: GET_TRANSACTIONS_FAST,
+          variables: {
+            limit,
+            after
           }
+        }),
+      });
 
-          return null
-        })
+      if (!resp.ok) {
+        return { items: [], totalCount: 0, pageInfo: { hasNextPage: false, endCursor: null } }
       }
-    }
+
+      const result = await resp.json()
+
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
+      }
+
+      return result.data.transactions;
+    },
+    getNextPageParam: (lastPage) => {
+      // Désactiver la pagination en mode recherche
+      if (isSearching) return undefined;
+
+      return lastPage?.pageInfo?.hasNextPage ? lastPage.pageInfo.endCursor : undefined;
+    },
+    initialPageParam: null,
+    staleTime: 30000, // 30 seconds
   });
 
-  useEffect(() => {
-    refetch()
-  }, [currentPage, searchValue])
+  const transactions = useMemo(() => {
+    if (!data?.pages) return [];
+
+    // Combine all pages into a single array and transform data
+    let allTxs = data.pages.flatMap(page =>
+      page.items.map((s: any) => {
+        if (s.swaps?.items?.length > 0) {
+          const swap = s.swaps.items[0];
+          if (BigInt(swap.amount0) > 0n) {
+            return {
+              ...s,
+              ...swap,
+              tokenIn: {
+                ...swap.pool.token0Ref,
+              },
+              tokenOut: {
+                ...swap.pool.token1Ref,
+              },
+              amountIn: BigInt(swap.amount0),
+              amountOut: BigInt(swap.amount1),
+            }
+          } else {
+            return {
+              ...s,
+              ...swap,
+              tokenIn: {
+                ...swap.pool.token1Ref,
+              },
+              tokenOut: {
+                ...swap.pool.token0Ref,
+              },
+              amountIn: BigInt(swap.amount1),
+              amountOut: BigInt(swap.amount0),
+            }
+          }
+        }
+        return null
+      }).filter(Boolean)
+    );
+
+    // Apply search filter if search value exists
+    if (isSearching) {
+      const searchLower = searchValue.toLowerCase();
+      allTxs = allTxs.filter((tx: any) =>
+        (tx.id && tx.id.toLowerCase().includes(searchLower)) ||
+        (tx.recipient && tx.recipient.toLowerCase().includes(searchLower)) ||
+        (tx.tokenIn?.symbol && tx.tokenIn.symbol.toLowerCase().includes(searchLower)) ||
+        (tx.tokenOut?.symbol && tx.tokenOut.symbol.toLowerCase().includes(searchLower)) ||
+        (tx.tokenIn?.name && tx.tokenIn.name.toLowerCase().includes(searchLower)) ||
+        (tx.tokenOut?.name && tx.tokenOut.name.toLowerCase().includes(searchLower))
+      );
+    }
+
+    return allTxs;
+  }, [data, searchValue, isSearching]);
+
+  const infiniteLoadProps = useMemo(() => {
+    if (!data?.pages?.length) return undefined;
+
+    const firstPage = data.pages[0];
+
+    // Désactiver "Load More" en mode recherche ou s'il n'y a plus de pages
+    const canLoadMore = !isSearching && !!hasNextPage;
+
+    return {
+      hasNextPage: canLoadMore,
+      isFetchingNextPage: !isSearching ? isFetchingNextPage : false,
+      onLoadMore: canLoadMore ? fetchNextPage : () => { },
+      totalItems: firstPage?.totalCount || 0,
+      currentItems: transactions.length,
+      itemLabel: "transactions"
+    };
+  }, [data, hasNextPage, isFetchingNextPage, fetchNextPage, transactions.length, isSearching]);
 
   const txColumns: TableColumn[] = [
     {
       label: 'Time',
       key: 'time',
       render: (row) => {
-        let text
         const now = new Date();
-        // Corriger le timestamp : createdAt est en secondes, pas en millisecondes
         const txTime = new Date(Number(row.timestamp) * 1000);
         const diffMs = now.getTime() - txTime.getTime();
         const diffMin = Math.floor(diffMs / 60000);
-
         const diffH = Math.floor(diffMin / 60);
         const diffD = Math.floor(diffH / 24);
-        const diffM = Math.floor(diffD / 30);
-        const diffY = Math.floor(diffM / 12);
 
+        let text;
         if (diffMin < 1) {
           text = 'Just now'
         } else if (diffMin < 60) {
-          text = `${diffMin} min ago`
+          text = `${diffMin}m ago`
         } else if (diffH < 24) {
           text = `${diffH}h ago`
-        } else if (diffD < 30) {
-          text = `${diffD}d ago`
-        } else if (diffM < 12) {
-          text = `${diffM}m ago`
         } else {
-          text = `${diffY}y ago`
+          text = `${diffD}d ago`
         }
 
         return (
-          <a
-            href={`https://berascan.com/tx/${row.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <ExplorerLink
+            address={row.id || ''}
+            type="tx"
+            showIcon={false}
             className="Table__Address"
-            title={`https://berascan.com/tx/${row.id}`}
           >
             {text}
-          </a>
+          </ExplorerLink>
         )
       },
     },
@@ -184,30 +224,20 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       label: 'Type',
       key: 'type',
       render: (row) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span>
           Swap
-          {row.tokenIn.logoUri
-            ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
-            : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
-          }
+          <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           for
-          {row.tokenOut.logoUri
-            ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
-            : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, margin: "0 2px" }} />
-          }
+          <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
         </span>
       ),
     },
     {
       label: 'USD', key: 'usd',
       render: (row) => {
-        const amount = (parseFloat(row.amountUSD))
-        if (amount < 0.01) return "<0.01$"
-        return (
-          <span>
-            ${amount.toFixed(2)}
-          </span>
-        )
+        const amountUSD = parseFloat(row.amountUSD || '0');
+        if (amountUSD < 0.01) return "<$0.01";
+        return <span>${amountUSD.toFixed(2)}</span>;
       },
     },
     {
@@ -216,9 +246,9 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       render: (row) => {
         const amount = parseFloat(formatUnits(row.amountIn, row.tokenIn.decimals || 18))
         return (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+          <span>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenIn.logoUri ? <img src={row.tokenIn.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} /> : <FallbackImg content={row.tokenIn.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} />}
+            <TokenLogo logoUri={row.tokenIn.logoUri} symbol={row.tokenIn.symbol} size="medium" />
           </span>
         )
       },
@@ -229,9 +259,9 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       render: (row) => {
         const amount = parseFloat(formatUnits(BigInt(row.amountOut) * -1n, row.tokenOut.decimals || 18))
         return (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: "end", gap: 4 }}>
+          <span>
             {amount < 0.01 ? "<0.01" : amount.toFixed(2)}
-            {row.tokenOut.logoUri ? <img src={row.tokenOut.logoUri} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} /> : <FallbackImg content={row.tokenOut.symbol} style={{ width: 24, height: 24, borderRadius: 50, marginLeft: 2 }} />}
+            <TokenLogo logoUri={row.tokenOut.logoUri} symbol={row.tokenOut.symbol} size="medium" />
           </span>
         )
       },
@@ -240,15 +270,13 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
       label: 'Wallet',
       key: 'wallet',
       render: (row) => (
-        <a
-          href={`https://berascan.com/address/${row.swaps.items[0].recipient}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <ExplorerLink
+          address={row.recipient}
+          showIcon={false}
           className="Table__Address"
-          title={row.swaps.items[0].recipient}
         >
-          {row.swaps.items[0].recipient.slice(0, 6) + '...' + row.swaps.items[0].recipient.slice(-4)}
-        </a>
+          {row.recipient.slice(0, 6) + '...' + row.recipient.slice(-4)}
+        </ExplorerLink>
       ),
     },
   ];
@@ -256,12 +284,13 @@ export const TransactionsTable = ({ searchValue }: TransactionsTableProps) => {
   return (
     <Table
       columns={txColumns}
-      data={data?.txs || []}
+      data={transactions}
       isLoading={isLoading}
-      tableClassName="Table"
+      tableClassName="Table Table--bordered"
       wrapperClassName="Table__Wrapper"
       scrollClassName="Table__Scroll"
-      pagination={data?.pagination}
+      infiniteLoad={infiniteLoadProps}
+      itemLabel="transactions"
     />
   )
 }

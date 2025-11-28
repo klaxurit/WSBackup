@@ -9,6 +9,29 @@
   gap: 32px;
   min-height: 80vh;
 
+  &__FilterButtons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    // Désactiver les animations sur les boutons de filtrage
+    .btn {
+      transition: none !important;
+
+      &:hover {
+        transition: none !important;
+      }
+
+      &:active {
+        transition: none !important;
+      }
+
+      &:focus-visible {
+        transition: none !important;
+      }
+    }
+  }
+
   &__ContentWrapper {
     display: flex;
     flex-direction: row;
@@ -54,49 +77,11 @@
 
   &__Title {
     margin: 0;
-    font-size: 2rem;
+    @include typography('heading-3xl');
     font-weight: 700;
     color: $beryl-pure;
   }
 
-  &__NewBtn {
-    padding: 8px 20px;
-    border-radius: 8px;
-    background: var(--accent1, #e39229);
-    color: #fff;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 15px;
-    transition: background 0.2s;
-
-    &:hover {
-      background: #b97a1c;
-    }
-  }
-
-  &__FilterBtn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    background: transparent;
-    color: #aaa;
-    border: 1.5px solid #333;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-
-    &:hover {
-      border-color: var(--accent1, #e39229);
-      color: var(--accent1, #e39229);
-    }
-
-    &.is-active {
-      background: var(--accent1, #e39229);
-      border-color: var(--accent1, #e39229);
-      color: #fff;
-    }
-  }
 
   &__TableWrapper {
     margin-bottom: 16px;
@@ -115,7 +100,7 @@
     td {
       padding: 1rem;
       text-align: left;
-      font-size: 15px;
+      @include typography('body-md');
     }
 
     thead th {
@@ -135,22 +120,6 @@
     }
   }
 
-  &__ManageBtn {
-    padding: 4px 12px;
-    border-radius: 6px;
-    border: 1.5px solid var(--accent1, #e39229);
-    background: none;
-    color: var(--accent1, #e39229);
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: background 0.2s, color 0.2s;
-
-    &:hover {
-      background: rgba(227, 146, 41, 0.13);
-      color: #fff;
-    }
-  }
 
   &__ClosedBtn {
     padding: 8px 20px;
@@ -161,7 +130,7 @@
     font-weight: 600;
     cursor: pointer;
     margin-top: 12px;
-    font-size: 15px;
+    @include typography('body-md');
     transition: background 0.2s, color 0.2s;
 
     &:hover {
@@ -189,7 +158,7 @@
 
   &__TopTitle {
     margin-top: 0;
-    font-size: 1.3rem;
+    @include typography('heading-lg');
     font-weight: 700;
     margin-bottom: 18px;
     color: #fff;
@@ -207,7 +176,7 @@
     border-radius: 12px;
     padding: 16px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-    margin-bottom: 0;
+    margin-bottom: 8px;
     color: #e0e0e0;
     display: flex;
     flex-direction: column;
@@ -216,23 +185,23 @@
 
   &__TopPair {
     font-weight: 600;
-    font-size: 1.1rem;
+    @include typography('body-lg');
     color: #fff;
 
     .PoolPage__TopVersion {
       color: #888;
-      font-size: 0.9rem;
+      @include typography('body-sm');
       margin-left: 8px;
     }
   }
 
   &__TopFee {
-    font-size: 13px;
+    @include typography('body-sm');
     color: #aaa;
   }
 
   &__TopApr {
-    font-size: 13px;
+    @include typography('body-sm');
     color: #aaa;
 
     &--positive {
@@ -311,12 +280,12 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       margin-right: 4px;
     }
 
     .PoolPage__StepLabel {
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 600;
       color: #fff;
     }
@@ -336,14 +305,14 @@
     }
 
     .PoolPage__CreateTitle {
-      font-size: 1.2rem;
+      @include typography('heading-md');
       font-weight: 600;
       color: var(--accent1, #e39229);
       margin-left: 18px;
     }
 
     .PoolPage__CreateSectionTitle {
-      font-size: 1.1rem;
+      @include typography('heading-md');
       font-weight: 700;
       color: #fff;
       margin-bottom: 6px;
@@ -351,7 +320,7 @@
 
     .PoolPage__CreateSectionDesc {
       color: #aaa;
-      font-size: 0.98rem;
+      @include typography('body-md');
       margin-bottom: 12px;
     }
 
@@ -363,7 +332,7 @@
     }
 
     .PoolPage__TokenSeparator {
-      font-size: 1.5rem;
+      @include typography('heading-xl');
       color: #888;
       font-weight: 700;
       margin: 0 8px;
@@ -382,7 +351,7 @@
       border: 1.5px solid #232323;
       color: #fff;
       font-weight: 600;
-      font-size: 1rem;
+      @include typography('body-lg');
       padding: 18px 18px;
       display: flex;
       flex-direction: column;
@@ -407,7 +376,7 @@
         background: none;
         border: 1.5px dashed #888;
         color: #aaa;
-        font-size: 0.98rem;
+        @include typography('body-md');
         font-weight: 500;
         padding: 10px 14px;
         margin-left: 8px;
@@ -418,26 +387,26 @@
 
         .PoolPage__FeeTierAdvanced {
           color: #888;
-          font-size: 0.95rem;
+          @include typography('body-md');
           margin-left: 6px;
         }
       }
     }
 
     .PoolPage__FeeTierLabel {
-      font-size: 1rem;
+      @include typography('body-lg');
       font-weight: 700;
       margin-bottom: 2px;
     }
 
     .PoolPage__FeeTierDesc {
-      font-size: 0.8rem;
+      @include typography('caption');
       color: #aaa;
       margin-bottom: 2px;
     }
 
     .PoolPage__FeeTierTVL {
-      font-size: 0.95rem;
+      @include typography('body-md');
       color: #888;
     }
 
@@ -448,48 +417,6 @@
       gap: 12px;
     }
 
-    .PoolPage__ContinueBtn {
-      justify-content: center;
-      padding: 12px 32px;
-      border-radius: 10px;
-      background: var(--accent1, #e39229);
-      color: #fff;
-      border: none;
-      font-weight: 700;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background 0.18s;
-      width: 100%;
-
-      &:hover {
-        background: #b97a1c;
-      }
-    }
-
-    .PoolPage__ContinueBtn {
-      padding: 12px 32px;
-      border-radius: 10px;
-      background: var(--accent1, #e39229);
-      color: #fff;
-      border: none;
-      font-weight: 700;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background 0.18s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-
-      &:hover {
-        background: #b97a1c;
-      }
-
-      &:disabled {
-        background: #2d2c2a;
-        color: #504f4c;
-        cursor: not-allowed;
-      }
-    }
 
     // Styles pour Step 2
     .PoolPage__StepFee {
@@ -497,7 +424,7 @@
       color: #e39229;
       padding: 4px 8px;
       border-radius: 6px;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 600;
     }
 
@@ -520,14 +447,14 @@
 
     .PoolPage__PriceLabel {
       color: #aaa;
-      font-size: 14px;
+      @include typography('body-sm');
       font-weight: 600;
       min-width: 100px;
     }
 
     .PoolPage__PriceValue {
       color: #fff;
-      font-size: 16px;
+      @include typography('body-lg');
       font-weight: 600;
       flex: 1;
     }
@@ -538,7 +465,7 @@
       border-radius: 8px;
       color: #fff;
       padding: 8px 12px;
-      font-size: 14px;
+      @include typography('body-sm');
       width: 120px;
       outline: none;
 
@@ -549,7 +476,7 @@
 
     .PoolPage__PriceUnit {
       color: #aaa;
-      font-size: 12px;
+      @include typography('caption');
       min-width: 150px;
     }
 
@@ -561,6 +488,55 @@
 
     .PoolPage__LiquidityInput {
       width: 100%;
+    }
+  }
+}
+
+// Validation errors styling
+.validation-errors {
+  margin: 12px 0;
+
+  .validation-error {
+    background-color: #fef3cd;
+    border: 1px solid #fecba1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    @include typography('body-sm');
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Styles pour les spinners de boutons
+.btn-spinner {
+  display: inline-block;
+  animation: btn-spin 1s linear infinite;
+}
+
+@keyframes btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Dark theme
+@media (prefers-color-scheme: dark) {
+  .validation-errors {
+    .validation-error {
+      background-color: rgba(251, 191, 36, 0.1);
+      border-color: rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
     }
   }
 }

@@ -1,0 +1,15 @@
+@use "../../styles/utils" as *;
+
+.TokenLogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  object-fit: cover;
+  margin: 0 4px; // Espacement standard autour des logos
+
+  // Classe pour désactiver la bordure (tokens STICKY/AW qui ont déjà une bordure native)
+  &--no-border {
+    border: none !important;
+  }
+}

@@ -26,7 +26,7 @@
     justify-content: center;
     align-items: center;
     min-height: 60vh;
-    font-size: 18px;
+    @include typography('body-lg');
     color: #fff;
   }
 
@@ -36,24 +36,24 @@
 
     &Title {
       font-weight: 700;
-      font-size: 22px;
+      @include typography('heading-lg');
       margin-bottom: 8px;
     }
 
     &Address {
       color: #888;
-      font-size: 15px;
+      @include typography('body-md');
       margin-bottom: 4px;
     }
 
     &USD {
       font-weight: 600;
-      font-size: 18px;
+      @include typography('body-lg');
     }
 
     &Value {
       font-weight: 700;
-      font-size: 24px;
+      @include typography('heading-xl');
       color: #FFD056;
     }
   }
@@ -66,14 +66,14 @@
 
     &Pair {
       font-weight: 600;
-      font-size: 17px;
+      @include typography('body-lg');
     }
 
     &Version {
       background: rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 2px 8px;
-      font-size: 13px;
+      @include typography('body-sm');
       font-weight: 500;
       color: #888;
     }
@@ -85,7 +85,7 @@
         padding: 4px 8px;
         border-radius: 16px;
         font-weight: 600;
-        font-size: 14px;
+        @include typography('body-sm');
       }
 
       &--out {
@@ -94,7 +94,7 @@
         padding: 4px 8px;
         border-radius: 16px;
         font-weight: 600;
-        font-size: 14px;
+        @include typography('body-sm');
       }
     }
   }
@@ -159,27 +159,6 @@
     }
   }
 
-  &__ActionBtn {
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    border: none;
-    transition: background 0.18s, color 0.18s;
-
-    &--add {
-      background: #FFD056;
-      color: #232323;
-    }
-
-    &--remove {
-      background: #fff;
-      color: #232323;
-      border: 1.5px solid #232323;
-    }
-  }
-
   &__Stats {
     width: 100%;
     margin-top: 12px;
@@ -194,12 +173,12 @@
 
   &__StatLabel {
     color: #888;
-    font-size: 14px;
+    @include typography('body-sm');
   }
 
   &__StatValue {
     font-weight: 600;
-    font-size: 16px;
+    @include typography('body-lg');
     display: flex;
     align-items: center;
   }
@@ -213,7 +192,7 @@
 
     h4 {
       color: #fff;
-      font-size: 16px;
+      @include typography('body-lg');
       font-weight: 600;
       margin-bottom: 12px;
     }
@@ -224,12 +203,12 @@
 
     .PoolView__StatLabel {
       color: #888;
-      font-size: 14px;
+      @include typography('body-sm');
     }
 
     .PoolView__StatValue {
       font-weight: 600;
-      font-size: 16px;
+      @include typography('body-lg');
       color: $beryl-pure;
     }
   }
@@ -238,10 +217,24 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 24px;
+    width: 100%;
 
     .PoolView__FormRow {
       display: flex;
+    }
+  }
+
+  &__FormError {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    color: #FF6B6B;
+    padding: 12px;
+    border-radius: 6px;
+    @include typography('body-sm');
+    margin-top: 16px;
+
+    p {
+      word-wrap: break-word;
     }
   }
 
@@ -293,7 +286,7 @@
   }
 
   &__ModalTitle {
-    font-size: 17px;
+    @include typography('heading-md');
     font-weight: 600;
     color: #fff;
     margin: 0;
@@ -311,7 +304,6 @@
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: #232323;
       color: #FFD056;
     }
   }
@@ -326,28 +318,337 @@
   }
 
   &__SuccessTitle {
-    font-size: 18px;
+    @include typography('heading-md');
     font-weight: 700;
     color: #FFD056;
     margin-bottom: 16px;
     text-align: center;
   }
+}
 
-  &__SuccessLink {
+.UserPosition {
+  max-width: 400px;
+
+  h3 {
     color: #fff;
-    background: #232323;
+    @include typography('heading-md');
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+  }
+
+  &__List {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__Loading,
+  &__Empty {
+    text-align: center;
+    color: #888;
+    @include typography('body-sm');
+    padding: 24px 16px;
+    font-style: italic;
+  }
+
+  &__Loading {
+    color: #FFD056;
+  }
+
+  // === Main Position Item Container ===
+  &__Item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 8px 18px;
-    font-weight: 500;
-    font-size: 15px;
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s;
-    margin-top: 4px;
-    display: inline-block;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
 
     &:hover {
-      background: #FFD056;
-      color: #232323;
+      border-color: rgba(255, 208, 86, 0.2);
+    }
+  }
+
+  // === Condensed Header (Always Visible) ===
+  &__Header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-height: 48px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  // === Status Pill ===
+  &__PositionPill {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    flex-shrink: 0;
+
+    &--in {
+      background: $success-pure;
+    }
+
+    &--out {
+      background: $carmel-pure;
+    }
+  }
+
+  &__PositionPillText {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%) scale(0.9);
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    @include typography('body-xs');
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 10;
+    pointer-events: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  &__PositionPill:hover {
+    .UserPosition__PositionPillText {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-100%) scale(1);
+    }
+  }
+
+  // === Token ID ===
+  &__PositionTokenId {
+    @include typography('body-sm');
+    font-weight: 500;
+    color: #888;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  // === Total Value ===
+  &__PositionValue {
+    @include typography('body-lg');
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+    text-align: center;
+  }
+
+  // === Fees Indicator ===
+  &__FeesIndicator {
+    background: rgba(255, 208, 86, 0.1);
+    color: #FFD056;
+    padding: 4px 8px;
+    border-radius: 12px;
+    @include typography('body-xs');
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  // === Expand Chevron ===
+  &__ExpandChevron {
+    color: #888;
+    flex-shrink: 0;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #FFD056;
+    }
+  }
+
+  // === Expandable Details Section ===
+  &__Details {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+  }
+
+  &__DetailsContent {
+    padding: 20px;
+  }
+
+  &__DetailSection {
+    margin-bottom: 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    h4 {
+      color: #fff;
+      @include typography('body-sm');
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  &__DetailRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__DetailLabel {
+    color: #888;
+    @include typography('body-sm');
+    font-weight: 500;
+  }
+
+  &__DetailValue {
+    color: #fff;
+    @include typography('body-sm');
+    font-weight: 600;
+
+    &--in {
+      color: $success-pure;
+    }
+
+    &--out {
+      color: $carmel-pure;
+    }
+  }
+
+  // === Token Composition ===
+  &__TokenComposition {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__TokenRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__TokenAmount {
+    color: #fff;
+    @include typography('body-sm');
+    font-weight: 600;
+  }
+
+  &__TokenUSD {
+    color: #888;
+    @include typography('caption');
+    font-weight: 500;
+  }
+
+  // === Action Buttons ===
+  &__ActionButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  &__ActionBtn {
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-align: center;
+    white-space: nowrap;
+
+    &--remove {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    &--claim {
+      background: rgba(255, 208, 86, 0.1);
+      color: #FFD056;
+      border: 1px solid rgba(255, 208, 86, 0.2);
+
+      &:hover {
+        background: rgba(255, 208, 86, 0.15);
+        border-color: rgba(255, 208, 86, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  // === Responsive Design ===
+  @media (max-width: 480px) {
+    padding: 1rem;
+    max-width: 100%;
+
+    &__Header {
+      padding: 10px 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    &__PositionValue {
+      @include typography('body-sm');
+    }
+
+    &__FeesIndicator {
+      @include typography('caption');
+      padding: 3px 6px;
+    }
+
+    &__ActionButtons {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    &__Header {
+      min-height: auto;
+    }
+
+    &__PositionTokenId {
+      @include typography('body-sm');
+      margin-left: 8px;
+    }
+
+    &__PositionValue {
+      @include typography('body-sm');
     }
   }
 }

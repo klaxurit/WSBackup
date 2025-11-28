@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { TokenList } from "../TokenList/TokenList";
 import type { BerachainToken } from '../../hooks/useBerachainTokenList';
-import { FallbackImg } from "../utils/FallbackImg";
+import { TokenLogo } from '../Common/TokenLogo';
+import { useTokensInPool } from '../../hooks/useTokensInPool';
+import { Loader } from "../Loader/Loader";
+import { cleanTokenSymbol, isStickyVaultToken } from '../../utils/tokenDisplay';
 
 interface NetworkSelectorProps {
   preSelected?: BerachainToken | null;
@@ -15,7 +18,11 @@ interface NetworkSelectorProps {
   isHomePage?: boolean;
   onForceOpen?: () => void;
   forceListOpen?: boolean;
-  onlyPoolToken: boolean
+  /**
+   * Si true, affiche tous les tokens disponibles (pour la création de liquidité)
+   * Si false (défaut), affiche uniquement les tokens présents dans les pools
+   */
+  showAllTokens?: boolean;
 }
 
 const TokenSelector: React.FC<NetworkSelectorProps> = ({
@@ -24,10 +31,16 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   onToggleNetworkList,
   onForceOpen,
   forceListOpen,
-  onlyPoolToken
+  showAllTokens = false
 }) => {
   const [isNetworksListOpen, setIsNetworksListOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<BerachainToken | null>(preSelected || null);
+
+  // Utilisation du nouveau hook optimisé
+  const { isLoading: tokensLoading, isError, isSuccess } = useTokensInPool();
+
+  // États dérivés pour compatibilité
+  const isReady = isSuccess && !isError;
 
   useEffect(() => {
     setSelectedToken(preSelected || null);
@@ -43,6 +56,11 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
   }, [forceListOpen, onToggleNetworkList]);
 
   const handleNetworksListToggle = useCallback(() => {
+    // Ne pas ouvrir la liste si les tokens ne sont pas prêts
+    if (tokensLoading || !isReady) {
+      return;
+    }
+
     const newState = !isNetworksListOpen;
     setIsNetworksListOpen(newState);
     if (onToggleNetworkList) {
@@ -51,7 +69,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
     if (onForceOpen && !isNetworksListOpen) {
       onForceOpen();
     }
-  }, [isNetworksListOpen, onToggleNetworkList, onForceOpen]);
+  }, [isNetworksListOpen, onToggleNetworkList, onForceOpen, tokensLoading, isReady]);
 
   const handleTokenSelect = useCallback((token: BerachainToken) => {
     setSelectedToken(token);
@@ -66,26 +84,26 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
 
   const renderButton = (
     <button
-      className={`networkSelector${selectedToken ? ' has-token' : ''}${isNetworksListOpen ? ' open' : ''}`}
+      className={`networkSelector${selectedToken ? ' has-token' : ''}${isNetworksListOpen ? ' open' : ''}${tokensLoading || !isReady ? ' loading' : ''}`}
       onClick={handleNetworksListToggle}
+      disabled={tokensLoading || !isReady}
       style={{}}
     >
       {selectedToken ? (
         <>
           <span className="networkSelector__logoWrapper">
-            {!selectedToken.logoUri
-              ? <FallbackImg content={selectedToken.symbol} />
-              : (
-                <img
-                  src={selectedToken.logoUri}
-                  alt={selectedToken.name}
-                />
-              )}
+            <TokenLogo logoUri={selectedToken.logoUri} symbol={selectedToken.symbol} size="large" />
           </span>
-          <span className="networkSelector__symbol">{selectedToken.symbol}</span>
+          <span className="networkSelector__symbol">
+            {isStickyVaultToken(selectedToken.name)
+              ? cleanTokenSymbol(selectedToken.symbol)
+              : selectedToken.symbol}
+          </span>
         </>
       ) : (
-        <span className="networkSelector__symbol">Select</span>
+        <span className="networkSelector__symbol">
+          {tokensLoading || !isReady ? <Loader size="small" /> : 'Select'}
+        </span>
       )}
       <span className={`networkSelector__chevron${isNetworksListOpen ? ' open' : ''}`}>
         <svg viewBox="0 0 24 24" fill="none" strokeWidth="8" style={{ color: 'rgba(255,255,255,0.65)' }}>
@@ -104,7 +122,7 @@ const TokenSelector: React.FC<NetworkSelectorProps> = ({
           onClose={handleNetworksListToggle}
           onSelect={handleTokenSelect}
           selectedToken={selectedToken || preSelected}
-          onlyPoolToken={onlyPoolToken}
+          showAllTokens={showAllTokens}
         />
       )}
     </>

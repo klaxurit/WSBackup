@@ -9,14 +9,17 @@ import {
   type Time,
   createTextWatermark
 } from 'lightweight-charts';
-import type { ChartType, ChartInterval, LineChartPoint, CandlestickPoint } from '../../types/chart';
-import { useChartData } from '../../utils/useChartData';
+import type { ChartType, ChartInterval, ChartMetric, LineChartPoint, CandlestickPoint } from '../../types/chart';
+import { usePonderChartData } from '../../hooks/usePonderChartData';
 import { ChartToolbar } from './ChartToolbar';
 
 export interface ChartWidgetProps {
   tokenAddress?: string | null;
+  poolAddress?: string | null;
+  vaultAddress?: string | null;
   chartType?: ChartType;
   interval?: ChartInterval;
+  metric?: ChartMetric;
   height?: number;
   showToolbar?: boolean;
   backgroundColor?: string;
@@ -24,10 +27,11 @@ export interface ChartWidgetProps {
   priceFormatter?: (price: number) => string;
   onChartTypeChange?: (type: ChartType) => void;
   onIntervalChange?: (interval: ChartInterval) => void;
-  tokenDecimals?: number;
+  onMetricChange?: (metric: ChartMetric) => void;
   showNoDataOverlay?: boolean;
   noDataMessage?: string;
-  dataType?: 'token' | 'pool';
+  dataType?: 'token' | 'pool' | 'vault';
+  hideMetricsDropdown?: boolean;
 }
 
 const BERYL_PURE = '#E39229';
@@ -36,8 +40,11 @@ const defaultBg = 'transparent';
 
 export const ChartWidget: React.FC<ChartWidgetProps> = ({
   tokenAddress,
+  poolAddress,
+  vaultAddress,
   chartType = 'area',
   interval = '1D',
+  metric = 'price',
   height = 500,
   showToolbar = true,
   backgroundColor = defaultBg,
@@ -45,9 +52,11 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   priceFormatter,
   onChartTypeChange,
   onIntervalChange,
-  tokenDecimals,
+  onMetricChange,
   showNoDataOverlay = false,
-  noDataMessage = "No data available"
+  noDataMessage = "No data available",
+  dataType,
+  hideMetricsDropdown = false,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -56,14 +65,44 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   // États locaux pour les contrôles
   const [localChartType, setLocalChartType] = useState<ChartType>(chartType);
   const [localInterval, setLocalInterval] = useState<ChartInterval>(interval);
+  const [localMetric, setLocalMetric] = useState<ChartMetric>(metric);
 
-  // Hook de données unifié
-  const { data, isLoading, error } = useChartData(
+  // Synchroniser les états locaux avec les props
+  useEffect(() => {
+    setLocalChartType(chartType);
+  }, [chartType]);
+
+  useEffect(() => {
+    setLocalInterval(interval);
+  }, [interval]);
+
+  useEffect(() => {
+    setLocalMetric(metric);
+  }, [metric]);
+
+  // Harmoniser l'UX: un vault n'a pas de "price" => basculer sur TVL
+  useEffect(() => {
+    if (dataType === 'vault' && localMetric === 'price') {
+      setLocalMetric('tvl');
+      onMetricChange?.('tvl');
+      // si le type est 'candlestick', forcer 'area'
+      if (localChartType === 'candlestick') {
+        setLocalChartType('area');
+        onChartTypeChange?.('area');
+      }
+    }
+  }, [dataType]);
+
+  // Hook de données Ponder
+  const { data, isLoading, error } = usePonderChartData(
+    poolAddress || null,
     tokenAddress || null,
+    vaultAddress || null,
+    localMetric,
     localChartType,
-    localInterval,
-    tokenDecimals
+    localInterval
   );
+
 
   // Données factices pour les cas où on n'a pas de données réelles
   const fakeData = useMemo(() => {
@@ -74,15 +113,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }));
   }, []);
 
-  // Détermine si on doit utiliser les données factices
-  const shouldUseFakeData = !data || data.length === 0 || error;
+  const shouldUseFakeData = (!poolAddress && !tokenAddress && !vaultAddress) || (error && error.message.includes('environment variable'));
   const chartData = shouldUseFakeData ? fakeData : data;
 
-  // Initialisation et mise à jour du chart
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // Nettoyage sécurisé du chart existant
     if (chartRef.current) {
       try {
         chartRef.current.remove();
@@ -94,7 +130,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       }
     }
 
-    // Création du nouveau chart
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height,
@@ -122,7 +157,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
 
     chartRef.current = chart;
 
-    // Ajout du watermark WinnieSwap
     try {
       const firstPane = chart.panes()[0];
       createTextWatermark(firstPane, {
@@ -141,10 +175,8 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
       console.warn('Error creating watermark:', error);
     }
 
-    // Création de la série selon le type
     createSeries(chart, localChartType);
 
-    // Gestion du resize
     const handleResize = () => {
       if (chartRef.current && chartContainerRef.current) {
         try {
@@ -174,7 +206,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     };
   }, [localChartType, height, backgroundColor]);
 
-  // Fonction pour créer la série selon le type
   const createSeries = (chart: IChartApi, type: ChartType) => {
     try {
       switch (type) {
@@ -230,14 +261,12 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }
   };
 
-  // Mise à jour des données de la série
   useEffect(() => {
+
     if (seriesRef.current && chartData && Array.isArray(chartData)) {
       try {
         if (localChartType === 'candlestick') {
-          // Pour les candlesticks, on doit s'assurer d'avoir le bon format
           if (shouldUseFakeData) {
-            // Convertir les données factices en format candlestick
             const candlestickData = (chartData as LineChartPoint[]).map(point => ({
               time: point.time,
               open: point.value * 0.98,
@@ -250,11 +279,9 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
             seriesRef.current.setData(chartData as CandlestickPoint[]);
           }
         } else {
-          // Pour area et line charts
           if (shouldUseFakeData) {
             seriesRef.current.setData(chartData as LineChartPoint[]);
           } else {
-            // Si les données viennent d'un candlestick, extraire les prix de clôture
             if (chartData.length > 0 && 'close' in chartData[0]) {
               const lineData = (chartData as CandlestickPoint[]).map(candle => ({
                 time: candle.time,
@@ -267,7 +294,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
           }
         }
 
-        // Auto-fit du chart
         if (chartRef.current) {
           try {
             chartRef.current.timeScale().fitContent();
@@ -281,7 +307,6 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     }
   }, [chartData, localChartType, shouldUseFakeData]);
 
-  // Gestionnaires d'événements
   const handleChartTypeChange = (newType: ChartType) => {
     setLocalChartType(newType);
     onChartTypeChange?.(newType);
@@ -292,7 +317,15 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
     onIntervalChange?.(newInterval);
   };
 
-  // Affichage du message de chargement ou d'erreur
+  const handleMetricChange = (newMetric: ChartMetric) => {
+    setLocalMetric(newMetric);
+    if (newMetric !== 'price' && localChartType === 'candlestick') {
+      setLocalChartType('area');
+      onChartTypeChange?.('area');
+    }
+    onMetricChange?.(newMetric);
+  };
+
   const showOverlay = isLoading || showNoDataOverlay || (error && !shouldUseFakeData);
   const overlayMessage = isLoading
     ? 'Loading chart data...'
@@ -306,9 +339,13 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
         <ChartToolbar
           chartType={localChartType}
           interval={localInterval}
+          metric={localMetric}
           onChartTypeChange={handleChartTypeChange}
           onIntervalChange={handleIntervalChange}
+          onMetricChange={handleMetricChange}
+          availableMetrics={dataType === 'vault' ? ['tvl', 'volume', 'fees'] : undefined}
           isLoading={isLoading}
+          hideMetricsDropdown={hideMetricsDropdown}
         />
       )}
 

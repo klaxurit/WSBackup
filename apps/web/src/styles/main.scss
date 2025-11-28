@@ -1,3 +1,4 @@
+@use '../../../../packages/ui/src/styles/typography';
 @use 'utils' as *;
 @use 'layout/default';
 @use 'layout/swapPageLayout';
@@ -19,13 +20,19 @@
 @use 'components/modals/networksList';
 @use 'components/modals/transactionStatusModal';
 @use 'components/modals/popularTokens';
+@use 'components/modals/appkit';
+@use 'components/modals/positionModals';
+
+@use 'components/poolView/increaseLiquidityModal';
 @use 'components/footer/footer';
 @use 'components/swap/swapForm';
 @use 'components/swap/swapDetails';
+@use 'components/swap/routeDisplay';
 
 @use 'components/chart/chart';
 @use 'components/chart/chart-widget';
 @use 'components/chart/chart-toolbar';
+@use 'components/charts/mobileTokenChart';
 
 @use 'components/common/link';
 @use 'components/common/iconLink';
@@ -37,7 +44,13 @@
 @use 'components/common/modal';
 @use 'components/common/newBanner';
 @use 'components/common/tokenPairLogos';
+@use 'components/common/stickyIcon';
+@use 'components/common/globalSearch';
+@use 'components/common/truncated-text-tooltip';
 @use 'components/vaults/vault';
+@use 'components/vault/vault-timeline';
+@use 'components/vault/vault-deposit-modal';
+@use 'components/transitions/pageTransition';
 
 @use 'components/tables/table';
 @use 'components/tables/pagination';
@@ -46,9 +59,13 @@
 @use 'pages/tokenPage';
 @use 'pages/explorePage';
 @use 'pages/positionPage';
+@use 'pages/liquidityPage';
+@use 'pages/portfolioPage';
 @use 'pages/poolViewPage';
 @use 'pages/poolPage';
 @use 'pages/vaults';
+@use 'pages/leaderboardPage';
+@use 'pages/mobileChartTestPage';
 
 
 // @import 'themes/dark';

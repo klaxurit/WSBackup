@@ -142,3 +142,66 @@ model PoolStats {
   @@index([createdAt, tvlUSD(sort: Desc)])
   @@map("pool_stats")
 }
+
+model LeaderboardEntry {
+  id     String @id // wallet address
+  wallet String @unique
+
+  // Volume metrics (in USD)
+  swapVolumeUSD              Float @default(0)
+  liquidityDepositVolumeUSD  Float @default(0)
+  totalVolumeUSD             Float @default(0) // swapVolume + liquidityVolume
+
+  // Liquidity metrics (current)
+  currentLiquidityUSD Float @default(0) // Total liquidity across all protocols
+  positionsCount      Int   @default(0) // Number of active positions
+
+  // Breakdown by protocol type
+  v3PoolsLiquidityUSD     Float @default(0) // Regular V3 positions
+  stickyVaultsLiquidityUSD Float @default(0) // Sticky Vault deposits
+  autoWinVaultsLiquidityUSD Float @default(0) // AutoWin deposits
+
+  // Points and ranking (integers - rounded)
+  volumePoints    Int @default(0) // round(1.2 × totalVolumeUSD)
+  liquidityPoints Int @default(0) // round(1.0 × currentLiquidityUSD)
+  referralPoints  Int @default(0) // 20% of referrals' points
+  totalPoints     Int @default(0) // sum of all points
+  rank            Int // Current ranking position
+  previousRank    Int? // Rank from last update
+
+  // Referral
+  referralCode String? @unique
+  referredBy   String? // wallet address of referrer
+
+  // Metadata
+  lastUpdatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  // Relations
+  snapshots LeaderboardSnapshot[]
+
+  @@index([totalPoints(sort: Desc)])
+  @@index([rank])
+  @@index([wallet])
+  @@index([lastUpdatedAt(sort: Desc)])
+  @@map("leaderboard_entries")
+}
+
+model LeaderboardSnapshot {
+  id        String   @id // timestamp-wallet
+  wallet    String
+  timestamp DateTime @default(now())
+
+  rank                Int
+  totalPoints         Int
+  totalVolumeUSD      Float
+  currentLiquidityUSD Float
+  positionsCount      Int
+
+  // Relation
+  leaderboardEntry LeaderboardEntry @relation(fields: [wallet], references: [wallet], onDelete: Cascade)
+
+  @@index([wallet, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("leaderboard_snapshots")
+}

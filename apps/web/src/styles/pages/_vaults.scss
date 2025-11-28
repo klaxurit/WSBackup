@@ -1,3 +1,9 @@
+@use "../utils" as *;
+
+// Import des composants vault
+@import '../components/vault/user-positions-table';
+@import '../components/common/help-tooltip';
+
 .VaultsPage {
   padding: 0 1rem;
   max-width: 1192px;
@@ -24,7 +30,7 @@
 
   &__Title {
     h1 {
-      font-size: 2.5rem;
+      @include typography('display-lg');
       font-weight: 700;
       color: #fff;
       margin: 0 0 0.5rem 0;
@@ -32,7 +38,7 @@
 
     p {
       color: #aaa;
-      font-size: 1.1rem;
+      @include typography('body-lg');
       margin: 0;
     }
   }
@@ -89,6 +95,58 @@
   max-width: 1192px;
   margin: 0 auto;
 
+  .StickyIcon,
+  .AWStickyIcon {
+    width: 20px;
+    height: 20px;
+    background: black;
+    border-radius: 50%;
+    border: 1px solid #e39229;
+  }
+
+  &__Breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8A8984;
+    @include typography('body-sm');
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 600px) {
+      margin-bottom: 24px;
+    }
+
+    &Link {
+      color: #8A8984;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        color: #fff;
+      }
+
+      &__3 {
+        color: #fff;
+        font-weight: 600;
+      }
+    }
+
+    &Address {
+      color: #8A8984;
+      @include typography('caption');
+      margin-left: 8px;
+      padding: 2px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+      fill: #8A8984;
+    }
+  }
+
   &--loading,
   &--error {
     display: flex;
@@ -127,18 +185,6 @@
     }
   }
 
-  &__BackLink {
-    color: #e39229;
-    text-decoration: none;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    display: inline-block;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
   &__Header {
     display: flex;
     justify-content: space-between;
@@ -163,7 +209,8 @@
   &__VaultInfo {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 8px;
+    min-height: 40px;
   }
 
   &__VaultTitle {
@@ -172,7 +219,7 @@
     gap: 1rem;
 
     h1 {
-      font-size: 1.5rem;
+      @include typography('heading-2xl');
       font-weight: 700;
       color: #fff;
     }
@@ -185,21 +232,106 @@
   }
 
   &__Strategy {
-    background: rgba(255, 255, 255, 0.04);
-    color: #e39229;
-    padding: 0.25rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 8px;
+    @include typography('caption');
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+
+    &--sticky {
+      background: rgba(255, 255, 255, 0.1);
+      color: $white-080;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    &--autowin {
+      background: rgba(227, 146, 41, 0.15);
+      color: $beryl-pure;
+      border: 1px solid rgba(227, 146, 41, 0.3);
+    }
   }
 
   &__ExplorerLink {
     color: #aaa;
     text-decoration: none;
     padding-top: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
 
     &:hover {
       color: #e39229;
+    }
+
+    svg {
+      display: block;
+    }
+  }
+
+  &__ExplorerDropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  &__DropdownMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(227, 146, 41, 0.2);
+    border-radius: 12px;
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    z-index: 1000;
+    animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Arrow pointing to the button
+    &::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      right: 12px;
+      width: 12px;
+      height: 12px;
+      background: rgba(20, 20, 20, 0.95);
+      border-left: 1px solid rgba(227, 146, 41, 0.2);
+      border-top: 1px solid rgba(227, 146, 41, 0.2);
+      transform: rotate(45deg);
+      z-index: -1;
+    }
+  }
+
+  &__DropdownItem {
+    display: block;
+    padding: 12px 16px;
+    color: #aaa;
+    text-decoration: none;
+    @include typography('body-sm');
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(227, 146, 41, 0.1);
+      color: #e39229;
+      padding-left: 20px;
+    }
+
+    &:active {
+      background: rgba(227, 146, 41, 0.15);
     }
   }
 
@@ -209,14 +341,14 @@
     &Label {
       display: block;
       color: #aaa;
-      font-size: 0.9rem;
+      @include typography('body-sm');
       margin-bottom: 0.25rem;
     }
 
     &Value {
       display: block;
       color: #00ffa3;
-      font-size: 1.5rem;
+      @include typography('heading-xl');
       font-weight: 700;
     }
   }
@@ -232,6 +364,7 @@
     td {
       display: flex;
     }
+
     a {
       line-height: 14px;
     }
@@ -242,7 +375,7 @@
     border: none;
     color: #aaa;
     padding: 1rem 1.5rem;
-    font-size: 1rem;
+    @include typography('body-lg');
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
@@ -269,46 +402,111 @@
 
   &__StatsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
+
+    &--twoRows {
+      grid-template-columns: repeat(3, 1fr);
+
+      @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+      }
+    }
   }
 
   &__StatCard {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    align-items: stretch;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    min-width: 0;
+    position: relative;
 
-    &Label {
-      display: block;
-      color: #aaa;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
+    &--apr {
+      gap: 6px;
     }
 
-    &Value {
-      display: block;
-      color: #fff;
-      font-size: 1.5rem;
-    }
-
-    // Highlighted card for Total APR
     &--highlight {
-      background: rgba(227, 146, 41, 0.1);
-      border: 1px solid rgba(227, 146, 41, 0.2);
+      background: rgba(227, 146, 41, 0.12);
+      border: 1px solid rgba(227, 146, 41, 0.3);
+      box-shadow:
+        0 8px 18px rgba(227, 146, 41, 0.18),
+        0 0 0 1px rgba(227, 146, 41, 0.18);
+    }
+  }
+
+  &__StatLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.65);
+    @include typography('body-xs');
+    margin-bottom: 0;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+
+    .HelpTooltip {
+      flex-shrink: 0;
     }
   }
 
   &__StatValue {
-    font-weight: 800;
+    display: block;
+    color: #fff;
+    @include typography('heading-lg');
+    font-weight: 700;
+
+    &--main {
+      @include typography('heading-lg');
+      line-height: 1.05;
+    }
+
+    &--loading {
+      color: #aaa;
+      @include typography('heading-md');
+    }
+
+    &--unavailable {
+      color: rgba(255, 255, 255, 0.5);
+      @include typography('body-sm');
+      font-weight: 500;
+    }
 
     &--highlight {
       color: #e39229;
+    }
+  }
+
+  &__APRBreakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__APRDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    .VaultDetailPage__APRDetail {
+      @include typography('body-xs');
+      color: #aaa;
+      font-weight: 500;
+    }
+
+    .VaultDetailPage__APRDetail--bgt {
+      color: #E39229;
+      font-weight: 600;
     }
   }
 
@@ -329,7 +527,7 @@
     span {
       display: block;
       color: #fff;
-      font-size: 1.1rem;
+      @include typography('body-lg');
       margin-bottom: 0.5rem;
 
       &:last-child {
@@ -358,12 +556,12 @@
 
     h4 {
       color: #e39229;
-      font-size: 1.2rem;
+      @include typography('heading-md');
       margin: 0 0 1rem 0;
     }
 
     &APY {
-      font-size: 2rem;
+      @include typography('display-lg');
       font-weight: 700;
       color: #00ffa3;
       margin-bottom: 1rem;
@@ -372,7 +570,7 @@
     p {
       color: #aaa;
       margin: 0 0 0.5rem 0;
-      font-size: 0.9rem;
+      @include typography('body-sm');
 
       &:last-child {
         margin-bottom: 0;
@@ -393,7 +591,7 @@
   &__LeftColumn {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
   }
 
   &__RightColumn {
@@ -410,7 +608,7 @@
 
     h3 {
       color: #fff;
-      font-size: 1.1rem;
+      @include typography('heading-md');
       font-weight: 600;
       margin: 0 0 1rem 0;
     }
@@ -425,21 +623,22 @@
 
   &__PositionAmount {
     color: #fff;
-    font-size: 1.5rem;
+    @include typography('heading-xl');
     font-weight: 700;
   }
 
   &__PositionShares {
     color: #aaa;
-    font-size: 0.9rem;
+    @include typography('body-sm');
   }
 
   &__AutoCompound {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1rem;
+    background: $white-004;
+    border: 1px solid $white-008;
+    border-radius: 12px;
+    padding: 1.25rem;
     text-align: center;
+    transition: all 0.3s ease;
 
     &Header {
       display: flex;
@@ -448,62 +647,256 @@
       margin-bottom: 0.75rem;
 
       h4 {
-        color: #e39229;
-        font-size: 1rem;
-        font-weight: 600;
+        color: $beryl-pure;
+        @include typography('body-md');
+        font-weight: 700;
         margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
       }
+    }
+
+    p {
+      color: $white-064;
+      @include typography('body-sm');
+      line-height: 1.5;
+      margin: 0;
     }
   }
 
   &__Toggle {
-    display: flex;
-    align-items: center;
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 12px;
+    padding: 3px;
+    position: relative;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
   }
 
   &__ToggleButton {
-    background: #333;
-    border: 1px solid #555;
-    color: #aaa;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    color: $white-056;
+    padding: 0.3rem 0.8rem;
+    border-radius: 10px;
+    @include typography('caption');
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 50px;
+    text-align: center;
 
-    &:hover {
-      color: #fff;
-      border-color: #777;
+    &:hover:not(.active) {
+      background: $white-004;
+      color: $white-080;
     }
 
     &.active {
-      background: #00ffa3;
-      border-color: #00ffa3;
-      color: #000;
+      background: #E39229;
+      color: rgb(255, 208, 86);
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+      box-shadow:
+        0 0 15px rgba(227, 146, 41, 0.25),
+        0 4px 8px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        background: #E39229;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+      }
     }
   }
 
   &__APY {
-    font-size: 1.5rem;
+    @include typography('heading-xl');
     font-weight: 700;
     color: #00ffa3;
     margin-bottom: 0.75rem;
   }
 
-  // Action Forms
-  &__ActionForms {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.02);
+  // My Deposits Card
+  &__MyDeposits {
+    margin-bottom: 1.5rem;
+  }
+
+  &__MyDepositsTitle {
+    @include typography('body-sm');
+    font-weight: 600;
+    color: #aaa;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__MyDepositsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+  }
+
+  &__MyDepositCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(227, 146, 41, 0.2);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: .8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  &__MyDepositHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__MyDepositIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(227, 146, 41, 0.2), rgba(227, 146, 41, 0.1));
+    border: 1px solid rgba(227, 146, 41, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(227, 146, 41, 0.15);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    &--autowin {
+      background: linear-gradient(135deg, rgba(156, 120, 72, 0.2), rgba(156, 120, 72, 0.1));
+      border-color: rgba(156, 120, 72, 0.3);
+      box-shadow: 0 2px 8px rgba(156, 120, 72, 0.15);
+    }
+  }
+
+  &__MyDepositInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__MyDepositLabel {
+    @include typography('caption');
+    font-weight: 600;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__MyDepositAmount {
+    @include typography('body-lg');
+    font-weight: 700;
+    color: #fff;
+  }
+
+  &__MyDepositValue {
+    @include typography('heading-lg');
+    font-weight: 800;
+    color: #e39229;
+    text-align: right;
   }
 
   &__FormTabs {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    gap: 4px;
+    margin-bottom: 1rem;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+
+        // Styles pour les icônes dans les boutons inactifs
+        .StickyIcon,
+        .AWStickyIcon {
+          opacity: 0.7;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #E39229;
+          box-shadow:
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
   }
 
   &__FormTab {
@@ -511,7 +904,7 @@
     border: none;
     color: #aaa;
     padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    @include typography('body-sm');
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
@@ -534,8 +927,66 @@
 
   &__DepositModeTabs {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #E39229;
+          box-shadow:
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
   }
 
   &__DepositModeTab {
@@ -545,7 +996,7 @@
     color: #aaa;
     padding: 0.5rem;
     border-radius: 6px;
-    font-size: 0.8rem;
+    @include typography('body-sm');
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -561,16 +1012,130 @@
     }
   }
 
-  &__DoubleDeposit,
-  &__SingleDeposit {
+  &__DoubleSideForm {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
 
+  &__DoubleDeposit {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__InsufficientBalance {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+
+    .error-message {
+      padding: 12px 16px;
+      background: rgba(255, 77, 77, 0.1);
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      border-radius: 8px;
+      color: #ff4d4d;
+      @include typography('body-sm');
+      line-height: 1.5;
+
+      &:not(:last-child) {
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+  &__SwapInfo {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: 12px;
+
+    p {
+      @include typography('body-sm');
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0 0 10px 0;
+      letter-spacing: 0.3px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      li {
+        @include typography('body-sm');
+        font-weight: 500;
+      }
+    }
+  }
+
   &__TokenSelector {
     display: flex;
-    gap: 0.5rem;
+    gap: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
+    margin-bottom: 1rem;
+
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #E39229;
+          box-shadow:
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
   }
 
   &__TokenButton {
@@ -580,7 +1145,7 @@
     color: #aaa;
     padding: 0.5rem;
     border-radius: 6px;
-    font-size: 0.8rem;
+    @include typography('body-sm');
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -593,26 +1158,6 @@
       background: #e39229;
       border-color: #e39229;
       color: #fff;
-    }
-  }
-
-  &__DepositSummary {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1rem;
-
-    h4 {
-      color: #fff;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin: 0 0 0.75rem 0;
-    }
-
-    p {
-      color: #aaa;
-      font-size: 0.8rem;
-      margin: 0.5rem 0 0 0;
     }
   }
 
@@ -626,62 +1171,152 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+
+    .networkSelector__logoWrapper {
+      width: 32px;
+      height: 32px;
+      background: black;
+      border-radius: 50%;
+      border: 2px solid #e39229;
+
+      img {
+        width: 27px;
+        height: 27px;
+      }
+    }
+
+    .networkSelector__symbol {
+      @include typography('caption');
+    }
+
+    .Inputs__From {
+      height: 98px;
+    }
   }
 
   &__PercentageButtons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-  }
-
-  &__PercentageButton {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    color: #aaa;
-    padding: 0.5rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      color: #fff;
-      border-color: #555;
-    }
-  }
-
-  &__WithdrawSummary {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1rem;
-  }
-
-  // Common Summary Items
-  &__SummaryItem {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
+    gap: 4px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $white-008;
+    border-radius: 20px;
+    padding: 4px;
+    position: relative;
 
-    &:last-child {
-      margin-bottom: 0;
+    // Subtle inner shadow for depth
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+      z-index: 0;
     }
 
-    span:first-child {
-      color: #aaa;
-      font-size: 0.9rem;
-    }
+    .btn {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    span:last-child {
-      color: #fff;
-      font-weight: 600;
+      // Override btn__shade for tabs
+      &.btn__shade {
+        background: transparent;
+        border: none;
+        color: $white-056;
+        font-weight: 600;
+
+        &:hover {
+          background: $white-004;
+          color: $white-080;
+        }
+      }
+
+      // Override btn__main for active tab
+      &.btn__main {
+        background: #E39229;
+        border: none;
+        color: rgb(255, 208, 86);
+        font-weight: 700;
+        text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background: #E39229;
+          box-shadow:
+            0 0 15px rgba(227, 146, 41, 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+      }
+
+      // Style when disabled
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+          background: transparent;
+          color: $white-056;
+          box-shadow: none;
+        }
+      }
     }
   }
 
   &__FormButton {
     margin-top: 1rem;
   }
+
+  &__TopFilterButton {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-radius: 10px;
+    @include typography('caption');
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 50px;
+    text-align: center;
+
+    &:hover:not(.active) {
+      background: $white-004;
+      color: $white-080;
+    }
+
+    &.active {
+      background: #E39229;
+      color: rgb(255, 208, 86);
+      text-shadow: 0px 1.5px 1px #100A25, -0.5px 0px 0px #180E00, 0.5px 0px 0px #180E00, 0px -0.5px 0px #180E00;
+      box-shadow:
+        0 0 15px rgba(227, 146, 41, 0.25),
+        0 4px 8px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        background: #E39229;
+        box-shadow:
+          0 0 15px rgba(227, 146, 41, 0.25),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+}
+
+.VaultDetailPage__Wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem 1rem;
 }
 
 @keyframes spin {
@@ -691,5 +1326,17 @@
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes dropdownSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

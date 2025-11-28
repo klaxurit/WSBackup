@@ -34,58 +34,6 @@
     align-items: center;
     color: white;
     border: none;
-
-    button {
-      background-image: url('/src/assets/bear_button.svg');
-      background-size: 100%;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      &:hover {
-        background-image: url('/src/assets/bear_btn_hover.svg');
-        background-size: 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-
-      &:active {
-        background-image: url('/src/assets/bear_btn_click.svg');
-        background-size: 100%;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-    }
-  }
-
-  &__BalanceButton {
-    color: $beryl-pure !important;
-    background: $white-008 !important;
-    border: none;
-    cursor: default;
-    min-width: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    position: relative; // Pour positionner les oreilles si besoin
-    padding-left: 8px;
-    padding-right: 8px;
-
-    .ear {
-      width: 28px; // Ajuste la taille selon ton besoin
-      height: auto;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    .left-ear {
-      margin-right: 4px;
-    }
-
-    .right-ear {
-      margin-left: 4px;
-    }
   }
 }
 
@@ -233,42 +181,37 @@
   top: 110%;
   right: 0;
   min-width: 240px;
-  background: #232323;
+  background: #180E00;
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
   z-index: 100;
   padding: 14px;
-  border: 1.5px solid #393939;
+  border: 1px solid $white-008;
+
+  .btn__navbar-disconnect {
+    width: 100%;
+
+    svg {
+      margin-right: 8px;
+
+      path {
+        stroke: $beryl-pure;
+      }
+    }
+  }
 }
 
+// Styles pour le bouton de copie (désormais géré par btn__navbar-copy dans _buttons.scss)
 .Navbar__CopyButton {
   margin-left: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  transition: color 0.15s;
-
-  svg {
-    transition: stroke 0.15s, fill 0.15s;
-    stroke: #fff;
-  }
-
-  &:hover {
-    color: $beryl-pure;
-  }
 }
 
 .Navbar__DropdownHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  @include typography('body-md');
   font-weight: 600;
-  font-size: 15px;
   word-break: break-all;
   margin-bottom: 10px;
 }
@@ -288,45 +231,111 @@
 }
 
 .Navbar__DropdownWalletName {
-  font-size: 13px;
+  @include typography('body-xs');
   color: #aaa;
   margin-bottom: 14px;
 }
 
-.Navbar__DisconnectButton {
+// .Navbar__DisconnectButton {
+//   width: 100%;
+//   background: $white-008;
+//   color: #fff;
+//   border: none;
+//   border-radius: 8px;
+//   padding: 10px 0;
+//   font-weight: 500;
+//   cursor: pointer;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   gap: 8px;
+//   font-size: 15px;
+//   transition: background 0.15s;
+
+//   background-image: url('/src/assets/paw_background_large.svg') !important;
+//   background-size: 170% !important;
+//   background-position: center;
+//   background-repeat: no-repeat;
+
+//   &:hover {
+//     background-image: url('/src/assets/paw_bg_large_hover.svg') !important;
+//     background-size: 170% !important;
+//     background-position: center;
+//     background-repeat: no-repeat;
+//   }
+
+//   &:active {
+//     background-image: url('/src/assets/paw_bg_large_click.svg') !important;
+//     background-size: 170% !important;
+//     background-position: center;
+//     background-repeat: no-repeat;
+//   }
+// }
+
+.Navbar__DropdownButton {
   width: 100%;
-  background: #282828;
+  background: none;
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 0;
-  font-weight: 500;
+  padding: 10px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 15px;
-  transition: background 0.15s;
+  @include typography('body-md');
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+  margin-bottom: 6px;
 
-  background-image: url('/src/assets/paw_background_large.svg') !important;
-  background-size: 170% !important;
-  background-position: center;
-  background-repeat: no-repeat;
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   &:hover {
-    background-image: url('/src/assets/paw_bg_large_hover.svg') !important;
-    background-size: 170% !important;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: rgba(255, 255, 255, 0.08);
   }
 
   &:active {
-    background-image: url('/src/assets/paw_bg_large_click.svg') !important;
-    background-size: 170% !important;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: rgba(255, 255, 255, 0.12);
   }
+
+  &:focus-visible {
+    outline: 2px solid $beryl-pure;
+    outline-offset: 2px;
+  }
+}
+
+.Navbar__DropdownTitle {
+  @include typography('body-md');
+  font-weight: 600;
+  color: $beryl-pure;
+  margin-bottom: 10px;
+  padding: 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.Navbar__ConnectorDropdown {
+  min-width: 200px;
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+}
+
+.Navbar__ConnectorDropdown--left {
+  left: 0;
+  right: auto;
+}
+
+.Navbar__DropdownError {
+  color: #ff6b6b;
+  margin-top: 8px;
+  @include typography('body-xs');
+  padding: 0 4px 8px;
 }
 
 .Navbar__BalanceButtonWrapper {

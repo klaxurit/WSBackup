@@ -1,23 +1,35 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '../Buttons/ConnectButton';
+// import type { VaultManager } from '../../hooks/useVault';
+
+// TODO: This component is unused and needs to be updated or removed
+type VaultManager = any;
 
 interface VaultActionButtonProps {
-  action: 'deposit' | 'withdraw';
-  amount: bigint;
   size?: 'large' | 'small';
   customClassName?: string;
-  onClick?: () => void;
+  vm: VaultManager,
+  t0Symbol: string,
+  t1Symbol: string
 }
 
 export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
-  action,
-  amount,
   size = 'large',
   customClassName = '',
-  onClick
+  vm,
+  t0Symbol,
+  t1Symbol
 }) => {
   const { isConnected } = useAccount();
+  const allowData = useMemo(() => {
+    if (vm.isWithdraw) return { handler: vm.burnAllowance.allow, text: "withdraw" }
+    if (vm.isDeposite && vm.isOneSide) return { handler: vm.osAllowance.allow, text: "deposit" }
+    if (vm.t0Allowance.isNeed) return { handler: vm.t0Allowance.allow, text: t0Symbol }
+    if (vm.t1Allowance.isNeed) return { handler: vm.t1Allowance.allow, text: t1Symbol }
+
+    return { handler: () => { }, text: '' }
+  }, [vm])
 
   // Si l'utilisateur n'est pas connecté, utiliser le ConnectButton standard
   if (!isConnected) {
@@ -25,33 +37,66 @@ export const VaultActionButton: React.FC<VaultActionButtonProps> = ({
       <ConnectButton
         size={size}
         customClassName={customClassName}
-        onClick={onClick}
+        onClick={() => { }}
       />
     );
   }
 
-  // Si l'utilisateur est connecté mais n'a pas saisi de montant
-  if (amount === 0n) {
+  // Il manque des amounts
+  if (!vm.isReady) {
     return (
       <button
         className={`btn btn--${size} btn__disabled ${customClassName}`.trim()}
         disabled
       >
-        Enter amount
+        Enter an amount
       </button>
     );
   }
 
-  // Si l'utilisateur est connecté et a saisi un montant
-  const buttonText = action === 'deposit' ? 'Deposit' : 'Withdraw';
+  // Il faut approve un token
+  if (!vm.isAllow) {
+    return (
+      <button
+        className={`btn btn--${size} btn__main ${customClassName}`.trim()}
+        onClick={allowData.handler}
+      >
+        Approve {allowData.text}
+      </button>
+    );
+  }
+
+
+  if (vm.isDeposite) {
+    return (
+      <button
+        className={`btn btn--${size} btn__main ${customClassName}`.trim()}
+        onClick={vm.isOneSide ? vm.depositeOneSide.depose : vm.depositeTwoSide.depose}
+      >
+        Deposit
+      </button>
+    );
+  } else {
+    return (
+      <button
+        className={`btn btn--${size} btn__main ${customClassName}`.trim()}
+        onClick={vm.withdraw.burn}
+      >
+        Withdraw
+      </button>
+    )
+  }
+
+
 
   return (
     <button
-      className={`btn btn--${size} btn__main ${customClassName}`.trim()}
-      onClick={onClick}
+      className={`btn btn--${size} btn__disabled ${customClassName}`.trim()}
+      disabled
     >
-      {buttonText}
+      Error
     </button>
   );
+
 };
 

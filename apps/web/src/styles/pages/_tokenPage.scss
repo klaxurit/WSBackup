@@ -15,12 +15,13 @@
     gap: 12px;
     flex-wrap: wrap;
     margin-bottom: 8px;
+
     a {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    
+
   }
 
   @media (max-width: 600px) {
@@ -34,7 +35,7 @@
     align-items: center;
     gap: 8px;
     color: #8A8984;
-    font-size: 14px;
+    @include typography('body-sm');
 
     @media (max-width: 600px) {
       margin-bottom: 24px;
@@ -92,13 +93,14 @@
   &__Right {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
 
     @media (max-width: 600px) {
       width: 100%;
       min-width: 0;
       max-width: 100%;
       border-radius: 10px;
+      gap: 16px;
       padding: 0;
     }
   }
@@ -121,21 +123,19 @@
     &Title {
       margin: 0;
       color: #fff;
-      font-size: 24px;
-      font-weight: 600;
+      @include typography('heading-lg');
     }
   }
 
   &__TitleLabels {
     margin: 0;
     color: #fff;
-    font-size: 24px;
-    font-weight: 600;
+    @include typography('heading-lg');
   }
 
   &__SubtitleLabel {
     color: #8A8984;
-    font-size: 16px;
+    @include typography('body-lg');
     margin-left: 8px;
   }
 
@@ -155,20 +155,21 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    height: 40px;
     min-height: 40px;
     width: 100%;
+    @include typography('heading-lg');
+    color: #fff;
 
     @media (max-width: 600px) {
-      font-size: 18px;
+      @include typography('heading-md');
     }
   }
 
   &__SectionHeadTitleLeft {
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 40px;
+    gap: 8px;
+    min-height: 40px;
   }
 
   &__Logo {
@@ -181,39 +182,48 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    @include typography('body-md');
+    margin-bottom: 2px;
 
     @media (max-width: 600px) {
       width: 28px;
       height: 28px;
-      font-size: 15px;
+      @include typography('body-md');
     }
 
     &--placeholder {
       color: #888;
-      font-size: 18px;
+      @include typography('heading-md');
     }
+  }
+
+  &__Name,
+  &__Ticker {
+    display: inline-flex;
+    align-items: baseline;
   }
 
   &__Name {
     font-weight: 700;
-    font-size: 16px;
-    line-height: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
+    @include typography('heading-2xl');
+    display: inline-flex;
+    align-items: baseline;
+    line-height: 1;
     color: #fff;
     white-space: nowrap;
+
+    @media (max-width: 600px) {
+      @include typography('heading-xl');
+    }
   }
 
   &__Ticker {
     color: #aaa;
     font-weight: 600;
-    font-size: 16px;
-    margin-left: 4px;
-    line-height: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
+    @include typography('heading-md');
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: baseline;
   }
 
   &__SectionHeadTitleRight {
@@ -244,8 +254,7 @@
   &__TokenPrice {
     margin: 0;
     color: #fff;
-    font-size: 24px;
-    font-weight: 600;
+    @include typography('heading-lg');
     font-family: "TT Hoves", system-ui, sans-serif;
   }
 
@@ -254,7 +263,7 @@
     align-items: center;
     gap: 4px;
     color: #00FFA3;
-    font-size: 14px;
+    @include typography('body-sm');
     margin-top: 4px;
 
     &Value {
@@ -307,8 +316,6 @@
     margin-bottom: 24px;
 
     @media (max-width: 769px) {
-      padding-left: 12px;
-      padding-right: 12px;
       margin-top: 50px;
       margin-bottom: 16px;
     }
@@ -316,13 +323,15 @@
 
   &__DetailSection {
     margin-top: 84px;
+    margin-bottom: 32px;
+
     @media (max-width: 600px) {
-      margin-top: 24px;
+      margin-top: 116px;
     }
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       margin-bottom: 16px;
     }
   }
@@ -343,18 +352,15 @@
 
   &__StatCard {
     border-radius: 12px;
-    padding: 16px;
 
     &Title {
       color: #8A8984;
-      font-size: 14px;
-      margin: 0 0 8px 0;
+      @include typography('body-sm');
     }
 
     &Label {
       color: #fff;
-      font-size: 20px;
-      font-weight: 600;
+      @include typography('heading-lg');
       margin: 0;
     }
   }
@@ -375,6 +381,7 @@
       border-radius: 10px;
       padding-left: 0 !important;
       padding-right: 0 !important;
+      padding-top: 0 !important;
     }
   }
 
@@ -384,7 +391,7 @@
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       margin-bottom: 16px;
     }
 
@@ -393,8 +400,6 @@
       min-width: 0;
       max-width: 100%;
       border-radius: 10px;
-      padding-left: 12px;
-      padding-right: 12px;
     }
   }
 
@@ -409,7 +414,7 @@
         padding: 12px;
         text-align: left;
         color: #8A8984;
-        font-size: 14px;
+        @include typography('body-sm');
       }
 
       th {
@@ -455,7 +460,7 @@
     outline: none;
     background: none;
     color: #aaa;
-    font-size: 13px;
+    @include typography('body-sm');
     font-weight: 600;
     border-radius: 999px;
     width: 38px;
@@ -471,7 +476,8 @@
     @media (max-width: 600px) {
       width: 100%;
       min-width: 0;
-      font-size: 12px;
+      @include typography('caption');
+      font-weight: 600;
     }
 
     &.active {
@@ -494,7 +500,6 @@
 
   // === Section Informations Token ===
   &__InfoSection {
-    padding: 20px 20px 16px 20px;
     border-radius: 16px;
     display: flex;
     flex-direction: column;
@@ -507,9 +512,8 @@
 
     &Title {
       color: #fff;
-      font-size: 20px;
+      @include typography('heading-lg');
       font-weight: 700;
-      margin: 0 0 8px 0;
     }
 
     &Links {
@@ -533,7 +537,7 @@
       border-radius: 10px;
       padding: 7px 10px 7px 10px;
       color: #fff;
-      font-size: 15px;
+      @include typography('body-md');
       font-weight: 600;
       text-decoration: none;
       transition: background 0.15s, color 0.15s, opacity 0.15s;
@@ -544,7 +548,8 @@
       @media (max-width: 600px) {
         width: 100%;
         justify-content: flex-start;
-        font-size: 14px;
+        @include typography('body-sm');
+        font-weight: 600;
         padding: 7px 10px;
       }
 
@@ -561,7 +566,7 @@
 
     &Description {
       color: #e0e0e0;
-      font-size: 15px;
+      @include typography('body-md');
       line-height: 1.7;
       margin: 0;
       white-space: pre-line;
@@ -569,7 +574,7 @@
       position: relative;
 
       @media (max-width: 600px) {
-        font-size: 14px;
+        @include typography('body-sm');
       }
     }
 
@@ -577,7 +582,7 @@
       background: none;
       border: none;
       color: #e39229;
-      font-size: 15px;
+      @include typography('body-md');
       font-weight: 600;
       cursor: pointer;
       margin-top: 6px;
@@ -601,8 +606,190 @@
       min-width: 0;
       max-width: 100%;
       border-radius: 10px;
-      padding-left: 12px;
-      padding-right: 12px;
+    }
+  }
+
+  // Quick Access Section - Pools & Vaults
+  &__QuickAccess {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    @media (max-width: 600px) {
+      margin-top: 16px;
+      gap: 16px;
+    }
+
+    &Title {
+      color: #fff;
+      @include typography('heading-lg');
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.3px;
+    }
+
+    &Section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    &Subtitle {
+      color: $white-064;
+      @include typography('body-sm');
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    &List {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0 12px 0;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(227, 146, 41, 0.3) rgba(255, 255, 255, 0.05);
+      cursor: grab;
+      user-select: none;
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      // Custom scrollbar styling
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(227, 146, 41, 0.3);
+        border-radius: 3px;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: rgba(227, 146, 41, 0.5);
+        }
+      }
+
+      @media (max-width: 600px) {
+        gap: 10px;
+        padding: 4px 0 10px 0;
+      }
+    }
+
+    &Card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 180px;
+      max-width: 180px;
+      flex-shrink: 0;
+
+      &:hover {
+        background: rgba(227, 146, 41, 0.08);
+        border-color: #E39229;
+        transform: translateY(-2px);
+        box-shadow:
+          0 6px 16px rgba(0, 0, 0, 0.2),
+          0 0 0 1px rgba(227, 146, 41, 0.1);
+      }
+
+      &:active {
+        transform: translateY(-1px);
+      }
+
+      @media (max-width: 600px) {
+        min-width: 160px;
+        max-width: 160px;
+        padding: 10px 12px;
+      }
+
+      &Header {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      &Info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      &Pair {
+        color: #fff;
+        @include typography('body-sm');
+        font-weight: 700;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &Fee {
+        color: $white-056;
+        @include typography('caption');
+        font-weight: 500;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &Stats {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      &Stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+
+        &Label {
+          color: $white-048;
+          @include typography('caption');
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          white-space: nowrap;
+        }
+
+        &Value {
+          color: #fff;
+          @include typography('body-xs');
+          font-weight: 700;
+          text-align: right;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          &--highlight {
+            color: #E39229;
+          }
+        }
+      }
     }
   }
 }
